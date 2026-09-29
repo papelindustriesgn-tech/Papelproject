@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+/* =============================================================================
+   UNY — design system
+   Une seule palette, une seule typo, les mêmes arrondis partout.
+   ============================================================================= */
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --color-brand-50: #f1eeff;
+  --color-brand-100: #e4deff;
+  --color-brand-200: #cbbeff;
+  --color-brand-300: #a994ff;
+  --color-brand-400: #8766ff;
+  --color-brand-500: #6a45ff;
+  --color-brand-600: #5733f0;
+  --color-brand-700: #4726cc;
+  --color-brand-800: #3a20a3;
+  --color-brand-900: #2a1878;
+  --color-brand-950: #170c45;
+
+  --color-ink: #15122e;
+  --color-muted: #6b6889;
+  --color-line: #e9e7f3;
+  --color-canvas: #f6f5fb;
+
+  --color-mango-50: #fff6e6;
+  --color-mango-100: #ffe9c2;
+  --color-mango-400: #ffb23f;
+  --color-mango-500: #f59e0b;
+  --color-mango-700: #a15c00;
+
+  --color-coral-50: #ffefe9;
+  --color-coral-500: #ff6a3d;
+  --color-coral-600: #e8522a;
+
+  --color-mint-50: #e6f8f2;
+  --color-mint-500: #14b889;
+  --color-mint-700: #0b7a5a;
+
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 2px rgb(21 18 46 / 0.04), 0 8px 24px -12px rgb(21 18 46 / 0.12);
+  --shadow-float: 0 10px 40px -12px rgb(42 24 120 / 0.35);
+
+  --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+  --animate-fade-up: fade-up 0.35s ease-out both;
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: var(--color-brand-200);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+  }
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* évite le zoom automatique sur iOS */
+  }
+}
+
+@layer components {
+  .skeleton {
+    background: linear-gradient(90deg, #eceaf5 25%, #f6f5fb 50%, #eceaf5 75%);
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .uny-pattern {
+    background-image:
+      radial-gradient(circle at 100% 0%, rgb(255 178 63 / 0.55) 0, transparent 38%),
+      radial-gradient(circle at 0% 100%, rgb(135 102 255 / 0.65) 0, transparent 45%),
+      repeating-radial-gradient(circle at 115% -15%, rgb(255 255 255 / 0.07) 0 2px, transparent 2px 18px);
+  }
+}

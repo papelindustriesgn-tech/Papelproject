@@ -1,0 +1,58 @@
+{
+  "name": "uny",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write src tests",
+    "db:start": "node scripts/gen-signing-key.mjs && supabase start -x edge-runtime,logflare,vector,imgproxy",
+    "db:reset": "supabase db reset",
+    "db:types": "supabase gen types typescript --local > src/lib/database.types.ts",
+    "admin:local": "tsx --env-file=.env.local scripts/create-local-admin.mts",
+    "admin:grant": "tsx --env-file=.env.local scripts/make-admin.mts",
+    "test:e2e": "playwright test",
+    "loadtest:users": "tsx --env-file=.env.local scripts/load-test/create-test-users.mts 1000",
+    "loadtest:run": "tsx --env-file=.env.local scripts/load-test/run.mts 1000 50",
+    "loadtest:cleanup": "tsx --env-file=.env.local scripts/load-test/cleanup.mts"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.2",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.48.0",
+    "next": "16.3.7",
+    "nodemailer": "^10.0.12",
+    "qrcode": "^1.5.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/nodemailer": "^8.0.2",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.7",
+    "prettier": "^3.9.9",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "supabase": "^2.118.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.9"
+  }
+}

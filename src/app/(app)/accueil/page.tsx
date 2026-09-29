@@ -1,0 +1,133 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import { MiniPass } from "@/components/home/mini-pass";
+import { Shortcuts } from "@/components/home/shortcuts";
+import { Rail } from "@/components/home/rail";
+import { DealCard, HousingCard, ItemCard, JobCard } from "@/components/content/cards";
+import { SectionHeader } from "@/components/ui/section-header";
+import { FormMessage } from "@/components/ui/field";
+import { DemoNotice } from "@/components/ui/demo-notice";
+import { requireProfile, universityLabel } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
+import { favoriteIds, listDeals, listHousing, listJobs, listMarket } from "@/lib/queries";
+import { param, type SearchParams } from "@/lib/url";
+
+export const metadata: Metadata = { title: "Accueil" };
+
+export default async function HomePage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const sp = await searchParams;
+  const profile = await requireProfile();
+  const supabase = await createClient();
+
+  const [latest, jobs, housing, market, favDeals] = await Promise.all([
+    listDeals({}),
+    listJobs({}),
+    listHousing({}),
+    listMarket({}),
+    favoriteIds(supabase, profile.id, "deal"),
+  ]);
+  const featured = { items: latest.items.filter((d) => d.is_featured) };
+  const newest = latest.items.filter((d) => !d.is_featured).slice(0, 4);
+  const hour = new Date().toLocaleString("fr-FR", { hour: "numeric", hour12: false, timeZone: "Africa/Conakry" });
+  const greeting = Number(hour) >= 18 ? "Bonsoir" : "Bonjour";
+
+  return (
+    <div className="space-y-7 animate-fade-up">
+      <section>
+        <h1 className="text-2xl font-extrabold tracking-tight md:text-3xl">
+          {greeting} {profile.first_name} 👋
+        </h1>
+        <p className="mt-1 text-sm text-muted">Voici les bons plans étudiants du moment à Conakry.</p>
+      </section>
+
+      {param(sp, "bienvenue") && (
+        <FormMessage type="success">Bienvenue sur Uny ! Ton compte est actif et ta carte est prête 🎉</FormMessage>
+      )}
+      {param(sp, "mdp") && <FormMessage type="success">Ton mot de passe a bien été modifié.</FormMessage>}
+
+      <section className="grid gap-5 md:grid-cols-[minmax(0,24rem)_1fr] md:items-center">
+        <MiniPass
+          first={profile.first_name}
+          last={profile.last_name}
+          avatar={profile.avatar_url}
+          unyId={profile.uny_id}
+          status={profile.verification_status}
+          university={universityLabel(profile)}
+        />
+        <Shortcuts />
+      </section>
+
+      {profile.verification_status !== "verified" && (
+        <Link
+          href="/profil/verification"
+          className="flex items-center gap-3 rounded-[var(--radius-card)] bg-mango-50 p-4 ring-1 ring-mango-100 transition hover:bg-mango-100"
+        >
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-mango-400 text-ink">
+            <ShieldCheck className="size-6" aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-bold text-ink">
+              {profile.verification_status === "pending" ? "Vérification en cours ⏳" : "Fais vérifier ton statut étudiant"}
+            </span>
+            <span className="block text-sm text-muted">
+              {profile.verification_status === "pending"
+                ? "Nous examinons ton justificatif. Tu seras notifié très vite."
+                : "Envoie ta carte étudiante ou ton certificat : c'est rapide."}
+            </span>
+          </span>
+          <ArrowRight className="size-5 shrink-0 text-mango-700" aria-hidden />
+        </Link>
+      )}
+
+      {featured.items.length > 0 && (
+        <section>
+          <SectionHeader title="🔥 Meilleures réductions" href="/avantages" />
+          <Rail label="Meilleures réductions">
+            {featured.items.map((d, i) => (
+              <DealCard key={d.id} deal={d} compact favorite={favDeals.has(d.id)} priority={i === 0} />
+            ))}
+          </Rail>
+        </section>
+      )}
+
+      <section>
+        <SectionHeader title="✨ Nouvelles offres" href="/avantages" />
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {newest.map((d) => (
+            <DealCard key={d.id} deal={d} favorite={favDeals.has(d.id)} />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <SectionHeader title="💼 Nouveaux jobs & stages" href="/jobs" />
+        <Rail label="Nouveaux jobs">
+          {jobs.items.slice(0, 8).map((j) => (
+            <JobCard key={j.id} job={j} compact />
+          ))}
+        </Rail>
+      </section>
+
+      <section>
+        <SectionHeader title="🏠 Logements récents" href="/logement" />
+        <Rail label="Logements récents">
+          {housing.items.slice(0, 8).map((h) => (
+            <HousingCard key={h.id} home={h} compact />
+          ))}
+        </Rail>
+      </section>
+
+      <section>
+        <SectionHeader title="🛍️ Nouveautés marketplace" href="/marketplace" />
+        <Rail label="Nouveautés marketplace">
+          {market.items.slice(0, 10).map((m) => (
+            <ItemCard key={m.id} item={m} compact />
+          ))}
+        </Rail>
+      </section>
+
+      <DemoNotice />
+    </div>
+  );
+}
