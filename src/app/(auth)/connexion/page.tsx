@@ -13,7 +13,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <h1 className="text-3xl font-extrabold tracking-tight">Content de te revoir 👋</h1>
-      <p className="mt-2 text-muted">Connecte-toi avec ton email ou ton numéro de téléphone.</p>
+      <p className="text-muted mt-2">Connecte-toi avec ton email ou ton numéro de téléphone.</p>
       <div className="mt-6 space-y-4">
         {param(sp, "deconnecte") && (
           <>
@@ -27,9 +27,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         )}
         <LoginForm next={next} />
       </div>
-      <p className="mt-8 text-center text-sm text-muted">
+      <p className="text-muted mt-8 text-center text-sm">
         Pas encore de compte ?{" "}
-        <Link href="/inscription" className="font-bold text-brand-600 hover:underline">
+        <Link href="/inscription" className="text-brand-600 font-bold hover:underline">
           Créer mon compte gratuitement
         </Link>
       </p>

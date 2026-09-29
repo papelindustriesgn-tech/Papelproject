@@ -46,9 +46,9 @@ export default async function CardPage() {
               </div>
             </dl>
             {url && (
-              <p className="mt-4 text-xs text-muted">
+              <p className="text-muted mt-4 text-xs">
                 Lien de vérification :{" "}
-                <a href={url} className="font-mono break-all text-brand-600" target="_blank" rel="noopener noreferrer">
+                <a href={url} className="text-brand-600 font-mono break-all" target="_blank" rel="noopener noreferrer">
                   {url}
                 </a>
               </p>
@@ -56,7 +56,7 @@ export default async function CardPage() {
             {profile.verification_status !== "verified" && (
               <Link
                 href="/profil/verification"
-                className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-mango-50 p-4 text-sm font-semibold text-mango-700 hover:bg-mango-100"
+                className="bg-mango-50 text-mango-700 hover:bg-mango-100 mt-5 flex items-center justify-between gap-3 rounded-2xl p-4 text-sm font-semibold"
               >
                 {profile.verification_status === "pending"
                   ? "Ton justificatif est en cours d'examen. Suivre ma demande"
@@ -70,12 +70,20 @@ export default async function CardPage() {
             <ol className="mt-4 space-y-4 text-sm">
               {[
                 { Icon: Store, t: "Chez un partenaire", d: "Choisis ton avantage dans l'onglet Avantages." },
-                { Icon: QrCode, t: "Présente ta carte", d: "Appuie sur « Présenter ma carte » : la carte s'affiche en grand avec l'heure en direct." },
-                { Icon: ScanLine, t: "Le partenaire scanne", d: "Le QR code confirme que ta carte est authentique et ton statut à jour." },
+                {
+                  Icon: QrCode,
+                  t: "Présente ta carte",
+                  d: "Appuie sur « Présenter ma carte » : la carte s'affiche en grand avec l'heure en direct.",
+                },
+                {
+                  Icon: ScanLine,
+                  t: "Le partenaire scanne",
+                  d: "Le QR code confirme que ta carte est authentique et ton statut à jour.",
+                },
                 { Icon: CalendarCheck, t: "Profite !", d: "La réduction est appliquée selon les conditions de l'offre." },
               ].map(({ Icon, t, d }, i) => (
                 <li key={t} className="flex gap-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                  <span className="bg-brand-50 text-brand-600 flex size-9 shrink-0 items-center justify-center rounded-xl">
                     <Icon className="size-5" aria-hidden />
                   </span>
                   <div>

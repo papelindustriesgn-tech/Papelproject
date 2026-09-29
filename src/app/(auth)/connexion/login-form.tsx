@@ -31,11 +31,18 @@ export function LoginForm({ next }: { next: string }) {
         </Field>
         <Field label="Mot de passe" htmlFor="password">
           <div className="relative">
-            <Input id="password" name="password" type={show ? "text" : "password"} autoComplete="current-password" required className="pr-12" />
+            <Input
+              id="password"
+              name="password"
+              type={show ? "text" : "password"}
+              autoComplete="current-password"
+              required
+              className="pr-12"
+            />
             <button
               type="button"
               onClick={() => setShow((s) => !s)}
-              className="absolute top-1/2 right-2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full text-muted hover:bg-canvas"
+              className="text-muted hover:bg-canvas absolute top-1/2 right-2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full"
               aria-label={show ? "Masquer le mot de passe" : "Afficher le mot de passe"}
             >
               {show ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
@@ -43,7 +50,7 @@ export function LoginForm({ next }: { next: string }) {
           </div>
         </Field>
         <div className="flex justify-end">
-          <Link href="/mot-de-passe-oublie" className="text-sm font-semibold text-brand-600 hover:underline">
+          <Link href="/mot-de-passe-oublie" className="text-brand-600 text-sm font-semibold hover:underline">
             Mot de passe oublié ?
           </Link>
         </div>
@@ -52,11 +59,11 @@ export function LoginForm({ next }: { next: string }) {
         </SubmitButton>
       </form>
       {unconfirmed && (
-        <form action={resendAction} className="mt-4 rounded-2xl bg-brand-50 p-4 text-sm">
+        <form action={resendAction} className="bg-brand-50 mt-4 rounded-2xl p-4 text-sm">
           <input type="hidden" name="email" value={unconfirmed} />
           <p className="text-brand-900">Tu n&apos;as pas reçu l&apos;email de confirmation ?</p>
-          {resendState.message && <p className="mt-2 text-mint-700">{resendState.message}</p>}
-          {resendState.error && <p className="mt-2 text-coral-600">{resendState.error}</p>}
+          {resendState.message && <p className="text-mint-700 mt-2">{resendState.message}</p>}
+          {resendState.error && <p className="text-coral-600 mt-2">{resendState.error}</p>}
           <SubmitButton variant="secondary" size="sm" className="mt-3" pendingLabel="Envoi…">
             Renvoyer l&apos;email
           </SubmitButton>

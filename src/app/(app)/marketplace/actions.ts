@@ -16,7 +16,11 @@ const schema = z.object({
   title: z.string().trim().min(3, "Titre trop court").max(100, "100 caractères maximum"),
   category: z.enum(Object.keys(MARKET_CATEGORIES) as [keyof typeof MARKET_CATEGORIES]),
   condition: z.enum(Object.keys(ITEM_CONDITIONS) as [keyof typeof ITEM_CONDITIONS]),
-  price_gnf: z.coerce.number({ message: "Prix invalide" }).int("Prix invalide").min(0, "Prix invalide").max(1_000_000_000, "Prix trop élevé"),
+  price_gnf: z.coerce
+    .number({ message: "Prix invalide" })
+    .int("Prix invalide")
+    .min(0, "Prix invalide")
+    .max(1_000_000_000, "Prix trop élevé"),
   is_negotiable: z.literal("on").optional(),
   description: z.string().trim().max(2000, "2000 caractères maximum").optional().default(""),
   district: z.string().trim().max(60).optional(),
@@ -28,7 +32,10 @@ const schema = z.object({
     .refine(isValidPhone, "Numéro invalide"),
   images: z.string().transform((s, ctx) => {
     try {
-      return z.array(imageSchema).max(5).parse(JSON.parse(s || "[]"));
+      return z
+        .array(imageSchema)
+        .max(5)
+        .parse(JSON.parse(s || "[]"));
     } catch {
       ctx.addIssue({ code: "custom", message: "Photos invalides" });
       return z.NEVER;
@@ -71,7 +78,11 @@ export async function saveItem(_prev: FormState, formData: FormData): Promise<Fo
 
   let itemId = d.id || null;
   if (itemId) {
-    const { data: existing } = await supabase.from("marketplace_items").select("id, seller_id, images:marketplace_images(id, storage_path)").eq("id", itemId).single();
+    const { data: existing } = await supabase
+      .from("marketplace_items")
+      .select("id, seller_id, images:marketplace_images(id, storage_path)")
+      .eq("id", itemId)
+      .single();
     if (!existing || existing.seller_id !== uid) return { error: "Annonce introuvable." };
     const { error } = await supabase.from("marketplace_items").update(row).eq("id", itemId);
     if (error) return { error: error.message.includes("modération") ? error.message : "Mise à jour impossible.", values };

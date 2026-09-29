@@ -11,20 +11,23 @@ export const metadata: Metadata = { title: { default: "Administration", template
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await requireAdmin();
   const supabase = await createClient();
-  const { count } = await supabase.from("student_verifications").select("id", { count: "exact", head: true }).eq("status", "pending");
+  const { count } = await supabase
+    .from("student_verifications")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "pending");
 
   return (
-    <div className="min-h-dvh bg-canvas">
-      <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur">
+    <div className="bg-canvas min-h-dvh">
+      <header className="border-line sticky top-0 z-30 border-b bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
           <Link href="/admin" className="flex items-center gap-2">
             <Logo className="[&_span]:text-xl [&_svg]:size-7" />
-            <span className="rounded-lg bg-ink px-2 py-0.5 text-xs font-bold text-white">Admin</span>
+            <span className="bg-ink rounded-lg px-2 py-0.5 text-xs font-bold text-white">Admin</span>
           </Link>
-          <span className="ml-auto hidden truncate text-sm text-muted sm:block">
+          <span className="text-muted ml-auto hidden truncate text-sm sm:block">
             {admin.first_name} {admin.last_name}
           </span>
-          <Link href="/accueil" className="flex items-center gap-1 text-sm font-semibold text-brand-600">
+          <Link href="/accueil" className="text-brand-600 flex items-center gap-1 text-sm font-semibold">
             <ArrowLeft className="size-4" /> App
           </Link>
         </div>

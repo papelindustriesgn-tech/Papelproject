@@ -33,7 +33,10 @@ test("admin : statistiques, CRUD avantage, masquage, modération", async ({ page
   await page.goto(`/admin/avantages?q=${run}`);
   await page.getByRole("button", { name: "Masquer" }).first().click();
   await expect(page.locator("li", { hasText: `Offre test admin ${run}` }).getByText("Masqué")).toBeVisible();
-  await page.locator("li", { hasText: `Offre test admin ${run}` }).getByRole("link", { name: "Modifier" }).click();
+  await page
+    .locator("li", { hasText: `Offre test admin ${run}` })
+    .getByRole("link", { name: "Modifier" })
+    .click();
   page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Supprimer" }).click();
   await expect(page).toHaveURL(/supprime=1/);
@@ -54,7 +57,10 @@ test("admin : statistiques, CRUD avantage, masquage, modération", async ({ page
   await expect(page.getByText(`Job test admin ${run}`)).toBeVisible();
 
   // Nettoyage : suppression des contenus de test
-  for (const [entity, label] of [["logements", `Logement test admin ${run}`], ["jobs", `Job test admin ${run}`]]) {
+  for (const [entity, label] of [
+    ["logements", `Logement test admin ${run}`],
+    ["jobs", `Job test admin ${run}`],
+  ]) {
     await page.goto(`/admin/${entity}?q=${run}`);
     await page.locator("li", { hasText: label }).getByRole("link", { name: "Modifier" }).click();
     page.once("dialog", (d) => d.accept());

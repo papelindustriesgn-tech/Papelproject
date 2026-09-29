@@ -83,11 +83,13 @@ export function VerificationForm({ userId }: { userId: string }) {
         <button
           type="button"
           onClick={() => input.current?.click()}
-          className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50/40 px-4 py-6 text-center hover:bg-brand-50"
+          className="border-brand-200 bg-brand-50/40 hover:bg-brand-50 flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-4 py-6 text-center"
         >
-          <FileUp className="size-7 text-brand-600" aria-hidden />
-          <span className="max-w-full truncate text-sm font-semibold text-brand-800">{file ? file.name : "Prendre une photo ou choisir un fichier"}</span>
-          <span className="text-xs text-muted">JPG, PNG, WebP ou PDF · 5 Mo max</span>
+          <FileUp className="text-brand-600 size-7" aria-hidden />
+          <span className="text-brand-800 max-w-full truncate text-sm font-semibold">
+            {file ? file.name : "Prendre une photo ou choisir un fichier"}
+          </span>
+          <span className="text-muted text-xs">JPG, PNG, WebP ou PDF · 5 Mo max</span>
         </button>
         <input
           ref={input}

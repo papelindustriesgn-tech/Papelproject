@@ -12,9 +12,16 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const profileSchema = z.object({
   first_name: z.string().trim().min(1, "Prénom requis").max(60),
   last_name: z.string().trim().min(1, "Nom requis").max(60),
-  birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide").or(z.literal("")),
+  birth_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide")
+    .or(z.literal("")),
   gender: z.enum(["female", "male", "other", ""]),
-  phone: z.string().trim().transform((v) => normalizePhone(v)).refine(isValidPhone, "Numéro invalide"),
+  phone: z
+    .string()
+    .trim()
+    .transform((v) => normalizePhone(v))
+    .refine(isValidPhone, "Numéro invalide"),
   university_id: z.string(),
   university_other: z.string().trim().max(120).optional(),
   field_of_study: z.string().trim().min(2, "Filière requise").max(120),
@@ -33,7 +40,12 @@ export async function updateProfile(_prev: FormState, formData: FormData): Promi
 
   const { data: current } = await supabase.from("profiles").select("verification_status, phone").eq("id", auth.user.id).single();
   if (d.phone !== current?.phone) {
-    const { data: taken } = await createAdminClient().from("profiles").select("id").eq("phone", d.phone).neq("id", auth.user.id).maybeSingle();
+    const { data: taken } = await createAdminClient()
+      .from("profiles")
+      .select("id")
+      .eq("phone", d.phone)
+      .neq("id", auth.user.id)
+      .maybeSingle();
     if (taken) return { error: "Ce numéro est déjà utilisé.", fieldErrors: { phone: "Numéro déjà utilisé" }, values };
   }
 
@@ -56,7 +68,10 @@ export async function updateProfile(_prev: FormState, formData: FormData): Promi
           university_other: d.university_id === "other" ? d.university_other || null : null,
         };
 
-  const { error } = await supabase.from("profiles").update({ ...base, ...identity }).eq("id", auth.user.id);
+  const { error } = await supabase
+    .from("profiles")
+    .update({ ...base, ...identity })
+    .eq("id", auth.user.id);
   if (error) return { error: error.message.includes("verrouillée") ? error.message : "Enregistrement impossible.", values };
   revalidatePath("/", "layout");
   return { ok: true, message: "Profil mis à jour ✅" };
@@ -74,7 +89,9 @@ export async function setAvatar(url: string | null) {
 }
 
 const verificationSchema = z.object({
-  document_type: z.enum(["student_card", "enrollment_certificate", "registration_certificate", "other"], { message: "Choisis le type de document" }),
+  document_type: z.enum(["student_card", "enrollment_certificate", "registration_certificate", "other"], {
+    message: "Choisis le type de document",
+  }),
   document_path: z.string().min(5, "Ajoute ton justificatif"),
   note: z.string().trim().max(500).optional(),
 });
@@ -136,11 +153,21 @@ export async function changePassword(_prev: FormState, formData: FormData): Prom
 }
 
 export async function changeEmail(_prev: FormState, formData: FormData): Promise<FormState> {
-  const email = z.email().safeParse(String(formData.get("email") ?? "").trim().toLowerCase());
+  const email = z.email().safeParse(
+    String(formData.get("email") ?? "")
+      .trim()
+      .toLowerCase(),
+  );
   if (!email.success) return { fieldErrors: { email: "Email invalide" } };
   const supabase = await createClient();
-  const { error } = await supabase.auth.updateUser({ email: email.data }, { emailRedirectTo: `${SITE_URL}/auth/confirm?next=/profil/securite` });
-  if (error) return { error: error.status === 429 ? "Patiente un peu avant de réessayer." : "Changement impossible (email déjà utilisé ?)." };
+  const { error } = await supabase.auth.updateUser(
+    { email: email.data },
+    { emailRedirectTo: `${SITE_URL}/auth/confirm?next=/profil/securite` },
+  );
+  if (error)
+    return {
+      error: error.status === 429 ? "Patiente un peu avant de réessayer." : "Changement impossible (email déjà utilisé ?).",
+    };
   return { ok: true, message: "Un email de confirmation a été envoyé à ta nouvelle adresse (et à l'ancienne)." };
 }
 

@@ -8,6 +8,9 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { ENTITIES, isEntity, type EntityKey, type FieldSpec } from "@/lib/admin-entities";
 import { formValues, type FormState } from "@/lib/actions/types";
+import { safeImage } from "@/lib/images";
+
+const HOST_ERROR = "Image refusée : utilise « Ajouter » (stockage Uny) ou une URL images.unsplash.com.";
 
 function parseField(f: FieldSpec, raw: FormDataEntryValue | null): { value?: unknown; error?: string } {
   const s = typeof raw === "string" ? raw.trim() : "";
@@ -27,10 +30,22 @@ function parseField(f: FieldSpec, raw: FormDataEntryValue | null): { value?: unk
       if (!s) return required ? { error: "Champ requis" } : { value: null };
       return /^\d{4}-\d{2}-\d{2}$/.test(s) ? { value: s } : { error: "Date invalide" };
     case "tags":
-      return { value: s ? s.split(",").map((t) => t.trim()).filter(Boolean).slice(0, 20) : [] };
+      return {
+        value: s
+          ? s
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)
+              .slice(0, 20)
+          : [],
+      };
     case "images": {
       try {
-        const arr = z.array(z.url()).max(f.max ?? 8).parse(JSON.parse(s || "[]"));
+        const arr = z
+          .array(z.url())
+          .max(f.max ?? 8)
+          .parse(JSON.parse(s || "[]"));
+        if (arr.some((u) => !safeImage(u))) return { error: HOST_ERROR };
         return { value: arr };
       } catch {
         return { error: "Photos invalides" };
@@ -38,7 +53,7 @@ function parseField(f: FieldSpec, raw: FormDataEntryValue | null): { value?: unk
     }
     case "image":
       if (!s) return { value: null };
-      return z.url().safeParse(s).success ? { value: s } : { error: "URL invalide" };
+      return safeImage(s) ? { value: s } : { error: HOST_ERROR };
     case "select":
       if (!s) return required ? { error: "Champ requis" } : { value: null };
       if (Array.isArray(f.options) && !f.options.some((o) => o.value === s)) return { error: "Valeur invalide" };
@@ -67,7 +82,8 @@ export async function saveEntity(entity: EntityKey, id: string | null, _prev: Fo
   }
   // Champs texte non nulls en base
   for (const k of ["description", "conditions"]) if (k in row && row[k] === null) row[k] = "";
-  if (Object.keys(fieldErrors).length) return { error: "Vérifie les champs indiqués.", fieldErrors, values: formValues(formData) };
+  if (Object.keys(fieldErrors).length)
+    return { error: "Vérifie les champs indiqués.", fieldErrors, values: formValues(formData) };
 
   const supabase = await createClient();
   const { data: city } = await supabase.from("cities").select("id").eq("slug", "conakry").single();
@@ -75,8 +91,15 @@ export async function saveEntity(entity: EntityKey, id: string | null, _prev: Fo
 
   const table = supabase.from(cfg.table);
   const res = id
-    ? await table.update(row as never).eq("id", id).select("id").single()
-    : await table.insert(row as never).select("id").single();
+    ? await table
+        .update(row as never)
+        .eq("id", id)
+        .select("id")
+        .single()
+    : await table
+        .insert(row as never)
+        .select("id")
+        .single();
   if (res.error) return { error: `Enregistrement impossible : ${res.error.message}`, values: formValues(formData) };
 
   updateTag(CONTENT_TAG);
@@ -100,7 +123,10 @@ export async function toggleEntity(entity: EntityKey, id: string, active: boolea
   await requireAdmin();
   if (!isEntity(entity) || !z.uuid().safeParse(id).success) return;
   const supabase = await createClient();
-  await supabase.from(ENTITIES[entity].table).update({ is_active: active } as never).eq("id", id);
+  await supabase
+    .from(ENTITIES[entity].table)
+    .update({ is_active: active } as never)
+    .eq("id", id);
   updateTag(CONTENT_TAG);
   revalidatePath(`/admin/${entity}`);
   revalidatePath("/", "layout");

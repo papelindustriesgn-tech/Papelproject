@@ -1,7 +1,8 @@
-import Image from "next/image";
+import Image from "@/components/ui/safe-image";
 import { BadgeCheck, Clock3, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { initials } from "@/lib/format";
+import { safeImage } from "@/lib/images";
 import type { VerificationStatus } from "@/lib/constants";
 
 export type UnyCardData = {
@@ -60,8 +61,8 @@ export function UnyCard({ data, className, sample = false }: { data: UnyCardData
           {/* Identité + QR */}
           <div className="flex min-h-0 flex-1 items-center gap-[3.5cqw]">
             <div className="relative size-[17cqw] shrink-0 overflow-hidden rounded-[3.5cqw] bg-white/20 ring-[0.6cqw] ring-white/40">
-              {data.photoUrl ? (
-                <Image src={data.photoUrl} alt="" fill sizes="96px" className="object-cover" />
+              {safeImage(data.photoUrl) ? (
+                <Image src={data.photoUrl!} alt="" fill sizes="96px" className="object-cover" />
               ) : (
                 <span className="flex h-full items-center justify-center text-[6cqw] font-extrabold">
                   {initials(data.firstName, data.lastName)}

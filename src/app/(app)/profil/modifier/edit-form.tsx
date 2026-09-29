@@ -8,7 +8,16 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { GENDERS, STUDY_LEVELS } from "@/lib/constants";
 
 type Defaults = Record<
-  "first_name" | "last_name" | "birth_date" | "gender" | "phone" | "university_id" | "university_other" | "field_of_study" | "study_level" | "city_id",
+  | "first_name"
+  | "last_name"
+  | "birth_date"
+  | "gender"
+  | "phone"
+  | "university_id"
+  | "university_other"
+  | "field_of_study"
+  | "study_level"
+  | "city_id",
   string
 >;
 
@@ -32,9 +41,10 @@ export function EditProfileForm({
     <form action={action} className="space-y-4">
       <FormMessage type={state.ok ? "success" : "error"}>{state.message ?? state.error}</FormMessage>
       {locked && (
-        <p className="flex items-start gap-2 rounded-2xl bg-brand-50 p-3 text-sm text-brand-900">
+        <p className="bg-brand-50 text-brand-900 flex items-start gap-2 rounded-2xl p-3 text-sm">
           <Lock className="mt-0.5 size-4 shrink-0" aria-hidden />
-          Ton statut est vérifié : nom, date de naissance et établissement sont verrouillés. Contacte le support pour les corriger.
+          Ton statut est vérifié : nom, date de naissance et établissement sont verrouillés. Contacte le support pour les
+          corriger.
         </p>
       )}
       <div className="grid grid-cols-2 gap-3">

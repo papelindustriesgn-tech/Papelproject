@@ -10,7 +10,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navigation principale"
-      className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line/80 bg-white/95 backdrop-blur-lg lg:hidden"
+      className="pb-safe border-line/80 fixed inset-x-0 bottom-0 z-40 border-t bg-white/95 backdrop-blur-lg lg:hidden"
     >
       <ul className="mx-auto grid h-16 max-w-lg grid-cols-5">
         {MOBILE_NAV.map(({ href, label, icon: Icon }) => {
@@ -26,10 +26,7 @@ export function BottomNav() {
                 )}
               >
                 <span
-                  className={cn(
-                    "flex h-7 w-12 items-center justify-center rounded-full transition",
-                    active && "bg-brand-50",
-                  )}
+                  className={cn("flex h-7 w-12 items-center justify-center rounded-full transition", active && "bg-brand-50")}
                 >
                   <Icon className="size-[22px]" strokeWidth={active ? 2.4 : 2} aria-hidden />
                 </span>

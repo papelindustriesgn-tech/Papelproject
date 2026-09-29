@@ -15,7 +15,11 @@ async function markAllRead() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) return;
-  await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", data.user.id).is("read_at", null);
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("user_id", data.user.id)
+    .is("read_at", null);
   revalidatePath("/", "layout");
 }
 
@@ -29,18 +33,23 @@ const ICONS: Record<string, string> = {
 export default async function NotificationsPage() {
   const p = await requireProfile();
   const supabase = await createClient();
-  const { data } = await supabase.from("notifications").select("*").eq("user_id", p.id).order("created_at", { ascending: false }).limit(50);
+  const { data } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", p.id)
+    .order("created_at", { ascending: false })
+    .limit(50);
   const items = data ?? [];
   const unread = items.some((n) => !n.read_at);
 
   return (
-    <div className="mx-auto max-w-2xl animate-fade-up">
+    <div className="animate-fade-up mx-auto max-w-2xl">
       <PageTitle
         title="Notifications"
         action={
           unread ? (
             <form action={markAllRead}>
-              <button className="text-sm font-semibold text-brand-600 hover:underline">Tout marquer comme lu</button>
+              <button className="text-brand-600 text-sm font-semibold hover:underline">Tout marquer comme lu</button>
             </form>
           ) : undefined
         }
@@ -52,20 +61,29 @@ export default async function NotificationsPage() {
           {items.map((n) => {
             const inner = (
               <div className={cn("flex gap-3 px-4 py-4", !n.read_at && "bg-brand-50/60")}>
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-lg ring-1 ring-line" aria-hidden>
+                <span
+                  className="ring-line flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-lg ring-1"
+                  aria-hidden
+                >
                   {ICONS[n.type] ?? "🔔"}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold">{n.title}</p>
-                  {n.body && <p className="text-sm text-ink/75">{n.body}</p>}
-                  <p className="mt-1 text-xs text-muted">{timeAgo(n.created_at)}</p>
+                  {n.body && <p className="text-ink/75 text-sm">{n.body}</p>}
+                  <p className="text-muted mt-1 text-xs">{timeAgo(n.created_at)}</p>
                 </div>
-                {!n.read_at && <span className="mt-2 size-2.5 shrink-0 rounded-full bg-coral-500" aria-label="Non lue" />}
+                {!n.read_at && <span className="bg-coral-500 mt-2 size-2.5 shrink-0 rounded-full" aria-label="Non lue" />}
               </div>
             );
             return (
-              <li key={n.id} className="border-b border-line last:border-0">
-                {n.link ? <Link href={n.link} className="block hover:bg-canvas">{inner}</Link> : inner}
+              <li key={n.id} className="border-line border-b last:border-0">
+                {n.link ? (
+                  <Link href={n.link} className="hover:bg-canvas block">
+                    {inner}
+                  </Link>
+                ) : (
+                  inner
+                )}
               </li>
             );
           })}

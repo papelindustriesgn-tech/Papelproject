@@ -41,7 +41,9 @@ async function loadContent() {
       .limit(3),
     supabase
       .from("marketplace_items")
-      .select("id, title, category, price_gnf, condition, district, created_at, is_demo, status, images:marketplace_images(url, position)")
+      .select(
+        "id, title, category, price_gnf, condition, district, created_at, is_demo, status, images:marketplace_images(url, position)",
+      )
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(8),
@@ -56,19 +58,25 @@ export default async function LandingPage() {
   return (
     <>
       {/* HERO */}
-      <section className="relative overflow-hidden bg-canvas">
-        <div className="pointer-events-none absolute -top-32 -right-32 size-[28rem] rounded-full bg-brand-200/50 blur-3xl" aria-hidden />
-        <div className="pointer-events-none absolute -bottom-40 -left-24 size-[22rem] rounded-full bg-mango-100/80 blur-3xl" aria-hidden />
+      <section className="bg-canvas relative overflow-hidden">
+        <div
+          className="bg-brand-200/50 pointer-events-none absolute -top-32 -right-32 size-[28rem] rounded-full blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="bg-mango-100/80 pointer-events-none absolute -bottom-40 -left-24 size-[22rem] rounded-full blur-3xl"
+          aria-hidden
+        />
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pt-10 pb-16 md:grid-cols-2 md:pt-20 md:pb-24">
           <div className="animate-fade-up">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-brand-700 shadow-[var(--shadow-card)]">
-              <span className="size-2 rounded-full bg-mint-500" aria-hidden /> Version pilote — Conakry, Guinée
+            <span className="text-brand-700 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold shadow-[var(--shadow-card)]">
+              <span className="bg-mint-500 size-2 rounded-full" aria-hidden /> Version pilote — Conakry, Guinée
             </span>
-            <h1 className="mt-5 text-[2.5rem] leading-[1.05] font-extrabold tracking-tight text-ink sm:text-5xl lg:text-6xl">
+            <h1 className="text-ink mt-5 text-[2.5rem] leading-[1.05] font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
               Ton statut étudiant devient un <span className="text-brand-600">avantage</span>
               <span className="text-mango-400">.</span>
             </h1>
-            <p className="mt-5 max-w-lg text-lg leading-relaxed text-muted">
+            <p className="text-muted mt-5 max-w-lg text-lg leading-relaxed">
               Réductions, jobs, logements, bons plans et carte étudiante digitale réunis dans une seule application.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -79,7 +87,7 @@ export default async function LandingPage() {
                 Découvrir Uny
               </LinkButton>
             </div>
-            <p className="mt-4 text-sm text-muted">Gratuit · Inscription en moins de 3 minutes</p>
+            <p className="text-muted mt-4 text-sm">Gratuit · Inscription en moins de 3 minutes</p>
           </div>
           <div className="relative mx-auto w-full max-w-md md:max-w-none">
             <div className="rotate-[-4deg] transition duration-500 hover:rotate-0">
@@ -112,7 +120,9 @@ export default async function LandingPage() {
       {/* POURQUOI */}
       <section id="decouvrir" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16">
         <h2 className="max-w-2xl text-3xl font-extrabold tracking-tight sm:text-4xl">Une app, toute ta vie étudiante.</h2>
-        <p className="mt-3 max-w-2xl text-muted">Uny réunit tout ce dont un étudiant a besoin au quotidien, pensé pour ton téléphone et les petites connexions.</p>
+        <p className="text-muted mt-3 max-w-2xl">
+          Uny réunit tout ce dont un étudiant a besoin au quotidien, pensé pour ton téléphone et les petites connexions.
+        </p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {[
             { e: "🎫", t: "Uny Card", d: "Ta carte étudiante digitale avec QR code vérifiable." },
@@ -121,17 +131,19 @@ export default async function LandingPage() {
             { e: "🏠", t: "Logement", d: "Chambres, studios et colocations à Conakry." },
             { e: "🛍️", t: "Marketplace", d: "Achète et vends entre étudiants." },
           ].map((f) => (
-            <div key={f.t} className="rounded-[var(--radius-card)] bg-canvas p-5">
-              <span className="text-3xl" aria-hidden>{f.e}</span>
+            <div key={f.t} className="bg-canvas rounded-[var(--radius-card)] p-5">
+              <span className="text-3xl" aria-hidden>
+                {f.e}
+              </span>
               <h3 className="mt-3 font-extrabold">{f.t}</h3>
-              <p className="mt-1 text-sm text-muted">{f.d}</p>
+              <p className="text-muted mt-1 text-sm">{f.d}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* AVANTAGES */}
-      <section id="avantages" className="scroll-mt-20 bg-canvas py-16">
+      <section id="avantages" className="bg-canvas scroll-mt-20 py-16">
         <div className="mx-auto max-w-6xl px-4">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Des avantages partout où tu vas.</h2>
           <ul className="mt-6 flex flex-wrap gap-2">
@@ -153,7 +165,7 @@ export default async function LandingPage() {
       </section>
 
       {/* UNY CARD */}
-      <section id="carte" className="scroll-mt-20 overflow-hidden bg-brand-950 py-16 text-white">
+      <section id="carte" className="bg-brand-950 scroll-mt-20 overflow-hidden py-16 text-white">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-2">
           <div className="order-2 md:order-1">
             <div className="mx-auto max-w-sm">
@@ -175,13 +187,25 @@ export default async function LandingPage() {
             </div>
           </div>
           <div className="order-1 md:order-2">
-            <p className="text-sm font-bold tracking-widest text-mango-400 uppercase">Uny Card</p>
+            <p className="text-mango-400 text-sm font-bold tracking-widest uppercase">Uny Card</p>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Ta carte étudiante, dans ta poche.</h2>
-            <ul className="mt-6 space-y-4 text-brand-100">
-              <li className="flex gap-3"><BadgeCheck className="size-6 shrink-0 text-mint-500" aria-hidden /> Statut « Étudiant vérifié » après contrôle de ton justificatif.</li>
-              <li className="flex gap-3"><QrCode className="size-6 shrink-0 text-mango-400" aria-hidden /> QR code unique : les partenaires vérifient l&apos;authenticité en un scan.</li>
-              <li className="flex gap-3"><Smartphone className="size-6 shrink-0 text-brand-300" aria-hidden /> Toujours accessible, même installée comme une app sur ton téléphone.</li>
-              <li className="flex gap-3"><ShieldCheck className="size-6 shrink-0 text-brand-300" aria-hidden /> Identifiant Uny unique, prêt pour toute l&apos;Afrique : GN, SN, CI…</li>
+            <ul className="text-brand-100 mt-6 space-y-4">
+              <li className="flex gap-3">
+                <BadgeCheck className="text-mint-500 size-6 shrink-0" aria-hidden /> Statut « Étudiant vérifié » après contrôle de
+                ton justificatif.
+              </li>
+              <li className="flex gap-3">
+                <QrCode className="text-mango-400 size-6 shrink-0" aria-hidden /> QR code unique : les partenaires vérifient
+                l&apos;authenticité en un scan.
+              </li>
+              <li className="flex gap-3">
+                <Smartphone className="text-brand-300 size-6 shrink-0" aria-hidden /> Toujours accessible, même installée comme
+                une app sur ton téléphone.
+              </li>
+              <li className="flex gap-3">
+                <ShieldCheck className="text-brand-300 size-6 shrink-0" aria-hidden /> Identifiant Uny unique, prêt pour toute
+                l&apos;Afrique : GN, SN, CI…
+              </li>
             </ul>
             <LinkButton href="/inscription" variant="mango" size="lg" className="mt-8 w-full sm:w-auto">
               Obtenir ma carte
@@ -193,7 +217,9 @@ export default async function LandingPage() {
       {/* JOBS */}
       <section id="jobs" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16">
         <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Jobs, stages & opportunités.</h2>
-        <p className="mt-3 max-w-2xl text-muted">Commercial étudiant, community manager, stage marketing ou finance, développeur junior… Trouve ton premier pas pro.</p>
+        <p className="text-muted mt-3 max-w-2xl">
+          Commercial étudiant, community manager, stage marketing ou finance, développeur junior… Trouve ton premier pas pro.
+        </p>
         <div className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {jobs.map((j) => (
             <JobCard key={j.id} job={j} />
@@ -205,10 +231,12 @@ export default async function LandingPage() {
       </section>
 
       {/* LOGEMENT */}
-      <section id="logement" className="scroll-mt-20 bg-canvas py-16">
+      <section id="logement" className="bg-canvas scroll-mt-20 py-16">
         <div className="mx-auto max-w-6xl px-4">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Trouve ton logement étudiant à Conakry.</h2>
-          <p className="mt-3 max-w-2xl text-muted">Chambres, studios, colocations et appartements, filtrés par budget et par quartier.</p>
+          <p className="text-muted mt-3 max-w-2xl">
+            Chambres, studios, colocations et appartements, filtrés par budget et par quartier.
+          </p>
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {housing.map((h) => (
               <HousingCard key={h.id} home={h} />
@@ -223,7 +251,9 @@ export default async function LandingPage() {
       {/* MARKETPLACE */}
       <section id="marketplace" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16">
         <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Achète et vends entre étudiants.</h2>
-        <p className="mt-3 max-w-2xl text-muted">Téléphones, ordinateurs, livres, meubles, vêtements, fournitures… Donne une seconde vie à tes affaires.</p>
+        <p className="text-muted mt-3 max-w-2xl">
+          Téléphones, ordinateurs, livres, meubles, vêtements, fournitures… Donne une seconde vie à tes affaires.
+        </p>
         <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4">
           {market.map((m) => (
             <ItemCard key={m.id} item={toItemCard(m)} />
@@ -233,23 +263,29 @@ export default async function LandingPage() {
           Explorer la marketplace <ArrowRight className="size-4" />
         </LinkButton>
         {hasDemo && (
-          <p className="mt-10 rounded-2xl bg-canvas px-4 py-3 text-xs text-muted">
-            <strong className="text-ink">Version pilote :</strong> les offres, entreprises et annonces marquées « Démo » sont des exemples fictifs présentés à titre de démonstration. Elles ne représentent pas des partenariats signés avec Uny.
+          <p className="bg-canvas text-muted mt-10 rounded-2xl px-4 py-3 text-xs">
+            <strong className="text-ink">Version pilote :</strong> les offres, entreprises et annonces marquées « Démo » sont des
+            exemples fictifs présentés à titre de démonstration. Elles ne représentent pas des partenariats signés avec Uny.
           </p>
         )}
       </section>
 
       {/* CTA */}
       <section className="px-4 pb-16">
-        <div className="uny-pattern mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-800 via-brand-700 to-brand-500 px-6 py-14 text-center text-white">
-          <Sparkles className="mx-auto size-8 text-mango-400" aria-hidden />
+        <div className="uny-pattern from-brand-800 via-brand-700 to-brand-500 mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-gradient-to-br px-6 py-14 text-center text-white">
+          <Sparkles className="text-mango-400 mx-auto size-8" aria-hidden />
           <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">Rejoins la communauté Uny</h2>
-          <p className="mx-auto mt-3 max-w-md text-brand-100">Inscription gratuite. Ta carte étudiante digitale est prête en quelques minutes.</p>
+          <p className="text-brand-100 mx-auto mt-3 max-w-md">
+            Inscription gratuite. Ta carte étudiante digitale est prête en quelques minutes.
+          </p>
           <LinkButton href="/inscription" variant="mango" size="lg" className="mt-8 w-full sm:w-auto">
             Créer mon compte
           </LinkButton>
-          <p className="mt-4 text-sm text-brand-200">
-            Déjà membre ? <Link href="/connexion" className="font-bold text-white underline">Se connecter</Link>
+          <p className="text-brand-200 mt-4 text-sm">
+            Déjà membre ?{" "}
+            <Link href="/connexion" className="font-bold text-white underline">
+              Se connecter
+            </Link>
           </p>
         </div>
       </section>

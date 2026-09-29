@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/safe-image";
 import { useActionState, useRef, useState } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import type { FieldSpec } from "@/lib/admin-entities";
@@ -16,7 +16,9 @@ async function uploadContent(file: File) {
   const blob = await compressImage(file, 1600, 0.82);
   const supabase = createClient();
   const path = `admin/${randomName("jpg")}`;
-  const { error } = await supabase.storage.from("content").upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
+  const { error } = await supabase.storage
+    .from("content")
+    .upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
   if (error) throw error;
   return supabase.storage.from("content").getPublicUrl(path).data.publicUrl;
 }
@@ -31,15 +33,24 @@ function ImagesField({ name, initial, max, single }: { name: string; initial: st
       <input type="hidden" name={name} value={single ? (urls[0] ?? "") : JSON.stringify(urls)} />
       <div className="flex flex-wrap gap-2">
         {urls.map((u) => (
-          <div key={u} className="relative size-24 overflow-hidden rounded-xl bg-canvas ring-1 ring-line">
+          <div key={u} className="bg-canvas ring-line relative size-24 overflow-hidden rounded-xl ring-1">
             <Image src={u} alt="" fill sizes="96px" className="object-cover" />
-            <button type="button" onClick={() => setUrls((x) => x.filter((y) => y !== u))} className="absolute top-1 right-1 flex size-6 items-center justify-center rounded-full bg-white shadow" aria-label="Retirer">
+            <button
+              type="button"
+              onClick={() => setUrls((x) => x.filter((y) => y !== u))}
+              className="absolute top-1 right-1 flex size-6 items-center justify-center rounded-full bg-white shadow"
+              aria-label="Retirer"
+            >
               <X className="size-3.5" />
             </button>
           </div>
         ))}
         {urls.length < max && (
-          <button type="button" onClick={() => input.current?.click()} className="flex size-24 flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-brand-200 text-xs font-semibold text-brand-700">
+          <button
+            type="button"
+            onClick={() => input.current?.click()}
+            className="border-brand-200 text-brand-700 flex size-24 flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed text-xs font-semibold"
+          >
             {busy ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5" />}
             Ajouter
           </button>
@@ -67,9 +78,7 @@ function ImagesField({ name, initial, max, single }: { name: string; initial: st
           }
         }}
       />
-      {!single && (
-        <p className="mt-1 text-xs text-muted">Ou colle des URL d&apos;images (une par ligne) :</p>
-      )}
+      {!single && <p className="text-muted mt-1 text-xs">Ou colle des URL d&apos;images (une par ligne) :</p>}
       {!single && (
         <Textarea
           aria-label="URL d'images"
@@ -94,7 +103,7 @@ function ImagesField({ name, initial, max, single }: { name: string; initial: st
           }}
         />
       )}
-      {err && <p className="mt-1 text-sm text-coral-600">{err}</p>}
+      {err && <p className="text-coral-600 mt-1 text-sm">{err}</p>}
     </div>
   );
 }
@@ -126,23 +135,35 @@ export function EntityForm({
         if (f.type === "checkbox") {
           const checked = state.values ? v === "on" : v === undefined ? !!f.defaultValue : !!v;
           return (
-            <label key={f.name} className="flex items-start gap-3 rounded-2xl bg-canvas p-3 text-sm">
-              <input type="checkbox" name={f.name} defaultChecked={checked} className="mt-0.5 size-5 accent-brand-600" />
+            <label key={f.name} className="bg-canvas flex items-start gap-3 rounded-2xl p-3 text-sm">
+              <input type="checkbox" name={f.name} defaultChecked={checked} className="accent-brand-600 mt-0.5 size-5" />
               <span>
                 <span className="font-semibold">{f.label}</span>
-                {f.hint && <span className="block text-xs text-muted">{f.hint}</span>}
+                {f.hint && <span className="text-muted block text-xs">{f.hint}</span>}
               </span>
             </label>
           );
         }
         return (
-          <Field key={f.name} label={f.label} htmlFor={f.name} error={fe[f.name]} hint={"hint" in f ? f.hint : undefined} optional={!("required" in f && f.required) && !["image", "images", "tags"].includes(f.type)}>
+          <Field
+            key={f.name}
+            label={f.label}
+            htmlFor={f.name}
+            error={fe[f.name]}
+            hint={"hint" in f ? f.hint : undefined}
+            optional={!("required" in f && f.required) && !["image", "images", "tags"].includes(f.type)}
+          >
             {f.type === "textarea" ? (
               <Textarea id={f.name} name={f.name} defaultValue={(v as string) ?? ""} maxLength={f.max} rows={4} />
             ) : f.type === "select" ? (
               <Select id={f.name} name={f.name} defaultValue={(v as string) ?? ""} required={f.required}>
                 <option value="">—</option>
-                {(f.options === "partners" ? partners.map((p) => ({ value: p.id, label: p.name })) : f.options === "districts" ? districts.map((d) => ({ value: d, label: d })) : f.options).map((o) => (
+                {(f.options === "partners"
+                  ? partners.map((p) => ({ value: p.id, label: p.name }))
+                  : f.options === "districts"
+                    ? districts.map((d) => ({ value: d, label: d }))
+                    : f.options
+                ).map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}
                   </option>
@@ -151,7 +172,11 @@ export function EntityForm({
             ) : f.type === "tags" ? (
               <Input id={f.name} name={f.name} defaultValue={Array.isArray(v) ? v.join(", ") : ((v as string) ?? "")} />
             ) : f.type === "images" ? (
-              <ImagesField name={f.name} initial={Array.isArray(v) ? (v as string[]) : typeof v === "string" && v ? (JSON.parse(v) as string[]) : []} max={f.max ?? 8} />
+              <ImagesField
+                name={f.name}
+                initial={Array.isArray(v) ? (v as string[]) : typeof v === "string" && v ? (JSON.parse(v) as string[]) : []}
+                max={f.max ?? 8}
+              />
             ) : f.type === "image" ? (
               <ImagesField name={f.name} initial={v ? [v as string] : []} max={1} single />
             ) : (

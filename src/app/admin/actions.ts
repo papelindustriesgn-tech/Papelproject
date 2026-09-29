@@ -14,7 +14,9 @@ export async function reviewVerification(_prev: FormState, formData: FormData): 
   await requireAdmin();
   const id = z.uuid().safeParse(formData.get("id"));
   const decision = formData.get("decision");
-  const reason = String(formData.get("reason") ?? "").trim().slice(0, 500);
+  const reason = String(formData.get("reason") ?? "")
+    .trim()
+    .slice(0, 500);
   if (!id.success || (decision !== "approve" && decision !== "reject")) return { error: "Requête invalide." };
   if (decision === "reject" && reason.length < 3) return { error: "Indique un motif de refus (visible par l'étudiant)." };
 
@@ -28,7 +30,10 @@ export async function reviewVerification(_prev: FormState, formData: FormData): 
 
   const { data: profile } = await supabase.from("profiles").select("email, first_name, uny_id").eq("id", data.user_id).single();
   if (profile?.email) {
-    const mail = decision === "approve" ? verificationApprovedEmail(profile.first_name, profile.uny_id) : verificationRejectedEmail(profile.first_name, reason);
+    const mail =
+      decision === "approve"
+        ? verificationApprovedEmail(profile.first_name, profile.uny_id)
+        : verificationRejectedEmail(profile.first_name, reason);
     after(() => sendEmail({ to: profile.email!, ...mail }));
   }
   updateTag(CONTENT_TAG);
@@ -57,7 +62,10 @@ export async function moderateItem(_prev: FormState, formData: FormData): Promis
   await requireAdmin();
   const id = z.uuid().safeParse(formData.get("id"));
   const action = String(formData.get("action"));
-  const note = String(formData.get("note") ?? "").trim().slice(0, 300) || null;
+  const note =
+    String(formData.get("note") ?? "")
+      .trim()
+      .slice(0, 300) || null;
   if (!id.success) return { error: "Requête invalide." };
   const supabase = await createClient();
   if (action === "delete") {

@@ -12,7 +12,7 @@ export default async function NewItemPage() {
   const supabase = await createClient();
   const { data: city } = await supabase.from("cities").select("districts").eq("slug", "conakry").single();
   return (
-    <div className="mx-auto max-w-2xl animate-fade-up">
+    <div className="animate-fade-up mx-auto max-w-2xl">
       <BackLink href="/marketplace" label="Marketplace" />
       <PageTitle title="Publier une annonce" subtitle="Vends ce dont tu n'as plus besoin à d'autres étudiants." />
       <div className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">

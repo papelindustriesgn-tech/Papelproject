@@ -52,7 +52,7 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
               </option>
             ))}
           </Select>
-          <button className="h-11 shrink-0 rounded-2xl bg-ink px-4 text-sm font-semibold text-white">Filtrer</button>
+          <button className="bg-ink h-11 shrink-0 rounded-2xl px-4 text-sm font-semibold text-white">Filtrer</button>
         </form>
       </div>
 
@@ -62,7 +62,11 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
             emoji="🏷️"
             title="Aucune offre trouvée"
             text="Essaie une autre catégorie ou un autre quartier."
-            action={<LinkButton href="/avantages" variant="secondary">Voir toutes les offres</LinkButton>}
+            action={
+              <LinkButton href="/avantages" variant="secondary">
+                Voir toutes les offres
+              </LinkButton>
+            }
           />
         ) : (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">

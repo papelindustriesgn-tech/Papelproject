@@ -17,11 +17,23 @@ export function SecurityForms({ email }: { email: string }) {
               <Field label="Mot de passe actuel" htmlFor="current_password" error={s.fieldErrors?.current_password}>
                 <Input id="current_password" name="current_password" type="password" autoComplete="current-password" required />
               </Field>
-              <Field label="Nouveau mot de passe" htmlFor="password" error={s.fieldErrors?.password} hint="8 caractères minimum, lettres et chiffres.">
+              <Field
+                label="Nouveau mot de passe"
+                htmlFor="password"
+                error={s.fieldErrors?.password}
+                hint="8 caractères minimum, lettres et chiffres."
+              >
                 <Input id="password" name="password" type="password" autoComplete="new-password" required minLength={8} />
               </Field>
               <Field label="Confirmation" htmlFor="password_confirm" error={s.fieldErrors?.password_confirm}>
-                <Input id="password_confirm" name="password_confirm" type="password" autoComplete="new-password" required minLength={8} />
+                <Input
+                  id="password_confirm"
+                  name="password_confirm"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                />
               </Field>
             </>
           )}
@@ -29,8 +41,8 @@ export function SecurityForms({ email }: { email: string }) {
       </section>
       <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <h2 className="font-bold">Adresse email</h2>
-        <p className="mt-1 mb-4 text-sm text-muted">
-          Actuelle : <strong className="break-all text-ink">{email}</strong>
+        <p className="text-muted mt-1 mb-4 text-sm">
+          Actuelle : <strong className="text-ink break-all">{email}</strong>
         </p>
         <ActionForm
           action={changeEmail}

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/ui/safe-image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Eye, EyeOff, Pencil, Plus } from "lucide-react";
@@ -21,7 +21,13 @@ export async function generateMetadata({ params }: { params: Promise<{ entity: s
   return { title: isEntity(entity) ? ENTITIES[entity].plural : "Admin" };
 }
 
-export default async function EntityList({ params, searchParams }: { params: Promise<{ entity: string }>; searchParams: Promise<SearchParams> }) {
+export default async function EntityList({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ entity: string }>;
+  searchParams: Promise<SearchParams>;
+}) {
   const { entity } = await params;
   if (!isEntity(entity)) notFound();
   const sp = await searchParams;
@@ -38,9 +44,12 @@ export default async function EntityList({ params, searchParams }: { params: Pro
     return src ? <Image src={src} alt="" fill sizes="56px" className="object-cover" /> : null;
   }
   function subtitle(r: Row) {
-    if (entity === "partenaires") return `${DEAL_CATEGORIES[r.category as keyof typeof DEAL_CATEGORIES]?.label} · ${r.district ?? "—"}`;
-    if (entity === "avantages") return `${(r.partner as { name: string } | null)?.name ?? "—"} · ${r.discount_label} · ${r.view_count} vues · ${r.valid_until ? `jusqu'au ${formatDate(r.valid_until as string)}` : "sans limite"}`;
-    if (entity === "jobs") return `${r.company_name} · ${JOB_TYPES[r.type as keyof typeof JOB_TYPES]?.label} · ${r.view_count} vues · ${r.deadline ? `limite ${formatDate(r.deadline as string)}` : ""}`;
+    if (entity === "partenaires")
+      return `${DEAL_CATEGORIES[r.category as keyof typeof DEAL_CATEGORIES]?.label} · ${r.district ?? "—"}`;
+    if (entity === "avantages")
+      return `${(r.partner as { name: string } | null)?.name ?? "—"} · ${r.discount_label} · ${r.view_count} vues · ${r.valid_until ? `jusqu'au ${formatDate(r.valid_until as string)}` : "sans limite"}`;
+    if (entity === "jobs")
+      return `${r.company_name} · ${JOB_TYPES[r.type as keyof typeof JOB_TYPES]?.label} · ${r.view_count} vues · ${r.deadline ? `limite ${formatDate(r.deadline as string)}` : ""}`;
     return `${HOUSING_TYPES[r.type as keyof typeof HOUSING_TYPES]?.label} · ${r.district} · ${formatGNF(r.price_gnf as number)} · ${r.view_count} vues`;
   }
 
@@ -56,15 +65,19 @@ export default async function EntityList({ params, searchParams }: { params: Pro
       {param(sp, "supprime") && <FormMessage type="success">Supprimé.</FormMessage>}
       <SearchBar pathname={`/admin/${entity}`} searchParams={sp} placeholder="Rechercher…" />
       {rows.length === 0 ? (
-        <EmptyState emoji="📭" title="Rien pour le moment" action={<LinkButton href={`/admin/${entity}/nouveau`}>Ajouter</LinkButton>} />
+        <EmptyState
+          emoji="📭"
+          title="Rien pour le moment"
+          action={<LinkButton href={`/admin/${entity}/nouveau`}>Ajouter</LinkButton>}
+        />
       ) : (
-        <ul className="divide-y divide-line overflow-hidden rounded-[var(--radius-card)] bg-white shadow-[var(--shadow-card)]">
+        <ul className="divide-line divide-y overflow-hidden rounded-[var(--radius-card)] bg-white shadow-[var(--shadow-card)]">
           {rows.map((r) => (
             <li key={r.id} className="flex items-center gap-3 px-4 py-3">
-              <div className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-canvas">{thumb(r)}</div>
+              <div className="bg-canvas relative size-14 shrink-0 overflow-hidden rounded-xl">{thumb(r)}</div>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{r[cfg.titleField] as string}</p>
-                <p className="truncate text-xs text-muted">{subtitle(r)}</p>
+                <p className="text-muted truncate text-xs">{subtitle(r)}</p>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {r.is_active ? <Badge tone="mint">Publié</Badge> : <Badge tone="neutral">Masqué</Badge>}
                   {r.is_demo && <DemoBadge />}
@@ -74,11 +87,19 @@ export default async function EntityList({ params, searchParams }: { params: Pro
               </div>
               <div className="flex shrink-0 gap-1">
                 <form action={toggleEntity.bind(null, entity, r.id, !r.is_active)}>
-                  <button className="flex size-9 items-center justify-center rounded-xl ring-1 ring-line hover:bg-canvas" aria-label={r.is_active ? "Masquer" : "Publier"} title={r.is_active ? "Masquer" : "Publier"}>
+                  <button
+                    className="ring-line hover:bg-canvas flex size-9 items-center justify-center rounded-xl ring-1"
+                    aria-label={r.is_active ? "Masquer" : "Publier"}
+                    title={r.is_active ? "Masquer" : "Publier"}
+                  >
                     {r.is_active ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </button>
                 </form>
-                <Link href={`/admin/${entity}/${r.id}`} className="flex size-9 items-center justify-center rounded-xl bg-ink text-white" aria-label="Modifier">
+                <Link
+                  href={`/admin/${entity}/${r.id}`}
+                  className="bg-ink flex size-9 items-center justify-center rounded-xl text-white"
+                  aria-label="Modifier"
+                >
                   <Pencil className="size-4" />
                 </Link>
               </div>

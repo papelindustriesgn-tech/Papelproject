@@ -12,7 +12,11 @@ const schema = z.object({
 
 export async function applyToJob(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = schema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { fieldErrors: { message: parsed.error.issues[0].message }, values: { message: String(formData.get("message") ?? "") } };
+  if (!parsed.success)
+    return {
+      fieldErrors: { message: parsed.error.issues[0].message },
+      values: { message: String(formData.get("message") ?? "") },
+    };
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return { error: "Connecte-toi pour candidater." };
@@ -21,7 +25,9 @@ export async function applyToJob(_prev: FormState, formData: FormData): Promise<
   if (!job) return { error: "Annonce introuvable." };
   if (job.deadline && new Date(`${job.deadline}T23:59:59`) < new Date()) return { error: "Les candidatures sont closes." };
 
-  const { error } = await supabase.from("job_applications").insert({ job_id: job.id, user_id: auth.user.id, message: parsed.data.message });
+  const { error } = await supabase
+    .from("job_applications")
+    .insert({ job_id: job.id, user_id: auth.user.id, message: parsed.data.message });
   if (error) {
     if (error.code === "23505") return { error: "Tu as déjà candidaté à cette offre." };
     return { error: "Envoi impossible, réessaie." };

@@ -14,10 +14,26 @@ export default async function FavoritesPage() {
   const p = await requireProfile();
   const supabase = await createClient();
   const [deals, jobs, homes, apps] = await Promise.all([
-    supabase.from("deal_favorites").select(`created_at, deal:deals(${DEAL_COLUMNS})`).eq("user_id", p.id).order("created_at", { ascending: false }),
-    supabase.from("job_favorites").select(`created_at, job:jobs(${JOB_COLUMNS})`).eq("user_id", p.id).order("created_at", { ascending: false }),
-    supabase.from("housing_favorites").select(`created_at, home:housing(${HOUSING_COLUMNS})`).eq("user_id", p.id).order("created_at", { ascending: false }),
-    supabase.from("job_applications").select(`created_at, job:jobs(${JOB_COLUMNS})`).eq("user_id", p.id).order("created_at", { ascending: false }),
+    supabase
+      .from("deal_favorites")
+      .select(`created_at, deal:deals(${DEAL_COLUMNS})`)
+      .eq("user_id", p.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("job_favorites")
+      .select(`created_at, job:jobs(${JOB_COLUMNS})`)
+      .eq("user_id", p.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("housing_favorites")
+      .select(`created_at, home:housing(${HOUSING_COLUMNS})`)
+      .eq("user_id", p.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("job_applications")
+      .select(`created_at, job:jobs(${JOB_COLUMNS})`)
+      .eq("user_id", p.id)
+      .order("created_at", { ascending: false }),
   ]);
   const d = (deals.data ?? []).map((r) => r.deal as unknown as DealCardData | null).filter(Boolean) as DealCardData[];
   const j = (jobs.data ?? []).map((r) => r.job as unknown as JobCardData | null).filter(Boolean) as JobCardData[];
@@ -40,7 +56,9 @@ export default async function FavoritesPage() {
         <section>
           <SectionHeader title="🔥 Avantages" />
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-            {d.map((x) => <DealCard key={x.id} deal={x} favorite />)}
+            {d.map((x) => (
+              <DealCard key={x.id} deal={x} favorite />
+            ))}
           </div>
         </section>
       )}
@@ -48,7 +66,9 @@ export default async function FavoritesPage() {
         <section id="jobs">
           <SectionHeader title="💼 Jobs enregistrés" />
           <div className="grid gap-3 md:grid-cols-2">
-            {j.map((x) => <JobCard key={x.id} job={x} favorite />)}
+            {j.map((x) => (
+              <JobCard key={x.id} job={x} favorite />
+            ))}
           </div>
         </section>
       )}
@@ -56,7 +76,9 @@ export default async function FavoritesPage() {
         <section>
           <SectionHeader title="📨 Mes candidatures" />
           <div className="grid gap-3 md:grid-cols-2">
-            {a.map((x) => <JobCard key={x.id} job={x} />)}
+            {a.map((x) => (
+              <JobCard key={x.id} job={x} />
+            ))}
           </div>
         </section>
       )}
@@ -64,7 +86,9 @@ export default async function FavoritesPage() {
         <section>
           <SectionHeader title="🏠 Logements" />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {h.map((x) => <HousingCard key={x.id} home={x} favorite />)}
+            {h.map((x) => (
+              <HousingCard key={x.id} home={x} favorite />
+            ))}
           </div>
         </section>
       )}

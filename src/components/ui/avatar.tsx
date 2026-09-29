@@ -1,6 +1,7 @@
-import Image from "next/image";
+import Image from "@/components/ui/safe-image";
 import { cn } from "@/lib/cn";
 import { initials } from "@/lib/format";
+import { safeImage } from "@/lib/images";
 
 export function Avatar({
   src,
@@ -18,16 +19,12 @@ export function Avatar({
   return (
     <span
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100 font-bold text-brand-700",
+        "bg-brand-100 text-brand-700 relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-bold",
         className,
       )}
       style={{ width: size, height: size, fontSize: size * 0.38 }}
     >
-      {src ? (
-        <Image src={src} alt="" fill sizes={`${size}px`} className="object-cover" />
-      ) : (
-        initials(first, last)
-      )}
+      {safeImage(src) ? <Image src={src!} alt="" fill sizes={`${size}px`} className="object-cover" /> : initials(first, last)}
     </span>
   );
 }

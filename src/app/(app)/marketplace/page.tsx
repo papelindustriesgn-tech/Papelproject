@@ -22,7 +22,11 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
       <PageTitle
         title="Marketplace"
         subtitle="Achète et vends entre étudiants."
-        action={<LinkButton href="/marketplace/mes-annonces" variant="outline" size="sm">Mes annonces</LinkButton>}
+        action={
+          <LinkButton href="/marketplace/mes-annonces" variant="outline" size="sm">
+            Mes annonces
+          </LinkButton>
+        }
       />
       <div className="space-y-3">
         <SearchBar pathname="/marketplace" searchParams={sp} placeholder="Téléphone, livre, ordinateur…" keep={["categorie"]} />
@@ -35,7 +39,12 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
       </div>
       <div className="mt-5">
         {items.length === 0 ? (
-          <EmptyState emoji="🛍️" title="Aucune annonce pour le moment" text="Sois le premier à publier dans cette catégorie !" action={<LinkButton href="/marketplace/nouveau">Publier une annonce</LinkButton>} />
+          <EmptyState
+            emoji="🛍️"
+            title="Aucune annonce pour le moment"
+            text="Sois le premier à publier dans cette catégorie !"
+            action={<LinkButton href="/marketplace/nouveau">Publier une annonce</LinkButton>}
+          />
         ) : (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {items.map((m) => (

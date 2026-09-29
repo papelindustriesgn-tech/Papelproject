@@ -33,12 +33,17 @@ export default async function HousingDetailPage({ params }: Props) {
   const [home, profile] = await Promise.all([load(id), requireProfile()]);
   if (!home) notFound();
   const supabase = await createClient();
-  const { data: fav } = await supabase.from("housing_favorites").select("housing_id").eq("housing_id", id).eq("user_id", profile.id).maybeSingle();
+  const { data: fav } = await supabase
+    .from("housing_favorites")
+    .select("housing_id")
+    .eq("housing_id", id)
+    .eq("user_id", profile.id)
+    .maybeSingle();
   const t = HOUSING_TYPES[home.type];
   const availableNow = home.is_available && (!home.available_from || new Date(home.available_from) <= new Date());
 
   return (
-    <article className="mx-auto max-w-3xl animate-fade-up">
+    <article className="animate-fade-up mx-auto max-w-3xl">
       <ViewTracker kind="housing" id={home.id} />
       <BackLink href="/logement" label="Logement" />
       <Gallery images={home.images} alt={home.title} />
@@ -52,11 +57,11 @@ export default async function HousingDetailPage({ params }: Props) {
             {home.is_demo && <DemoBadge />}
           </div>
           <h1 className="mt-2 text-2xl font-extrabold tracking-tight">{home.title}</h1>
-          <p className="mt-1 text-2xl font-extrabold text-brand-700">
-            {formatGNF(home.price_gnf)} <span className="text-base font-semibold text-muted">/ mois</span>
+          <p className="text-brand-700 mt-1 text-2xl font-extrabold">
+            {formatGNF(home.price_gnf)} <span className="text-muted text-base font-semibold">/ mois</span>
           </p>
         </div>
-        <FavoriteButton kind="housing" id={home.id} initial={!!fav} className="shrink-0 ring-1 ring-line" />
+        <FavoriteButton kind="housing" id={home.id} initial={!!fav} className="ring-line shrink-0 ring-1" />
       </div>
 
       {home.is_demo && (
@@ -67,19 +72,23 @@ export default async function HousingDetailPage({ params }: Props) {
 
       <div className="mt-5 grid grid-cols-3 gap-2 text-center text-sm">
         <div className="rounded-2xl bg-white p-3 shadow-[var(--shadow-card)]">
-          <MapPin className="mx-auto size-5 text-brand-600" aria-hidden />
+          <MapPin className="text-brand-600 mx-auto size-5" aria-hidden />
           <p className="mt-1 truncate font-semibold">{home.district}</p>
         </div>
         <div className="rounded-2xl bg-white p-3 shadow-[var(--shadow-card)]">
-          <BedDouble className="mx-auto size-5 text-brand-600" aria-hidden />
+          <BedDouble className="text-brand-600 mx-auto size-5" aria-hidden />
           <p className="mt-1 font-semibold">
             {home.rooms} pièce{home.rooms > 1 ? "s" : ""}
           </p>
         </div>
         <div className="rounded-2xl bg-white p-3 shadow-[var(--shadow-card)]">
-          <CalendarCheck className="mx-auto size-5 text-brand-600" aria-hidden />
+          <CalendarCheck className="text-brand-600 mx-auto size-5" aria-hidden />
           <p className="mt-1 font-semibold">
-            {!home.is_available ? "Loué" : availableNow ? "Disponible" : formatDate(home.available_from, { month: "short", year: undefined })}
+            {!home.is_available
+              ? "Loué"
+              : availableNow
+                ? "Disponible"
+                : formatDate(home.available_from, { month: "short", year: undefined })}
           </p>
         </div>
       </div>
@@ -87,14 +96,14 @@ export default async function HousingDetailPage({ params }: Props) {
       <section className="mt-5 space-y-5 rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <div>
           <h2 className="font-bold">Description</h2>
-          <p className="mt-1 leading-relaxed whitespace-pre-line text-ink/80">{home.description || "—"}</p>
+          <p className="text-ink/80 mt-1 leading-relaxed whitespace-pre-line">{home.description || "—"}</p>
         </div>
         {home.amenities.length > 0 && (
           <div>
             <h2 className="font-bold">Équipements</h2>
             <ul className="mt-2 flex flex-wrap gap-2">
               {home.amenities.map((a) => (
-                <li key={a} className="rounded-full bg-canvas px-3 py-1.5 text-sm font-semibold ring-1 ring-line">
+                <li key={a} className="bg-canvas ring-line rounded-full px-3 py-1.5 text-sm font-semibold ring-1">
                   ✓ {a}
                 </li>
               ))}
@@ -106,14 +115,14 @@ export default async function HousingDetailPage({ params }: Props) {
       <section className="mt-5 rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <h2 className="text-lg font-extrabold">Contact</h2>
         {home.is_demo || !home.contact_phone ? (
-          <p className="mt-2 text-sm text-muted">
+          <p className="text-muted mt-2 text-sm">
             {home.is_demo
               ? "Annonce de démonstration : aucun propriétaire réel à contacter."
               : "Les coordonnées ne sont pas encore renseignées. Contacte l'équipe Uny pour plus d'informations."}
           </p>
         ) : (
           <>
-            {home.contact_name && <p className="mt-1 text-sm text-muted">{home.contact_name}</p>}
+            {home.contact_name && <p className="text-muted mt-1 text-sm">{home.contact_name}</p>}
             <div className="mt-4 grid grid-cols-2 gap-2">
               <a href={`tel:${home.contact_phone}`} className={buttonClass("outline", "lg")}>
                 <Phone className="size-5" /> Appeler
@@ -127,7 +136,7 @@ export default async function HousingDetailPage({ params }: Props) {
                 <MessageCircle className="size-5" /> WhatsApp
               </a>
             </div>
-            <p className="mt-3 text-xs text-muted">Conseil : visite toujours le logement avant de verser un acompte.</p>
+            <p className="text-muted mt-3 text-xs">Conseil : visite toujours le logement avant de verser un acompte.</p>
           </>
         )}
       </section>

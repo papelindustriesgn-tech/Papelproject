@@ -18,7 +18,10 @@ export default async function UsersAdmin({ searchParams }: { searchParams: Promi
   const supabase = await createClient();
   let query = supabase
     .from("profiles")
-    .select("id, first_name, last_name, email, phone, uny_id, avatar_url, verification_status, role, created_at, last_seen_at, is_test_account, university:universities(short_name, name)", { count: "exact" })
+    .select(
+      "id, first_name, last_name, email, phone, uny_id, avatar_url, verification_status, role, created_at, last_seen_at, is_test_account, university:universities(short_name, name)",
+      { count: "exact" },
+    )
     .eq("is_test_account", showTest);
   if (status) query = query.eq("verification_status", status as "verified");
   if (q) {
@@ -31,9 +34,16 @@ export default async function UsersAdmin({ searchParams }: { searchParams: Promi
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <h1 className="text-2xl font-extrabold tracking-tight">Utilisateurs</h1>
-        <p className="text-sm text-muted">{(count ?? 0).toLocaleString("fr-FR")} {showTest ? "comptes de test" : "comptes réels"}</p>
+        <p className="text-muted text-sm">
+          {(count ?? 0).toLocaleString("fr-FR")} {showTest ? "comptes de test" : "comptes réels"}
+        </p>
       </div>
-      <SearchBar pathname="/admin/utilisateurs" searchParams={sp} placeholder="Nom, email, téléphone, Uny ID…" keep={["statut", "test"]} />
+      <SearchBar
+        pathname="/admin/utilisateurs"
+        searchParams={sp}
+        placeholder="Nom, email, téléphone, Uny ID…"
+        keep={["statut", "test"]}
+      />
       <FilterChips
         pathname="/admin/utilisateurs"
         searchParams={sp}
@@ -45,31 +55,43 @@ export default async function UsersAdmin({ searchParams }: { searchParams: Promi
           { value: "unverified", label: "Non vérifiés" },
         ]}
       />
-      <Link href={showTest ? "/admin/utilisateurs" : "/admin/utilisateurs?test=1"} className="inline-block text-sm font-semibold text-brand-600">
+      <Link
+        href={showTest ? "/admin/utilisateurs" : "/admin/utilisateurs?test=1"}
+        className="text-brand-600 inline-block text-sm font-semibold"
+      >
         {showTest ? "← Revenir aux comptes réels" : "Voir les comptes de test (synthétiques)"}
       </Link>
-      <ul className="divide-y divide-line overflow-hidden rounded-[var(--radius-card)] bg-white shadow-[var(--shadow-card)]">
+      <ul className="divide-line divide-y overflow-hidden rounded-[var(--radius-card)] bg-white shadow-[var(--shadow-card)]">
         {(data ?? []).map((u) => (
           <li key={u.id}>
-            <Link href={`/admin/utilisateurs/${u.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-canvas">
+            <Link href={`/admin/utilisateurs/${u.id}`} className="hover:bg-canvas flex items-center gap-3 px-4 py-3">
               <Avatar src={u.avatar_url} first={u.first_name} last={u.last_name} size={40} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">
-                  {u.first_name} {u.last_name} {u.role === "admin" && <Badge tone="dark" className="ml-1">Admin</Badge>}
-                  {u.is_test_account && <Badge tone="neutral" className="ml-1">Test</Badge>}
+                  {u.first_name} {u.last_name}{" "}
+                  {u.role === "admin" && (
+                    <Badge tone="dark" className="ml-1">
+                      Admin
+                    </Badge>
+                  )}
+                  {u.is_test_account && (
+                    <Badge tone="neutral" className="ml-1">
+                      Test
+                    </Badge>
+                  )}
                 </p>
-                <p className="truncate text-xs text-muted">
+                <p className="text-muted truncate text-xs">
                   {u.email} · {u.university?.short_name ?? u.university?.name ?? "—"}
                 </p>
               </div>
               <div className="hidden shrink-0 text-right sm:block">
                 <VerificationBadge status={u.verification_status} />
-                <p className="mt-1 text-xs text-muted">inscrit {timeAgo(u.created_at)}</p>
+                <p className="text-muted mt-1 text-xs">inscrit {timeAgo(u.created_at)}</p>
               </div>
             </Link>
           </li>
         ))}
-        {!data?.length && <li className="p-6 text-center text-sm text-muted">Aucun utilisateur.</li>}
+        {!data?.length && <li className="text-muted p-6 text-center text-sm">Aucun utilisateur.</li>}
       </ul>
       <Pagination pathname="/admin/utilisateurs" searchParams={sp} page={page} hasMore={(count ?? 0) > page * SIZE} />
     </div>

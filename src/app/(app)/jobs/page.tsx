@@ -28,7 +28,11 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
       <PageTitle
         title="Jobs & opportunités"
         subtitle="Jobs étudiants, stages, bourses, concours et formations."
-        action={<LinkButton href="/favoris#jobs" variant="outline" size="sm">Mes favoris</LinkButton>}
+        action={
+          <LinkButton href="/favoris#jobs" variant="outline" size="sm">
+            Mes favoris
+          </LinkButton>
+        }
       />
       <div className="space-y-3">
         <SearchBar pathname="/jobs" searchParams={sp} placeholder="Poste, entreprise…" keep={["type"]} />
@@ -41,7 +45,16 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
       </div>
       <div className="mt-5">
         {items.length === 0 ? (
-          <EmptyState emoji="💼" title="Aucune opportunité trouvée" text="Change de filtre ou reviens bientôt : de nouvelles annonces arrivent chaque semaine." action={<LinkButton href="/jobs" variant="secondary">Tout voir</LinkButton>} />
+          <EmptyState
+            emoji="💼"
+            title="Aucune opportunité trouvée"
+            text="Change de filtre ou reviens bientôt : de nouvelles annonces arrivent chaque semaine."
+            action={
+              <LinkButton href="/jobs" variant="secondary">
+                Tout voir
+              </LinkButton>
+            }
+          />
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {items.map((j) => (

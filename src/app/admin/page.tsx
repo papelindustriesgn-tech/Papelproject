@@ -3,26 +3,38 @@ import { ArrowRight } from "lucide-react";
 import { StatCard } from "@/components/admin/stat-card";
 import { BarChart } from "@/components/admin/bar-chart";
 import { getAdminStats } from "@/lib/admin-stats";
+import { requireAdmin } from "@/lib/auth";
 
 export const metadata = { title: "Vue d'ensemble" };
 
 export default async function AdminHome() {
+  await requireAdmin(); // le layout et la page sont rendus en parallèle
   const s = await getAdminStats();
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-extrabold tracking-tight">Vue d&apos;ensemble</h1>
-        <p className="text-sm text-muted">Chiffres réels : les comptes de test ({s.test_accounts.toLocaleString("fr-FR")}) sont exclus.</p>
+        <p className="text-muted text-sm">
+          Chiffres réels : les comptes de test ({s.test_accounts.toLocaleString("fr-FR")}) sont exclus.
+        </p>
       </div>
       {s.verifications_pending > 0 && (
-        <Link href="/admin/verifications" className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] bg-mango-50 p-4 font-semibold text-mango-700 ring-1 ring-mango-100">
+        <Link
+          href="/admin/verifications"
+          className="bg-mango-50 text-mango-700 ring-mango-100 flex items-center justify-between gap-3 rounded-[var(--radius-card)] p-4 font-semibold ring-1"
+        >
           {s.verifications_pending} justificatif{s.verifications_pending > 1 ? "s" : ""} en attente de vérification
           <ArrowRight className="size-5" />
         </Link>
       )}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatCard label="Inscrits" value={s.users_total} tone="brand" />
-        <StatCard label="Étudiants vérifiés" value={s.users_verified} hint={s.users_total ? `${Math.round((s.users_verified / s.users_total) * 100)} % des inscrits` : undefined} tone="mint" />
+        <StatCard
+          label="Étudiants vérifiés"
+          value={s.users_verified}
+          hint={s.users_total ? `${Math.round((s.users_verified / s.users_total) * 100)} % des inscrits` : undefined}
+          tone="mint"
+        />
         <StatCard label="Inscriptions du jour" value={s.signups_today} />
         <StatCard label="Inscriptions (7 j)" value={s.signups_week} />
         <StatCard label="Utilisateurs actifs (7 j)" value={s.active_week} />

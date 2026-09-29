@@ -21,7 +21,9 @@ export function AvatarUpload({ userId, current, children }: { userId: string; cu
       const blob = await compressImage(file, 512, 0.85);
       const supabase = createClient();
       const path = `${userId}/${randomName("jpg")}`;
-      const { error: upErr } = await supabase.storage.from("avatars").upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       const res = await setAvatar(data.publicUrl);
@@ -40,15 +42,27 @@ export function AvatarUpload({ userId, current, children }: { userId: string; cu
 
   return (
     <div className="flex flex-col items-center">
-      <button type="button" onClick={() => input.current?.click()} className="relative rounded-full" aria-label="Changer ma photo de profil">
+      <button
+        type="button"
+        onClick={() => input.current?.click()}
+        className="relative rounded-full"
+        aria-label="Changer ma photo de profil"
+      >
         {children}
-        <span className="absolute right-0 bottom-0 flex size-9 items-center justify-center rounded-full bg-brand-600 text-white ring-4 ring-white">
+        <span className="bg-brand-600 absolute right-0 bottom-0 flex size-9 items-center justify-center rounded-full text-white ring-4 ring-white">
           {busy ? <Loader2 className="size-4 animate-spin" /> : <Camera className="size-4" />}
         </span>
       </button>
-      <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} data-testid="avatar-input" />
-      {error && <p className="mt-2 text-sm text-coral-600">{error}</p>}
-      {!current && !error && <p className="mt-2 text-xs text-muted">Ajoute une photo : elle apparaîtra sur ta carte.</p>}
+      <input
+        ref={input}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(e) => onFile(e.target.files?.[0])}
+        data-testid="avatar-input"
+      />
+      {error && <p className="text-coral-600 mt-2 text-sm">{error}</p>}
+      {!current && !error && <p className="text-muted mt-2 text-xs">Ajoute une photo : elle apparaîtra sur ta carte.</p>}
     </div>
   );
 }

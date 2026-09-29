@@ -23,17 +23,17 @@ export function Field({
 }) {
   return (
     <div className={cn("space-y-1.5", className)}>
-      <label htmlFor={htmlFor} className="flex items-baseline justify-between text-sm font-semibold text-ink">
+      <label htmlFor={htmlFor} className="text-ink flex items-baseline justify-between text-sm font-semibold">
         {label}
-        {optional && <span className="text-xs font-normal text-muted">facultatif</span>}
+        {optional && <span className="text-muted text-xs font-normal">facultatif</span>}
       </label>
       {children}
       {error ? (
-        <p className="text-sm text-coral-600" role="alert">
+        <p className="text-coral-600 text-sm" role="alert">
           {error}
         </p>
       ) : hint ? (
-        <p className="text-xs text-muted">{hint}</p>
+        <p className="text-muted text-xs">{hint}</p>
       ) : null}
     </div>
   );
@@ -48,7 +48,7 @@ export function Select({ className, children, ...props }: ComponentProps<"select
     <select
       className={cn(
         inputClass,
-        "appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b6889%22 stroke-width=%222%22><path d=%22m6 9 6 6 6-6%22/></svg>')] bg-[length:18px] bg-[right_14px_center] bg-no-repeat pr-10",
+        "bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b6889%22 stroke-width=%222%22><path d=%22m6 9 6 6 6-6%22/></svg>')] appearance-none bg-[length:18px] bg-[right_14px_center] bg-no-repeat pr-10",
         className,
       )}
       {...props}

@@ -11,7 +11,12 @@ export function ModerateForm({ id, status }: { id: string; status: string }) {
       <input type="hidden" name="id" value={id} />
       {status !== "removed" ? (
         <>
-          <input name="note" placeholder="Motif du retrait" aria-label="Motif du retrait" className="h-9 min-w-0 flex-1 rounded-xl border border-line px-3 text-sm" />
+          <input
+            name="note"
+            placeholder="Motif du retrait"
+            aria-label="Motif du retrait"
+            className="border-line h-9 min-w-0 flex-1 rounded-xl border px-3 text-sm"
+          />
           <button name="action" value="remove" className={`${btn} text-coral-600`} disabled={pending}>
             Retirer
           </button>
@@ -32,7 +37,7 @@ export function ModerateForm({ id, status }: { id: string; status: string }) {
       >
         Supprimer
       </button>
-      {state.error && <p className="w-full text-sm text-coral-600">{state.error}</p>}
+      {state.error && <p className="text-coral-600 w-full text-sm">{state.error}</p>}
     </form>
   );
 }

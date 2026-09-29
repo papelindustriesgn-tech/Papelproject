@@ -23,7 +23,7 @@ export function FilterChips({
       active ? "border-ink bg-ink text-white" : "border-line bg-white text-ink hover:border-brand-300",
     );
   return (
-    <nav aria-label="Filtres" className="-mx-4 overflow-x-auto px-4 scrollbar-none md:mx-0 md:px-0">
+    <nav aria-label="Filtres" className="-mx-4 scrollbar-none overflow-x-auto px-4 md:mx-0 md:px-0">
       <ul className="flex gap-2 pb-1">
         <li>
           <Link href={withParams(pathname, searchParams, { [name]: null })} className={chip(!current)} scroll={false}>
@@ -63,14 +63,14 @@ export function SearchBar({
   const q = typeof searchParams.q === "string" ? searchParams.q : "";
   return (
     <form action={pathname} method="get" role="search" className="relative">
-      <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted" aria-hidden />
+      <Search className="text-muted pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2" aria-hidden />
       <input
         type="search"
         name="q"
         defaultValue={q}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="h-12 w-full rounded-2xl border border-line bg-white pr-12 pl-12 text-[16px] shadow-[var(--shadow-card)] placeholder:text-muted/70 focus:border-brand-500 focus:ring-4 focus:ring-brand-100 focus:outline-none"
+        className="border-line placeholder:text-muted/70 focus:border-brand-500 focus:ring-brand-100 h-12 w-full rounded-2xl border bg-white pr-12 pl-12 text-[16px] shadow-[var(--shadow-card)] focus:ring-4 focus:outline-none"
       />
       {keep.map((k) =>
         typeof searchParams[k] === "string" ? <input key={k} type="hidden" name={k} value={searchParams[k] as string} /> : null,
@@ -79,7 +79,7 @@ export function SearchBar({
         <Link
           href={withParams(pathname, searchParams, { q: null })}
           aria-label="Effacer la recherche"
-          className="absolute top-1/2 right-3 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-muted hover:bg-canvas"
+          className="text-muted hover:bg-canvas absolute top-1/2 right-3 flex size-8 -translate-y-1/2 items-center justify-center rounded-full"
         >
           <X className="size-4" />
         </Link>
@@ -100,7 +100,8 @@ export function Pagination({
   hasMore: boolean;
 }) {
   if (page <= 1 && !hasMore) return null;
-  const btn = "inline-flex h-11 items-center rounded-2xl border border-line bg-white px-5 text-sm font-semibold hover:border-brand-300";
+  const btn =
+    "inline-flex h-11 items-center rounded-2xl border border-line bg-white px-5 text-sm font-semibold hover:border-brand-300";
   return (
     <nav className="mt-6 flex items-center justify-center gap-3" aria-label="Pagination">
       {page > 1 && (
@@ -108,7 +109,7 @@ export function Pagination({
           ← Précédent
         </Link>
       )}
-      <span className="text-sm text-muted">Page {page}</span>
+      <span className="text-muted text-sm">Page {page}</span>
       {hasMore && (
         <Link className={btn} href={withParams(pathname, searchParams, { page: String(page + 1) })}>
           Suivant →

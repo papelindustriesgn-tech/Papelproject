@@ -11,7 +11,7 @@ export default async function ResetPasswordPage() {
     return (
       <div className="text-center">
         <h1 className="text-2xl font-extrabold">Lien expiré</h1>
-        <p className="mt-2 text-muted">Ce lien de réinitialisation n&apos;est plus valide. Fais une nouvelle demande.</p>
+        <p className="text-muted mt-2">Ce lien de réinitialisation n&apos;est plus valide. Fais une nouvelle demande.</p>
         <LinkButton href="/mot-de-passe-oublie" className="mt-6">
           Nouvelle demande
         </LinkButton>
@@ -21,7 +21,7 @@ export default async function ResetPasswordPage() {
   return (
     <>
       <h1 className="text-3xl font-extrabold tracking-tight">Nouveau mot de passe 🔐</h1>
-      <p className="mt-2 text-muted">Choisis un mot de passe que tu n&apos;utilises nulle part ailleurs.</p>
+      <p className="text-muted mt-2">Choisis un mot de passe que tu n&apos;utilises nulle part ailleurs.</p>
       <div className="mt-6">
         <ResetForm />
       </div>

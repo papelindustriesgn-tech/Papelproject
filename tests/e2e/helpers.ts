@@ -7,7 +7,7 @@ export function uniqueStudent() {
   const n = `${Date.now()}${Math.floor(Math.random() * 1000)}`;
   return {
     first: "Mariama",
-    last: "Diallo",
+    last: `Diallo${n.slice(-5)}`,
     email: `e2e.${n}@example.com`,
     phone: `62${n.slice(-7)}`,
     password: "Etudiant2026",

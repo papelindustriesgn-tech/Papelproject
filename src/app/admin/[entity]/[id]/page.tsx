@@ -25,7 +25,9 @@ export default async function EditEntity({ params }: { params: Promise<{ entity:
       ? (
           await supabase
             .from("job_applications")
-            .select("id, message, created_at, user:profiles(id, first_name, last_name, email, phone, verification_status, field_of_study)")
+            .select(
+              "id, message, created_at, user:profiles(id, first_name, last_name, email, phone, verification_status, field_of_study)",
+            )
             .eq("job_id", id)
             .order("created_at", { ascending: false })
         ).data
@@ -49,9 +51,9 @@ export default async function EditEntity({ params }: { params: Promise<{ entity:
         <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
           <h2 className="mb-3 font-bold">Candidatures ({applications.length})</h2>
           {applications.length === 0 ? (
-            <p className="text-sm text-muted">Aucune candidature pour le moment.</p>
+            <p className="text-muted text-sm">Aucune candidature pour le moment.</p>
           ) : (
-            <ul className="divide-y divide-line text-sm">
+            <ul className="divide-line divide-y text-sm">
               {applications.map((a) => (
                 <li key={a.id} className="py-3">
                   <Link href={`/admin/utilisateurs/${a.user?.id}`} className="font-semibold hover:underline">
@@ -61,17 +63,25 @@ export default async function EditEntity({ params }: { params: Promise<{ entity:
                     {" "}
                     · {a.user?.email} · {a.user?.phone} · {formatDate(a.created_at)}
                   </span>
-                  <p className="mt-1 whitespace-pre-line text-ink/80">{a.message}</p>
+                  <p className="text-ink/80 mt-1 whitespace-pre-line">{a.message}</p>
                 </li>
               ))}
             </ul>
           )}
         </section>
       )}
-      <form action={deleteEntity.bind(null, entity, id)} className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
-        <h2 className="font-bold text-coral-600">Zone de danger</h2>
-        <p className="mt-1 text-sm text-muted">La suppression est définitive{entity === "partenaires" ? " et supprime aussi les avantages de ce partenaire" : ""}.</p>
-        <ConfirmButton message="Supprimer définitivement ?" className="mt-3 h-10 rounded-xl bg-coral-50 px-4 text-sm font-semibold text-coral-600 hover:bg-coral-500 hover:text-white">
+      <form
+        action={deleteEntity.bind(null, entity, id)}
+        className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]"
+      >
+        <h2 className="text-coral-600 font-bold">Zone de danger</h2>
+        <p className="text-muted mt-1 text-sm">
+          La suppression est définitive{entity === "partenaires" ? " et supprime aussi les avantages de ce partenaire" : ""}.
+        </p>
+        <ConfirmButton
+          message="Supprimer définitivement ?"
+          className="bg-coral-50 text-coral-600 hover:bg-coral-500 mt-3 h-10 rounded-xl px-4 text-sm font-semibold hover:text-white"
+        >
           Supprimer
         </ConfirmButton>
       </form>

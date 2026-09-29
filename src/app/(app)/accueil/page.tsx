@@ -33,12 +33,12 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const greeting = Number(hour) >= 18 ? "Bonsoir" : "Bonjour";
 
   return (
-    <div className="space-y-7 animate-fade-up">
+    <div className="animate-fade-up space-y-7">
       <section>
         <h1 className="text-2xl font-extrabold tracking-tight md:text-3xl">
           {greeting} {profile.first_name} 👋
         </h1>
-        <p className="mt-1 text-sm text-muted">Voici les bons plans étudiants du moment à Conakry.</p>
+        <p className="text-muted mt-1 text-sm">Voici les bons plans étudiants du moment à Conakry.</p>
       </section>
 
       {param(sp, "bienvenue") && (
@@ -61,22 +61,22 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       {profile.verification_status !== "verified" && (
         <Link
           href="/profil/verification"
-          className="flex items-center gap-3 rounded-[var(--radius-card)] bg-mango-50 p-4 ring-1 ring-mango-100 transition hover:bg-mango-100"
+          className="bg-mango-50 ring-mango-100 hover:bg-mango-100 flex items-center gap-3 rounded-[var(--radius-card)] p-4 ring-1 transition"
         >
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-mango-400 text-ink">
+          <span className="bg-mango-400 text-ink flex size-11 shrink-0 items-center justify-center rounded-2xl">
             <ShieldCheck className="size-6" aria-hidden />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block font-bold text-ink">
+            <span className="text-ink block font-bold">
               {profile.verification_status === "pending" ? "Vérification en cours ⏳" : "Fais vérifier ton statut étudiant"}
             </span>
-            <span className="block text-sm text-muted">
+            <span className="text-muted block text-sm">
               {profile.verification_status === "pending"
                 ? "Nous examinons ton justificatif. Tu seras notifié très vite."
                 : "Envoie ta carte étudiante ou ton certificat : c'est rapide."}
             </span>
           </span>
-          <ArrowRight className="size-5 shrink-0 text-mango-700" aria-hidden />
+          <ArrowRight className="text-mango-700 size-5 shrink-0" aria-hidden />
         </Link>
       )}
 

@@ -59,17 +59,26 @@ export default async function HousingPage({ searchParams }: { searchParams: Prom
               </option>
             ))}
           </Select>
-          <label className="flex h-11 items-center gap-2 rounded-2xl border border-line bg-white px-3 text-sm font-semibold">
-            <input type="checkbox" name="dispo" value="1" defaultChecked={available} className="size-4 accent-brand-600" />
+          <label className="border-line flex h-11 items-center gap-2 rounded-2xl border bg-white px-3 text-sm font-semibold">
+            <input type="checkbox" name="dispo" value="1" defaultChecked={available} className="accent-brand-600 size-4" />
             Disponible
           </label>
-          <button className="h-11 rounded-2xl bg-ink px-4 text-sm font-semibold text-white">Filtrer</button>
+          <button className="bg-ink h-11 rounded-2xl px-4 text-sm font-semibold text-white">Filtrer</button>
         </form>
       </div>
 
       <div className="mt-5">
         {items.length === 0 ? (
-          <EmptyState emoji="🏠" title="Aucun logement ne correspond" text="Élargis ton budget ou change de quartier." action={<LinkButton href="/logement" variant="secondary">Réinitialiser les filtres</LinkButton>} />
+          <EmptyState
+            emoji="🏠"
+            title="Aucun logement ne correspond"
+            text="Élargis ton budget ou change de quartier."
+            action={
+              <LinkButton href="/logement" variant="secondary">
+                Réinitialiser les filtres
+              </LinkButton>
+            }
+          />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((h) => (

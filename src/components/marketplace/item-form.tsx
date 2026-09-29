@@ -34,7 +34,15 @@ export function ItemForm({ userId, defaults, districts }: { userId: string; defa
         <ImageUploader userId={userId} initial={defaults.images ?? []} />
       </Field>
       <Field label="Titre de l'annonce" htmlFor="title" error={fe.title}>
-        <Input id="title" name="title" required minLength={3} maxLength={100} placeholder="Ex. : iPhone 11 64 Go" defaultValue={val("title")} />
+        <Input
+          id="title"
+          name="title"
+          required
+          minLength={3}
+          maxLength={100}
+          placeholder="Ex. : iPhone 11 64 Go"
+          defaultValue={val("title")}
+        />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Catégorie" htmlFor="category" error={fe.category}>
@@ -60,14 +68,36 @@ export function ItemForm({ userId, defaults, districts }: { userId: string; defa
         </Field>
       </div>
       <Field label="Prix (GNF)" htmlFor="price_gnf" error={fe.price_gnf}>
-        <Input id="price_gnf" name="price_gnf" type="number" inputMode="numeric" min={0} step={1000} required placeholder="Ex. : 250000" defaultValue={val("price_gnf")} />
+        <Input
+          id="price_gnf"
+          name="price_gnf"
+          type="number"
+          inputMode="numeric"
+          min={0}
+          step={1000}
+          required
+          placeholder="Ex. : 250000"
+          defaultValue={val("price_gnf")}
+        />
       </Field>
       <label className="flex items-center gap-3 text-sm font-semibold">
-        <input type="checkbox" name="is_negotiable" className="size-5 accent-brand-600" defaultChecked={v ? v.is_negotiable === "on" : !!defaults.is_negotiable} />
+        <input
+          type="checkbox"
+          name="is_negotiable"
+          className="accent-brand-600 size-5"
+          defaultChecked={v ? v.is_negotiable === "on" : !!defaults.is_negotiable}
+        />
         Prix négociable
       </label>
       <Field label="Description" htmlFor="description" error={fe.description} optional>
-        <Textarea id="description" name="description" maxLength={2000} rows={5} placeholder="État, accessoires fournis, raison de la vente…" defaultValue={val("description")} />
+        <Textarea
+          id="description"
+          name="description"
+          maxLength={2000}
+          rows={5}
+          placeholder="État, accessoires fournis, raison de la vente…"
+          defaultValue={val("description")}
+        />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Quartier" htmlFor="district" error={fe.district}>
@@ -81,10 +111,19 @@ export function ItemForm({ userId, defaults, districts }: { userId: string; defa
           </Select>
         </Field>
         <Field label="Téléphone de contact" htmlFor="contact_phone" error={fe.contact_phone}>
-          <Input id="contact_phone" name="contact_phone" type="tel" inputMode="tel" required defaultValue={val("contact_phone")} />
+          <Input
+            id="contact_phone"
+            name="contact_phone"
+            type="tel"
+            inputMode="tel"
+            required
+            defaultValue={val("contact_phone")}
+          />
         </Field>
       </div>
-      <p className="text-xs text-muted">Ton numéro n&apos;est visible que par les membres Uny connectés. Ne partage jamais de code reçu par SMS.</p>
+      <p className="text-muted text-xs">
+        Ton numéro n&apos;est visible que par les membres Uny connectés. Ne partage jamais de code reçu par SMS.
+      </p>
       <SubmitButton size="lg" className="w-full" pendingLabel="Publication…">
         {defaults.id ? "Enregistrer les modifications" : "Publier l'annonce"}
       </SubmitButton>

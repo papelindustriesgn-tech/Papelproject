@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/safe-image";
 import { useRef, useState } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -55,13 +55,17 @@ export function ImageUploader({ userId, initial, max = 5 }: { userId: string; in
       <input type="hidden" name="images" value={JSON.stringify(images)} />
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
         {images.map((img, i) => (
-          <div key={img.url} className="relative aspect-square overflow-hidden rounded-2xl bg-canvas ring-1 ring-line">
+          <div key={img.url} className="bg-canvas ring-line relative aspect-square overflow-hidden rounded-2xl ring-1">
             <Image src={img.url} alt={`Photo ${i + 1}`} fill sizes="120px" className="object-cover" />
-            {i === 0 && <span className="absolute bottom-1 left-1 rounded-full bg-ink/80 px-2 py-0.5 text-[10px] font-bold text-white">Couverture</span>}
+            {i === 0 && (
+              <span className="bg-ink/80 absolute bottom-1 left-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white">
+                Couverture
+              </span>
+            )}
             <button
               type="button"
               onClick={() => setImages((prev) => prev.filter((p) => p.url !== img.url))}
-              className="absolute top-1 right-1 flex size-7 items-center justify-center rounded-full bg-white/95 text-ink shadow"
+              className="text-ink absolute top-1 right-1 flex size-7 items-center justify-center rounded-full bg-white/95 shadow"
               aria-label={`Retirer la photo ${i + 1}`}
             >
               <X className="size-4" />
@@ -73,18 +77,26 @@ export function ImageUploader({ userId, initial, max = 5 }: { userId: string; in
             type="button"
             onClick={() => input.current?.click()}
             disabled={busy}
-            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50/50 text-xs font-semibold text-brand-700 hover:bg-brand-50"
+            className="border-brand-200 bg-brand-50/50 text-brand-700 hover:bg-brand-50 flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed text-xs font-semibold"
           >
             {busy ? <Loader2 className="size-6 animate-spin" /> : <ImagePlus className="size-6" />}
             {busy ? "Envoi…" : "Ajouter"}
           </button>
         )}
       </div>
-      <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(e) => onFiles(e.target.files)} data-testid="image-input" />
-      <p className="mt-2 text-xs text-muted">
+      <input
+        ref={input}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        className="hidden"
+        onChange={(e) => onFiles(e.target.files)}
+        data-testid="image-input"
+      />
+      <p className="text-muted mt-2 text-xs">
         {images.length}/{max} photos · Les photos sont compressées automatiquement pour économiser tes données.
       </p>
-      {error && <p className="mt-1 text-sm text-coral-600">{error}</p>}
+      {error && <p className="text-coral-600 mt-1 text-sm">{error}</p>}
     </div>
   );
 }

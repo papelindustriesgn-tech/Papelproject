@@ -20,7 +20,16 @@ export const metadata: Metadata = {
   title: { default: "Uny — Être étudiant a ses avantages", template: `%s · ${SITE_NAME}` },
   description,
   applicationName: SITE_NAME,
-  keywords: ["étudiant", "Guinée", "Conakry", "carte étudiante", "réductions étudiantes", "jobs étudiants", "stages", "logement étudiant"],
+  keywords: [
+    "étudiant",
+    "Guinée",
+    "Conakry",
+    "carte étudiante",
+    "réductions étudiantes",
+    "jobs étudiants",
+    "stages",
+    "logement étudiant",
+  ],
   openGraph: {
     type: "website",
     locale: "fr_GN",

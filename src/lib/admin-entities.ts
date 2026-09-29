@@ -1,11 +1,25 @@
 import { DEAL_CATEGORIES, HOUSING_TYPES, JOB_TYPES } from "@/lib/constants";
 
 export type FieldSpec =
-  | { name: string; label: string; type: "text" | "textarea" | "url" | "email" | "tel"; required?: boolean; max?: number; placeholder?: string; hint?: string }
+  | {
+      name: string;
+      label: string;
+      type: "text" | "textarea" | "url" | "email" | "tel";
+      required?: boolean;
+      max?: number;
+      placeholder?: string;
+      hint?: string;
+    }
   | { name: string; label: string; type: "number"; required?: boolean; min?: number; max?: number; step?: number }
   | { name: string; label: string; type: "date"; required?: boolean }
   | { name: string; label: string; type: "checkbox"; hint?: string; defaultValue?: boolean }
-  | { name: string; label: string; type: "select"; required?: boolean; options: { value: string; label: string }[] | "partners" | "districts" }
+  | {
+      name: string;
+      label: string;
+      type: "select";
+      required?: boolean;
+      options: { value: string; label: string }[] | "partners" | "districts";
+    }
   | { name: string; label: string; type: "tags"; hint?: string }
   | { name: string; label: string; type: "image" }
   | { name: string; label: string; type: "images"; max?: number };
@@ -21,11 +35,18 @@ type EntityConfig = {
   fields: FieldSpec[];
 };
 
-const opts = (rec: Record<string, { label: string; emoji: string }>) => Object.entries(rec).map(([value, v]) => ({ value, label: `${v.emoji} ${v.label}` }));
+const opts = (rec: Record<string, { label: string; emoji: string }>) =>
+  Object.entries(rec).map(([value, v]) => ({ value, label: `${v.emoji} ${v.label}` }));
 
 const flags: FieldSpec[] = [
   { name: "is_active", label: "Publié (visible par les étudiants)", type: "checkbox", defaultValue: true },
-  { name: "is_demo", label: "Contenu de démonstration (badge « Démo »)", type: "checkbox", hint: "À décocher uniquement pour un partenaire ou une annonce réels.", defaultValue: false },
+  {
+    name: "is_demo",
+    label: "Contenu de démonstration (badge « Démo »)",
+    type: "checkbox",
+    hint: "À décocher uniquement pour un partenaire ou une annonce réels.",
+    defaultValue: false,
+  },
 ];
 
 export const ENTITIES: Record<EntityKey, EntityConfig> = {
@@ -52,10 +73,18 @@ export const ENTITIES: Record<EntityKey, EntityConfig> = {
     singular: "avantage",
     plural: "Avantages",
     titleField: "title",
-    listSelect: "id, title, discount_label, category, is_active, is_demo, is_featured, view_count, valid_until, image_url, created_at, partner:partners(name)",
+    listSelect:
+      "id, title, discount_label, category, is_active, is_demo, is_featured, view_count, valid_until, image_url, created_at, partner:partners(name)",
     fields: [
       { name: "partner_id", label: "Partenaire", type: "select", required: true, options: "partners" },
-      { name: "title", label: "Titre de l'offre", type: "text", required: true, max: 140, placeholder: "-20 % sur tous les plats" },
+      {
+        name: "title",
+        label: "Titre de l'offre",
+        type: "text",
+        required: true,
+        max: 140,
+        placeholder: "-20 % sur tous les plats",
+      },
       { name: "discount_label", label: "Réduction affichée", type: "text", required: true, max: 40, placeholder: "-20 %" },
       { name: "category", label: "Catégorie", type: "select", required: true, options: opts(DEAL_CATEGORIES) },
       { name: "image_url", label: "Photo", type: "image" },

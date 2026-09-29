@@ -10,7 +10,13 @@ export function DemoCleanup() {
   return (
     <form action={action} className="space-y-3">
       <FormMessage type={state.ok ? "success" : "error"}>{state.message ?? state.error}</FormMessage>
-      <Input name="confirm" placeholder="Tape SUPPRIMER pour confirmer" aria-label="Confirmation" className="h-11" autoComplete="off" />
+      <Input
+        name="confirm"
+        placeholder="Tape SUPPRIMER pour confirmer"
+        aria-label="Confirmation"
+        className="h-11"
+        autoComplete="off"
+      />
       <SubmitButton variant="danger" pendingLabel="Suppression…">
         Supprimer tout le contenu « Démo »
       </SubmitButton>

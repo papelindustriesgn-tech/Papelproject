@@ -35,7 +35,12 @@ export default async function UserAdmin({ params }: { params: Promise<{ id: stri
     ["Ville", u.city?.name],
     ["Inscrit", formatDate(u.created_at)],
     ["Dernière activité", u.last_seen_at ? timeAgo(u.last_seen_at) : "—"],
-    ["Carte", card ? `${card.academic_year} · expire le ${formatDate(card.expires_at)} · ${card.status === "active" ? "active" : "révoquée"}` : "—"],
+    [
+      "Carte",
+      card
+        ? `${card.academic_year} · expire le ${formatDate(card.expires_at)} · ${card.status === "active" ? "active" : "révoquée"}`
+        : "—",
+    ],
     ["Annonces / candidatures", `${items ?? 0} / ${apps ?? 0}`],
   ];
 
@@ -94,16 +99,18 @@ export default async function UserAdmin({ params }: { params: Promise<{ id: stri
       <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <h2 className="mb-3 font-bold">Justificatifs</h2>
         {!verifs?.length ? (
-          <p className="text-sm text-muted">Aucun justificatif envoyé.</p>
+          <p className="text-muted text-sm">Aucun justificatif envoyé.</p>
         ) : (
-          <ul className="divide-y divide-line text-sm">
+          <ul className="divide-line divide-y text-sm">
             {verifs.map((v) => (
               <li key={v.id} className="flex justify-between gap-3 py-2">
                 <span>
                   {DOCUMENT_TYPES[v.document_type]} · {formatDate(v.created_at)}
-                  {v.rejection_reason && <span className="block text-coral-600">{v.rejection_reason}</span>}
+                  {v.rejection_reason && <span className="text-coral-600 block">{v.rejection_reason}</span>}
                 </span>
-                <Badge tone={v.status === "approved" ? "mint" : v.status === "rejected" ? "coral" : "mango"}>{v.status === "approved" ? "Validé" : v.status === "rejected" ? "Refusé" : "En attente"}</Badge>
+                <Badge tone={v.status === "approved" ? "mint" : v.status === "rejected" ? "coral" : "mango"}>
+                  {v.status === "approved" ? "Validé" : v.status === "rejected" ? "Refusé" : "En attente"}
+                </Badge>
               </li>
             ))}
           </ul>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import Image from "@/components/ui/safe-image";
 import { notFound } from "next/navigation";
 import { CalendarDays, CreditCard, MapPin, Phone, ShieldCheck } from "lucide-react";
 import { BackLink } from "@/components/ui/back-link";
@@ -37,18 +37,25 @@ export default async function DealPage({ params }: Props) {
   const [deal, profile] = await Promise.all([load(id), requireProfile()]);
   if (!deal) notFound();
   const supabase = await createClient();
-  const { data: fav } = await supabase.from("deal_favorites").select("deal_id").eq("deal_id", id).eq("user_id", profile.id).maybeSingle();
+  const { data: fav } = await supabase
+    .from("deal_favorites")
+    .select("deal_id")
+    .eq("deal_id", id)
+    .eq("user_id", profile.id)
+    .maybeSingle();
   const cat = DEAL_CATEGORIES[deal.category];
   const verified = profile.verification_status === "verified";
   const expired = deal.valid_until ? new Date(`${deal.valid_until}T23:59:59`) < new Date() : false;
 
   return (
-    <article className="mx-auto max-w-3xl animate-fade-up">
+    <article className="animate-fade-up mx-auto max-w-3xl">
       <ViewTracker kind="deal" id={deal.id} />
       <BackLink href="/avantages" label="Avantages" />
-      <div className="relative -mx-4 aspect-[16/9] overflow-hidden bg-brand-50 md:mx-0 md:rounded-[var(--radius-card)]">
-        {deal.image_url && <Image src={deal.image_url} alt="" fill priority sizes="(max-width: 768px) 100vw, 768px" className="object-cover" />}
-        <span className="absolute bottom-4 left-4 rounded-2xl bg-coral-500 px-4 py-2 text-2xl font-extrabold text-white shadow-xl">
+      <div className="bg-brand-50 relative -mx-4 aspect-[16/9] overflow-hidden md:mx-0 md:rounded-[var(--radius-card)]">
+        {deal.image_url && (
+          <Image src={deal.image_url} alt="" fill priority sizes="(max-width: 768px) 100vw, 768px" className="object-cover" />
+        )}
+        <span className="bg-coral-500 absolute bottom-4 left-4 rounded-2xl px-4 py-2 text-2xl font-extrabold text-white shadow-xl">
           {deal.discount_label}
         </span>
         {deal.is_demo && <DemoBadge className="absolute top-4 left-4" />}
@@ -60,9 +67,9 @@ export default async function DealPage({ params }: Props) {
             {cat.emoji} {cat.label}
           </Badge>
           <h1 className="mt-2 text-2xl font-extrabold tracking-tight">{deal.title}</h1>
-          <p className="mt-1 font-semibold text-muted">{deal.partner?.name}</p>
+          <p className="text-muted mt-1 font-semibold">{deal.partner?.name}</p>
         </div>
-        <FavoriteButton kind="deal" id={deal.id} initial={!!fav} className="shrink-0 ring-1 ring-line" />
+        <FavoriteButton kind="deal" id={deal.id} initial={!!fav} className="ring-line shrink-0 ring-1" />
       </div>
 
       {deal.is_demo && (
@@ -73,16 +80,18 @@ export default async function DealPage({ params }: Props) {
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[var(--shadow-card)]">
-          <MapPin className="size-5 shrink-0 text-brand-600" aria-hidden />
+          <MapPin className="text-brand-600 size-5 shrink-0" aria-hidden />
           <div className="min-w-0 text-sm">
             <p className="font-semibold">{deal.district ?? "Conakry"}</p>
-            {deal.partner?.address && <p className="truncate text-muted">{deal.partner.address}</p>}
+            {deal.partner?.address && <p className="text-muted truncate">{deal.partner.address}</p>}
           </div>
         </div>
         <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[var(--shadow-card)]">
-          <CalendarDays className="size-5 shrink-0 text-brand-600" aria-hidden />
+          <CalendarDays className="text-brand-600 size-5 shrink-0" aria-hidden />
           <div className="text-sm">
-            <p className="font-semibold">{expired ? "Offre expirée" : deal.valid_until ? `Jusqu'au ${formatDate(deal.valid_until)}` : "Sans date limite"}</p>
+            <p className="font-semibold">
+              {expired ? "Offre expirée" : deal.valid_until ? `Jusqu'au ${formatDate(deal.valid_until)}` : "Sans date limite"}
+            </p>
             <p className="text-muted">Depuis le {formatDate(deal.valid_from)}</p>
           </div>
         </div>
@@ -91,20 +100,22 @@ export default async function DealPage({ params }: Props) {
       <section className="mt-6 space-y-5 rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <div>
           <h2 className="font-bold">L&apos;offre</h2>
-          <p className="mt-1 leading-relaxed whitespace-pre-line text-ink/80">{deal.description || "—"}</p>
+          <p className="text-ink/80 mt-1 leading-relaxed whitespace-pre-line">{deal.description || "—"}</p>
         </div>
         <div>
           <h2 className="font-bold">Conditions</h2>
-          <p className="mt-1 leading-relaxed whitespace-pre-line text-ink/80">{deal.conditions || "Aucune condition particulière."}</p>
+          <p className="text-ink/80 mt-1 leading-relaxed whitespace-pre-line">
+            {deal.conditions || "Aucune condition particulière."}
+          </p>
         </div>
         {deal.partner?.description && (
           <div>
             <h2 className="font-bold">À propos de {deal.partner.name}</h2>
-            <p className="mt-1 leading-relaxed text-ink/80">{deal.partner.description}</p>
+            <p className="text-ink/80 mt-1 leading-relaxed">{deal.partner.description}</p>
           </div>
         )}
         {deal.partner?.phone && !deal.partner.is_demo && (
-          <a href={`tel:${deal.partner.phone}`} className="inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
+          <a href={`tel:${deal.partner.phone}`} className="text-brand-600 inline-flex items-center gap-2 text-sm font-semibold">
             <Phone className="size-4" /> {deal.partner.phone}
           </a>
         )}
@@ -112,7 +123,9 @@ export default async function DealPage({ params }: Props) {
 
       <div className="sticky bottom-20 z-20 mt-6 lg:bottom-4">
         {expired ? (
-          <p className="rounded-2xl bg-canvas p-4 text-center text-sm font-semibold text-muted ring-1 ring-line">Cette offre a expiré.</p>
+          <p className="bg-canvas text-muted ring-line rounded-2xl p-4 text-center text-sm font-semibold ring-1">
+            Cette offre a expiré.
+          </p>
         ) : verified || !deal.requires_verification ? (
           <LinkButton href="/carte" size="lg" className="w-full">
             <CreditCard className="size-5" /> Présenter ma carte

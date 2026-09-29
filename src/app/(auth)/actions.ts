@@ -142,7 +142,9 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
 }
 
 export async function resendConfirmation(_prev: FormState, formData: FormData): Promise<FormState> {
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
   if (!email.includes("@")) return { error: "Email invalide." };
   const supabase = await createClient();
   const { error } = await supabase.auth.resend({

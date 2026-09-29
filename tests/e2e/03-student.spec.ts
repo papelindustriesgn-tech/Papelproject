@@ -17,8 +17,7 @@ test("vérification étudiante : envoi du justificatif → validation admin → 
   await page.selectOption("#document_type", "student_card");
   await page.setInputFiles('[data-testid="doc-input"]', fixture("student-card.jpg"));
   await page.getByRole("button", { name: "Envoyer mon justificatif" }).click();
-  await expect(page.getByText(/Justificatif envoyé/)).toBeVisible();
-  await page.reload();
+  await expect(page.getByText(/a été envoyé à l'instant/)).toBeVisible();
   await expect(page.getByText("Vérification en cours").first()).toBeVisible();
 
   // Validation par l'administrateur
@@ -70,10 +69,15 @@ test("avantages : filtres, recherche, détail, favori", async ({ page }) => {
   await page.goto("/avantages?quartier=Kipé");
   await expect(page.getByText("Burger étudiant à -15 %")).toBeVisible();
   await page.getByText("Burger étudiant à -15 %").click();
+  await page.waitForLoadState("networkidle");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Burger étudiant à -15 %");
   await expect(page.getByText("Contenu de démonstration.")).toBeVisible();
   await expect(page.getByRole("link", { name: /Vérifier mon statut/ })).toBeVisible();
-  await page.getByRole("button", { name: "Ajouter aux favoris" }).click();
+  // Attendre la réponse de la Server Action avant de quitter la page
+  await Promise.all([
+    page.waitForResponse((r) => r.request().method() === "POST"),
+    page.getByRole("button", { name: "Ajouter aux favoris" }).click(),
+  ]);
   await expect(page.getByRole("button", { name: "Retirer des favoris" })).toBeVisible();
   await page.goto("/favoris");
   await expect(page.getByText("Burger étudiant à -15 %")).toBeVisible();
@@ -85,7 +89,11 @@ test("jobs : filtre par type, sauvegarde, candidature", async ({ page }) => {
   await expect(page.getByText("Stage marketing")).toBeVisible();
   await expect(page.getByText("Développeur web junior")).toHaveCount(0);
   await page.getByText("Stage marketing").click();
-  await page.getByRole("button", { name: "Ajouter aux favoris" }).click();
+  await page.waitForLoadState("networkidle");
+  await Promise.all([
+    page.waitForResponse((r) => r.request().method() === "POST"),
+    page.getByRole("button", { name: "Ajouter aux favoris" }).click(),
+  ]);
   await page.fill("#message", "Bonjour, je suis très motivée par ce stage marketing.");
   await page.getByRole("button", { name: "Envoyer ma candidature" }).click();
   await expect(page.getByText(/Candidature envoyée/)).toBeVisible();

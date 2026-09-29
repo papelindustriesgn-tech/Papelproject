@@ -27,7 +27,16 @@ const APP = [
   "/favoris",
   "/notifications",
 ];
-const ADMIN_PAGES = ["/admin", "/admin/verifications", "/admin/utilisateurs", "/admin/avantages", "/admin/avantages/nouveau", "/admin/logements", "/admin/marketplace", "/admin/statistiques"];
+const ADMIN_PAGES = [
+  "/admin",
+  "/admin/verifications",
+  "/admin/utilisateurs",
+  "/admin/avantages",
+  "/admin/avantages/nouveau",
+  "/admin/logements",
+  "/admin/marketplace",
+  "/admin/statistiques",
+];
 
 for (const vp of VIEWPORTS) {
   test(`aucun débordement horizontal — ${vp.name}`, async ({ page }) => {
@@ -44,7 +53,10 @@ for (const vp of VIEWPORTS) {
     // Pages de détail
     for (const list of ["/avantages", "/jobs", "/logement", "/marketplace"]) {
       await page.goto(list);
-      const href = await page.locator(`main a[href^="${list}/"]:not([href$="nouveau"]):not([href$="mes-annonces"])`).first().getAttribute("href");
+      const href = await page
+        .locator(`main a[href^="${list}/"]:not([href$="nouveau"]):not([href$="mes-annonces"])`)
+        .first()
+        .getAttribute("href");
       await page.goto(href!);
       await expectNoHorizontalOverflow(page);
     }
@@ -52,7 +64,8 @@ for (const vp of VIEWPORTS) {
       // Navigation basse visible et complète sur mobile
       const nav = page.getByRole("navigation", { name: "Navigation principale" });
       await expect(nav).toBeVisible();
-      for (const l of ["Accueil", "Avantages", "Jobs", "Marketplace", "Profil"]) await expect(nav.getByRole("link", { name: l })).toBeVisible();
+      for (const l of ["Accueil", "Avantages", "Jobs", "Marketplace", "Profil"])
+        await expect(nav.getByRole("link", { name: l })).toBeVisible();
       await expect(page.getByRole("link", { name: "Ma carte" })).toBeVisible();
       await expect(page.getByRole("link", { name: "Logement" }).first()).toBeVisible();
     }

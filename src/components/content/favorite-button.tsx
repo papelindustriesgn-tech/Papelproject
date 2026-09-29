@@ -40,7 +40,9 @@ export function FavoriteButton({
       }}
       className={cn(
         "inline-flex items-center justify-center gap-2 rounded-full transition active:scale-90",
-        withLabel ? "h-11 border border-line bg-white px-4 text-sm font-semibold" : "size-10 bg-white/95 shadow-[var(--shadow-card)]",
+        withLabel
+          ? "border-line h-11 border bg-white px-4 text-sm font-semibold"
+          : "size-10 bg-white/95 shadow-[var(--shadow-card)]",
         fav ? "text-coral-500" : "text-ink/70 hover:text-coral-500",
         className,
       )}

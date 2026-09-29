@@ -12,7 +12,12 @@ export function ApplyForm({ jobId, firstName }: { jobId: string; firstName: stri
     <form action={action} className="space-y-3">
       <input type="hidden" name="job_id" value={jobId} />
       <FormMessage>{state.error}</FormMessage>
-      <Field label="Ton message" htmlFor="message" error={state.fieldErrors?.message} hint="Présente-toi en quelques lignes : disponibilités, motivation, expériences.">
+      <Field
+        label="Ton message"
+        htmlFor="message"
+        error={state.fieldErrors?.message}
+        hint="Présente-toi en quelques lignes : disponibilités, motivation, expériences."
+      >
         <Textarea
           id="message"
           name="message"

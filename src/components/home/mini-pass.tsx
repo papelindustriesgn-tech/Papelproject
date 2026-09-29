@@ -24,7 +24,7 @@ export function MiniPass({
   return (
     <Link
       href="/carte"
-      className="uny-pattern group relative flex items-center gap-3 overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br from-brand-800 via-brand-700 to-brand-500 p-4 text-white shadow-[var(--shadow-float)] transition active:scale-[0.99]"
+      className="uny-pattern group from-brand-800 via-brand-700 to-brand-500 relative flex items-center gap-3 overflow-hidden rounded-[var(--radius-card)] bg-gradient-to-br p-4 text-white shadow-[var(--shadow-float)] transition active:scale-[0.99]"
     >
       <Avatar src={avatar} first={first} last={last} size={52} className="bg-white/20 text-white ring-2 ring-white/40" />
       <div className="min-w-0 flex-1">

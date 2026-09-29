@@ -36,7 +36,13 @@ function range(page: number) {
 
 async function _listDeals(
   supabase: AnyClient,
-  { category, q, district, page = 1, featured }: { category?: string; q?: string; district?: string; page?: number; featured?: boolean },
+  {
+    category,
+    q,
+    district,
+    page = 1,
+    featured,
+  }: { category?: string; q?: string; district?: string; page?: number; featured?: boolean },
 ) {
   let query = supabase
     .from("deals")
@@ -48,17 +54,16 @@ async function _listDeals(
   if (featured) query = query.eq("is_featured", true);
   if (q) query = query.ilike("title", ilikePattern(q));
   const [from, to] = range(page);
-  const { data, error } = await query.order("is_featured", { ascending: false }).order("created_at", { ascending: false }).range(from, to);
+  const { data, error } = await query
+    .order("is_featured", { ascending: false })
+    .order("created_at", { ascending: false })
+    .range(from, to);
   if (error) throw error;
   return { items: (data ?? []).slice(0, PAGE_SIZE), hasMore: (data?.length ?? 0) > PAGE_SIZE };
 }
 
 async function _listJobs(supabase: AnyClient, { type, q, page = 1 }: { type?: string; q?: string; page?: number }) {
-  let query = supabase
-    .from("jobs")
-    .select(JOB_COLUMNS)
-    .eq("is_active", true)
-    .or(`deadline.is.null,deadline.gte.${today()}`);
+  let query = supabase.from("jobs").select(JOB_COLUMNS).eq("is_active", true).or(`deadline.is.null,deadline.gte.${today()}`);
   if (type) query = query.eq("type", type as JobType);
   if (q) query = query.or(`title.ilike.${ilikePattern(q)},company_name.ilike.${ilikePattern(q)}`);
   const [from, to] = range(page);
@@ -69,7 +74,13 @@ async function _listJobs(supabase: AnyClient, { type, q, page = 1 }: { type?: st
 
 async function _listHousing(
   supabase: AnyClient,
-  { type, district, max, available, page = 1 }: { type?: string; district?: string; max?: number; available?: boolean; page?: number },
+  {
+    type,
+    district,
+    max,
+    available,
+    page = 1,
+  }: { type?: string; district?: string; max?: number; available?: boolean; page?: number },
 ) {
   let query = supabase.from("housing").select(HOUSING_COLUMNS).eq("is_active", true);
   if (type) query = query.eq("type", type as HousingType);
@@ -77,7 +88,10 @@ async function _listHousing(
   if (max) query = query.lte("price_gnf", max);
   if (available) query = query.eq("is_available", true).or(`available_from.is.null,available_from.lte.${today()}`);
   const [from, to] = range(page);
-  const { data, error } = await query.order("is_available", { ascending: false }).order("created_at", { ascending: false }).range(from, to);
+  const { data, error } = await query
+    .order("is_available", { ascending: false })
+    .order("created_at", { ascending: false })
+    .range(from, to);
   if (error) throw error;
   return { items: (data ?? []).slice(0, PAGE_SIZE), hasMore: (data?.length ?? 0) > PAGE_SIZE };
 }
@@ -132,7 +146,10 @@ async function _listMarket(
   const { data, error } = await query.order("created_at", { ascending: false }).range(from, to);
   if (error) throw error;
   const rows = (data ?? []) as RawItem[];
-  const verified = await verifiedSellerSet(createAdminClient(), rows.map((r) => r.seller_id));
+  const verified = await verifiedSellerSet(
+    createAdminClient(),
+    rows.map((r) => r.seller_id),
+  );
   return { items: rows.slice(0, PAGE_SIZE).map((r) => toItemCard(r, verified)), hasMore: rows.length > PAGE_SIZE };
 }
 

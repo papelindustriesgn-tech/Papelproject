@@ -15,7 +15,7 @@ export default async function EditProfilePage() {
     supabase.from("cities").select("id, name").eq("country_code", p.country_code).order("name"),
   ]);
   return (
-    <div className="mx-auto max-w-2xl animate-fade-up">
+    <div className="animate-fade-up mx-auto max-w-2xl">
       <BackLink href="/profil" label="Profil" />
       <PageTitle title="Mes informations" />
       <div className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
