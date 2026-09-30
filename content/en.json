@@ -136,7 +136,7 @@
     "title": "Papel — Soft, strong tissues in Guinea | Everyday quality",
     "description": "Papel Doux: soft and strong 3-ply tissues, available everywhere in Conakry and Guinea at a fair price. Wholesalers and distributors: join the Papel network.",
     "hero": {
-      "eyebrow": "Papel Industries · CIG Group",
+      "eyebrow": "Papel Industries",
       "titleA": "Everyday",
       "titleB": "quality.",
       "subtitle": "Soft, strong tissues, available everywhere, at a fair price.",
@@ -188,23 +188,23 @@
     "group": {
       "kicker": "Who we are",
       "title": "A new benchmark in paper hygiene.",
-      "text": "Papel Industries, a company of the CIG group, designs and manufactures paper hygiene products for households, shops and professionals. Our commitment: a quality product, affordable and consistent, every day.",
-      "more": "Discover the group",
+      "text": "Papel Industries designs and manufactures paper hygiene products for households, shops and professionals. Our commitment: a quality product, affordable and consistent, every day.",
+      "more": "Discover Papel Industries",
       "facts": [
         {
           "k": "Parent company",
-          "v": "CIG Holding · CIG Industries"
+          "v": "Papel Industries"
         },
         {
-          "k": "Company",
-          "v": "Papel Industries"
+          "k": "Brand",
+          "v": "Papel"
         },
         {
           "k": "Industrial site",
           "v": "Coyah"
         },
         {
-          "k": "First brand",
+          "k": "First range",
           "v": "Papel Doux"
         },
         {
@@ -276,11 +276,11 @@
   },
   "about": {
     "title": "About — Vision, mission and values | Papel Industries",
-    "description": "Papel Industries (CIG group): our vision, our mission, our values of quality, accessibility and consistency, and our modern factory in Coyah.",
+    "description": "Papel Industries: our vision, our mission, our values of quality, accessibility and consistency, and our modern factory in Coyah.",
     "kicker": "About",
     "title1": "A simple brand,",
     "title2": "an everyday standard.",
-    "intro": "Papel is the paper hygiene brand of Papel Industries, a company of the CIG group.",
+    "intro": "Papel is the paper hygiene brand of Papel Industries.",
     "visionLabel": "Vision",
     "vision": "To become the reference brand for paper hygiene products in Guinea, then in West Africa.",
     "missionLabel": "Mission",
@@ -484,7 +484,7 @@
     "sections": [
       {
         "title": "Publisher",
-        "text": "Papel Industries, a company of the CIG group (CIG Holding / CIG Industries). [Legal form, share capital, RCCM, NIF]. Registered office: [address], Coyah, Guinea. Publication director: [name]."
+        "text": "Papel Industries. [Legal form, share capital, RCCM, NIF]. Registered office: [address], Coyah, Guinea. Publication director: [name]."
       },
       {
         "title": "Hosting",
@@ -553,7 +553,7 @@
     "contactTitle": "Contact",
     "followTitle": "Follow us",
     "legal": "Legal notice",
-    "company": "Papel Industries, CIG group",
+    "company": "Papel Industries",
     "rights": "All rights reserved."
   }
 }

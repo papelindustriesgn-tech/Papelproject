@@ -136,7 +136,7 @@
     "title": "Papel — Mouchoirs doux et résistants en Guinée | La qualité au quotidien",
     "description": "Papel Doux : mouchoirs 3 plis doux et résistants, disponibles partout à Conakry et en Guinée, au juste prix. Grossistes et distributeurs : rejoignez le réseau Papel.",
     "hero": {
-      "eyebrow": "Papel Industries · Groupe CIG",
+      "eyebrow": "Papel Industries",
       "titleA": "La qualité",
       "titleB": "au quotidien.",
       "subtitle": "Des mouchoirs doux et résistants, disponibles partout, au juste prix.",
@@ -188,23 +188,23 @@
     "group": {
       "kicker": "Qui sommes-nous",
       "title": "Une nouvelle référence de l'hygiène papier.",
-      "text": "Papel Industries, société du groupe CIG, conçoit et fabrique des produits d'hygiène en papier pour les foyers, les commerces et les professionnels. Notre engagement : un produit de qualité, accessible et constant, chaque jour.",
-      "more": "Découvrir le groupe",
+      "text": "Papel Industries conçoit et fabrique des produits d'hygiène en papier pour les foyers, les commerces et les professionnels. Notre engagement : un produit de qualité, accessible et constant, chaque jour.",
+      "more": "Découvrir Papel Industries",
       "facts": [
         {
           "k": "Maison mère",
-          "v": "CIG Holding · CIG Industries"
+          "v": "Papel Industries"
         },
         {
-          "k": "Société",
-          "v": "Papel Industries"
+          "k": "Marque",
+          "v": "Papel"
         },
         {
           "k": "Site industriel",
           "v": "Coyah"
         },
         {
-          "k": "Première marque",
+          "k": "Première gamme",
           "v": "Papel Doux"
         },
         {
@@ -276,11 +276,11 @@
   },
   "about": {
     "title": "À propos — Vision, mission et valeurs | Papel Industries",
-    "description": "Papel Industries (groupe CIG) : notre vision, notre mission, nos valeurs qualité, accessibilité, constance, et notre usine moderne à Coyah.",
+    "description": "Papel Industries : notre vision, notre mission, nos valeurs qualité, accessibilité, constance, et notre usine moderne à Coyah.",
     "kicker": "À propos",
     "title1": "Une marque simple,",
     "title2": "une exigence de chaque jour.",
-    "intro": "Papel est la marque de produits d'hygiène en papier de Papel Industries, société du groupe CIG.",
+    "intro": "Papel est la marque de produits d'hygiène en papier de Papel Industries.",
     "visionLabel": "Vision",
     "vision": "Devenir la marque de référence des produits d'hygiène en papier en Guinée, puis en Afrique de l'Ouest.",
     "missionLabel": "Mission",
@@ -484,7 +484,7 @@
     "sections": [
       {
         "title": "Éditeur du site",
-        "text": "Papel Industries, société du groupe CIG (CIG Holding / CIG Industries). [Forme juridique, capital social, RCCM, NIF]. Siège : [adresse], Coyah, Guinée. Directeur de la publication : [nom]."
+        "text": "Papel Industries. [Forme juridique, capital social, RCCM, NIF]. Siège : [adresse], Coyah, Guinée. Directeur de la publication : [nom]."
       },
       {
         "title": "Hébergement",
@@ -553,7 +553,7 @@
     "contactTitle": "Contact",
     "followTitle": "Suivez-nous",
     "legal": "Mentions légales",
-    "company": "Papel Industries, groupe CIG",
+    "company": "Papel Industries",
     "rights": "Tous droits réservés."
   }
 }

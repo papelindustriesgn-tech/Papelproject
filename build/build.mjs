@@ -330,7 +330,6 @@ const orgLD = (lang) => ({
   url: abs(url('home', lang)),
   logo: abs('/assets/img/icon-512.png'),
   slogan: content[lang].meta.tagline,
-  parentOrganization: { '@type': 'Organization', name: 'CIG Holding' },
   sameAs: Object.values(cfg.social),
   address: { '@type': 'PostalAddress', streetAddress: cfg.address.street, addressLocality: cfg.address.city, addressCountry: cfg.address.country },
   contactPoint: [{ '@type': 'ContactPoint', telephone: cfg.phone, contactType: 'sales', areaServed: ['GN', 'SL'], availableLanguage: ['French', 'English'] }]
@@ -344,8 +343,9 @@ const orgLD = (lang) => ({
 function pageHome(lang) {
   const t = content[lang]; const h = t.home; const A = t.about;
   const body = `
-<section class="hero hero--dark">
+<section class="hero hero--dark hero--type">
   <div class="hero__grain" aria-hidden="true"></div>
+  ${leaves('leaves--hero-type')}
   <div class="container hero__grid">
     <div class="hero__text">
       <p class="eyebrow eyebrow--light reveal">${esc(h.hero.eyebrow)}</p>
@@ -355,14 +355,8 @@ function pageHome(lang) {
         <a class="btn btn--light" href="${url('products', lang)}">${esc(h.hero.ctaPrimary)} ${icon('arrow', { size: 20 })}</a>
         <a class="btn btn--outline-light" href="${url('distributor', lang)}">${esc(h.hero.ctaSecondary)}</a>
       </div>
+      <p class="hero__launch reveal">${esc(h.hero.badge)}</p>
     </div>
-    <figure class="hero__media reveal">
-      <div class="hero__frame">
-        ${img('pochette-hero', h.hero.imageAlt, { sizes: '(min-width: 900px) 46vw, 92vw', eager: true, cls: 'hero__img' })}
-      </div>
-      <figcaption class="hero__badge">${esc(h.hero.badge)}</figcaption>
-      <ul class="hero__chips" role="list">${join(h.hero.chips, (c, i) => `<li style="--d:${i}">${icon('check', { size: 16 })}${esc(c)}</li>`)}</ul>
-    </figure>
   </div>
   <div class="hero__strip">
     <div class="container">
@@ -865,7 +859,7 @@ write('site.webmanifest', JSON.stringify({
 const size = (f) => fs.statSync(path.join(OUT, f)).size;
 const homeBytes = size('index.html') + size('assets/css/style.css') + size('assets/js/main.js')
   + size('assets/fonts/poppins-400.woff2') + size('assets/fonts/poppins-600.woff2') + size('assets/fonts/poppins-700.woff2')
-  + size('assets/fonts/lora-italic-500.woff2') + size('assets/img/pochette-hero-710.webp');
+  + size('assets/fonts/lora-italic-500.woff2');
 console.log(`✔ Site généré dans dist/ (${LANGS.length * Object.keys(PAGES).length} pages).`);
 console.log(`  Poids initial de l'accueil (hors images différées) : ~${Math.round(homeBytes / 1024)} Ko`);
 const todo = Object.entries(cfg).filter(([k, v]) => typeof v === 'string' && !k.startsWith('_') && /\[|XXX/.test(v)).map(([k]) => k);

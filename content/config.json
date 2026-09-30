@@ -1,18 +1,14 @@
 {
   "_aide": "Réglages globaux du site. Remplacez les valeurs entre crochets [ ] puis relancez « npm run build ».",
-
   "_siteUrl": "Adresse publique du site. Provisoire : URL de test Vercel. À remplacer par le vrai domaine (ex. https://www.papel.gn).",
   "siteUrl": "https://papel-site-two.vercel.app",
   "brand": "Papel",
   "company": "Papel Industries",
-  "group": "groupe CIG",
-
   "whatsapp": "224XXXXXXXXX",
   "whatsappDisplay": "+224 XXX XX XX XX",
   "phone": "+224XXXXXXXXX",
   "phoneDisplay": "+224 XXX XX XX XX",
   "email": "[contact@papel.gn]",
-
   "address": {
     "street": "[Zone industrielle, adresse exacte]",
     "city": "Coyah",
@@ -21,7 +17,6 @@
     "lat": 9.7082,
     "lng": -13.3876
   },
-
   "social": {
     "facebook": "https://www.facebook.com/papeldoux",
     "instagram": "https://www.instagram.com/papeldoux",
@@ -29,14 +24,11 @@
     "linkedin": "https://www.linkedin.com/company/papeldoux"
   },
   "socialHandle": "@papeldoux",
-
   "_forms": "Adresse (URL) qui reçoit les formulaires en POST JSON : Formspree, Web3Forms, Make/n8n ou un contrôleur Odoo. Vide = repli automatique sur WhatsApp.",
   "formEndpoint": "",
   "formEmail": "[contact@papel.gn]",
-
   "_analytics": "Identifiants de mesure (laisser vide pour désactiver). GA4 : G-XXXXXXX. Meta Pixel : identifiant numérique.",
   "ga4Id": "",
   "metaPixelId": "",
-
   "publicPrice": "5 000 GNF"
 }
