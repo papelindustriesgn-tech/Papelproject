@@ -122,3 +122,18 @@ test("enquête d'avis : invitation, réponse, résultats admin et export", async
   expect(res.headers()["content-type"]).toContain("text/csv");
   expect(await res.text()).toContain(`Plus de stages ${run}`);
 });
+
+test("admin : contacter les inscrits par WhatsApp ou SMS", async ({ page }) => {
+  const s = await signUp(page);
+  await logout(page);
+  await login(page, ADMIN.email, ADMIN.password);
+  await page.goto("/admin/contacts");
+  const row = page.locator("li", { hasText: s.last });
+  await expect(row).toBeVisible();
+  const wa = row.getByRole("link", { name: "WhatsApp" });
+  const href = decodeURIComponent((await wa.getAttribute("href")) ?? "");
+  expect(href).toContain(`wa.me/224`);
+  expect(href).toContain(`Bonjour ${s.first}`);
+  expect(href).toContain("/avis");
+  await expect(row.getByRole("link", { name: "SMS" })).toHaveAttribute("href", /^sms:\+224/);
+});

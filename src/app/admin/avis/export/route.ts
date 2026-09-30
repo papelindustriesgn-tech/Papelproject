@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/auth";
-import { labelOf, SURVEY_MODULES, SURVEY_SOURCES, SURVEY_WOULD_PAY } from "@/lib/survey";
+import { labelOf, SURVEY_MODULES, SURVEY_SOURCES, SURVEY_SUBSCRIPTION_PRICE, SURVEY_WOULD_PAY } from "@/lib/survey";
 import { getSurveyResponses, universityOf } from "@/lib/survey-results";
 
 /** Export CSV des réponses (séparateur « ; » et BOM UTF-8 pour une ouverture directe dans Excel). */
@@ -17,7 +17,7 @@ export async function GET() {
     "Note (1-5)",
     "Recommandation (0-10)",
     "Services intéressants",
-    "Paierait un abonnement",
+    `Paierait ${SURVEY_SUBSCRIPTION_PRICE}`,
     "Ce qui manque",
     "Enseignes souhaitées",
     "Accepte d'être contacté",

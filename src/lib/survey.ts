@@ -24,3 +24,6 @@ export const SURVEY_WOULD_PAY = [
 
 export const labelOf = (list: readonly { value: string; label: string }[], v: string) =>
   list.find((o) => o.value === v)?.label ?? v;
+
+/** Prix de l'abonnement testé dans l'enquête (question 5). */
+export const SURVEY_SUBSCRIPTION_PRICE = "50\u00a0000\u00a0GNF par mois";

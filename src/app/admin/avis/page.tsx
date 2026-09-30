@@ -2,7 +2,7 @@ import { Download, Phone, Mail } from "lucide-react";
 import { StatCard } from "@/components/admin/stat-card";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { labelOf, SURVEY_MODULES, SURVEY_SOURCES, SURVEY_WOULD_PAY } from "@/lib/survey";
+import { labelOf, SURVEY_MODULES, SURVEY_SOURCES, SURVEY_SUBSCRIPTION_PRICE, SURVEY_WOULD_PAY } from "@/lib/survey";
 import { getSurveyResponses, universityOf } from "@/lib/survey-results";
 
 export const metadata = { title: "Avis des inscrits" };
@@ -97,7 +97,7 @@ export default async function SurveyResultsPage() {
             <Bars title="Services les plus attendus" rows={byOption(SURVEY_MODULES, (r) => r.modules)} total={n} />
             <Bars title="Comment ils ont connu Uny" rows={byOption(SURVEY_SOURCES, (r) => [r.source])} total={n} />
             <Bars
-              title="Paieraient un abonnement"
+              title={`Paieraient un abonnement de ${SURVEY_SUBSCRIPTION_PRICE}`}
               rows={SURVEY_WOULD_PAY.map((o) => ({ label: o.label, count: count((r) => r.would_pay === o.value) }))}
               total={n}
             />

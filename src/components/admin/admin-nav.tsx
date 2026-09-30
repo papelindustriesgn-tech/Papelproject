@@ -9,6 +9,7 @@ import {
   House,
   LayoutDashboard,
   MessageSquareHeart,
+  Send,
   ShoppingBag,
   Tag,
   UserCheck,
@@ -27,6 +28,7 @@ export const ADMIN_NAV = [
   { href: "/admin/marketplace", label: "Marketplace", icon: ShoppingBag },
   { href: "/admin/statistiques", label: "Statistiques", icon: BarChart3 },
   { href: "/admin/avis", label: "Avis des inscrits", icon: MessageSquareHeart },
+  { href: "/admin/contacts", label: "Contacter les inscrits", icon: Send },
 ];
 
 export function AdminNav({ pending }: { pending: number }) {

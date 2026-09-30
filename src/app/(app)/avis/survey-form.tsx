@@ -6,7 +6,7 @@ import { Star } from "lucide-react";
 import { FormMessage, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { cn } from "@/lib/cn";
-import { SURVEY_MODULES, SURVEY_SOURCES, SURVEY_WOULD_PAY } from "@/lib/survey";
+import { SURVEY_MODULES, SURVEY_SOURCES, SURVEY_SUBSCRIPTION_PRICE, SURVEY_WOULD_PAY } from "@/lib/survey";
 import { submitSurvey } from "./actions";
 
 export type SurveyValues = {
@@ -167,8 +167,8 @@ export function SurveyForm({ initial }: { initial: SurveyValues }) {
 
       <Question
         n={5}
-        title="Paierais-tu un petit abonnement pour plus d'avantages ?"
-        hint="Par exemple des réductions exclusives chez les partenaires."
+        title={`Paierais-tu un abonnement Uny de ${SURVEY_SUBSCRIPTION_PRICE} ?`}
+        hint="Pour des réductions exclusives chez les partenaires et des avantages en plus."
         error={err.would_pay}
       >
         <div className="flex flex-wrap gap-2">

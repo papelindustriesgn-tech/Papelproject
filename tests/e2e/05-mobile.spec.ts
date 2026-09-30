@@ -38,6 +38,7 @@ const ADMIN_PAGES = [
   "/admin/marketplace",
   "/admin/statistiques",
   "/admin/avis",
+  "/admin/contacts",
 ];
 
 for (const vp of VIEWPORTS) {
