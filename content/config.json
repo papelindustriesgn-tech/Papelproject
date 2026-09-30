@@ -1,7 +1,8 @@
 {
   "_aide": "Réglages globaux du site. Remplacez les valeurs entre crochets [ ] puis relancez « npm run build ».",
 
-  "siteUrl": "https://www.papel.gn",
+  "_siteUrl": "Adresse publique du site. Provisoire : URL de test Vercel. À remplacer par le vrai domaine (ex. https://www.papel.gn).",
+  "siteUrl": "https://papel-site-oumar-camara.vercel.app",
   "brand": "Papel",
   "company": "Papel Industries",
   "group": "groupe CIG",
