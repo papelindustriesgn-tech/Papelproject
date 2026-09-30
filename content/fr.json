@@ -1,0 +1,490 @@
+{
+  "_aide": "Tous les textes du site en français. Modifiez librement les valeurs (à droite des deux-points), jamais les clés (à gauche). Relancez ensuite « npm run build ».",
+  "meta": {
+    "lang": "fr",
+    "locale": "fr_FR",
+    "skip": "Aller au contenu",
+    "tagline": "La qualité au quotidien."
+  },
+  "nav": {
+    "home": "Accueil",
+    "products": "Nos produits",
+    "about": "À propos",
+    "distributor": "Devenir distributeur",
+    "where": "Où acheter",
+    "contact": "Contact",
+    "menu": "Menu",
+    "close": "Fermer le menu",
+    "langLabel": "English version",
+    "langShort": "EN",
+    "cta": "Devenir distributeur"
+  },
+  "whatsapp": {
+    "float": "Écrire à Papel sur WhatsApp",
+    "defaultMessage": "Bonjour Papel, j'aimerais avoir des informations.",
+    "orderMessage": "Bonjour Papel, je souhaite commander en gros : {product} ({pack}). Mon nom : … / Ma ville : …",
+    "distributorMessage": "Bonjour Papel, je viens d'envoyer ma demande pour devenir distributeur.",
+    "notifyMessage": "Bonjour Papel, prévenez-moi quand Papel Doux sera disponible près de chez moi. Quartier / ville : …"
+  },
+  "values": [
+    {
+      "id": "qualite",
+      "icon": "quality",
+      "title": "Qualité",
+      "text": "Doux et résistant, contrôlé à chaque étape."
+    },
+    {
+      "id": "accessibilite",
+      "icon": "access",
+      "title": "Accessibilité",
+      "text": "Un prix juste pour tous les foyers."
+    },
+    {
+      "id": "constance",
+      "icon": "constancy",
+      "title": "Constance",
+      "text": "Le même produit, chaque jour, partout."
+    }
+  ],
+  "products": [
+    {
+      "id": "pochette",
+      "name": "Papel Doux",
+      "variant": "Pochette souple",
+      "short": "La pochette souple qui se glisse partout : sur la table, au bureau, dans la voiture.",
+      "count": "100 mouchoirs",
+      "plies": "3 plis",
+      "size": "19 × 12,6 cm",
+      "pack": "Colis de 50 paquets",
+      "image": "pochette-face",
+      "imageAlt": "Paquet Papel Doux, pochette souple de 100 mouchoirs 3 plis",
+      "gallery": [
+        {
+          "image": "pochette-cote",
+          "alt": "Pochette Papel Doux vue de côté, mention 3 plis"
+        }
+      ]
+    },
+    {
+      "id": "boite",
+      "name": "Papel Doux",
+      "variant": "Boîte distributrice",
+      "short": "La boîte qui reste bien en place : idéale pour le salon, l'accueil, l'hôtel ou le bureau.",
+      "count": "100 mouchoirs",
+      "plies": "3 plis",
+      "size": "19 × 19,7 cm",
+      "pack": "Colis de 30 boîtes",
+      "image": "",
+      "imageAlt": "Boîte distributrice Papel Doux, 100 mouchoirs 3 plis",
+      "gallery": []
+    }
+  ],
+  "productFeatures": [
+    {
+      "icon": "leaf",
+      "title": "Pâte de bois vierge",
+      "text": "Une fibre pure, pour un mouchoir propre et net."
+    },
+    {
+      "icon": "layers",
+      "title": "3 plis",
+      "text": "Douceur au contact, résistance, absorption."
+    },
+    {
+      "icon": "feather",
+      "title": "Toucher doux",
+      "text": "Agréable pour le nez et le visage, même plusieurs fois par jour."
+    },
+    {
+      "icon": "shield",
+      "title": "Résistant",
+      "text": "Il ne se déchire pas quand on en a besoin."
+    }
+  ],
+  "plies": [
+    {
+      "title": "1er pli",
+      "text": "Douceur au contact de la peau"
+    },
+    {
+      "title": "2e pli",
+      "text": "Plus de résistance"
+    },
+    {
+      "title": "3e pli",
+      "text": "Une absorption optimale"
+    }
+  ],
+  "soon": [
+    {
+      "icon": "roll",
+      "title": "Papier toilette",
+      "text": "Doux, résistant, en rouleaux."
+    },
+    {
+      "icon": "towel",
+      "title": "Essuie-tout",
+      "text": "Absorbant, pour la cuisine et la maison."
+    },
+    {
+      "icon": "pocket",
+      "title": "Mouchoirs de poche",
+      "text": "Le format qui suit partout."
+    }
+  ],
+  "home": {
+    "title": "Papel — Mouchoirs doux et résistants en Guinée | La qualité au quotidien",
+    "description": "Papel Doux : mouchoirs 3 plis doux et résistants, disponibles partout à Conakry et en Guinée, au juste prix. Grossistes et distributeurs : rejoignez le réseau Papel.",
+    "hero": {
+      "eyebrow": "Papel Doux · 100 mouchoirs · 3 plis",
+      "titleA": "La qualité",
+      "titleB": "au quotidien.",
+      "subtitle": "Des mouchoirs doux et résistants, disponibles partout, au juste prix.",
+      "ctaPrimary": "Découvrir nos produits",
+      "ctaSecondary": "Devenir distributeur",
+      "imageAlt": "Paquet de mouchoirs Papel Doux, un mouchoir sortant de la pochette",
+      "badge": "Lancement décembre 2026"
+    },
+    "why": {
+      "kicker": "Pourquoi Papel",
+      "textA": "Chaque jour, dans chaque foyer, un geste simple.",
+      "textB": "Nous avons décidé d'en faire un geste de qualité."
+    },
+    "range": {
+      "kicker": "La gamme",
+      "title": "Papel Doux, en deux formats",
+      "text": "Le même mouchoir 3 plis, doux et résistant. À vous de choisir le format.",
+      "more": "Voir les produits",
+      "details": "Voir le détail"
+    },
+    "band": {
+      "title": "Vous êtes grossiste ?",
+      "titleB": "Rejoignez le réseau Papel.",
+      "text": "Un produit qui tourne vite, livré régulièrement, avec un interlocuteur dédié.",
+      "cta": "Devenir distributeur"
+    },
+    "stats": {
+      "kicker": "Papel en chiffres",
+      "items": [
+        {
+          "value": "2 000 m²",
+          "label": "Usine de 2 000 m²"
+        },
+        {
+          "value": "Déc. 2026",
+          "label": "Lancement : décembre 2026"
+        },
+        {
+          "value": "100 × 3",
+          "label": "100 mouchoirs, 3 plis"
+        }
+      ]
+    }
+  },
+  "productsPage": {
+    "title": "Nos produits — Mouchoirs Papel Doux 3 plis | Papel Guinée",
+    "description": "Mouchoirs Papel Doux en Guinée : pochette souple et boîte distributrice, 100 mouchoirs 3 plis en pâte de bois vierge. Commandez en gros sur WhatsApp.",
+    "kicker": "Nos produits",
+    "title1": "Papel Doux",
+    "title2": "doux, résistant, toujours le même.",
+    "intro": "Des mouchoirs 3 plis en pâte de bois vierge, pensés pour tous les foyers, bureaux et commerces de Conakry et de toute la Guinée.",
+    "featuresTitle": "Ce qui fait la différence",
+    "pliesTitle": "La douceur en 3 plis",
+    "specCount": "Contenu",
+    "specPlies": "Épaisseur",
+    "specSize": "Format",
+    "specPack": "Conditionnement",
+    "order": "Commander en gros",
+    "orderHint": "Ouvre WhatsApp avec un message prêt à envoyer.",
+    "priceLabel": "Prix public conseillé",
+    "priceUnit": "le paquet",
+    "priceNote": "Tarifs grossistes sur demande, selon les volumes.",
+    "photoSoon": "Photo à venir",
+    "soonKicker": "Bientôt",
+    "soonTitle": "La gamme s'agrandit",
+    "soonText": "Même exigence, nouveaux usages.",
+    "soonBadge": "Bientôt"
+  },
+  "about": {
+    "title": "À propos — Vision, mission et valeurs | Papel Industries",
+    "description": "Papel Industries (groupe CIG) : notre vision, notre mission, nos valeurs qualité, accessibilité, constance, et notre usine moderne à Coyah.",
+    "kicker": "À propos",
+    "title1": "Une marque simple,",
+    "title2": "une exigence de chaque jour.",
+    "intro": "Papel est la marque de produits d'hygiène en papier de Papel Industries, société du groupe CIG.",
+    "visionLabel": "Vision",
+    "vision": "Devenir la marque de référence des produits d'hygiène en papier en Guinée, puis en Afrique de l'Ouest.",
+    "missionLabel": "Mission",
+    "mission": "Offrir à chaque foyer des produits d'hygiène de qualité, à un prix accessible, disponibles partout et tout le temps.",
+    "valuesTitle": "Nos valeurs",
+    "factoryKicker": "L'usine",
+    "factoryTitle": "Une ligne de production moderne à Coyah",
+    "factoryText": "Nos mouchoirs sont fabriqués dans notre usine de 2 000 m² à Coyah. Chaque étape est maîtrisée sur une seule ligne, pour un produit identique d'un paquet à l'autre.",
+    "factorySteps": [
+      "Pliage",
+      "Gaufrage",
+      "Découpe",
+      "Emballage"
+    ],
+    "factoryCaption": "Vue d'architecte de l'usine Papel à Coyah",
+    "factoryImages": [
+      {
+        "image": "usine-facade",
+        "alt": "Façade de l'usine Papel Industries à Coyah, vue d'architecte"
+      },
+      {
+        "image": "usine-entree",
+        "alt": "Entrée et quai de chargement de l'usine Papel, vue d'architecte"
+      },
+      {
+        "image": "usine-cote",
+        "alt": "Façade latérale de l'usine, vue d'architecte"
+      }
+    ],
+    "ambitionsKicker": "Nos ambitions",
+    "ambitionsTitle": "Trois univers pour la maison",
+    "ambitions": [
+      {
+        "icon": "layers",
+        "title": "Hygiène papier",
+        "text": "Mouchoirs, papier toilette, essuie-tout.",
+        "tag": "Papel"
+      },
+      {
+        "icon": "heart",
+        "title": "Hygiène personnelle",
+        "text": "Couches, serviettes hygiéniques.",
+        "tag": "Bientôt"
+      },
+      {
+        "icon": "home",
+        "title": "Entretien de la maison",
+        "text": "Produits d'entretien du quotidien.",
+        "tag": "Marque Kindy"
+      }
+    ],
+    "roadmapKicker": "Feuille de route",
+    "roadmapTitle": "Cinq étapes, une direction",
+    "roadmap": [
+      {
+        "step": "Lancement",
+        "when": "Décembre 2026",
+        "text": "Papel Doux arrive sur le marché, pochette et boîte."
+      },
+      {
+        "step": "Montée en puissance",
+        "when": "Étape 2",
+        "text": "Un réseau de distributeurs dans tout Conakry, puis l'intérieur du pays."
+      },
+      {
+        "step": "Élargissement de la gamme",
+        "when": "Étape 3",
+        "text": "Papier toilette, essuie-tout, mouchoirs de poche."
+      },
+      {
+        "step": "Nouvelles lignes",
+        "when": "Étape 4",
+        "text": "Hygiène personnelle et entretien de la maison."
+      },
+      {
+        "step": "Afrique de l'Ouest",
+        "when": "Étape 5",
+        "text": "Papel disponible dans les pays voisins."
+      }
+    ]
+  },
+  "distributor": {
+    "title": "Devenir distributeur — Grossiste mouchoirs en Guinée | Papel",
+    "description": "Grossiste, semi-grossiste, supermarché, hôtel ? Distribuez les mouchoirs Papel Doux en Guinée : livraison à jour fixe, commercial dédié, conditions de volume attractives.",
+    "kicker": "Devenir distributeur",
+    "title1": "Un produit qui tourne vite,",
+    "title2": "livré régulièrement, avec un interlocuteur dédié.",
+    "intro": "Grossistes, semi-grossistes, détaillants, supermarchés, hôtels et bureaux : rejoignez le réseau Papel et proposez des mouchoirs que vos clients redemandent.",
+    "ctaForm": "Remplir le formulaire",
+    "ctaWhatsapp": "Parler à un commercial",
+    "benefitsTitle": "Pourquoi distribuer Papel",
+    "benefits": [
+      {
+        "icon": "calendar",
+        "title": "Livraison régulière à jour fixe",
+        "text": "Vous savez quand la marchandise arrive. Vous planifiez sereinement."
+      },
+      {
+        "icon": "user",
+        "title": "Un commercial dédié par zone",
+        "text": "Un seul interlocuteur, joignable, qui connaît votre quartier."
+      },
+      {
+        "icon": "box",
+        "title": "Produit toujours disponible",
+        "text": "Une production régulière et des stocks suivis : pas de rupture."
+      },
+      {
+        "icon": "megaphone",
+        "title": "Supports de vente fournis",
+        "text": "Affiches, présentoirs et visuels pour vos réseaux."
+      },
+      {
+        "icon": "percent",
+        "title": "Conditions de volume attractives",
+        "text": "Plus vous commandez, plus vos conditions s'améliorent."
+      }
+    ],
+    "stepsTitle": "Comment ça marche",
+    "steps": [
+      "Vous remplissez le formulaire (2 minutes).",
+      "Un commercial vous rappelle sous 48 h ouvrées.",
+      "Vous recevez votre première livraison."
+    ],
+    "formTitle": "Votre demande",
+    "formIntro": "Tous les champs marqués * sont obligatoires. Vos informations restent confidentielles.",
+    "submit": "Envoyer ma demande",
+    "successTitle": "Merci, votre demande est bien envoyée !",
+    "successText": "Un commercial Papel vous contacte sous 48 h ouvrées. Pour aller plus vite, écrivez-nous directement sur WhatsApp.",
+    "successCta": "Continuer sur WhatsApp"
+  },
+  "where": {
+    "title": "Où acheter les mouchoirs Papel à Conakry et en Guinée",
+    "description": "Trouvez un point de vente Papel Doux près de chez vous, à Conakry et dans toute la Guinée.",
+    "kicker": "Où acheter",
+    "title1": "Papel,",
+    "title2": "près de chez vous.",
+    "intro": "Boutiques, supermarchés et grossistes : trouvez le point de vente le plus proche.",
+    "soonTitle": "Bientôt disponible près de chez vous.",
+    "soonText": "Laissez votre numéro pour être prévenu dès l'arrivée de Papel Doux dans votre quartier.",
+    "notifySubmit": "Me prévenir",
+    "notifySuccess": "C'est noté ! Nous vous prévenons dès que Papel arrive près de chez vous.",
+    "search": "Rechercher un quartier ou une ville",
+    "searchPlaceholder": "Ex. : Kaloum, Ratoma, Kindia…",
+    "all": "Tout",
+    "showMap": "Afficher la carte",
+    "hideMap": "Masquer la carte",
+    "mapNote": "La carte se charge uniquement si vous la demandez, pour économiser vos données.",
+    "results": "{n} point(s) de vente",
+    "none": "Aucun point de vente trouvé pour cette recherche.",
+    "directions": "Itinéraire",
+    "call": "Appeler",
+    "types": {
+      "grossiste": "Grossiste",
+      "boutique": "Boutique",
+      "supermarche": "Supermarché",
+      "pharmacie": "Pharmacie",
+      "station": "Station-service"
+    },
+    "sellerTitle": "Vous voulez vendre Papel ?",
+    "sellerText": "Devenez point de vente ou distributeur.",
+    "sellerCta": "Devenir distributeur",
+    "mapError": "La carte n'a pas pu se charger. Vérifiez votre connexion et réessayez."
+  },
+  "contact": {
+    "title": "Contact — Papel Industries, Coyah | WhatsApp, téléphone, e-mail",
+    "description": "Contactez Papel : WhatsApp, téléphone, e-mail et adresse de l'usine à Coyah. Réponse rapide du lundi au samedi.",
+    "kicker": "Contact",
+    "title1": "Parlons-en,",
+    "title2": "on vous répond vite.",
+    "intro": "Le plus rapide : WhatsApp. Nous répondons aussi par téléphone et par e-mail.",
+    "whatsapp": "WhatsApp",
+    "whatsappCta": "Écrire sur WhatsApp",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "address": "Usine",
+    "hours": "Horaires",
+    "hoursValue": [
+      "Lundi – vendredi : 8 h – 17 h",
+      "Samedi : 9 h – 13 h"
+    ],
+    "mapLink": "Voir sur la carte",
+    "formTitle": "Envoyer un message",
+    "submit": "Envoyer",
+    "successTitle": "Message envoyé, merci !",
+    "successText": "Nous vous répondons au plus vite. Besoin d'une réponse immédiate ? Écrivez-nous sur WhatsApp.",
+    "successCta": "Ouvrir WhatsApp",
+    "subjects": [
+      "Question sur un produit",
+      "Commande en gros",
+      "Devenir distributeur",
+      "Partenariat / presse",
+      "Autre"
+    ]
+  },
+  "legal": {
+    "title": "Mentions légales | Papel Industries",
+    "description": "Mentions légales et politique de confidentialité du site Papel.",
+    "kicker": "Informations",
+    "heading": "Mentions légales",
+    "sections": [
+      {
+        "title": "Éditeur du site",
+        "text": "Papel Industries, société du groupe CIG (CIG Holding / CIG Industries). [Forme juridique, capital social, RCCM, NIF]. Siège : [adresse], Coyah, Guinée. Directeur de la publication : [nom]."
+      },
+      {
+        "title": "Hébergement",
+        "text": "[Nom de l'hébergeur, adresse, site internet]."
+      },
+      {
+        "title": "Propriété intellectuelle",
+        "text": "La marque Papel, le logo, les visuels et les textes de ce site sont la propriété de Papel Industries. Toute reproduction sans autorisation est interdite."
+      },
+      {
+        "title": "Données personnelles",
+        "text": "Les informations envoyées par les formulaires (nom, téléphone, ville, message) servent uniquement à répondre à votre demande et à gérer la relation commerciale. Elles ne sont ni vendues ni cédées. Vous pouvez demander leur modification ou leur suppression à tout moment par e-mail ou WhatsApp."
+      },
+      {
+        "title": "Mesure d'audience",
+        "text": "Le site peut mesurer anonymement les visites et les clics (par exemple sur WhatsApp) afin d'améliorer le service."
+      }
+    ]
+  },
+  "notFound": {
+    "title": "Page introuvable | Papel",
+    "heading": "Cette page s'est envolée.",
+    "text": "Le lien est peut-être incorrect. Revenez à l'accueil ou écrivez-nous sur WhatsApp.",
+    "cta": "Retour à l'accueil"
+  },
+  "form": {
+    "name": "Nom et prénom",
+    "company": "Entreprise ou commerce",
+    "type": "Type d'activité",
+    "typeChoose": "Choisir…",
+    "types": [
+      "Grossiste",
+      "Semi-grossiste",
+      "Détaillant / boutique",
+      "Supermarché",
+      "Hôtel / bureau"
+    ],
+    "city": "Ville ou quartier",
+    "volume": "Volume mensuel estimé",
+    "volumeChoose": "Choisir…",
+    "volumes": [
+      "Moins de 10 colis",
+      "10 à 50 colis",
+      "50 à 200 colis",
+      "Plus de 200 colis",
+      "Je ne sais pas encore"
+    ],
+    "phone": "Téléphone WhatsApp",
+    "phoneHint": "Ex. : 622 12 34 56",
+    "email": "E-mail (facultatif)",
+    "subject": "Sujet",
+    "message": "Message",
+    "messageOptional": "Message (facultatif)",
+    "required": "obligatoire",
+    "sending": "Envoi en cours…",
+    "errorRequired": "Merci de remplir ce champ.",
+    "errorPhone": "Merci d'indiquer un numéro valide (9 chiffres minimum).",
+    "errorSend": "L'envoi n'a pas fonctionné (connexion instable ?). Réessayez ou envoyez votre demande sur WhatsApp.",
+    "fallbackWhatsapp": "Envoyer sur WhatsApp",
+    "privacy": "En envoyant ce formulaire, vous acceptez d'être recontacté par Papel.",
+    "fallbackText": "Dernière étape : appuyez ci-dessous pour envoyer votre demande sur WhatsApp."
+  },
+  "footer": {
+    "about": "Des mouchoirs doux et résistants, disponibles partout, au juste prix.",
+    "navTitle": "Navigation",
+    "contactTitle": "Contact",
+    "followTitle": "Suivez-nous",
+    "legal": "Mentions légales",
+    "company": "Papel Industries, groupe CIG",
+    "rights": "Tous droits réservés."
+  }
+}

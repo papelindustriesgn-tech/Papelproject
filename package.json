@@ -1,0 +1,15 @@
+{
+  "name": "papel-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site officiel Papel — Papel Industries (groupe CIG), Coyah, Guinée",
+  "type": "module",
+  "scripts": {
+    "build": "node build/build.mjs",
+    "dev": "node build/build.mjs && node build/serve.mjs",
+    "serve": "node build/serve.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

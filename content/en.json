@@ -1,0 +1,490 @@
+{
+  "_help": "All English site texts. Edit the values (right of the colon), never the keys. Then run « npm run build ».",
+  "meta": {
+    "lang": "en",
+    "locale": "en_GB",
+    "skip": "Skip to content",
+    "tagline": "Everyday quality."
+  },
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "about": "About",
+    "distributor": "Become a distributor",
+    "where": "Where to buy",
+    "contact": "Contact",
+    "menu": "Menu",
+    "close": "Close menu",
+    "langLabel": "Version française",
+    "langShort": "FR",
+    "cta": "Become a distributor"
+  },
+  "whatsapp": {
+    "float": "Message Papel on WhatsApp",
+    "defaultMessage": "Hello Papel, I would like some information.",
+    "orderMessage": "Hello Papel, I would like to place a wholesale order: {product} ({pack}). My name: … / My city: …",
+    "distributorMessage": "Hello Papel, I have just sent my request to become a distributor.",
+    "notifyMessage": "Hello Papel, please let me know when Papel Doux is available near me. Area / city: …"
+  },
+  "values": [
+    {
+      "id": "quality",
+      "icon": "quality",
+      "title": "Quality",
+      "text": "Soft and strong, checked at every step."
+    },
+    {
+      "id": "accessibility",
+      "icon": "access",
+      "title": "Accessibility",
+      "text": "A fair price for every household."
+    },
+    {
+      "id": "consistency",
+      "icon": "constancy",
+      "title": "Consistency",
+      "text": "The same product, every day, everywhere."
+    }
+  ],
+  "products": [
+    {
+      "id": "pochette",
+      "name": "Papel Doux",
+      "variant": "Soft pack",
+      "short": "The soft pack that fits anywhere: on the table, at the office, in the car.",
+      "count": "100 tissues",
+      "plies": "3-ply",
+      "size": "19 × 12.6 cm",
+      "pack": "Case of 50 packs",
+      "image": "pochette-face",
+      "imageAlt": "Papel Doux soft pack of 100 three-ply tissues",
+      "gallery": [
+        {
+          "image": "pochette-cote",
+          "alt": "Papel Doux soft pack, side view showing 3 layers"
+        }
+      ]
+    },
+    {
+      "id": "boite",
+      "name": "Papel Doux",
+      "variant": "Dispenser box",
+      "short": "The box that stays put: perfect for the living room, reception desks, hotels and offices.",
+      "count": "100 tissues",
+      "plies": "3-ply",
+      "size": "19 × 19.7 cm",
+      "pack": "Case of 30 boxes",
+      "image": "",
+      "imageAlt": "Papel Doux dispenser box, 100 three-ply tissues",
+      "gallery": []
+    }
+  ],
+  "productFeatures": [
+    {
+      "icon": "leaf",
+      "title": "Virgin wood pulp",
+      "text": "Pure fibre for a clean, neat tissue."
+    },
+    {
+      "icon": "layers",
+      "title": "3-ply",
+      "text": "Softness, strength, absorbency."
+    },
+    {
+      "icon": "feather",
+      "title": "Soft touch",
+      "text": "Gentle on nose and face, even several times a day."
+    },
+    {
+      "icon": "shield",
+      "title": "Strong",
+      "text": "It won't tear when you need it."
+    }
+  ],
+  "plies": [
+    {
+      "title": "1st ply",
+      "text": "Softness against the skin"
+    },
+    {
+      "title": "2nd ply",
+      "text": "Extra strength"
+    },
+    {
+      "title": "3rd ply",
+      "text": "Optimal absorbency"
+    }
+  ],
+  "soon": [
+    {
+      "icon": "roll",
+      "title": "Toilet paper",
+      "text": "Soft and strong, in rolls."
+    },
+    {
+      "icon": "towel",
+      "title": "Kitchen towels",
+      "text": "Absorbent, for kitchen and home."
+    },
+    {
+      "icon": "pocket",
+      "title": "Pocket tissues",
+      "text": "The format that goes everywhere."
+    }
+  ],
+  "home": {
+    "title": "Papel — Soft, strong tissues in Guinea | Everyday quality",
+    "description": "Papel Doux: soft and strong 3-ply tissues, available everywhere in Conakry and Guinea at a fair price. Wholesalers and distributors: join the Papel network.",
+    "hero": {
+      "eyebrow": "Papel Doux · 100 tissues · 3-ply",
+      "titleA": "Everyday",
+      "titleB": "quality.",
+      "subtitle": "Soft, strong tissues, available everywhere, at a fair price.",
+      "ctaPrimary": "Discover our products",
+      "ctaSecondary": "Become a distributor",
+      "imageAlt": "Papel Doux tissue pack with a tissue popping out",
+      "badge": "Launching December 2026"
+    },
+    "why": {
+      "kicker": "Why Papel",
+      "textA": "Every day, in every home, a simple gesture.",
+      "textB": "We decided to make it a gesture of quality."
+    },
+    "range": {
+      "kicker": "The range",
+      "title": "Papel Doux, in two formats",
+      "text": "The same soft, strong 3-ply tissue. You choose the format.",
+      "more": "See all products",
+      "details": "See details"
+    },
+    "band": {
+      "title": "Are you a wholesaler?",
+      "titleB": "Join the Papel network.",
+      "text": "A fast-moving product, delivered regularly, with a dedicated contact.",
+      "cta": "Become a distributor"
+    },
+    "stats": {
+      "kicker": "Papel in figures",
+      "items": [
+        {
+          "value": "2,000 m²",
+          "label": "A 2,000 m² factory"
+        },
+        {
+          "value": "Dec. 2026",
+          "label": "Launch: December 2026"
+        },
+        {
+          "value": "100 × 3",
+          "label": "100 tissues, 3-ply"
+        }
+      ]
+    }
+  },
+  "productsPage": {
+    "title": "Our products — Papel Doux 3-ply tissues | Papel Guinea",
+    "description": "Papel Doux tissues in Guinea: soft pack and dispenser box, 100 three-ply tissues made from virgin wood pulp. Order wholesale on WhatsApp.",
+    "kicker": "Our products",
+    "title1": "Papel Doux",
+    "title2": "soft, strong, always the same.",
+    "intro": "3-ply tissues made from virgin wood pulp, designed for every home, office and shop in Conakry and across Guinea.",
+    "featuresTitle": "What makes the difference",
+    "pliesTitle": "Softness in 3 layers",
+    "specCount": "Contents",
+    "specPlies": "Thickness",
+    "specSize": "Size",
+    "specPack": "Packaging",
+    "order": "Order wholesale",
+    "orderHint": "Opens WhatsApp with a ready-to-send message.",
+    "priceLabel": "Recommended retail price",
+    "priceUnit": "per pack",
+    "priceNote": "Wholesale prices on request, depending on volume.",
+    "photoSoon": "Photo coming soon",
+    "soonKicker": "Coming soon",
+    "soonTitle": "The range is growing",
+    "soonText": "Same standards, new uses.",
+    "soonBadge": "Soon"
+  },
+  "about": {
+    "title": "About — Vision, mission and values | Papel Industries",
+    "description": "Papel Industries (CIG group): our vision, our mission, our values of quality, accessibility and consistency, and our modern factory in Coyah.",
+    "kicker": "About",
+    "title1": "A simple brand,",
+    "title2": "an everyday standard.",
+    "intro": "Papel is the paper hygiene brand of Papel Industries, a company of the CIG group.",
+    "visionLabel": "Vision",
+    "vision": "To become the reference brand for paper hygiene products in Guinea, then in West Africa.",
+    "missionLabel": "Mission",
+    "mission": "To offer every household quality hygiene products at an affordable price, available everywhere, all the time.",
+    "valuesTitle": "Our values",
+    "factoryKicker": "The factory",
+    "factoryTitle": "A modern production line in Coyah",
+    "factoryText": "Our tissues are made in our 2,000 m² factory in Coyah. Every step runs on a single controlled line, so each pack is identical to the last.",
+    "factorySteps": [
+      "Folding",
+      "Embossing",
+      "Cutting",
+      "Packing"
+    ],
+    "factoryCaption": "Architect's view of the Papel factory in Coyah",
+    "factoryImages": [
+      {
+        "image": "usine-facade",
+        "alt": "Front of the Papel Industries factory in Coyah, architect's view"
+      },
+      {
+        "image": "usine-entree",
+        "alt": "Entrance and loading bay of the Papel factory, architect's view"
+      },
+      {
+        "image": "usine-cote",
+        "alt": "Side view of the factory, architect's view"
+      }
+    ],
+    "ambitionsKicker": "Our ambitions",
+    "ambitionsTitle": "Three worlds for the home",
+    "ambitions": [
+      {
+        "icon": "layers",
+        "title": "Paper hygiene",
+        "text": "Tissues, toilet paper, kitchen towels.",
+        "tag": "Papel"
+      },
+      {
+        "icon": "heart",
+        "title": "Personal hygiene",
+        "text": "Nappies, sanitary pads.",
+        "tag": "Coming soon"
+      },
+      {
+        "icon": "home",
+        "title": "Home care",
+        "text": "Everyday cleaning products.",
+        "tag": "Kindy brand"
+      }
+    ],
+    "roadmapKicker": "Roadmap",
+    "roadmapTitle": "Five steps, one direction",
+    "roadmap": [
+      {
+        "step": "Launch",
+        "when": "December 2026",
+        "text": "Papel Doux reaches the market, soft pack and box."
+      },
+      {
+        "step": "Ramp-up",
+        "when": "Step 2",
+        "text": "A distributor network across Conakry, then the rest of the country."
+      },
+      {
+        "step": "Wider range",
+        "when": "Step 3",
+        "text": "Toilet paper, kitchen towels, pocket tissues."
+      },
+      {
+        "step": "New lines",
+        "when": "Step 4",
+        "text": "Personal hygiene and home care."
+      },
+      {
+        "step": "West Africa",
+        "when": "Step 5",
+        "text": "Papel available in neighbouring countries."
+      }
+    ]
+  },
+  "distributor": {
+    "title": "Become a distributor — Tissue wholesaler in Guinea | Papel",
+    "description": "Wholesaler, retailer, supermarket or hotel? Distribute Papel Doux tissues in Guinea and Sierra Leone: fixed-day delivery, dedicated sales rep, attractive volume terms.",
+    "kicker": "Become a distributor",
+    "title1": "A fast-moving product,",
+    "title2": "delivered regularly, with a dedicated contact.",
+    "intro": "Wholesalers, semi-wholesalers, retailers, supermarkets, hotels and offices: join the Papel network and sell tissues your customers come back for.",
+    "ctaForm": "Fill in the form",
+    "ctaWhatsapp": "Talk to a sales rep",
+    "benefitsTitle": "Why distribute Papel",
+    "benefits": [
+      {
+        "icon": "calendar",
+        "title": "Regular, fixed-day delivery",
+        "text": "You know when stock arrives, so you can plan with confidence."
+      },
+      {
+        "icon": "user",
+        "title": "A dedicated rep for your area",
+        "text": "One reachable contact who knows your neighbourhood."
+      },
+      {
+        "icon": "box",
+        "title": "Always in stock",
+        "text": "Steady production and monitored stock: no shortages."
+      },
+      {
+        "icon": "megaphone",
+        "title": "Sales materials provided",
+        "text": "Posters, displays and visuals for your social media."
+      },
+      {
+        "icon": "percent",
+        "title": "Attractive volume terms",
+        "text": "The more you order, the better your terms."
+      }
+    ],
+    "stepsTitle": "How it works",
+    "steps": [
+      "Fill in the form (2 minutes).",
+      "A sales rep calls you back within 2 working days.",
+      "You receive your first delivery."
+    ],
+    "formTitle": "Your request",
+    "formIntro": "Fields marked * are required. Your information stays confidential.",
+    "submit": "Send my request",
+    "successTitle": "Thank you, your request has been sent!",
+    "successText": "A Papel sales rep will contact you within 2 working days. For a faster answer, message us on WhatsApp.",
+    "successCta": "Continue on WhatsApp"
+  },
+  "where": {
+    "title": "Where to buy Papel tissues in Conakry and Guinea",
+    "description": "Find a Papel Doux retailer near you, in Conakry and across Guinea.",
+    "kicker": "Where to buy",
+    "title1": "Papel,",
+    "title2": "close to you.",
+    "intro": "Shops, supermarkets and wholesalers: find your nearest retailer.",
+    "soonTitle": "Coming soon near you.",
+    "soonText": "Leave your number and we'll let you know as soon as Papel Doux reaches your area.",
+    "notifySubmit": "Notify me",
+    "notifySuccess": "Got it! We'll let you know as soon as Papel is available near you.",
+    "search": "Search an area or city",
+    "searchPlaceholder": "E.g. Kaloum, Ratoma, Kindia…",
+    "all": "All",
+    "showMap": "Show map",
+    "hideMap": "Hide map",
+    "mapNote": "The map only loads when you ask for it, to save your data.",
+    "results": "{n} retailer(s)",
+    "none": "No retailer found for this search.",
+    "directions": "Directions",
+    "call": "Call",
+    "types": {
+      "grossiste": "Wholesaler",
+      "boutique": "Shop",
+      "supermarche": "Supermarket",
+      "pharmacie": "Pharmacy",
+      "station": "Petrol station"
+    },
+    "sellerTitle": "Want to sell Papel?",
+    "sellerText": "Become a retailer or distributor.",
+    "sellerCta": "Become a distributor",
+    "mapError": "The map could not load. Check your connection and try again."
+  },
+  "contact": {
+    "title": "Contact — Papel Industries, Coyah | WhatsApp, phone, email",
+    "description": "Contact Papel: WhatsApp, phone, email and factory address in Coyah, Guinea. Quick replies Monday to Saturday.",
+    "kicker": "Contact",
+    "title1": "Let's talk,",
+    "title2": "we reply fast.",
+    "intro": "The quickest way: WhatsApp. We also answer by phone and email.",
+    "whatsapp": "WhatsApp",
+    "whatsappCta": "Message us on WhatsApp",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Factory",
+    "hours": "Opening hours",
+    "hoursValue": [
+      "Monday – Friday: 8 am – 5 pm",
+      "Saturday: 9 am – 1 pm"
+    ],
+    "mapLink": "View on map",
+    "formTitle": "Send a message",
+    "submit": "Send",
+    "successTitle": "Message sent, thank you!",
+    "successText": "We'll get back to you shortly. Need an immediate answer? Message us on WhatsApp.",
+    "successCta": "Open WhatsApp",
+    "subjects": [
+      "Product question",
+      "Wholesale order",
+      "Becoming a distributor",
+      "Partnership / press",
+      "Other"
+    ]
+  },
+  "legal": {
+    "title": "Legal notice | Papel Industries",
+    "description": "Legal notice and privacy policy of the Papel website.",
+    "kicker": "Information",
+    "heading": "Legal notice",
+    "sections": [
+      {
+        "title": "Publisher",
+        "text": "Papel Industries, a company of the CIG group (CIG Holding / CIG Industries). [Legal form, share capital, RCCM, NIF]. Registered office: [address], Coyah, Guinea. Publication director: [name]."
+      },
+      {
+        "title": "Hosting",
+        "text": "[Host name, address, website]."
+      },
+      {
+        "title": "Intellectual property",
+        "text": "The Papel brand, logo, visuals and texts on this site are the property of Papel Industries. Any reproduction without permission is prohibited."
+      },
+      {
+        "title": "Personal data",
+        "text": "Information sent through the forms (name, phone, city, message) is used only to answer your request and manage the business relationship. It is never sold or transferred. You can ask for it to be changed or deleted at any time by email or WhatsApp."
+      },
+      {
+        "title": "Analytics",
+        "text": "The site may anonymously measure visits and clicks (for example on WhatsApp) to improve the service."
+      }
+    ]
+  },
+  "notFound": {
+    "title": "Page not found | Papel",
+    "heading": "This page has flown away.",
+    "text": "The link may be wrong. Go back home or message us on WhatsApp.",
+    "cta": "Back to home"
+  },
+  "form": {
+    "name": "Full name",
+    "company": "Company or shop",
+    "type": "Type of business",
+    "typeChoose": "Choose…",
+    "types": [
+      "Wholesaler",
+      "Semi-wholesaler",
+      "Retailer / shop",
+      "Supermarket",
+      "Hotel / office"
+    ],
+    "city": "City or area",
+    "volume": "Estimated monthly volume",
+    "volumeChoose": "Choose…",
+    "volumes": [
+      "Fewer than 10 cases",
+      "10 to 50 cases",
+      "50 to 200 cases",
+      "More than 200 cases",
+      "Not sure yet"
+    ],
+    "phone": "WhatsApp number",
+    "phoneHint": "E.g. +224 622 12 34 56",
+    "email": "Email (optional)",
+    "subject": "Subject",
+    "message": "Message",
+    "messageOptional": "Message (optional)",
+    "required": "required",
+    "sending": "Sending…",
+    "errorRequired": "Please fill in this field.",
+    "errorPhone": "Please enter a valid number (at least 9 digits).",
+    "errorSend": "Sending failed (unstable connection?). Try again or send your request on WhatsApp.",
+    "fallbackWhatsapp": "Send on WhatsApp",
+    "privacy": "By sending this form, you agree to be contacted by Papel.",
+    "fallbackText": "Last step: tap below to send your request on WhatsApp."
+  },
+  "footer": {
+    "about": "Soft, strong tissues, available everywhere, at a fair price.",
+    "navTitle": "Navigation",
+    "contactTitle": "Contact",
+    "followTitle": "Follow us",
+    "legal": "Legal notice",
+    "company": "Papel Industries, CIG group",
+    "rights": "All rights reserved."
+  }
+}

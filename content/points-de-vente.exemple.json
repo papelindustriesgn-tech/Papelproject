@@ -1,0 +1,45 @@
+{
+  "_aide": "EXEMPLE FICTIF (ne pas publier tel quel). Montre le format attendu. Pour tester l'affichage, copiez ce contenu dans points-de-vente.json et relancez le build.",
+  "points": [
+    {
+      "name": "Exemple – Supermarché Kaloum",
+      "type": "supermarche",
+      "city": "Conakry",
+      "area": "Kaloum",
+      "address": "Avenue de la République",
+      "phone": "+224600000000",
+      "lat": 9.5092,
+      "lng": -13.7122
+    },
+    {
+      "name": "Exemple – Grossiste Madina",
+      "type": "grossiste",
+      "city": "Conakry",
+      "area": "Madina",
+      "address": "Marché de Madina",
+      "phone": "",
+      "lat": 9.5475,
+      "lng": -13.6631
+    },
+    {
+      "name": "Exemple – Boutique Kipé",
+      "type": "boutique",
+      "city": "Conakry",
+      "area": "Ratoma",
+      "address": "Kipé, près du rond-point",
+      "phone": "",
+      "lat": 9.6122,
+      "lng": -13.6414
+    },
+    {
+      "name": "Exemple – Boutique centre-ville",
+      "type": "boutique",
+      "city": "Kindia",
+      "area": "Centre",
+      "address": "Route nationale",
+      "phone": "",
+      "lat": 10.0569,
+      "lng": -12.8658
+    }
+  ]
+}
