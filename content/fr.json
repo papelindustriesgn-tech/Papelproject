@@ -136,14 +136,19 @@
     "title": "Papel — Mouchoirs doux et résistants en Guinée | La qualité au quotidien",
     "description": "Papel Doux : mouchoirs 3 plis doux et résistants, disponibles partout à Conakry et en Guinée, au juste prix. Grossistes et distributeurs : rejoignez le réseau Papel.",
     "hero": {
-      "eyebrow": "Papel Doux · 100 mouchoirs · 3 plis",
+      "eyebrow": "Papel Industries · Groupe CIG",
       "titleA": "La qualité",
       "titleB": "au quotidien.",
       "subtitle": "Des mouchoirs doux et résistants, disponibles partout, au juste prix.",
       "ctaPrimary": "Découvrir nos produits",
       "ctaSecondary": "Devenir distributeur",
       "imageAlt": "Paquet de mouchoirs Papel Doux, un mouchoir sortant de la pochette",
-      "badge": "Lancement décembre 2026"
+      "badge": "Lancement décembre 2026",
+      "chips": [
+        "100 mouchoirs",
+        "3 plis",
+        "Pâte de bois vierge"
+      ]
     },
     "why": {
       "kicker": "Pourquoi Papel",
@@ -179,6 +184,70 @@
           "label": "100 mouchoirs, 3 plis"
         }
       ]
+    },
+    "group": {
+      "kicker": "Qui sommes-nous",
+      "title": "Une nouvelle référence de l'hygiène papier.",
+      "text": "Papel Industries, société du groupe CIG, conçoit et fabrique des produits d'hygiène en papier pour les foyers, les commerces et les professionnels. Notre engagement : un produit de qualité, accessible et constant, chaque jour.",
+      "more": "Découvrir le groupe",
+      "facts": [
+        {
+          "k": "Maison mère",
+          "v": "CIG Holding · CIG Industries"
+        },
+        {
+          "k": "Société",
+          "v": "Papel Industries"
+        },
+        {
+          "k": "Site industriel",
+          "v": "Coyah"
+        },
+        {
+          "k": "Première marque",
+          "v": "Papel Doux"
+        },
+        {
+          "k": "Lancement",
+          "v": "Décembre 2026"
+        }
+      ]
+    },
+    "factory": {
+      "kicker": "Notre outil industriel",
+      "title": "Une usine moderne, pensée pour la constance.",
+      "text": "Une ligne de production intégrée, du pliage à l'emballage, pour un produit identique d'un paquet à l'autre.",
+      "figures": [
+        {
+          "v": "4 760 m²",
+          "l": "Superficie du site"
+        },
+        {
+          "v": "2 000 m²",
+          "l": "Bâtiment de production"
+        },
+        {
+          "v": "4",
+          "l": "Étapes intégrées"
+        },
+        {
+          "v": "100 × 3",
+          "l": "Mouchoirs, 3 plis"
+        }
+      ],
+      "alt": "Vue d'architecte de l'usine Papel Industries"
+    },
+    "values": {
+      "kicker": "Nos valeurs",
+      "title": "Trois engagements, tenus chaque jour."
+    },
+    "vm": {
+      "kicker": "Vision & mission"
+    },
+    "roadmap": {
+      "kicker": "Notre trajectoire",
+      "title": "De Coyah à l'Afrique de l'Ouest.",
+      "more": "Voir la feuille de route"
     }
   },
   "productsPage": {

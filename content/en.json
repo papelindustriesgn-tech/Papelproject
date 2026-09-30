@@ -136,14 +136,19 @@
     "title": "Papel — Soft, strong tissues in Guinea | Everyday quality",
     "description": "Papel Doux: soft and strong 3-ply tissues, available everywhere in Conakry and Guinea at a fair price. Wholesalers and distributors: join the Papel network.",
     "hero": {
-      "eyebrow": "Papel Doux · 100 tissues · 3-ply",
+      "eyebrow": "Papel Industries · CIG Group",
       "titleA": "Everyday",
       "titleB": "quality.",
       "subtitle": "Soft, strong tissues, available everywhere, at a fair price.",
       "ctaPrimary": "Discover our products",
       "ctaSecondary": "Become a distributor",
       "imageAlt": "Papel Doux tissue pack with a tissue popping out",
-      "badge": "Launching December 2026"
+      "badge": "Launching December 2026",
+      "chips": [
+        "100 tissues",
+        "3-ply",
+        "Virgin wood pulp"
+      ]
     },
     "why": {
       "kicker": "Why Papel",
@@ -179,6 +184,70 @@
           "label": "100 tissues, 3-ply"
         }
       ]
+    },
+    "group": {
+      "kicker": "Who we are",
+      "title": "A new benchmark in paper hygiene.",
+      "text": "Papel Industries, a company of the CIG group, designs and manufactures paper hygiene products for households, shops and professionals. Our commitment: a quality product, affordable and consistent, every day.",
+      "more": "Discover the group",
+      "facts": [
+        {
+          "k": "Parent company",
+          "v": "CIG Holding · CIG Industries"
+        },
+        {
+          "k": "Company",
+          "v": "Papel Industries"
+        },
+        {
+          "k": "Industrial site",
+          "v": "Coyah"
+        },
+        {
+          "k": "First brand",
+          "v": "Papel Doux"
+        },
+        {
+          "k": "Launch",
+          "v": "December 2026"
+        }
+      ]
+    },
+    "factory": {
+      "kicker": "Our production facility",
+      "title": "A modern factory, built for consistency.",
+      "text": "An integrated production line, from folding to packing, so every pack is identical to the last.",
+      "figures": [
+        {
+          "v": "4,760 m²",
+          "l": "Site area"
+        },
+        {
+          "v": "2,000 m²",
+          "l": "Production building"
+        },
+        {
+          "v": "4",
+          "l": "Integrated steps"
+        },
+        {
+          "v": "100 × 3",
+          "l": "Tissues, 3-ply"
+        }
+      ],
+      "alt": "Architect's view of the Papel Industries factory"
+    },
+    "values": {
+      "kicker": "Our values",
+      "title": "Three commitments, kept every day."
+    },
+    "vm": {
+      "kicker": "Vision & mission"
+    },
+    "roadmap": {
+      "kicker": "Our path",
+      "title": "From Coyah to West Africa.",
+      "more": "See the roadmap"
     }
   },
   "productsPage": {

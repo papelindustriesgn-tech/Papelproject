@@ -29,6 +29,13 @@
     doc.querySelectorAll('.nav a').forEach(function (a) { a.addEventListener('click', function () { setMenu(false); }); });
   }
 
+  /* En-tête : ombre après défilement */
+  var header = doc.querySelector('.header');
+  if (header) {
+    var onScroll = function () { header.classList.toggle('is-scrolled', window.scrollY > 8); };
+    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  }
+
   /* ------------------------------------------------------------------ */
   /* 2. Apparition au défilement + tracé progressif des icônes           */
   /* ------------------------------------------------------------------ */

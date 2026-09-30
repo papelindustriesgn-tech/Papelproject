@@ -119,15 +119,17 @@ const boxArt = (label) => `<svg class="box-art" viewBox="0 0 400 300" role="img"
 /* ------------------------------------------------------------------ */
 /* Composants                                                          */
 /* ------------------------------------------------------------------ */
-const pageHero = (p, extra = '') => `
-<section class="page-hero">
-  <div class="container">
-    <p class="kicker reveal">${esc(p.kicker)}</p>
+const pageHero = (p, extra = '', { image, alt = '' } = {}) => `
+<section class="page-hero${image ? ' page-hero--image' : ''}">
+  ${image ? `<div class="page-hero__bg" aria-hidden="true">${img(image, alt, { sizes: '100vw', eager: true })}</div>` : ''}
+  <div class="hero__grain" aria-hidden="true"></div>
+  <div class="container page-hero__inner">
+    <p class="kicker kicker--light reveal">${esc(p.kicker)}</p>
     <h1 class="display reveal">${esc(p.title1)} <em>${esc(p.title2)}</em></h1>
-    ${p.intro ? `<p class="lead reveal">${esc(p.intro)}</p>` : ''}
+    ${p.intro ? `<p class="lead lead--light reveal">${esc(p.intro)}</p>` : ''}
     ${extra}
   </div>
-  ${leaves('leaves--hero')}
+  ${image ? '' : leaves('leaves--hero')}
 </section>`;
 
 const valueCards = (t) => `<ul class="values" role="list">${join(t.values, (v, i) => `
@@ -340,41 +342,89 @@ const orgLD = (lang) => ({
 
 /* 1. ACCUEIL --------------------------------------------------------- */
 function pageHome(lang) {
-  const t = content[lang]; const h = t.home;
+  const t = content[lang]; const h = t.home; const A = t.about;
   const body = `
-<section class="hero">
+<section class="hero hero--dark">
+  <div class="hero__grain" aria-hidden="true"></div>
   <div class="container hero__grid">
     <div class="hero__text">
-      <p class="eyebrow reveal">${esc(h.hero.eyebrow)}</p>
+      <p class="eyebrow eyebrow--light reveal">${esc(h.hero.eyebrow)}</p>
       <h1 class="hero__title reveal"><span>${esc(h.hero.titleA)}</span> <em>${esc(h.hero.titleB)}</em></h1>
-      <p class="lead reveal">${esc(h.hero.subtitle)}</p>
+      <p class="lead lead--light reveal">${esc(h.hero.subtitle)}</p>
       <div class="actions reveal">
-        <a class="btn btn--primary" href="${url('products', lang)}">${esc(h.hero.ctaPrimary)} ${icon('arrow', { size: 20 })}</a>
-        <a class="btn btn--ghost" href="${url('distributor', lang)}">${esc(h.hero.ctaSecondary)}</a>
+        <a class="btn btn--light" href="${url('products', lang)}">${esc(h.hero.ctaPrimary)} ${icon('arrow', { size: 20 })}</a>
+        <a class="btn btn--outline-light" href="${url('distributor', lang)}">${esc(h.hero.ctaSecondary)}</a>
       </div>
     </div>
-    <figure class="hero__media">
-      <div class="hero__blob" aria-hidden="true"></div>
-      ${img('pochette-hero', h.hero.imageAlt, { sizes: '(min-width: 900px) 46vw, 92vw', eager: true, cls: 'hero__img' })}
+    <figure class="hero__media reveal">
+      <div class="hero__frame">
+        ${img('pochette-hero', h.hero.imageAlt, { sizes: '(min-width: 900px) 46vw, 92vw', eager: true, cls: 'hero__img' })}
+      </div>
       <figcaption class="hero__badge">${esc(h.hero.badge)}</figcaption>
-      ${leaves('leaves--hero-media')}
+      <ul class="hero__chips" role="list">${join(h.hero.chips, (c, i) => `<li style="--d:${i}">${icon('check', { size: 16 })}${esc(c)}</li>`)}</ul>
     </figure>
+  </div>
+  <div class="hero__strip">
+    <div class="container">
+      <ul class="strip" role="list">${join(t.values, (v) => `<li>${esc(v.title)}</li>`)}</ul>
+    </div>
   </div>
 </section>
 
-<section class="section why" aria-labelledby="why-title">
+<section class="section section--white group" aria-labelledby="group-title">
+  <div class="container group__grid">
+    <div>
+      <p class="kicker reveal">${esc(h.group.kicker)}</p>
+      <h2 class="h2 h2--xl reveal" id="group-title">${esc(h.group.title)}</h2>
+      <p class="lead reveal">${esc(h.group.text)}</p>
+      <a class="link-arrow reveal" href="${url('about', lang)}">${esc(h.group.more)} ${icon('arrow', { size: 18 })}</a>
+    </div>
+    <dl class="facts reveal">${join(h.group.facts, (f) => `<div><dt>${esc(f.k)}</dt><dd>${esc(f.v)}</dd></div>`)}</dl>
+  </div>
+</section>
+
+<section class="showcase" aria-labelledby="factory-title">
+  <div class="showcase__media">${img('usine-facade', h.factory.alt, { sizes: '100vw' })}</div>
+  <div class="container showcase__inner">
+    <div class="showcase__card reveal">
+      <p class="kicker kicker--light">${esc(h.factory.kicker)}</p>
+      <h2 class="h2" id="factory-title">${esc(h.factory.title)}</h2>
+      <p>${esc(h.factory.text)}</p>
+      <ol class="process process--light" role="list">${join(A.factorySteps, (s, i) => `<li><span>${i + 1}</span>${esc(s)}</li>`)}</ol>
+    </div>
+  </div>
   <div class="container">
-    <p class="kicker reveal" id="why-title">${esc(h.why.kicker)}</p>
-    <p class="statement reveal">${esc(h.why.textA)} <em>${esc(h.why.textB)}</em></p>
-    ${valueCards(t)}
+    <ul class="figures" role="list">${join(h.factory.figures, (f, i) => `<li class="reveal" style="--d:${i}"><strong>${esc(f.v)}</strong><span>${esc(f.l)}</span></li>`)}</ul>
+  </div>
+</section>
+
+<section class="section why" aria-labelledby="values-title">
+  <div class="container">
+    <div class="split-head">
+      <div>
+        <p class="kicker reveal">${esc(h.values.kicker)}</p>
+        <h2 class="h2 h2--xl reveal" id="values-title">${esc(h.values.title)}</h2>
+      </div>
+      <p class="statement statement--sm reveal">${esc(h.why.textA)} <em>${esc(h.why.textB)}</em></p>
+    </div>
+    <ol class="pillars" role="list">${join(t.values, (v, i) => `
+      <li class="pillar reveal" style="--d:${i}">
+        <span class="pillar__num">0${i + 1}</span>
+        <span class="pillar__icon">${icon(v.icon, { draw: true, size: 44 })}</span>
+        <h3>${esc(v.title)}</h3>
+        <p>${esc(v.text)}</p>
+      </li>`)}
+    </ol>
   </div>
 </section>
 
 <section class="section section--white range" aria-labelledby="range-title">
   <div class="container">
-    <div class="section__head">
-      <p class="kicker reveal">${esc(h.range.kicker)}</p>
-      <h2 class="h2 reveal" id="range-title">${esc(h.range.title)}</h2>
+    <div class="split-head">
+      <div>
+        <p class="kicker reveal">${esc(h.range.kicker)}</p>
+        <h2 class="h2 h2--xl reveal" id="range-title">${esc(h.range.title)}</h2>
+      </div>
       <p class="reveal">${esc(h.range.text)}</p>
     </div>
     <ul class="range__grid" role="list">${join(t.products, (p, i) => `
@@ -389,7 +439,39 @@ function pageHome(lang) {
         </a>
       </li>`)}
     </ul>
-    <p class="center reveal"><a class="btn btn--ghost" href="${url('products', lang)}">${esc(h.range.more)}</a></p>
+  </div>
+</section>
+
+<section class="vm-band" aria-label="${esc(h.vm.kicker)}">
+  <div class="container vm-band__grid">
+    <blockquote class="quote reveal">
+      <p class="kicker kicker--light">${esc(A.visionLabel)}</p>
+      <p class="quote__text">« ${esc(A.vision)} »</p>
+    </blockquote>
+    <blockquote class="quote reveal" style="--d:1">
+      <p class="kicker kicker--light">${esc(A.missionLabel)}</p>
+      <p class="quote__text">« ${esc(A.mission)} »</p>
+    </blockquote>
+  </div>
+  ${leaves('leaves--band')}
+</section>
+
+<section class="section roadmap-teaser" aria-labelledby="road-title">
+  <div class="container">
+    <div class="split-head">
+      <div>
+        <p class="kicker reveal">${esc(h.roadmap.kicker)}</p>
+        <h2 class="h2 h2--xl reveal" id="road-title">${esc(h.roadmap.title)}</h2>
+      </div>
+      <a class="link-arrow reveal" href="${url('about', lang)}#feuille-de-route">${esc(h.roadmap.more)} ${icon('arrow', { size: 18 })}</a>
+    </div>
+    <ol class="roadmap" role="list">${join(A.roadmap, (r, i) => `
+      <li class="roadmap__step reveal${i === 0 ? ' is-current' : ''}" style="--d:${i}">
+        <span class="roadmap__dot" aria-hidden="true">${i + 1}</span>
+        <p class="roadmap__when">${esc(r.when)}</p>
+        <h3>${esc(r.step)}</h3>
+      </li>`)}
+    </ol>
   </div>
 </section>
 
@@ -405,15 +487,6 @@ function pageHome(lang) {
     </div>
   </div>
   ${leaves('leaves--band')}
-</section>
-
-<section class="section stats" aria-labelledby="stats-title">
-  <div class="container">
-    <p class="kicker center reveal" id="stats-title">${esc(h.stats.kicker)}</p>
-    <ul class="stats__grid" role="list">${join(h.stats.items, (s, i) => `
-      <li class="stat reveal" style="--d:${i}"><strong>${esc(s.value)}</strong><span>${esc(s.label)}</span></li>`)}
-    </ul>
-  </div>
 </section>`;
   return layout(lang, 'home', { title: h.title, description: h.description, body, jsonld: [orgLD(lang)] });
 }
@@ -495,25 +568,36 @@ function pageAbout(lang) {
   const t = content[lang]; const A = t.about;
   const [main, ...rest] = A.factoryImages;
   const body = `
-${pageHero(A)}
+${pageHero(A, '', { image: 'usine-entree', alt: A.factoryCaption })}
 
-<section class="section section--white" aria-label="${esc(A.visionLabel)} / ${esc(A.missionLabel)}">
-  <div class="container vm">
-    <article class="vm__card vm__card--green reveal">
-      <p class="kicker">${esc(A.visionLabel)}</p>
-      <p class="vm__text">${esc(A.vision)}</p>
-    </article>
-    <article class="vm__card reveal" style="--d:1">
-      <p class="kicker">${esc(A.missionLabel)}</p>
-      <p class="vm__text">${esc(A.mission)}</p>
-    </article>
+<section class="section section--white group" aria-labelledby="group-title">
+  <div class="container group__grid">
+    <div>
+      <p class="kicker reveal">${esc(t.home.group.kicker)}</p>
+      <h2 class="h2 h2--xl reveal" id="group-title">${esc(t.home.group.title)}</h2>
+      <p class="lead reveal">${esc(t.home.group.text)}</p>
+    </div>
+    <dl class="facts reveal">${join(t.home.group.facts, (f) => `<div><dt>${esc(f.k)}</dt><dd>${esc(f.v)}</dd></div>`)}</dl>
   </div>
+</section>
+
+<section class="vm-band" aria-label="${esc(A.visionLabel)} / ${esc(A.missionLabel)}">
+  <div class="container vm-band__grid">
+    <blockquote class="quote reveal"><p class="kicker kicker--light">${esc(A.visionLabel)}</p><p class="quote__text">« ${esc(A.vision)} »</p></blockquote>
+    <blockquote class="quote reveal" style="--d:1"><p class="kicker kicker--light">${esc(A.missionLabel)}</p><p class="quote__text">« ${esc(A.mission)} »</p></blockquote>
+  </div>
+  ${leaves('leaves--band')}
 </section>
 
 <section class="section" aria-labelledby="values-title">
   <div class="container">
-    <h2 class="h2 center reveal" id="values-title">${esc(A.valuesTitle)}</h2>
-    ${valueCards(t)}
+    <div class="split-head">
+      <div><p class="kicker reveal">${esc(t.home.values.kicker)}</p><h2 class="h2 h2--xl reveal" id="values-title">${esc(t.home.values.title)}</h2></div>
+      <p class="statement statement--sm reveal">${esc(t.home.why.textA)} <em>${esc(t.home.why.textB)}</em></p>
+    </div>
+    <ol class="pillars" role="list">${join(t.values, (v, i) => `
+      <li class="pillar reveal" style="--d:${i}"><span class="pillar__num">0${i + 1}</span><span class="pillar__icon">${icon(v.icon, { draw: true, size: 44 })}</span><h3>${esc(v.title)}</h3><p>${esc(v.text)}</p></li>`)}
+    </ol>
   </div>
 </section>
 
@@ -545,7 +629,7 @@ ${pageHero(A)}
   </div>
 </section>
 
-<section class="section section--white" aria-labelledby="roadmap-title">
+<section class="section section--white" id="feuille-de-route" aria-labelledby="roadmap-title">
   <div class="container">
     <div class="section__head">
       <p class="kicker reveal">${esc(A.roadmapKicker)}</p>
@@ -578,7 +662,7 @@ function pageDistributor(lang) {
   ].join('');
   const body = `
 ${pageHero(D, `<div class="actions reveal">
-  <a class="btn btn--primary" href="#demande">${esc(D.ctaForm)} ${icon('arrow', { size: 20 })}</a>
+  <a class="btn btn--light" href="#demande">${esc(D.ctaForm)} ${icon('arrow', { size: 20 })}</a>
   <a class="btn btn--wa" href="${waLink(t.whatsapp.defaultMessage)}" target="_blank" rel="noopener" data-wa="distributor-hero">${glyph('whatsapp')} ${esc(D.ctaWhatsapp)}</a>
 </div>`)}
 
@@ -713,7 +797,7 @@ ${pageHero(C)}
 function pageLegal(lang) {
   const t = content[lang]; const L = t.legal;
   const body = `
-<section class="page-hero page-hero--small"><div class="container"><p class="kicker">${esc(L.kicker)}</p><h1 class="display">${esc(L.heading)}</h1></div></section>
+<section class="page-hero page-hero--small"><div class="container"><p class="kicker kicker--light">${esc(L.kicker)}</p><h1 class="display">${esc(L.heading)}</h1></div></section>
 <section class="section section--white"><div class="container prose">${join(L.sections, (s) => `<h2 class="h4">${esc(s.title)}</h2><p>${esc(s.text)}</p>`)}</div></section>`;
   return layout(lang, 'legal', { title: L.title, description: L.description, body });
 }
@@ -722,8 +806,8 @@ function page404(lang) {
   const t = content[lang]; const N = t.notFound;
   const body = `
 <section class="page-hero page-hero--center"><div class="container">
-  <p class="kicker">404</p><h1 class="display">${esc(N.heading)}</h1><p class="lead">${esc(N.text)}</p>
-  <div class="actions actions--center"><a class="btn btn--primary" href="${url('home', lang)}">${esc(N.cta)}</a>
+  <p class="kicker kicker--light">404</p><h1 class="display">${esc(N.heading)}</h1><p class="lead lead--light">${esc(N.text)}</p>
+  <div class="actions actions--center"><a class="btn btn--light" href="${url('home', lang)}">${esc(N.cta)}</a>
   <a class="btn btn--wa" href="${waLink(t.whatsapp.defaultMessage)}" target="_blank" rel="noopener" data-wa="404">${glyph('whatsapp')} WhatsApp</a></div>
 </div>${leaves('leaves--hero')}</section>`;
   return layout(lang, '404', { title: N.title, description: N.text, body });
