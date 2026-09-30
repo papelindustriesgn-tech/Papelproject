@@ -12,6 +12,7 @@ const PROTECTED_PREFIXES = [
   "/profil",
   "/notifications",
   "/favoris",
+  "/avis",
   "/admin",
 ];
 const AUTH_PAGES = ["/connexion", "/inscription"];

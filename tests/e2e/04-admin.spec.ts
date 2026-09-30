@@ -83,3 +83,42 @@ test("admin : statistiques, CRUD avantage, masquage, modération", async ({ page
   await expect(page.getByText(/comptes réels/)).toBeVisible();
   await logout(page);
 });
+
+test("enquête d'avis : invitation, réponse, résultats admin et export", async ({ page }) => {
+  const s = await signUp(page);
+  const run = s.last;
+  await expect(page.getByRole("link", { name: /Donne ton avis sur Uny/ })).toBeVisible();
+  await page.goto("/notifications");
+  await expect(page.getByText("Donne ton avis sur Uny").first()).toBeVisible();
+
+  await page.goto("/avis");
+  await page.waitForLoadState("networkidle");
+  await page.getByRole("button", { name: "Envoyer mon avis" }).click();
+  await expect(page.getByText("Il manque quelques réponses.")).toBeVisible();
+
+  await page.locator("label", { hasText: "WhatsApp" }).click();
+  await page.getByLabel("4 sur 5").check({ force: true });
+  await page.locator("label", { hasText: "Jobs & stages" }).click();
+  await page.locator("label", { hasText: "Logement" }).click();
+  await page.locator("label").filter({ hasText: /^9$/ }).click();
+  await page.locator("label", { hasText: "Peut-être" }).click();
+  await page.fill("textarea[name=missing]", `Plus de stages ${run}`);
+  await page.getByText("J'accepte d'être contacté(e)").click();
+  await page.getByRole("button", { name: "Envoyer mon avis" }).click();
+  await expect(page.getByText("Merci pour ton avis !")).toBeVisible();
+
+  await page.goto("/accueil");
+  await expect(page.getByRole("link", { name: /Donne ton avis sur Uny/ })).toHaveCount(0);
+  await page.goto("/avis");
+  await expect(page.getByText("Tu as déjà répondu")).toBeVisible();
+  await logout(page);
+
+  await login(page, ADMIN.email, ADMIN.password);
+  await page.goto("/admin/avis");
+  await expect(page.getByRole("heading", { name: "Avis des inscrits" })).toBeVisible();
+  await expect(page.getByText(`Plus de stages ${run}`)).toBeVisible();
+  await expect(page.getByText(s.email)).toBeVisible();
+  const res = await page.request.get("/admin/avis/export");
+  expect(res.headers()["content-type"]).toContain("text/csv");
+  expect(await res.text()).toContain(`Plus de stages ${run}`);
+});

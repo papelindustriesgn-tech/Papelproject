@@ -2,7 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Briefcase, Building2, House, LayoutDashboard, ShoppingBag, Tag, UserCheck, Users } from "lucide-react";
+import {
+  BarChart3,
+  Briefcase,
+  Building2,
+  House,
+  LayoutDashboard,
+  MessageSquareHeart,
+  ShoppingBag,
+  Tag,
+  UserCheck,
+  Users,
+} from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export const ADMIN_NAV = [
@@ -15,6 +26,7 @@ export const ADMIN_NAV = [
   { href: "/admin/logements", label: "Logements", icon: House },
   { href: "/admin/marketplace", label: "Marketplace", icon: ShoppingBag },
   { href: "/admin/statistiques", label: "Statistiques", icon: BarChart3 },
+  { href: "/admin/avis", label: "Avis des inscrits", icon: MessageSquareHeart },
 ];
 
 export function AdminNav({ pending }: { pending: number }) {

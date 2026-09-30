@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, MessageSquareHeart, ShieldCheck } from "lucide-react";
 import { MiniPass } from "@/components/home/mini-pass";
 import { Shortcuts } from "@/components/home/shortcuts";
 import { Rail } from "@/components/home/rail";
@@ -20,12 +20,13 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const profile = await requireProfile();
   const supabase = await createClient();
 
-  const [latest, jobs, housing, market, favDeals] = await Promise.all([
+  const [latest, jobs, housing, market, favDeals, survey] = await Promise.all([
     listDeals({}),
     listJobs({}),
     listHousing({}),
     listMarket({}),
     favoriteIds(supabase, profile.id, "deal"),
+    supabase.from("survey_responses").select("user_id").eq("user_id", profile.id).maybeSingle(),
   ]);
   const featured = { items: latest.items.filter((d) => d.is_featured) };
   const newest = latest.items.filter((d) => !d.is_featured).slice(0, 4);
@@ -77,6 +78,22 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             </span>
           </span>
           <ArrowRight className="text-mango-700 size-5 shrink-0" aria-hidden />
+        </Link>
+      )}
+
+      {!survey.data && !survey.error && (
+        <Link
+          href="/avis"
+          className="bg-brand-50 ring-brand-100 hover:bg-brand-100 flex items-center gap-3 rounded-[var(--radius-card)] p-4 ring-1 transition"
+        >
+          <span className="bg-brand-600 flex size-11 shrink-0 items-center justify-center rounded-2xl text-white">
+            <MessageSquareHeart className="size-6" aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="text-ink block font-bold">Donne ton avis sur Uny 🙏</span>
+            <span className="text-muted block text-sm">2 minutes pour nous aider à construire l&apos;app dont tu as besoin.</span>
+          </span>
+          <ArrowRight className="text-brand-600 size-5 shrink-0" aria-hidden />
         </Link>
       )}
 

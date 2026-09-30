@@ -918,6 +918,56 @@ export type Database = {
           },
         ];
       };
+      survey_responses: {
+        Row: {
+          contact_ok: boolean;
+          created_at: string;
+          missing: string | null;
+          modules: string[];
+          nps: number;
+          partners: string | null;
+          rating: number;
+          source: string;
+          updated_at: string;
+          user_id: string;
+          would_pay: string;
+        };
+        Insert: {
+          contact_ok?: boolean;
+          created_at?: string;
+          missing?: string | null;
+          modules?: string[];
+          nps: number;
+          partners?: string | null;
+          rating: number;
+          source: string;
+          updated_at?: string;
+          user_id: string;
+          would_pay?: string;
+        };
+        Update: {
+          contact_ok?: boolean;
+          created_at?: string;
+          missing?: string | null;
+          modules?: string[];
+          nps?: number;
+          partners?: string | null;
+          rating?: number;
+          source?: string;
+          updated_at?: string;
+          user_id?: string;
+          would_pay?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "survey_responses_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       universities: {
         Row: {
           city_id: number | null;

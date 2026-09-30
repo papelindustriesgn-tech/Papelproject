@@ -26,6 +26,7 @@ const APP = [
   "/profil/securite",
   "/favoris",
   "/notifications",
+  "/avis",
 ];
 const ADMIN_PAGES = [
   "/admin",
@@ -36,6 +37,7 @@ const ADMIN_PAGES = [
   "/admin/logements",
   "/admin/marketplace",
   "/admin/statistiques",
+  "/admin/avis",
 ];
 
 for (const vp of VIEWPORTS) {
