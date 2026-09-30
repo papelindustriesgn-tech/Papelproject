@@ -21,6 +21,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <FormMessage type="info">Tu es bien déconnecté. À bientôt !</FormMessage>
           </>
         )}
+        {param(sp, "supprime") && (
+          <>
+            <ClearPageCache />
+            <FormMessage type="info">Ton compte et tes données ont été supprimés. Merci d&apos;avoir utilisé Uny.</FormMessage>
+          </>
+        )}
         {param(sp, "confirme") && <FormMessage type="success">Email confirmé ! Tu peux te connecter.</FormMessage>}
         {param(sp, "erreur") === "lien" && (
           <FormMessage>Ce lien est invalide ou a expiré. Réessaie ou demande un nouveau lien.</FormMessage>

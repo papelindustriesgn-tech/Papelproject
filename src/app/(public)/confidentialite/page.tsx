@@ -39,7 +39,10 @@ export default function PrivacyPage() {
       </ul>
       <h2>Tes droits</h2>
       <p>
-        Tu peux consulter et modifier tes informations depuis ton profil, et demander la suppression de ton compte à{" "}
+        Tu peux consulter et modifier tes informations depuis ton profil. Tu peux supprimer ton compte et toutes
+        tes données à tout moment, dans l&apos;application : <strong>Profil → Sécurité → Supprimer mon compte</strong>{" "}
+        (<span id="suppression-du-compte">effacement immédiat et définitif</span>). Si tu n&apos;as plus accès à ton
+        compte, écris-nous à{" "}
         <a className="text-brand-600 font-semibold" href={`mailto:${SUPPORT_EMAIL}`}>
           {SUPPORT_EMAIL}
         </a>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BackLink } from "@/components/ui/back-link";
 import { PageTitle } from "@/components/ui/section-header";
 import { requireProfile } from "@/lib/auth";
-import { SecurityForms } from "./security-forms";
+import { DeleteAccountForm, SecurityForms } from "./security-forms";
 import { signOutEverywhere } from "../actions";
 
 export const metadata: Metadata = { title: "Sécurité" };
@@ -25,6 +25,7 @@ export default async function SecurityPage() {
           </button>
         </form>
       </section>
+      <DeleteAccountForm />
     </div>
   );
 }

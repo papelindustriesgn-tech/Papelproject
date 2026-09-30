@@ -65,3 +65,23 @@ test("mot de passe oublié → lien email → nouveau mot de passe", async ({ pa
   await logout(page);
   await login(page, s.email, "NouveauMdp2026");
 });
+
+test("suppression du compte depuis Profil → Sécurité", async ({ page }) => {
+  const s = await signUp(page);
+  await page.goto("/profil/securite");
+  await page.waitForLoadState("networkidle");
+  await page.fill("#delete_password", "mauvais1");
+  await page.fill("#delete_confirm", "SUPPRIMER");
+  await page.getByRole("button", { name: "Supprimer définitivement mon compte" }).click();
+  await expect(page.getByText("Mot de passe incorrect")).toBeVisible();
+  await page.fill("#delete_password", s.password);
+  await page.fill("#delete_confirm", "SUPPRIMER");
+  await page.getByRole("button", { name: "Supprimer définitivement mon compte" }).click();
+  await page.waitForURL(/connexion\?supprime=1/);
+  await expect(page.getByText("Ton compte et tes données ont été supprimés")).toBeVisible();
+  await page.fill("#identifier", s.email);
+  await page.fill("#password", s.password);
+  await page.getByRole("button", { name: "Se connecter" }).click();
+  await expect(page).toHaveURL(/connexion/);
+  await expect(page.getByRole("alert").or(page.locator("[role=status]")).first()).toBeVisible();
+});

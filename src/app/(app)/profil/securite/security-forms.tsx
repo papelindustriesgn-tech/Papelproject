@@ -2,7 +2,7 @@
 
 import { ActionForm } from "@/components/ui/action-form";
 import { Field, Input } from "@/components/ui/field";
-import { changeEmail, changePassword } from "../actions";
+import { changeEmail, changePassword, deleteAccount } from "../actions";
 
 export function SecurityForms({ email }: { email: string }) {
   return (
@@ -55,5 +55,31 @@ export function SecurityForms({ email }: { email: string }) {
         />
       </section>
     </>
+  );
+}
+
+export function DeleteAccountForm() {
+  return (
+    <section id="supprimer" className="border-coral-500/30 rounded-[var(--radius-card)] border bg-white p-5 shadow-[var(--shadow-card)]">
+      <h2 className="text-coral-600 font-bold">Supprimer mon compte</h2>
+      <p className="text-muted mt-1 mb-4 text-sm">
+        Action définitive : ton profil, ta carte Uny, tes favoris, candidatures, annonces, justificatifs et photos sont
+        effacés. Tu pourras recréer un compte plus tard.
+      </p>
+      <ActionForm
+        action={deleteAccount}
+        submitLabel="Supprimer définitivement mon compte"
+        render={(s) => (
+          <>
+            <Field label="Mot de passe" htmlFor="delete_password" error={s.fieldErrors?.password}>
+              <Input id="delete_password" name="password" type="password" autoComplete="current-password" required />
+            </Field>
+            <Field label="Tape SUPPRIMER pour confirmer" htmlFor="delete_confirm" error={s.fieldErrors?.confirm}>
+              <Input id="delete_confirm" name="confirm" autoComplete="off" required />
+            </Field>
+          </>
+        )}
+      />
+    </section>
   );
 }

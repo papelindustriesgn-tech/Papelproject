@@ -1,0 +1,107 @@
+name: Applications mobiles
+
+# Construit l'app Android (APK de test + AAB pour Google Play) et l'app iOS.
+# Sans secrets : builds de vérification (APK installable, build simulateur iOS).
+# Avec les secrets (voir docs/APPLICATIONS-MOBILES.md) : AAB signé et envoi iOS vers TestFlight.
+
+on:
+  push:
+    paths: ["mobile/**", ".github/workflows/mobile.yml"]
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: mobile
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    env:
+      HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npx cap sync android
+
+      - name: Clé de signature Google Play
+        if: ${{ env.HAS_KEYSTORE == 'true' }}
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: echo "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/uny.keystore"
+
+      - name: Build
+        working-directory: mobile/android
+        env:
+          UNY_VERSION_CODE: ${{ github.run_number }}
+          UNY_KEYSTORE_PATH: ${{ env.HAS_KEYSTORE == 'true' && format('{0}/uny.keystore', runner.temp) || '' }}
+          UNY_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          UNY_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          UNY_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon assembleDebug bundleRelease
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: uny-android
+          path: |
+            mobile/android/app/build/outputs/apk/debug/app-debug.apk
+            mobile/android/app/build/outputs/bundle/release/app-release.aab
+
+  ios:
+    runs-on: macos-latest
+    env:
+      HAS_APPLE_KEY: ${{ secrets.APPSTORE_API_KEY_P8 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npx cap sync ios
+
+      - name: Build de vérification (simulateur, sans signature)
+        if: ${{ env.HAS_APPLE_KEY != 'true' }}
+        working-directory: mobile/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build | tail -20
+
+      - name: Archive signée + envoi TestFlight
+        if: ${{ env.HAS_APPLE_KEY == 'true' }}
+        working-directory: mobile/ios/App
+        env:
+          KEY_P8: ${{ secrets.APPSTORE_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          KEY_PATH="$RUNNER_TEMP/AuthKey_$KEY_ID.p8"
+          echo "$KEY_P8" > "$KEY_PATH"
+          AUTH="-allowProvisioningUpdates -authenticationKeyPath $KEY_PATH -authenticationKeyID $KEY_ID -authenticationKeyIssuerID $ISSUER_ID"
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/Uny.xcarchive" \
+            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            $AUTH archive | tail -20
+          cat > "$RUNNER_TEMP/export.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict></plist>
+          EOF
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/Uny.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/export.plist" -exportPath "$RUNNER_TEMP/export" $AUTH

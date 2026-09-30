@@ -45,6 +45,13 @@ export async function updateSession(request: NextRequest) {
   const isLoggedIn = Boolean(data?.claims?.sub);
   const { pathname, search } = request.nextUrl;
 
+  // Dans l'application mobile (Android/iOS), pas de page vitrine : on ouvre directement l'espace étudiant.
+  if (pathname === "/" && request.headers.get("user-agent")?.includes("UnyApp")) {
+    const url = request.nextUrl.clone();
+    url.pathname = isLoggedIn ? "/accueil" : "/connexion";
+    return NextResponse.redirect(url);
+  }
+
   if (!isLoggedIn && matches(pathname, PROTECTED_PREFIXES)) {
     const url = request.nextUrl.clone();
     url.pathname = "/connexion";

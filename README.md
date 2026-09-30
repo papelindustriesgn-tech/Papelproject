@@ -18,6 +18,7 @@
 | **Marketplace** | Publier avec photos (compressées sur le téléphone), modifier, masquer, marquer vendu, supprimer, « Mes annonces », contact vendeur |
 | **Profil** | Photo, informations, statut, numéro Uny, paramètres de notifications, sécurité, déconnexion |
 | **Administration** | Vue d'ensemble (inscrits, vérifiés, inscriptions jour/semaine, actifs), vérifications, utilisateurs (rôle, statut), CRUD partenaires / avantages / jobs / logements, modération marketplace, statistiques (consultations, tops, établissements), suppression des données démo |
+| **Applications mobiles** | Android (Google Play) et iOS (App Store) via Capacitor, suppression du compte dans l'app |
 | **PWA** | Manifest, icônes, service worker (cache images/assets, carte consultable hors ligne), page hors ligne |
 
 ## Stack
@@ -64,6 +65,11 @@ Résultats : [`docs/TEST-CHARGE.md`](docs/TEST-CHARGE.md).
 ## Mise en production
 
 Voir **[`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md)** : Supabase production, Vercel, domaine `unyafrica.com`, HTTPS, SMTP, analytics, premier administrateur, checklist de lancement.
+
+## Applications Android et iOS
+
+Le dossier `mobile/` contient les applications **Google Play** et **App Store** (Capacitor), compilées automatiquement par GitHub Actions (y compris iOS, sans Mac).
+Comptes à créer, secrets, fiches des stores : **[`docs/APPLICATIONS-MOBILES.md`](docs/APPLICATIONS-MOBILES.md)**.
 
 ## Structure
 

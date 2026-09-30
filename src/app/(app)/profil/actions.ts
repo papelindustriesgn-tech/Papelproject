@@ -176,3 +176,34 @@ export async function signOutEverywhere() {
   await supabase.auth.signOut({ scope: "global" });
   redirect("/connexion?deconnecte=1");
 }
+
+/** Suppression définitive du compte (exigée par l'App Store et Google Play). */
+export async function deleteAccount(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (String(formData.get("confirm") ?? "").trim().toUpperCase() !== "SUPPRIMER")
+    return { fieldErrors: { confirm: "Tape SUPPRIMER pour confirmer" } };
+  const password = String(formData.get("password") ?? "");
+
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth.user;
+  if (!user?.email) return { error: "Session expirée." };
+  const { error: signErr } = await supabase.auth.signInWithPassword({ email: user.email, password });
+  if (signErr) return { fieldErrors: { password: "Mot de passe incorrect" } };
+
+  const admin = createAdminClient();
+  const { data: me } = await admin.from("profiles").select("role").eq("id", user.id).single();
+  if (me?.role === "admin") return { error: "Un compte administrateur ne peut pas être supprimé d'ici. Retire d'abord le rôle admin." };
+
+  // Fichiers personnels (photo, justificatifs, photos d'annonces), puis le compte :
+  // toutes les données liées sont supprimées en cascade par la base.
+  for (const bucket of ["avatars", "verification-docs", "marketplace"]) {
+    const { data: files } = await admin.storage.from(bucket).list(user.id, { limit: 1000 });
+    if (files?.length) await admin.storage.from(bucket).remove(files.map((f) => `${user.id}/${f.name}`));
+  }
+  const { error } = await admin.auth.admin.deleteUser(user.id);
+  if (error) return { error: "Suppression impossible pour le moment. Réessaie ou écris-nous." };
+
+  await supabase.auth.signOut({ scope: "local" });
+  revalidatePath("/", "layout");
+  redirect("/connexion?supprime=1");
+}
