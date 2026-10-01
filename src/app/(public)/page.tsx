@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, QrCode, ShieldCheck, Smartphone, Sparkles } from "lucide-react";
+import { ArrowRight, BadgeCheck, QrCode, ShieldCheck, Smartphone, Sparkles, Store } from "lucide-react";
 import { LinkButton } from "@/components/ui/button";
 import { UnyCard } from "@/components/card/uny-card";
 import { DealCard, HousingCard, ItemCard, JobCard } from "@/components/content/cards";
@@ -88,6 +88,13 @@ export default async function LandingPage() {
               </LinkButton>
             </div>
             <p className="text-muted mt-4 text-sm">Gratuit · Inscription en moins de 3 minutes</p>
+            <Link
+              href="#partenaires"
+              className="text-ink hover:border-brand-300 border-line mt-5 inline-flex items-center gap-2 rounded-2xl border border-dashed bg-white/70 px-4 py-2.5 text-sm font-semibold"
+            >
+              <Store className="text-brand-600 size-4" aria-hidden />
+              Commerçant, bailleur ou entreprise ? <span className="text-brand-600">Espace partenaires</span>
+            </Link>
           </div>
           <div className="relative mx-auto w-full max-w-md md:max-w-none">
             <div className="rotate-[-4deg] transition duration-500 hover:rotate-0">
@@ -270,6 +277,28 @@ export default async function LandingPage() {
             exemples fictifs présentés à titre de démonstration. Elles ne représentent pas des partenariats signés avec Uny.
           </p>
         )}
+      </section>
+
+      {/* PARTENAIRES */}
+      <section id="partenaires" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-16">
+        <div className="grid items-center gap-6 rounded-[2rem] bg-white p-6 shadow-[var(--shadow-card)] sm:p-10 md:grid-cols-[1.4fr_1fr]">
+          <div>
+            <p className="text-brand-700 text-sm font-bold">Pour les commerçants, bailleurs et entreprises</p>
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Deviens partenaire Uny.</h2>
+            <p className="text-muted mt-3 max-w-xl">
+              Publie tes offres, ta boutique, tes logements et tes jobs pour les étudiants de toute la Guinée, et vérifie leur
+              carte en 2 secondes en scannant le QR code.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <LinkButton href="/partenaires" size="lg">
+              Devenir partenaire <ArrowRight className="size-5" />
+            </LinkButton>
+            <LinkButton href="/connexion?next=/partenaire" size="lg" variant="outline">
+              Accéder à mon espace partenaire
+            </LinkButton>
+          </div>
+        </div>
       </section>
 
       {/* CTA */}
