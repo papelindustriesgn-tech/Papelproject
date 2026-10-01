@@ -11,7 +11,7 @@ export default async function NewEntity({ params }: { params: Promise<{ entity: 
   const { entity } = await params;
   if (!isEntity(entity)) notFound();
   const cfg = ENTITIES[entity];
-  const { partners, districts } = await formLookups();
+  const { partners, cities } = await formLookups();
   const today = new Date().toISOString().slice(0, 10);
   return (
     <div className="max-w-2xl">
@@ -23,7 +23,7 @@ export default async function NewEntity({ params }: { params: Promise<{ entity: 
           initial={{ valid_from: today, rooms: 1 }}
           action={saveEntity.bind(null, entity, null)}
           partners={partners}
-          districts={districts}
+          cities={cities}
           submitLabel="Créer"
         />
       </div>

@@ -39,6 +39,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           Créer mon compte gratuitement
         </Link>
       </p>
+      <p className="text-muted mt-3 text-center text-xs">
+        Commerçant, bailleur ou entreprise ? Connecte-toi ici avec ton accès partenaire, ou{" "}
+        <Link href="/partenaires" className="text-brand-600 font-semibold hover:underline">
+          deviens partenaire
+        </Link>
+        .
+      </p>
     </>
   );
 }

@@ -27,6 +27,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <Link href="/#marketplace" className="hover:text-ink">
               Marketplace
             </Link>
+            <Link href="/partenaires" className="hover:text-ink">
+              Partenaires
+            </Link>
           </nav>
           <Link href="/connexion" className="text-ink hover:text-brand-600 px-2 text-sm font-semibold">
             Connexion
@@ -42,7 +45,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <div>
             <Logo />
             <p className="text-muted mt-3 max-w-xs text-sm">Le passeport étudiant africain. Être étudiant a ses avantages.</p>
-            <p className="text-muted mt-3 text-xs">Version pilote — Conakry, Guinée 🇬🇳</p>
+            <p className="text-muted mt-3 text-xs">Disponible dans toute la Guinée 🇬🇳</p>
           </div>
           <div className="text-sm">
             <p className="font-bold">Uny</p>
@@ -58,9 +61,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 </Link>
               </li>
               <li>
-                <a href={`mailto:${SUPPORT_EMAIL}?subject=Devenir%20partenaire%20Uny`} className="hover:text-ink">
+                <Link href="/partenaires" className="hover:text-ink">
                   Devenir partenaire
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

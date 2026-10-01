@@ -39,7 +39,7 @@ export function Sidebar({ isAdmin, unread }: { isAdmin: boolean; unread: number 
           })}
         </ul>
       </nav>
-      <p className="text-muted px-3 text-xs">Version pilote · Conakry</p>
+      <p className="text-muted px-3 text-xs">Guinée · Version 1.1</p>
     </aside>
   );
 }

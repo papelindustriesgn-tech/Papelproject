@@ -24,7 +24,7 @@ async function load(id: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("marketplace_items")
-    .select("*, images:marketplace_images(url, position)")
+    .select("*, images:marketplace_images(url, position), partner:partners(name, logo_url, category)")
     .eq("id", id)
     .maybeSingle();
   return data;
@@ -45,7 +45,7 @@ export default async function ItemPage({ params, searchParams }: Props) {
     ? await supabase.rpc("seller_public_info", { p_ids: [item.seller_id] })
     : { data: null };
   const seller = sellers?.[0];
-  const mine = item.seller_id === profile.id;
+  const mine = item.seller_id === profile.id && !item.partner_id;
   const images = [...(item.images ?? [])].sort((a, b) => a.position - b.position).map((i) => i.url);
   const c = MARKET_CATEGORIES[item.category];
 
@@ -84,7 +84,7 @@ export default async function ItemPage({ params, searchParams }: Props) {
           {item.is_negotiable && <span className="text-muted ml-2 text-sm font-semibold">négociable</span>}
         </p>
         <p className="text-muted mt-2 flex items-center gap-1.5 text-sm">
-          <MapPin className="size-4" aria-hidden /> {item.district ?? "Conakry"} · {timeAgo(item.created_at)}
+          <MapPin className="size-4" aria-hidden /> {item.district ?? "Guinée"} · {timeAgo(item.created_at)}
         </p>
       </div>
 
@@ -109,20 +109,35 @@ export default async function ItemPage({ params, searchParams }: Props) {
               Gérer mes annonces
             </Link>
           </div>
-        ) : seller ? (
+        ) : seller || item.partner ? (
           <>
-            <div className="flex items-center gap-3">
-              <Avatar src={seller.avatar_url} first={seller.display_name} size={48} />
-              <div className="min-w-0">
-                <p className="flex items-center gap-1 font-bold">
-                  {seller.display_name}
-                  {seller.verification_status === "verified" && (
-                    <BadgeCheck className="text-mint-500 size-4" aria-label="Étudiant vérifié" />
-                  )}
-                </p>
-                <p className="text-muted truncate text-sm">{seller.university ?? "Membre Uny"}</p>
+            {item.partner ? (
+              <div className="flex items-center gap-3">
+                <Avatar src={item.partner.logo_url} first={item.partner.name} size={48} />
+                <div className="min-w-0">
+                  <p className="flex items-center gap-1 font-bold">
+                    {item.partner.name}
+                    <BadgeCheck className="text-mint-500 size-4" aria-label="Partenaire Uny" />
+                  </p>
+                  <p className="text-muted truncate text-sm">Partenaire Uny · boutique</p>
+                </div>
               </div>
-            </div>
+            ) : (
+              seller && (
+                <div className="flex items-center gap-3">
+                  <Avatar src={seller.avatar_url} first={seller.display_name} size={48} />
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-1 font-bold">
+                      {seller.display_name}
+                      {seller.verification_status === "verified" && (
+                        <BadgeCheck className="text-mint-500 size-4" aria-label="Étudiant vérifié" />
+                      )}
+                    </p>
+                    <p className="text-muted truncate text-sm">{seller.university ?? "Membre Uny"}</p>
+                  </div>
+                </div>
+              )
+            )}
             {item.contact_phone && item.status === "active" && (
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <a href={`tel:${item.contact_phone}`} className={buttonClass("outline", "lg")}>

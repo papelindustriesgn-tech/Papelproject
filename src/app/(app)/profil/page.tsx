@@ -9,6 +9,7 @@ import {
   MessageSquareHeart,
   Pencil,
   Settings,
+  Store,
   ShieldCheck,
   ShieldHalf,
   ShoppingBag,
@@ -17,13 +18,14 @@ import {
 import { Avatar } from "@/components/ui/avatar";
 import { VerificationBadge } from "@/components/ui/badge";
 import { requireProfile, universityLabel } from "@/lib/auth";
+import { getMyPartners } from "@/lib/partner";
 import { formatDate } from "@/lib/format";
 import { AvatarUpload } from "./avatar-upload";
 
 export const metadata: Metadata = { title: "Profil" };
 
 export default async function ProfilePage() {
-  const p = await requireProfile();
+  const [p, myPartners] = await Promise.all([requireProfile(), getMyPartners()]);
   const rows = [
     { label: "Établissement", value: universityLabel(p) },
     { label: "Filière", value: p.field_of_study ?? "—" },
@@ -42,6 +44,7 @@ export default async function ProfilePage() {
     { href: "/avis", label: "Donner mon avis sur Uny", icon: MessageSquareHeart },
     { href: "/profil/parametres", label: "Paramètres", icon: Settings },
     { href: "/profil/securite", label: "Sécurité", icon: ShieldHalf },
+    ...(myPartners.length ? [{ href: "/partenaire", label: "Espace partenaire", icon: Store }] : []),
     ...(p.role === "admin" ? [{ href: "/admin", label: "Administration", icon: ShieldCheck }] : []),
   ];
 

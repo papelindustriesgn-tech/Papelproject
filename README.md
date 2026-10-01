@@ -2,7 +2,7 @@
 
 > **Être étudiant a ses avantages.**
 > Carte étudiante digitale, réductions, jobs & stages, logements et marketplace réunis dans une seule application web mobile-first (PWA).
-> Version pilote : **Conakry, Guinée** — architecture multi-pays prête (GN, SN, CI, ML…).
+> Disponible dans **toute la Guinée** (18 villes) — architecture multi-pays prête (GN, SN, CI, ML…).
 
 ## Fonctionnalités
 
@@ -17,6 +17,8 @@
 | **Logement** | Chambres, studios, colocations, appartements ; filtres budget / quartier / type / disponibilité ; galerie photos ; contact appel/WhatsApp |
 | **Marketplace** | Publier avec photos (compressées sur le téléphone), modifier, masquer, marquer vendu, supprimer, « Mes annonces », contact vendeur |
 | **Profil** | Photo, informations, statut, numéro Uny, paramètres de notifications, sécurité, déconnexion |
+| **Espace partenaire** | Commerçants, bailleurs, entreprises : offres étudiantes, boutique (marketplace), logements, jobs avec candidatures, **scan du QR code de la carte** (caméra ou numéro) avec historique et statistiques. Demande en ligne `/partenaires`, validation par l'admin. Guide : [`docs/GUIDE-PARTENAIRES.md`](docs/GUIDE-PARTENAIRES.md) |
+| **Toute la Guinée** | 18 villes ; chaque étudiant voit sa ville par défaut, ou « Toute la Guinée » |
 | **Administration** | Vue d'ensemble (inscrits, vérifiés, inscriptions jour/semaine, actifs), vérifications, utilisateurs (rôle, statut), CRUD partenaires / avantages / jobs / logements, modération marketplace, statistiques (consultations, tops, établissements), suppression des données démo |
 | **Applications mobiles** | Android (Google Play) et iOS (App Store) via Capacitor, suppression du compte dans l'app |
 | **PWA** | Manifest, icônes, service worker (cache images/assets, carte consultable hors ligne), page hors ligne |
@@ -49,7 +51,7 @@ Les emails locaux (confirmation, mot de passe oublié…) arrivent dans **Mailpi
 
 ```bash
 npm run build && npm start        # dans un terminal
-npm run test:e2e                  # 23 scénarios : parcours complets + débordement mobile
+npm run test:e2e                  # parcours complets, espace partenaire, scan caméra, débordement mobile
 ```
 
 Test de charge (comptes **synthétiques** marqués `is_test_account`, exclus de toutes les statistiques réelles) :
@@ -80,6 +82,7 @@ src/
     (auth)/          connexion, inscription, mot de passe oublié / réinitialisation
     (app)/           espace étudiant : accueil, carte, avantages, jobs, logement, marketplace, profil, favoris, notifications
     admin/           espace administrateur (layout séparé, accès admin vérifié côté serveur + RLS)
+    partenaire/      espace partenaire (offres, boutique, logements, jobs, scanner)
     auth/            confirmation des liens email, déconnexion
     v/[token]/       vérification publique d'une carte (QR code)
   components/        design system (ui/), carte, contenus, admin, PWA

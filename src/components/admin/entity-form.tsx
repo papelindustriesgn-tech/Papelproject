@@ -11,19 +11,92 @@ import { createClient } from "@/lib/supabase/client";
 import { compressImage, randomName } from "@/lib/image-client";
 
 type Values = Record<string, unknown>;
+type CityOption = { id: number; name: string; districts: string[] };
+/** Où envoyer les photos : stockage éditorial (admin) ou dossier personnel (partenaires). */
+export type UploadTarget = { bucket: "content" | "marketplace"; prefix: string };
 
-async function uploadContent(file: File) {
+async function uploadContent(file: File, target: UploadTarget) {
   const blob = await compressImage(file, 1600, 0.82);
   const supabase = createClient();
-  const path = `admin/${randomName("jpg")}`;
+  const path = `${target.prefix}/${randomName("jpg")}`;
   const { error } = await supabase.storage
-    .from("content")
+    .from(target.bucket)
     .upload(path, blob, { contentType: "image/jpeg", cacheControl: "31536000" });
   if (error) throw error;
-  return supabase.storage.from("content").getPublicUrl(path).data.publicUrl;
+  return supabase.storage.from(target.bucket).getPublicUrl(path).data.publicUrl;
 }
 
-function ImagesField({ name, initial, max, single }: { name: string; initial: string[]; max: number; single?: boolean }) {
+function LocationField({
+  name,
+  cities,
+  initialCity,
+  initialDistrict,
+  withDistrict,
+  required,
+  error,
+}: {
+  name: string;
+  cities: CityOption[];
+  initialCity: number | null;
+  initialDistrict: string;
+  withDistrict: boolean;
+  required?: boolean;
+  error?: string;
+}) {
+  const [cityId, setCityId] = useState(initialCity ? String(initialCity) : "");
+  const districts = cities.find((c) => String(c.id) === cityId)?.districts ?? [];
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      <Select
+        id={name}
+        name={`${name}__city`}
+        value={cityId}
+        onChange={(e) => setCityId(e.target.value)}
+        required={required}
+        aria-label="Ville"
+        aria-invalid={!!error}
+      >
+        <option value="">{required ? "Choisir une ville" : "Toute la Guinée"}</option>
+        {cities.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </Select>
+      {withDistrict && (
+        <>
+          <Input
+            name={`${name}__district`}
+            defaultValue={initialDistrict}
+            list={`${name}-districts`}
+            maxLength={80}
+            placeholder="Quartier"
+            aria-label="Quartier"
+          />
+          <datalist id={`${name}-districts`}>
+            {districts.map((d) => (
+              <option key={d} value={d} />
+            ))}
+          </datalist>
+        </>
+      )}
+    </div>
+  );
+}
+
+function ImagesField({
+  name,
+  initial,
+  max,
+  single,
+  target,
+}: {
+  name: string;
+  initial: string[];
+  max: number;
+  single?: boolean;
+  target: UploadTarget;
+}) {
   const [urls, setUrls] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -68,7 +141,7 @@ function ImagesField({ name, initial, max, single }: { name: string; initial: st
           setErr(null);
           try {
             const added: string[] = [];
-            for (const f of files) added.push(await uploadContent(f));
+            for (const f of files) added.push(await uploadContent(f, target));
             setUrls((x) => (single ? added.slice(0, 1) : [...x, ...added]));
           } catch {
             setErr("Envoi impossible.");
@@ -112,16 +185,18 @@ export function EntityForm({
   fields,
   initial,
   action,
-  partners,
-  districts,
+  partners = [],
+  cities,
   submitLabel,
+  uploadTo = { bucket: "content", prefix: "admin" },
 }: {
   fields: FieldSpec[];
   initial: Values;
   action: (prev: FormState, fd: FormData) => Promise<FormState>;
-  partners: { id: string; name: string }[];
-  districts: string[];
+  partners?: { id: string; name: string }[];
+  cities: CityOption[];
   submitLabel: string;
+  uploadTo?: UploadTarget;
 }) {
   const [state, formAction] = useActionState(action, {});
   const fe = state.fieldErrors ?? {};
@@ -129,9 +204,25 @@ export function EntityForm({
 
   return (
     <form action={formAction} className="space-y-4" key={state.values ? JSON.stringify(state.values) : "init"}>
-      <FormMessage>{state.error}</FormMessage>
+      <FormMessage type={state.ok ? "success" : "error"}>{state.message ?? state.error}</FormMessage>
       {fields.map((f) => {
         const v = val(f.name);
+        if (f.type === "location") {
+          const sv = state.values;
+          return (
+            <Field key={f.name} label={f.label} htmlFor={f.name} error={fe[f.name]} hint={f.hint} optional={!f.required}>
+              <LocationField
+                name={f.name}
+                cities={cities}
+                initialCity={sv ? Number(sv[`${f.name}__city`]) || null : ((initial.city_id as number | null) ?? null)}
+                initialDistrict={sv ? (sv[`${f.name}__district`] ?? "") : ((initial.district as string | null) ?? "")}
+                withDistrict={f.district !== false}
+                required={f.required}
+                error={fe[f.name]}
+              />
+            </Field>
+          );
+        }
         if (f.type === "checkbox") {
           const checked = state.values ? v === "on" : v === undefined ? !!f.defaultValue : !!v;
           return (
@@ -161,7 +252,7 @@ export function EntityForm({
                 {(f.options === "partners"
                   ? partners.map((p) => ({ value: p.id, label: p.name }))
                   : f.options === "districts"
-                    ? districts.map((d) => ({ value: d, label: d }))
+                    ? []
                     : f.options
                 ).map((o) => (
                   <option key={o.value} value={o.value}>
@@ -176,9 +267,10 @@ export function EntityForm({
                 name={f.name}
                 initial={Array.isArray(v) ? (v as string[]) : typeof v === "string" && v ? (JSON.parse(v) as string[]) : []}
                 max={f.max ?? 8}
+                target={uploadTo}
               />
             ) : f.type === "image" ? (
-              <ImagesField name={f.name} initial={v ? [v as string] : []} max={1} single />
+              <ImagesField name={f.name} initial={v ? [v as string] : []} max={1} single target={uploadTo} />
             ) : (
               <Input
                 id={f.name}

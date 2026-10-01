@@ -45,7 +45,8 @@ test("admin : statistiques, CRUD avantage, masquage, modération", async ({ page
   await page.goto("/admin/logements/nouveau");
   await page.fill("#title", `Logement test admin ${run}`);
   await page.selectOption("#type", "studio");
-  await page.selectOption("#district", "Kaloum");
+  await page.selectOption("#location", { label: "Conakry" });
+  await page.fill("input[name=location__district]", "Kaloum");
   await page.fill("#price_gnf", "1000000");
   await page.getByRole("button", { name: "Créer" }).click();
   await expect(page.getByText(`Logement test admin ${run}`)).toBeVisible();

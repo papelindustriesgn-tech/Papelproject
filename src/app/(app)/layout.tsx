@@ -1,4 +1,5 @@
 import { after } from "next/server";
+import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -7,6 +8,8 @@ import { createClient } from "@/lib/supabase/server";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireProfile();
+  // Les comptes « partenaire » (commerçants, bailleurs, recruteurs) ont leur propre espace.
+  if (profile.role === "partner") redirect("/partenaire");
   const supabase = await createClient();
   const { count } = await supabase
     .from("notifications")

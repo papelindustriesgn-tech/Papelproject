@@ -39,7 +39,7 @@ export default async function SettingsPage() {
           </a>
           .
         </p>
-        <p className="text-muted pt-2 text-xs">Uny · version pilote 1.0 · Conakry</p>
+        <p className="text-muted pt-2 text-xs">Uny · version 1.1 · Guinée</p>
       </section>
     </div>
   );

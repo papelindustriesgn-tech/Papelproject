@@ -20,7 +20,11 @@ export default async function EditItemPage({ params }: { params: Promise<{ id: s
       .select("*, images:marketplace_images(url, storage_path, position)")
       .eq("id", id)
       .maybeSingle(),
-    supabase.from("cities").select("districts").eq("slug", "conakry").single(),
+    supabase
+      .from("cities")
+      .select("districts")
+      .eq("id", profile.city_id ?? 0)
+      .maybeSingle(),
   ]);
   if (!item || item.seller_id !== profile.id) notFound();
   if (item.status === "removed") {

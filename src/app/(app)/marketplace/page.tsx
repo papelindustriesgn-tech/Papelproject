@@ -9,19 +9,24 @@ import { LinkButton } from "@/components/ui/button";
 import { listMarket } from "@/lib/queries";
 import { MARKET_CATEGORIES } from "@/lib/constants";
 import { param, type SearchParams } from "@/lib/url";
+import { requireProfile } from "@/lib/auth";
+import { resolveCity } from "@/lib/cities";
+import { CityPicker } from "@/components/ui/city-picker";
 
 export const metadata: Metadata = { title: "Marketplace" };
 
 export default async function MarketplacePage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
   const page = Math.max(1, Number(param(sp, "page") ?? 1) || 1);
-  const { items, hasMore } = await listMarket({ category: param(sp, "categorie"), q: param(sp, "q"), page });
+  const profile = await requireProfile();
+  const { cities, city, slug } = await resolveCity(sp, profile.city_id);
+  const { items, hasMore } = await listMarket({ category: param(sp, "categorie"), q: param(sp, "q"), page, cityId: city?.id });
 
   return (
     <div className="animate-fade-up">
       <PageTitle
         title="Marketplace"
-        subtitle="Achète et vends entre étudiants."
+        subtitle="Achète et vends entre étudiants, et chez les partenaires Uny."
         action={
           <LinkButton href="/marketplace/mes-annonces" variant="outline" size="sm">
             Mes annonces
@@ -29,7 +34,13 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
         }
       />
       <div className="space-y-3">
-        <SearchBar pathname="/marketplace" searchParams={sp} placeholder="Téléphone, livre, ordinateur…" keep={["categorie"]} />
+        <SearchBar
+          pathname="/marketplace"
+          searchParams={sp}
+          placeholder="Téléphone, livre, ordinateur…"
+          keep={["categorie", "ville"]}
+        />
+        <CityPicker cities={cities} value={slug} />
         <FilterChips
           pathname="/marketplace"
           searchParams={sp}

@@ -101,14 +101,18 @@ export function ItemForm({ userId, defaults, districts }: { userId: string; defa
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Quartier" htmlFor="district" error={fe.district}>
-          <Select id="district" name="district" defaultValue={val("district")}>
-            <option value="">—</option>
-            {districts.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </Select>
+          {districts.length > 0 ? (
+            <Select id="district" name="district" defaultValue={val("district")}>
+              <option value="">—</option>
+              {districts.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <Input id="district" name="district" defaultValue={val("district")} maxLength={60} placeholder="Ton quartier" />
+          )}
         </Field>
         <Field label="Téléphone de contact" htmlFor="contact_phone" error={fe.contact_phone}>
           <Input

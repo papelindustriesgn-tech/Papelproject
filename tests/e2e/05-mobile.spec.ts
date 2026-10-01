@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ADMIN, expectNoHorizontalOverflow, login, signUp } from "./helpers";
+import { ADMIN, adminAsPartnerMember, expectNoHorizontalOverflow, login, signUp } from "./helpers";
 
 const VIEWPORTS = [
   { name: "Android 360", width: 360, height: 780 },
@@ -9,7 +9,7 @@ const VIEWPORTS = [
   { name: "Desktop 1280", width: 1280, height: 800 },
 ];
 
-const PUBLIC = ["/", "/connexion", "/inscription", "/mot-de-passe-oublie", "/conditions", "/confidentialite"];
+const PUBLIC = ["/", "/connexion", "/inscription", "/mot-de-passe-oublie", "/conditions", "/confidentialite", "/partenaires"];
 const APP = [
   "/accueil",
   "/carte",
@@ -39,7 +39,26 @@ const ADMIN_PAGES = [
   "/admin/statistiques",
   "/admin/avis",
   "/admin/contacts",
+  "/admin/demandes-partenaires",
 ];
+const PARTNER_PAGES = [
+  "/partenaire",
+  "/partenaire/scanner",
+  "/partenaire/offres",
+  "/partenaire/offres/nouveau",
+  "/partenaire/boutique",
+  "/partenaire/boutique/nouveau",
+  "/partenaire/logements",
+  "/partenaire/logements/nouveau",
+  "/partenaire/jobs",
+  "/partenaire/jobs/nouveau",
+  "/partenaire/publier",
+  "/partenaire/profil",
+];
+
+test.beforeAll(async () => {
+  await adminAsPartnerMember();
+});
 
 for (const vp of VIEWPORTS) {
   test(`aucun débordement horizontal — ${vp.name}`, async ({ page }) => {
@@ -77,6 +96,16 @@ for (const vp of VIEWPORTS) {
     for (const url of ADMIN_PAGES) {
       await page.goto(url);
       await expectNoHorizontalOverflow(page);
+    }
+    for (const url of PARTNER_PAGES) {
+      await page.goto(url);
+      await expect(page).toHaveURL(new RegExp(`${url}$`));
+      await expectNoHorizontalOverflow(page);
+    }
+    if (vp.width < 1024) {
+      const nav = page.getByRole("navigation", { name: "Navigation partenaire" });
+      for (const l of ["Accueil", "Offres", "Scanner", "Publier", "Fiche"])
+        await expect(nav.getByRole("link", { name: l })).toBeVisible();
     }
   });
 }

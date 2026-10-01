@@ -8,8 +8,8 @@ export default function TermsPage() {
   return (
     <Prose title="Conditions d'utilisation" updated="29 septembre 2026">
       <p>
-        Uny est une plateforme numérique destinée aux étudiants, actuellement en{" "}
-        <strong>version pilote à Conakry (Guinée)</strong>. En créant un compte, tu acceptes les présentes conditions.
+        Uny est une plateforme numérique destinée aux étudiants, actuellement en <strong>disponible dans toute la Guinée</strong>.
+        En créant un compte, tu acceptes les présentes conditions.
       </p>
       <h2>1. Compte</h2>
       <ul>

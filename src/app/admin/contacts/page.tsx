@@ -13,6 +13,7 @@ export default async function ContactsPage() {
       .from("profiles")
       .select("id, first_name, last_name, phone, verification_status, created_at")
       .eq("is_test_account", false)
+      .neq("role", "partner")
       .not("phone", "is", null)
       .order("created_at", { ascending: false })
       .limit(5000),

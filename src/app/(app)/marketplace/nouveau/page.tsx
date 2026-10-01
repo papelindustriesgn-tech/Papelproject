@@ -10,7 +10,11 @@ export const metadata: Metadata = { title: "Publier une annonce" };
 export default async function NewItemPage() {
   const profile = await requireProfile();
   const supabase = await createClient();
-  const { data: city } = await supabase.from("cities").select("districts").eq("slug", "conakry").single();
+  const { data: city } = await supabase
+    .from("cities")
+    .select("districts")
+    .eq("id", profile.city_id ?? 0)
+    .maybeSingle();
   return (
     <div className="animate-fade-up mx-auto max-w-2xl">
       <BackLink href="/marketplace" label="Marketplace" />

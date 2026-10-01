@@ -32,6 +32,7 @@ export type DealCardData = {
   valid_until: string | null;
   is_demo: boolean;
   partner: { name: string; logo_url: string | null } | null;
+  city?: { name: string } | null;
 };
 
 export function DealCard({
@@ -74,7 +75,7 @@ export function DealCard({
           <h3 className="text-ink mt-1 line-clamp-2 leading-snug font-bold">{deal.title}</h3>
           <p className="text-muted mt-2 flex items-center gap-1 text-xs">
             <MapPin className="size-3.5 shrink-0" aria-hidden />
-            <span className="truncate">{deal.district ?? "Conakry"}</span>
+            <span className="truncate">{[deal.district, deal.city?.name].filter(Boolean).join(", ") || "Guinée"}</span>
             {deal.valid_until && <span className="ml-auto shrink-0">jusqu&apos;au {formatShortDate(deal.valid_until)}</span>}
           </p>
         </div>
@@ -98,6 +99,7 @@ export type JobCardData = {
   deadline: string | null;
   is_demo: boolean;
   created_at: string;
+  city?: { name: string } | null;
 };
 
 export function JobCard({ job, favorite, compact = false }: { job: JobCardData; favorite?: boolean; compact?: boolean }) {
@@ -122,7 +124,8 @@ export function JobCard({ job, favorite, compact = false }: { job: JobCardData; 
         </div>
         <div className="text-muted mt-3 space-y-1 text-sm">
           <p className="flex items-center gap-1.5 truncate">
-            <MapPin className="size-4 shrink-0" aria-hidden /> {job.location ?? "Conakry"}
+            <MapPin className="size-4 shrink-0" aria-hidden />{" "}
+            {job.location ?? job.city?.name ?? (job.is_remote ? "À distance" : "Guinée")}
           </p>
           {job.compensation && (
             <p className="flex items-center gap-1.5 truncate">
@@ -165,6 +168,7 @@ export type HousingCardData = {
   is_available: boolean;
   available_from: string | null;
   is_demo: boolean;
+  city?: { name: string } | null;
 };
 
 export function HousingCard({
@@ -209,7 +213,7 @@ export function HousingCard({
           <div className="text-muted mt-2 flex items-center gap-2 text-xs">
             <span className="flex min-w-0 items-center gap-1">
               <MapPin className="size-3.5 shrink-0" aria-hidden />
-              <span className="truncate">{home.district}</span>
+              <span className="truncate">{[home.district, home.city?.name].filter(Boolean).join(", ")}</span>
             </span>
             <span aria-hidden>·</span>
             <span className="shrink-0">
@@ -250,6 +254,7 @@ export type ItemCardData = {
   status?: string;
   cover: string | null;
   verifiedSeller?: boolean;
+  partnerName?: string | null;
 };
 
 export function ItemCard({ item, href, compact = false }: { item: ItemCardData; href?: string; compact?: boolean }) {
@@ -279,9 +284,14 @@ export function ItemCard({ item, href, compact = false }: { item: ItemCardData; 
         <p className="text-ink truncate text-base font-extrabold">{formatGNF(item.price_gnf)}</p>
         <h3 className="text-ink/90 line-clamp-1 text-sm font-semibold">{item.title}</h3>
         <p className="text-muted mt-1 flex items-center gap-1 truncate text-xs">
-          {item.verifiedSeller && <BadgeCheck className="text-mint-500 size-3.5 shrink-0" aria-label="Vendeur vérifié" />}
+          {(item.verifiedSeller || item.partnerName) && (
+            <BadgeCheck
+              className="text-mint-500 size-3.5 shrink-0"
+              aria-label={item.partnerName ? "Partenaire Uny" : "Vendeur vérifié"}
+            />
+          )}
           <span className="truncate">
-            {ITEM_CONDITIONS[item.condition]} · {item.district ?? "Conakry"}
+            {item.partnerName ?? ITEM_CONDITIONS[item.condition]} · {item.district ?? "Guinée"}
           </span>
         </p>
         <p className="text-muted/80 mt-0.5 text-[11px]">{timeAgo(item.created_at)}</p>

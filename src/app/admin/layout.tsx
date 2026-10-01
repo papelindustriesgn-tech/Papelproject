@@ -11,10 +11,10 @@ export const metadata: Metadata = { title: { default: "Administration", template
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await requireAdmin();
   const supabase = await createClient();
-  const { count } = await supabase
-    .from("student_verifications")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "pending");
+  const [{ count }, { count: applications }] = await Promise.all([
+    supabase.from("student_verifications").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("partner_applications").select("id", { count: "exact", head: true }).eq("status", "pending"),
+  ]);
 
   return (
     <div className="bg-canvas min-h-dvh">
@@ -34,7 +34,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </header>
       <div className="mx-auto max-w-7xl px-4 py-4 lg:grid lg:grid-cols-[14rem_1fr] lg:gap-8 lg:py-8">
         <aside className="lg:sticky lg:top-22 lg:self-start">
-          <AdminNav pending={count ?? 0} />
+          <AdminNav pending={count ?? 0} applications={applications ?? 0} />
         </aside>
         <main className="mt-4 min-w-0 lg:mt-0">{children}</main>
       </div>

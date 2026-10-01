@@ -27,7 +27,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Uny utilise l'appareil photo pour ta photo de profil, ton justificatif étudiant et les photos de tes annonces.</string>
+	<string>Uny utilise l'appareil photo pour scanner les cartes étudiantes (partenaires), ta photo de profil, ton justificatif et les photos de tes annonces.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Uny accède à tes photos pour ta photo de profil, ton justificatif étudiant et les photos de tes annonces.</string>
 	<key>UIApplicationSceneManifest</key>

@@ -14,12 +14,7 @@ export default async function SignUpPage() {
   const supabase = createPublicClient();
   const [{ data: universities }, { data: cities }] = await Promise.all([
     supabase.from("universities").select("id, name, short_name, city_id").eq("is_active", true).order("name"),
-    supabase
-      .from("cities")
-      .select("id, name, is_active")
-      .eq("country_code", "GN")
-      .order("is_active", { ascending: false })
-      .order("name"),
+    supabase.from("cities").select("id, name, slug, is_active").eq("country_code", "GN").eq("is_active", true).order("name"),
   ]);
 
   return (

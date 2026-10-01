@@ -12,6 +12,8 @@ import { favoriteIds, listDeals } from "@/lib/queries";
 import { getDistricts } from "@/lib/queries";
 import { DEAL_CATEGORIES } from "@/lib/constants";
 import { param, type SearchParams } from "@/lib/url";
+import { resolveCity } from "@/lib/cities";
+import { CityPicker } from "@/components/ui/city-picker";
 
 export const metadata: Metadata = { title: "Avantages & réductions" };
 
@@ -23,37 +25,49 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
   const category = param(sp, "categorie");
   const district = param(sp, "quartier");
   const q = param(sp, "q");
+  const { cities, city, slug } = await resolveCity(sp, profile.city_id);
 
   const [{ items, hasMore }, favs, districts] = await Promise.all([
-    listDeals({ category, district, q, page }),
+    listDeals({ category, district, q, page, cityId: city?.id }),
     favoriteIds(supabase, profile.id, "deal"),
-    getDistricts(),
+    getDistricts(city?.slug),
   ]);
 
   return (
     <div className="animate-fade-up">
       <PageTitle title="Avantages" subtitle="Réductions et tarifs étudiants chez les partenaires Uny." />
       <div className="space-y-3">
-        <SearchBar pathname="/avantages" searchParams={sp} placeholder="Rechercher une offre…" keep={["categorie", "quartier"]} />
+        <SearchBar
+          pathname="/avantages"
+          searchParams={sp}
+          placeholder="Rechercher une offre…"
+          keep={["categorie", "quartier", "ville"]}
+        />
         <FilterChips
           pathname="/avantages"
           searchParams={sp}
           name="categorie"
           options={Object.entries(DEAL_CATEGORIES).map(([value, c]) => ({ value, label: c.label, emoji: c.emoji }))}
         />
-        <form action="/avantages" className="flex gap-2">
-          {category && <input type="hidden" name="categorie" value={category} />}
-          {q && <input type="hidden" name="q" value={q} />}
-          <Select name="quartier" defaultValue={district ?? ""} aria-label="Quartier" className="h-11 flex-1">
-            <option value="">📍 Tous les quartiers</option>
-            {districts.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </Select>
-          <button className="bg-ink h-11 shrink-0 rounded-2xl px-4 text-sm font-semibold text-white">Filtrer</button>
-        </form>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <CityPicker cities={cities} value={slug} />
+          {districts.length > 0 && (
+            <form action="/avantages" className="flex gap-2">
+              {category && <input type="hidden" name="categorie" value={category} />}
+              {q && <input type="hidden" name="q" value={q} />}
+              <input type="hidden" name="ville" value={slug} />
+              <Select name="quartier" defaultValue={district ?? ""} aria-label="Quartier" className="h-11 flex-1">
+                <option value="">Tous les quartiers</option>
+                {districts.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </Select>
+              <button className="bg-ink h-11 shrink-0 rounded-2xl px-4 text-sm font-semibold text-white">Filtrer</button>
+            </form>
+          )}
+        </div>
       </div>
 
       <div className="mt-5">

@@ -64,7 +64,7 @@ export default async function JobPage({ params }: Props) {
         <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
           <div className="flex items-center gap-2">
             <MapPin className="text-brand-600 size-4 shrink-0" aria-hidden />
-            <dd>{job.location ?? "Conakry"}</dd>
+            <dd>{job.location ?? (job.is_remote ? "À distance" : "Guinée")}</dd>
           </div>
           <div className="flex items-center gap-2">
             <Wallet className="text-brand-600 size-4 shrink-0" aria-hidden />

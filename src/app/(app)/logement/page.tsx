@@ -12,6 +12,8 @@ import { favoriteIds, listHousing } from "@/lib/queries";
 import { getDistricts } from "@/lib/queries";
 import { HOUSING_BUDGETS, HOUSING_TYPES } from "@/lib/constants";
 import { param, type SearchParams } from "@/lib/url";
+import { resolveCity } from "@/lib/cities";
+import { CityPicker } from "@/components/ui/city-picker";
 
 export const metadata: Metadata = { title: "Logement étudiant" };
 
@@ -24,16 +26,20 @@ export default async function HousingPage({ searchParams }: { searchParams: Prom
   const district = param(sp, "quartier");
   const budget = param(sp, "budget");
   const available = param(sp, "dispo") === "1";
+  const { cities, city, slug } = await resolveCity(sp, profile.city_id);
 
   const [{ items, hasMore }, favs, districts] = await Promise.all([
-    listHousing({ type, district, max: budget ? Number(budget) : undefined, available, page }),
+    listHousing({ type, district, max: budget ? Number(budget) : undefined, available, page, cityId: city?.id }),
     favoriteIds(supabase, profile.id, "housing"),
-    getDistricts(),
+    getDistricts(city?.slug),
   ]);
 
   return (
     <div className="animate-fade-up">
-      <PageTitle title="Logement" subtitle="Chambres, studios, colocations et appartements à Conakry." />
+      <PageTitle
+        title="Logement"
+        subtitle={`Chambres, studios, colocations et appartements ${city ? `à ${city.name}` : "dans toute la Guinée"}.`}
+      />
       <div className="space-y-3">
         <FilterChips
           pathname="/logement"
@@ -41,8 +47,10 @@ export default async function HousingPage({ searchParams }: { searchParams: Prom
           name="type"
           options={Object.entries(HOUSING_TYPES).map(([value, t]) => ({ value, label: t.label, emoji: t.emoji }))}
         />
+        <CityPicker cities={cities} value={slug} />
         <form action="/logement" className="grid grid-cols-2 gap-2 md:grid-cols-[1fr_1fr_auto_auto]">
           {type && <input type="hidden" name="type" value={type} />}
+          <input type="hidden" name="ville" value={slug} />
           <Select name="budget" defaultValue={budget ?? ""} aria-label="Budget maximum" className="h-11">
             <option value="">💰 Budget</option>
             {HOUSING_BUDGETS.map((b) => (
@@ -51,7 +59,13 @@ export default async function HousingPage({ searchParams }: { searchParams: Prom
               </option>
             ))}
           </Select>
-          <Select name="quartier" defaultValue={district ?? ""} aria-label="Quartier" className="h-11">
+          <Select
+            name="quartier"
+            defaultValue={district ?? ""}
+            aria-label="Quartier"
+            className="h-11"
+            disabled={districts.length === 0}
+          >
             <option value="">📍 Quartier</option>
             {districts.map((d) => (
               <option key={d} value={d}>

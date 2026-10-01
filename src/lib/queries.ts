@@ -21,11 +21,16 @@ const cached = <A extends unknown[], R>(fn: (...args: A) => Promise<R>, key: str
   unstable_cache(fn, [key], { revalidate: 60, tags: [CONTENT_TAG] });
 
 export const DEAL_COLUMNS =
-  "id, title, discount_label, category, district, image_url, valid_until, is_demo, is_featured, partner:partners(name, logo_url)";
-export const JOB_COLUMNS = "id, title, company_name, type, location, is_remote, compensation, deadline, is_demo, created_at";
-export const HOUSING_COLUMNS = "id, title, type, district, price_gnf, rooms, images, is_available, available_from, is_demo";
+  "id, title, discount_label, category, district, image_url, valid_until, is_demo, is_featured, partner:partners(name, logo_url), city:cities(name)";
+export const JOB_COLUMNS =
+  "id, title, company_name, type, location, is_remote, compensation, deadline, is_demo, created_at, city:cities(name)";
+export const HOUSING_COLUMNS =
+  "id, title, type, district, price_gnf, rooms, images, is_available, available_from, is_demo, city:cities(name)";
 export const ITEM_COLUMNS =
-  "id, title, category, price_gnf, condition, district, created_at, is_demo, status, seller_id, images:marketplace_images(url, position)";
+  "id, title, category, price_gnf, condition, district, created_at, is_demo, status, seller_id, partner:partners(name), city:cities(name), images:marketplace_images(url, position)";
+
+/** Contenus d'une ville + contenus nationaux (sans ville). */
+const inCity = (cityId: number) => `city_id.eq.${cityId},city_id.is.null`;
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -42,13 +47,15 @@ async function _listDeals(
     district,
     page = 1,
     featured,
-  }: { category?: string; q?: string; district?: string; page?: number; featured?: boolean },
+    cityId,
+  }: { category?: string; q?: string; district?: string; page?: number; featured?: boolean; cityId?: number },
 ) {
   let query = supabase
     .from("deals")
     .select(DEAL_COLUMNS)
     .eq("is_active", true)
     .or(`valid_until.is.null,valid_until.gte.${today()}`);
+  if (cityId) query = query.or(inCity(cityId));
   if (category) query = query.eq("category", category as DealCategory);
   if (district) query = query.eq("district", district);
   if (featured) query = query.eq("is_featured", true);
@@ -62,8 +69,12 @@ async function _listDeals(
   return { items: (data ?? []).slice(0, PAGE_SIZE), hasMore: (data?.length ?? 0) > PAGE_SIZE };
 }
 
-async function _listJobs(supabase: AnyClient, { type, q, page = 1 }: { type?: string; q?: string; page?: number }) {
+async function _listJobs(
+  supabase: AnyClient,
+  { type, q, page = 1, cityId }: { type?: string; q?: string; page?: number; cityId?: number },
+) {
   let query = supabase.from("jobs").select(JOB_COLUMNS).eq("is_active", true).or(`deadline.is.null,deadline.gte.${today()}`);
+  if (cityId) query = query.or(`${inCity(cityId)},is_remote.eq.true`);
   if (type) query = query.eq("type", type as JobType);
   if (q) query = query.or(`title.ilike.${ilikePattern(q)},company_name.ilike.${ilikePattern(q)}`);
   const [from, to] = range(page);
@@ -80,9 +91,11 @@ async function _listHousing(
     max,
     available,
     page = 1,
-  }: { type?: string; district?: string; max?: number; available?: boolean; page?: number },
+    cityId,
+  }: { type?: string; district?: string; max?: number; available?: boolean; page?: number; cityId?: number },
 ) {
   let query = supabase.from("housing").select(HOUSING_COLUMNS).eq("is_active", true);
+  if (cityId) query = query.or(inCity(cityId));
   if (type) query = query.eq("type", type as HousingType);
   if (district) query = query.eq("district", district);
   if (max) query = query.lte("price_gnf", max);
@@ -107,6 +120,8 @@ type RawItem = {
   is_demo: boolean;
   status: string;
   seller_id: string | null;
+  partner?: { name: string } | null;
+  city?: { name: string } | null;
   images: { url: string; position: number }[] | null;
 };
 
@@ -118,12 +133,13 @@ export function toItemCard(i: RawItem, verifiedSellers?: Set<string>): ItemCardD
     category: i.category,
     price_gnf: i.price_gnf,
     condition: i.condition,
-    district: i.district,
+    district: i.district ?? i.city?.name ?? null,
     created_at: i.created_at,
     is_demo: i.is_demo,
     status: i.status,
     cover,
     verifiedSeller: i.seller_id ? verifiedSellers?.has(i.seller_id) : false,
+    partnerName: i.partner?.name ?? null,
   };
 }
 
@@ -136,16 +152,17 @@ export async function verifiedSellerSet(supabase: AnyClient, ids: (string | null
 
 async function _listMarket(
   supabase: AnyClient,
-  { category, q, max, page = 1 }: { category?: string; q?: string; max?: number; page?: number },
+  { category, q, max, page = 1, cityId }: { category?: string; q?: string; max?: number; page?: number; cityId?: number },
 ) {
   let query = supabase.from("marketplace_items").select(ITEM_COLUMNS).eq("status", "active");
+  if (cityId) query = query.or(inCity(cityId));
   if (category) query = query.eq("category", category as MarketCategory);
   if (max) query = query.lte("price_gnf", max);
   if (q) query = query.ilike("title", ilikePattern(q));
   const [from, to] = range(page);
   const { data, error } = await query.order("created_at", { ascending: false }).range(from, to);
   if (error) throw error;
-  const rows = (data ?? []) as RawItem[];
+  const rows = (data ?? []) as unknown as RawItem[];
   const verified = await verifiedSellerSet(
     createAdminClient(),
     rows.map((r) => r.seller_id),
@@ -176,7 +193,8 @@ export const listHousing = cached((o: Opts<typeof _listHousing>) => _listHousing
 export const listMarket = cached((o: Opts<typeof _listMarket>) => _listMarket(createAdminClient(), o), "market");
 
 export const getDistricts = unstable_cache(
-  async (slug: string = "conakry") => {
+  async (slug: string | undefined = "conakry") => {
+    if (!slug || slug === "toutes") return [];
     const { data } = await createPublicClient().from("cities").select("districts").eq("slug", slug).single();
     return data?.districts ?? [];
   },

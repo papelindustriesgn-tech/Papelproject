@@ -16,11 +16,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <li>🎫 Carte étudiante digitale avec QR code</li>
             <li>🔥 Réductions chez les partenaires</li>
             <li>💼 Jobs, stages et opportunités</li>
-            <li>🏠 Logements étudiants à Conakry</li>
+            <li>🏠 Logements étudiants partout en Guinée</li>
             <li>🛍 Marketplace entre étudiants</li>
           </ul>
         </div>
-        <p className="text-brand-200 text-sm">Version pilote — Conakry, Guinée</p>
+        <p className="text-brand-200 text-sm">Disponible dans toute la Guinée</p>
       </aside>
       <main className="flex flex-1 flex-col">
         <div className="flex h-16 items-center px-4 lg:hidden">

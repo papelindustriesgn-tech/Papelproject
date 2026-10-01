@@ -46,7 +46,7 @@ function layout({ heading, body, cta, href }: { heading: string; body: string; c
 <tr><td style="padding:28px;"><h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;">${heading}</h1>
 <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#4a4766;">${body}</p>
 <a href="${href}" style="display:inline-block;background:#4b2fe0;color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 24px;border-radius:14px;">${cta}</a></td></tr>
-<tr><td style="padding:16px 28px 24px;border-top:1px solid #eeecf6;font-size:12px;color:#8a87a3;">Uny — le passeport étudiant africain. Version pilote, Conakry.</td></tr>
+<tr><td style="padding:16px 28px 24px;border-top:1px solid #eeecf6;font-size:12px;color:#8a87a3;">Uny — le passeport étudiant africain. Guinée.</td></tr>
 </table></td></tr></table></body></html>`;
 }
 
@@ -88,5 +88,40 @@ export function verificationRejectedEmail(firstName: string, reason: string | nu
       href: `${SITE_URL}/profil/verification`,
     }),
     text: `Bonjour ${firstName}, ton justificatif n'a pas pu être validé.${reason ? ` Motif : ${reason}.` : ""} Envoie un nouveau document : ${SITE_URL}/profil/verification`,
+  };
+}
+
+export function partnerApplicationEmail(a: {
+  business: string;
+  category: string;
+  contact: string;
+  phone: string;
+  email: string;
+}) {
+  return {
+    subject: `Nouvelle demande partenaire : ${a.business}`,
+    html: layout({
+      heading: "Nouvelle demande partenaire",
+      body: `<strong>${escape(a.business)}</strong> (${escape(a.category)}) souhaite rejoindre Uny.<br>Contact : ${escape(a.contact)} · ${escape(a.phone)} · ${escape(a.email)}`,
+      cta: "Traiter la demande",
+      href: `${SITE_URL}/admin/demandes-partenaires`,
+    }),
+    text: `Nouvelle demande partenaire : ${a.business} (${a.category}). Contact : ${a.contact}, ${a.phone}, ${a.email}. ${SITE_URL}/admin/demandes-partenaires`,
+  };
+}
+
+export function partnerAccessEmail(a: { firstName: string; business: string; email: string; password: string | null }) {
+  const creds = a.password
+    ? `Identifiant : <strong>${escape(a.email)}</strong><br>Mot de passe provisoire : <strong>${escape(a.password)}</strong><br>Change-le dès ta première connexion (Ma fiche → Changer de mot de passe).`
+    : "Connecte-toi avec ton compte Uny habituel.";
+  return {
+    subject: "Ton espace partenaire Uny est prêt 🎉",
+    html: layout({
+      heading: `Bienvenue ${escape(a.firstName)} !`,
+      body: `L'espace partenaire de <strong>${escape(a.business)}</strong> est activé : publie tes offres, ta boutique, tes logements et tes jobs, et scanne les cartes étudiantes.<br><br>${creds}`,
+      cta: "Ouvrir mon espace partenaire",
+      href: `${SITE_URL}/connexion?next=/partenaire`,
+    }),
+    text: `L'espace partenaire de ${a.business} est activé. ${a.password ? `Identifiant : ${a.email} — mot de passe provisoire : ${a.password}. ` : ""}${SITE_URL}/connexion?next=/partenaire`,
   };
 }

@@ -4,7 +4,7 @@ import { expectNoHorizontalOverflow } from "./helpers";
 test("landing publique : message clair, carte d'exemple, sections et CTA", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Ton statut étudiant devient un avantage");
-  await expect(page.getByText("Version pilote — Conakry, Guinée", { exact: true })).toBeVisible();
+  await expect(page.getByText("Disponible dans toute la Guinée", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: /Créer mon compte/ }).first()).toBeVisible();
   // Seule une carte d'EXEMPLE est affichée
   await expect(page.getByText("Exemple").first()).toBeVisible();

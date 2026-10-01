@@ -22,7 +22,17 @@ export type FieldSpec =
     }
   | { name: string; label: string; type: "tags"; hint?: string }
   | { name: string; label: string; type: "image" }
-  | { name: string; label: string; type: "images"; max?: number };
+  | { name: string; label: string; type: "images"; max?: number }
+  /** Ville (city_id) + quartier (district, si `district` ≠ false). */
+  | {
+      name: string;
+      label: string;
+      type: "location";
+      required?: boolean;
+      district?: boolean;
+      districtRequired?: boolean;
+      hint?: string;
+    };
 
 export type EntityKey = "partenaires" | "avantages" | "jobs" | "logements";
 
@@ -61,7 +71,7 @@ export const ENTITIES: Record<EntityKey, EntityConfig> = {
       { name: "category", label: "Catégorie", type: "select", required: true, options: opts(DEAL_CATEGORIES) },
       { name: "logo_url", label: "Logo ou photo", type: "image" },
       { name: "description", label: "Description", type: "textarea", max: 1000 },
-      { name: "district", label: "Quartier", type: "select", options: "districts" },
+      { name: "location", label: "Ville et quartier", type: "location", required: true },
       { name: "address", label: "Adresse", type: "text", max: 200 },
       { name: "phone", label: "Téléphone", type: "tel", max: 30 },
       { name: "website", label: "Site web", type: "url", max: 200 },
@@ -90,7 +100,7 @@ export const ENTITIES: Record<EntityKey, EntityConfig> = {
       { name: "image_url", label: "Photo", type: "image" },
       { name: "description", label: "Description", type: "textarea", max: 2000 },
       { name: "conditions", label: "Conditions", type: "textarea", max: 2000 },
-      { name: "district", label: "Quartier", type: "select", options: "districts" },
+      { name: "location", label: "Ville et quartier", type: "location", hint: "Sans ville : offre valable partout en Guinée." },
       { name: "valid_from", label: "Valable à partir du", type: "date", required: true },
       { name: "valid_until", label: "Valable jusqu'au", type: "date" },
       { name: "is_featured", label: "Mettre en avant (« Meilleures réductions »)", type: "checkbox" },
@@ -109,7 +119,8 @@ export const ENTITIES: Record<EntityKey, EntityConfig> = {
       { name: "company_name", label: "Entreprise / organisme", type: "text", required: true, max: 120 },
       { name: "partner_id", label: "Partenaire lié (facultatif)", type: "select", options: "partners" },
       { name: "type", label: "Type", type: "select", required: true, options: opts(JOB_TYPES) },
-      { name: "location", label: "Lieu", type: "text", max: 120, placeholder: "Kaloum" },
+      { name: "city", label: "Ville", type: "location", district: false },
+      { name: "location", label: "Lieu précis", type: "text", max: 120, placeholder: "Kaloum, siège de l'entreprise" },
       { name: "is_remote", label: "Possible à distance", type: "checkbox" },
       { name: "compensation", label: "Rémunération", type: "text", max: 120, placeholder: "1 500 000 GNF/mois" },
       { name: "description", label: "Description", type: "textarea", max: 5000 },
@@ -130,7 +141,7 @@ export const ENTITIES: Record<EntityKey, EntityConfig> = {
       { name: "title", label: "Titre", type: "text", required: true, max: 140 },
       { name: "type", label: "Type", type: "select", required: true, options: opts(HOUSING_TYPES) },
       { name: "images", label: "Photos", type: "images", max: 8 },
-      { name: "district", label: "Quartier", type: "select", required: true, options: "districts" },
+      { name: "location", label: "Ville et quartier", type: "location", required: true, districtRequired: true },
       { name: "price_gnf", label: "Loyer mensuel (GNF)", type: "number", required: true, min: 0, step: 1000 },
       { name: "rooms", label: "Nombre de pièces", type: "number", required: true, min: 0, max: 20 },
       { name: "description", label: "Description", type: "textarea", max: 3000 },

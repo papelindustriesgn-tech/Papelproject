@@ -70,7 +70,7 @@ export default async function LandingPage() {
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pt-10 pb-16 md:grid-cols-2 md:pt-20 md:pb-24">
           <div className="animate-fade-up">
             <span className="text-brand-700 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold shadow-[var(--shadow-card)]">
-              <span className="bg-mint-500 size-2 rounded-full" aria-hidden /> Version pilote — Conakry, Guinée
+              <span className="bg-mint-500 size-2 rounded-full" aria-hidden /> Disponible dans toute la Guinée
             </span>
             <h1 className="text-ink mt-5 text-[2.5rem] leading-[1.05] font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
               Ton statut étudiant devient un <span className="text-brand-600">avantage</span>
@@ -128,7 +128,7 @@ export default async function LandingPage() {
             { e: "🎫", t: "Uny Card", d: "Ta carte étudiante digitale avec QR code vérifiable." },
             { e: "🔥", t: "Réductions", d: "Des tarifs étudiants chez les partenaires." },
             { e: "💼", t: "Jobs & stages", d: "Jobs, stages, bourses, concours, formations." },
-            { e: "🏠", t: "Logement", d: "Chambres, studios et colocations à Conakry." },
+            { e: "🏠", t: "Logement", d: "Chambres, studios et colocations partout en Guinée." },
             { e: "🛍️", t: "Marketplace", d: "Achète et vends entre étudiants." },
           ].map((f) => (
             <div key={f.t} className="bg-canvas rounded-[var(--radius-card)] p-5">
@@ -233,7 +233,9 @@ export default async function LandingPage() {
       {/* LOGEMENT */}
       <section id="logement" className="bg-canvas scroll-mt-20 py-16">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Trouve ton logement étudiant à Conakry.</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+            Trouve ton logement étudiant, à Conakry et partout en Guinée.
+          </h2>
           <p className="text-muted mt-3 max-w-2xl">
             Chambres, studios, colocations et appartements, filtrés par budget et par quartier.
           </p>

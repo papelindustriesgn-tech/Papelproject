@@ -38,7 +38,7 @@ export default async function SurveyResultsPage() {
   const supabase = await createClient();
   const [responses, { count: users }] = await Promise.all([
     getSurveyResponses(),
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("is_test_account", false),
+    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("is_test_account", false).neq("role", "partner"),
   ]);
   const n = responses.length;
   const count = (pred: (r: (typeof responses)[number]) => boolean) => responses.filter(pred).length;

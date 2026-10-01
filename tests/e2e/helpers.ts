@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { expect, type Page } from "@playwright/test";
 
 export const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";
@@ -64,4 +65,32 @@ export async function logout(page: Page) {
 export async function expectNoHorizontalOverflow(page: Page) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow, `débordement horizontal sur ${page.url()}`).toBeLessThanOrEqual(0);
+}
+
+/** Appel REST au Supabase local avec la clé de service (préparation de données de test). */
+export async function serviceRest(path: string, init: RequestInit = {}) {
+  const env = (key: string) =>
+    fs
+      .readFileSync(".env.local", "utf8")
+      .split("\n")
+      .find((l) => l.startsWith(`${key}=`))
+      ?.slice(key.length + 1)
+      .trim() ?? "";
+  const key = env("SUPABASE_SERVICE_ROLE_KEY");
+  return fetch(`${env("NEXT_PUBLIC_SUPABASE_URL")}/rest/v1/${path}`, {
+    ...init,
+    headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", ...init.headers },
+  });
+}
+
+/** Rend l'admin local membre d'un partenaire de démo (pour parcourir l'espace partenaire). */
+export async function adminAsPartnerMember() {
+  const [admin] = await (await serviceRest(`profiles?email=eq.${ADMIN.email}&select=id`)).json();
+  const [partner] = await (await serviceRest("partners?select=id&order=name&limit=1")).json();
+  await serviceRest("partner_members", {
+    method: "POST",
+    headers: { Prefer: "resolution=ignore-duplicates" },
+    body: JSON.stringify({ partner_id: partner.id, user_id: admin.id }),
+  });
+  return partner.id as string;
 }

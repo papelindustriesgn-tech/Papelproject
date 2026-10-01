@@ -10,6 +10,8 @@ import { createClient } from "@/lib/supabase/server";
 import { favoriteIds, listJobs } from "@/lib/queries";
 import { JOB_TYPES } from "@/lib/constants";
 import { param, type SearchParams } from "@/lib/url";
+import { resolveCity } from "@/lib/cities";
+import { CityPicker } from "@/components/ui/city-picker";
 
 export const metadata: Metadata = { title: "Jobs & opportunités" };
 
@@ -18,8 +20,9 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   const profile = await requireProfile();
   const supabase = await createClient();
   const page = Math.max(1, Number(param(sp, "page") ?? 1) || 1);
+  const { cities, city, slug } = await resolveCity(sp, profile.city_id);
   const [{ items, hasMore }, favs] = await Promise.all([
-    listJobs({ type: param(sp, "type"), q: param(sp, "q"), page }),
+    listJobs({ type: param(sp, "type"), q: param(sp, "q"), page, cityId: city?.id }),
     favoriteIds(supabase, profile.id, "job"),
   ]);
 
@@ -35,7 +38,8 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
         }
       />
       <div className="space-y-3">
-        <SearchBar pathname="/jobs" searchParams={sp} placeholder="Poste, entreprise…" keep={["type"]} />
+        <SearchBar pathname="/jobs" searchParams={sp} placeholder="Poste, entreprise…" keep={["type", "ville"]} />
+        <CityPicker cities={cities} value={slug} />
         <FilterChips
           pathname="/jobs"
           searchParams={sp}

@@ -11,7 +11,7 @@ import { GENDERS, STUDY_LEVELS } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 
 type University = { id: number; name: string; short_name: string | null };
-type City = { id: number; name: string; is_active: boolean };
+type City = { id: number; name: string; slug: string; is_active: boolean };
 
 const STEP1 = ["first_name", "last_name", "birth_date", "gender", "phone", "email", "password"];
 
@@ -46,7 +46,7 @@ export function SignUpForm({ universities, cities }: { universities: University[
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  const conakry = cities.find((c) => c.is_active);
+  const conakry = cities.find((c) => c.slug === "conakry") ?? cities[0];
 
   return (
     <form ref={formRef} action={action} className="space-y-4" key={JSON.stringify(v)}>

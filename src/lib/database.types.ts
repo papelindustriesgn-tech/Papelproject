@@ -20,6 +20,74 @@ export type Database = {
   };
   public: {
     Tables: {
+      card_validations: {
+        Row: {
+          created_at: string;
+          deal_id: string | null;
+          eligible: boolean;
+          id: string;
+          outcome: string;
+          partner_id: string;
+          scanned_by: string | null;
+          student_id: string;
+          student_name: string;
+          student_uny_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          deal_id?: string | null;
+          eligible?: boolean;
+          id?: string;
+          outcome: string;
+          partner_id: string;
+          scanned_by?: string | null;
+          student_id: string;
+          student_name: string;
+          student_uny_id: string;
+        };
+        Update: {
+          created_at?: string;
+          deal_id?: string | null;
+          eligible?: boolean;
+          id?: string;
+          outcome?: string;
+          partner_id?: string;
+          scanned_by?: string | null;
+          student_id?: string;
+          student_name?: string;
+          student_uny_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "card_validations_deal_id_fkey";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "card_validations_partner_id_fkey";
+            columns: ["partner_id"];
+            isOneToOne: false;
+            referencedRelation: "partners";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "card_validations_scanned_by_fkey";
+            columns: ["scanned_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "card_validations_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       cities: {
         Row: {
           country_code: string;
@@ -247,6 +315,7 @@ export type Database = {
           is_active: boolean;
           is_available: boolean;
           is_demo: boolean;
+          partner_id: string | null;
           price_gnf: number;
           rooms: number;
           title: string;
@@ -269,6 +338,7 @@ export type Database = {
           is_active?: boolean;
           is_available?: boolean;
           is_demo?: boolean;
+          partner_id?: string | null;
           price_gnf: number;
           rooms?: number;
           title: string;
@@ -291,6 +361,7 @@ export type Database = {
           is_active?: boolean;
           is_available?: boolean;
           is_demo?: boolean;
+          partner_id?: string | null;
           price_gnf?: number;
           rooms?: number;
           title?: string;
@@ -311,6 +382,13 @@ export type Database = {
             columns: ["created_by"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "housing_partner_id_fkey";
+            columns: ["partner_id"];
+            isOneToOne: false;
+            referencedRelation: "partners";
             referencedColumns: ["id"];
           },
         ];
@@ -552,6 +630,7 @@ export type Database = {
           is_demo: boolean;
           is_negotiable: boolean;
           moderation_note: string | null;
+          partner_id: string | null;
           price_gnf: number;
           seller_id: string | null;
           status: Database["public"]["Enums"]["listing_status"];
@@ -571,6 +650,7 @@ export type Database = {
           is_demo?: boolean;
           is_negotiable?: boolean;
           moderation_note?: string | null;
+          partner_id?: string | null;
           price_gnf: number;
           seller_id?: string | null;
           status?: Database["public"]["Enums"]["listing_status"];
@@ -590,6 +670,7 @@ export type Database = {
           is_demo?: boolean;
           is_negotiable?: boolean;
           moderation_note?: string | null;
+          partner_id?: string | null;
           price_gnf?: number;
           seller_id?: string | null;
           status?: Database["public"]["Enums"]["listing_status"];
@@ -603,6 +684,13 @@ export type Database = {
             columns: ["city_id"];
             isOneToOne: false;
             referencedRelation: "cities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "marketplace_items_partner_id_fkey";
+            columns: ["partner_id"];
+            isOneToOne: false;
+            referencedRelation: "partners";
             referencedColumns: ["id"];
           },
           {
@@ -648,6 +736,102 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "notifications_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      partner_applications: {
+        Row: {
+          business_name: string;
+          category: Database["public"]["Enums"]["deal_category"];
+          city_id: number | null;
+          contact_name: string;
+          created_at: string;
+          email: string;
+          id: string;
+          offer: string | null;
+          partner_id: string | null;
+          phone: string;
+          reviewed_at: string | null;
+          status: string;
+          wants: string[];
+        };
+        Insert: {
+          business_name: string;
+          category: Database["public"]["Enums"]["deal_category"];
+          city_id?: number | null;
+          contact_name: string;
+          created_at?: string;
+          email: string;
+          id?: string;
+          offer?: string | null;
+          partner_id?: string | null;
+          phone: string;
+          reviewed_at?: string | null;
+          status?: string;
+          wants?: string[];
+        };
+        Update: {
+          business_name?: string;
+          category?: Database["public"]["Enums"]["deal_category"];
+          city_id?: number | null;
+          contact_name?: string;
+          created_at?: string;
+          email?: string;
+          id?: string;
+          offer?: string | null;
+          partner_id?: string | null;
+          phone?: string;
+          reviewed_at?: string | null;
+          status?: string;
+          wants?: string[];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "partner_applications_city_id_fkey";
+            columns: ["city_id"];
+            isOneToOne: false;
+            referencedRelation: "cities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "partner_applications_partner_id_fkey";
+            columns: ["partner_id"];
+            isOneToOne: false;
+            referencedRelation: "partners";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      partner_members: {
+        Row: {
+          created_at: string;
+          partner_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          partner_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          partner_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "partner_members_partner_id_fkey";
+            columns: ["partner_id"];
+            isOneToOne: false;
+            referencedRelation: "partners";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "partner_members_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
@@ -1053,7 +1237,25 @@ export type Database = {
       admin_stats: { Args: Record<PropertyKey, never>; Returns: Json };
       current_academic_year: { Args: Record<PropertyKey, never>; Returns: string };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      is_partner_member: { Args: { p_partner: string }; Returns: boolean };
       next_uny_id: { Args: { p_country: string }; Returns: string };
+      partner_job_applications: {
+        Args: { p_job: string };
+        Returns: {
+          created_at: string;
+          email: string;
+          field_of_study: string;
+          first_name: string;
+          id: string;
+          last_name: string;
+          message: string;
+          phone: string;
+          study_level: string;
+          university: string;
+          verification_status: Database["public"]["Enums"]["verification_status"];
+        }[];
+      };
+      partner_validate_card: { Args: { p_deal?: string; p_partner: string; p_token?: string; p_uny_id?: string }; Returns: Json };
       review_verification: {
         Args: { p_approve: boolean; p_reason?: string; p_verification_id: string };
         Returns: {
@@ -1112,7 +1314,7 @@ export type Database = {
       job_type: "job" | "stage" | "alternance" | "freelance" | "benevolat" | "concours" | "bourse" | "formation";
       listing_status: "active" | "sold" | "hidden" | "removed";
       market_category: "smartphones" | "informatique" | "livres" | "fournitures" | "mode" | "maison" | "transport" | "autres";
-      user_role: "student" | "admin";
+      user_role: "student" | "admin" | "partner";
       verification_request_status: "pending" | "approved" | "rejected";
       verification_status: "unverified" | "pending" | "verified";
       view_entity: "deal" | "job" | "housing" | "marketplace";
@@ -1233,7 +1435,7 @@ export const Constants = {
       job_type: ["job", "stage", "alternance", "freelance", "benevolat", "concours", "bourse", "formation"],
       listing_status: ["active", "sold", "hidden", "removed"],
       market_category: ["smartphones", "informatique", "livres", "fournitures", "mode", "maison", "transport", "autres"],
-      user_role: ["student", "admin"],
+      user_role: ["student", "admin", "partner"],
       verification_request_status: ["pending", "approved", "rejected"],
       verification_status: ["unverified", "pending", "verified"],
       view_entity: ["deal", "job", "housing", "marketplace"],

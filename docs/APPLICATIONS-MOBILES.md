@@ -2,6 +2,7 @@
 
 Le dossier `mobile/` contient les applications natives **Android** (Google Play) et **iOS** (App Store), construites avec [Capacitor](https://capacitorjs.com).
 Elles affichent le site Uny en production dans une application installable, avec icône, écran de démarrage, barre d'état aux couleurs d'Uny et écran « Pas de connexion ».
+Une seule application sert aux **étudiants** et aux **partenaires** : selon le compte connecté, elle ouvre l'espace étudiant ou l'espace partenaire, avec le scanner de cartes. L'accès à la caméra est demandé au premier scan (Android et iOS).
 
 **Conséquence pratique** : toute amélioration du site est visible **immédiatement** dans les applications, sans republier sur les stores. On ne republie que pour changer l'icône, le nom, l'adresse du site ou les réglages natifs.
 
@@ -68,7 +69,7 @@ Play Console → *Créer une application* → Nom **Uny**, langue **Français**,
 - **Suppression du compte** (obligatoire) : l'app permet de supprimer son compte dans *Profil → Sécurité → Supprimer mon compte*. URL web à déclarer : `https://unyafrica.com/confidentialite#suppression-du-compte`
 - **Sécurité des données** : données collectées = nom, email, téléphone, date de naissance, photos (profil, justificatif, annonces), identifiants utilisateur ; toutes chiffrées en transit ; non vendues ; suppression possible par l'utilisateur.
 - **Public cible** : 18 ans et plus (étudiants).
-- **Accès à l'application** : fournir un compte de démonstration (email + mot de passe) pour les testeurs de Google.
+- **Accès à l'application** : fournir deux comptes de démonstration (un étudiant vérifié, un partenaire) pour les testeurs de Google.
 - **Visuels** : icône 512 × 512 (`mobile/assets/icon-only.png`, redimensionnée), bannière 1024 × 500, au moins 2 captures d'écran de téléphone.
 - *Tests → Test interne* : envoyer `app-release.aab`, tester, puis *Production*.
 
@@ -97,12 +98,12 @@ L'app iOS est compilée sur les Mac de GitHub Actions : **aucun Mac n'est néces
 - Captures d'écran iPhone 6,9" (1320 × 2868) — au moins 3.
 - Description, mots-clés, URL de support et de confidentialité.
 - **Confidentialité de l'app** : mêmes données que pour Google (liées à l'identité, non utilisées pour le suivi publicitaire).
-- **Informations pour la vérification** : un compte de démonstration **vérifié** (email + mot de passe) et une note expliquant l'app (carte étudiante, avantages partenaires, jobs, logement, marketplace entre étudiants).
+- **Informations pour la vérification** : un compte étudiant **vérifié** et un compte **partenaire** (email + mot de passe), avec une note qui explique l'app : carte étudiante, avantages, jobs, logement, marketplace, et pour les commerçants publication d'offres et scan des cartes.
 - Classification d'âge : répondre « Oui » à *contenu généré par les utilisateurs* (marketplace) ; la modération est en place dans l'admin et le signalement se fait par email.
 
 ### 3.3 Point d'attention Apple (règle 4.2)
 
-Apple refuse parfois les apps qui « ne sont qu'un site web ». Ce qui plaide pour Uny : compte personnel, carte étudiante avec QR code consultable en mode présentation, appareil photo pour les justificatifs et annonces, écran hors ligne, parcours complet dans l'app (inscription, vérification, suppression du compte). Si Apple demande plus de fonctionnalités natives, les prochaines à ajouter sont les **notifications push** (nouvelle offre, statut vérifié) et la **carte dans Apple Wallet**.
+Apple refuse parfois les apps qui « ne sont qu'un site web ». Ce qui plaide pour Uny : compte personnel, carte étudiante avec QR code consultable en mode présentation, **scanner de cartes par la caméra pour les partenaires**, appareil photo pour les justificatifs et annonces, écran hors ligne, parcours complet dans l'app (inscription, vérification, suppression du compte). Si Apple demande plus de fonctionnalités natives, les prochaines à ajouter sont les **notifications push** (nouvelle offre, statut vérifié) et la **carte dans Apple Wallet**.
 
 ## Développement
 

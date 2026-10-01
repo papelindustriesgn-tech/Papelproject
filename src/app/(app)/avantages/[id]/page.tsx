@@ -82,7 +82,7 @@ export default async function DealPage({ params }: Props) {
         <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[var(--shadow-card)]">
           <MapPin className="text-brand-600 size-5 shrink-0" aria-hidden />
           <div className="min-w-0 text-sm">
-            <p className="font-semibold">{deal.district ?? "Conakry"}</p>
+            <p className="font-semibold">{deal.district ?? "Guinée"}</p>
             {deal.partner?.address && <p className="text-muted truncate">{deal.partner.address}</p>}
           </div>
         </div>

@@ -21,10 +21,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const supabase = await createClient();
 
   const [latest, jobs, housing, market, favDeals, survey] = await Promise.all([
-    listDeals({}),
-    listJobs({}),
-    listHousing({}),
-    listMarket({}),
+    listDeals({ cityId: profile.city_id ?? undefined }),
+    listJobs({ cityId: profile.city_id ?? undefined }),
+    listHousing({ cityId: profile.city_id ?? undefined }),
+    listMarket({ cityId: profile.city_id ?? undefined }),
     favoriteIds(supabase, profile.id, "deal"),
     supabase.from("survey_responses").select("user_id").eq("user_id", profile.id).maybeSingle(),
   ]);
@@ -39,7 +39,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         <h1 className="text-2xl font-extrabold tracking-tight md:text-3xl">
           {greeting} {profile.first_name} 👋
         </h1>
-        <p className="text-muted mt-1 text-sm">Voici les bons plans étudiants du moment à Conakry.</p>
+        <p className="text-muted mt-1 text-sm">
+          Voici les bons plans étudiants du moment {profile.city?.name ? `à ${profile.city.name}` : "en Guinée"}.
+        </p>
       </section>
 
       {param(sp, "bienvenue") && (

@@ -6,6 +6,7 @@ import {
   BarChart3,
   Briefcase,
   Building2,
+  Handshake,
   House,
   LayoutDashboard,
   MessageSquareHeart,
@@ -22,6 +23,7 @@ export const ADMIN_NAV = [
   { href: "/admin/verifications", label: "Vérifications", icon: UserCheck },
   { href: "/admin/utilisateurs", label: "Utilisateurs", icon: Users },
   { href: "/admin/partenaires", label: "Partenaires", icon: Building2 },
+  { href: "/admin/demandes-partenaires", label: "Demandes partenaires", icon: Handshake },
   { href: "/admin/avantages", label: "Avantages", icon: Tag },
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
   { href: "/admin/logements", label: "Logements", icon: House },
@@ -31,7 +33,7 @@ export const ADMIN_NAV = [
   { href: "/admin/contacts", label: "Contacter les inscrits", icon: Send },
 ];
 
-export function AdminNav({ pending }: { pending: number }) {
+export function AdminNav({ pending, applications = 0 }: { pending: number; applications?: number }) {
   const pathname = usePathname();
   return (
     <nav aria-label="Administration" className="-mx-4 scrollbar-none overflow-x-auto px-4 lg:mx-0 lg:overflow-visible lg:px-0">
@@ -54,6 +56,9 @@ export function AdminNav({ pending }: { pending: number }) {
                 <span className="flex-1">{label}</span>
                 {href === "/admin/verifications" && pending > 0 && (
                   <span className="bg-coral-500 rounded-full px-1.5 text-xs font-bold text-white">{pending}</span>
+                )}
+                {href === "/admin/demandes-partenaires" && applications > 0 && (
+                  <span className="bg-coral-500 rounded-full px-1.5 text-xs font-bold text-white">{applications}</span>
                 )}
               </Link>
             </li>
