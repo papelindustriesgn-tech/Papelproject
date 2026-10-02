@@ -325,10 +325,10 @@ alter table public.quartiers enable row level security;
 -- Rôles : lecture pour tout utilisateur actif.
 create policy roles_lecture on public.roles for select to authenticated using (public.est_actif());
 
--- Profils : chacun voit le sien ; admin, direction et responsable commercial voient tous les profils
--- (le responsable commercial a besoin de la liste de son équipe).
+-- Profils : chacun voit le sien ; admin, direction, responsable commercial et comptabilité voient tous les profils
+-- (liste de l'équipe commerciale, affectation des clients).
 create policy profils_lecture on public.profils for select to authenticated
-  using (id = (select auth.uid()) or public.est_admin() or public.a_un_role('responsable_commercial'));
+  using (id = (select auth.uid()) or public.est_admin() or public.a_un_role('responsable_commercial', 'finance'));
 -- Seuls l'administrateur et la direction modifient les profils (activation, nom, téléphone).
 create policy profils_modif_admin on public.profils for update to authenticated
   using (public.est_admin() or public.a_role('direction')) with check (public.est_admin() or public.a_role('direction'));

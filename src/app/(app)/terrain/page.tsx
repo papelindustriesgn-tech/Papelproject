@@ -1,6 +1,11 @@
-import { EnConstruction } from "@/components/coque/en-construction";
-import { ESPACES } from "@/lib/auth/espaces";
+import type { Metadata } from "next";
+import { ApplicationTerrain } from "@/components/terrain/application";
+import { exigerEspace } from "@/lib/auth/session";
 
-export default function Page() {
-  return <EnConstruction espace={ESPACES.find((e) => e.code === "terrain")!} />;
+export const metadata: Metadata = { title: "Terrain" };
+
+/** Application des commerciaux terrain (installable, hors ligne). */
+export default async function PageTerrain() {
+  const u = await exigerEspace("terrain");
+  return <ApplicationTerrain utilisateurId={u.id} />;
 }

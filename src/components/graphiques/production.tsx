@@ -6,7 +6,7 @@
  */
 import { Bar, BarChart, CartesianGrid, LabelList, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-export const COULEURS_SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"];
+import { COULEURS_SERIES } from "@/lib/graphiques/couleurs";
 const ENCRE = "#52514e";
 const GRILLE = "#e5e7e5";
 const nf = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });

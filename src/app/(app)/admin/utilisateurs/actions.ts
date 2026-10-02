@@ -116,3 +116,15 @@ export async function reinitialiserMotDePasse(utilisateurId: string, _e: EtatFor
   if (error) return { message: "Changement du mot de passe impossible." };
   return { ok: true, message: "Mot de passe modifié. Communiquez-le à l'utilisateur en main propre." };
 }
+
+/** Série de numérotation des devis et factures créés hors ligne par un commercial (ex. « C01 »). */
+export async function definirCodeSerie(utilisateurId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
+  await verifierGestionnaire();
+  const code = String(fd.get("code_serie") ?? "").trim().toUpperCase();
+  if (code && !/^[A-Z0-9]{2,4}$/.test(code)) return { erreurs: { code_serie: "2 à 4 lettres majuscules ou chiffres (ex. C04)." }, valeurs: { code_serie: code } };
+  const supabase = await clientServeur();
+  const { error } = await supabase.from("profils").update({ code_serie: code || null }).eq("id", utilisateurId);
+  if (error) return { message: error.code === "23505" ? "Ce code est déjà attribué à un autre commercial." : messageErreurBase(error), valeurs: { code_serie: code } };
+  revalidatePath(`/admin/utilisateurs/${utilisateurId}`);
+  return { ok: true, message: "Série enregistrée. Ne la changez pas une fois des factures émises." };
+}

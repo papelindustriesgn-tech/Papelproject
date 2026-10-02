@@ -14,7 +14,7 @@ achat des matières premières → stock → production → distribution → ven
 | Phase 1 – étape 2 | Stocks : articles, bobines par lot, mouvements, coût moyen pondéré, inventaires, jours de couverture, alertes ; listes de référence modifiables ; TVA | ✅ Livrée |
 | Phase 1 – étape 3 | Production : fiches de poste, ordres de fabrication, rendement réel/théorique, pertes, arrêts, TRS, alertes, coût de revient des produits finis, tableau de bord | ✅ Livrée |
 | Phase 1 – étape 4 | Ventes : clients, devis → commande → livraison → facture TTC → paiement, dotation sur l'encaissé, avoirs, impayés et relances, documents imprimables, tableau de bord (CA, DSO…) | ✅ Livrée |
-| Phase 1 – étape 5 | Application terrain hors ligne | À venir |
+| Phase 1 – étape 5 | Application terrain installable et hors ligne (PVA, check-in GPS, photos, prix et concurrence, devis et factures numérotés hors ligne, synchronisation) ; supervision du responsable commercial (carte, visites, tournées, objectifs) | ✅ Livrée |
 | Phase 1 – étape 6 | Tableau de bord Direction | À venir |
 
 ## Installation en local
@@ -82,8 +82,16 @@ npm run test:e2e:complet
    select id, 'direction' from public.profils where identifiant = 'identifiant-choisi';
    ```
    Les autres comptes se créent ensuite depuis **Administration → Utilisateurs**.
-5. **Vercel** : importer le dépôt GitHub et renseigner les variables
-   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` (voir `.env.example`).
+5. Pour chaque commercial terrain : **Administration → Utilisateurs → (commercial) → Série de numérotation** (ex. C01).
+   Sans série, l'application terrain ne peut pas émettre de facture.
+6. **Vercel** : importer le dépôt GitHub et renseigner les variables
+   `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` (voir `.env.example`),
+   et `NEXT_PUBLIC_TUILES_URL` (fournisseur de fonds de carte, ex. MapTiler ; OpenStreetMap n'est pas fait pour un usage intensif).
+
+### Installer l'application sur un téléphone Android
+
+Ouvrir l'adresse de l'ERP dans Chrome, se connecter avec le compte du commercial, puis menu ⋮ → **« Ajouter à l'écran d'accueil »**.
+L'application s'ouvre ensuite comme une application native, même sans réseau (après une première ouverture connectée).
 
 ## Sauvegardes
 
@@ -94,7 +102,8 @@ npm run test:e2e:complet
   npx supabase db dump --linked --data-only -f sauvegarde-donnees-$(date +%F).sql
   ```
 - **Restauration** : `psql "<chaîne de connexion>" -f sauvegarde-schema.sql -f sauvegarde-donnees-AAAA-MM-JJ.sql`
-- Les photos (Storage) seront sauvegardées par un script dédié livré avec l'application terrain (étape 5).
+- Photos du terrain (Storage, bucket `photos-terrain`) : incluses dans les sauvegardes Supabase du plan Pro ; copie manuelle possible avec
+  `npx supabase storage cp -r ss:///photos-terrain ./sauvegarde-photos --linked --experimental`.
 
 ## Structure
 

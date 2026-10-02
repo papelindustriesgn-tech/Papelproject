@@ -4,7 +4,7 @@ ERP de **Papel Industries**, fabricant guinéen de mouchoirs en papier (usine de
 Chaîne couverte : achat MP → stock → production → stock produits finis → distribution → vente → encaissement → pilotage.
 
 > Ce fichier est la référence des règles métier et des conventions de code. Le tenir à jour à chaque phase.
-> État : **Phase 1 — étapes 1 à 4 livrées (fondations, stocks, production, ventes).** Prochaine : étape 5 (application terrain hors ligne). Plan : `docs/architecture.md`.
+> État : **Phase 1 — étapes 1 à 5 livrées (fondations, stocks, production, ventes, terrain).** Prochaine : étape 6 (tableau de bord Direction). Plan : `docs/architecture.md`.
 
 @AGENTS.md
 
@@ -154,6 +154,31 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
   « Imprimer / enregistrer en PDF » via le navigateur (pas de dépendance PDF lourde).
 - Après une validation qui fige la page, l'action redirige avec `?succes=` (bandeau `BandeauSucces`, helper `avecSucces`).
 - Messages d'erreur SQL : nombres formatés à la française avec `public.nombre_fr()`.
+
+## 6 quinquies. Terrain hors ligne et supervision (étape 5)
+
+- Application `/terrain` = **une seule page client** (navigation interne par `#`, bouton retour Android) qui lit tout dans
+  **IndexedDB** (`src/lib/terrain/base-locale.ts`, Dexie, une base par utilisateur). Aucune requête serveur n'est nécessaire hors ligne.
+  IndexedDB n'indexe pas les booléens : filtrer en JS (`enAttente`, `envoyee`).
+- **Service worker** `public/sw.js` (enregistré en production) : `/terrain` réseau d'abord puis cache ; `/_next/static` cache d'abord ;
+  tuiles de carte en cache limité. Manifeste `src/app/manifest.ts` (installable, démarre sur `/terrain`).
+- Saisies hors ligne → file `operations` (UUID générés sur le téléphone) → RPC **`synchroniser_terrain`** (lots de 50, chaque opération
+  isolée dans un sous-bloc : une erreur n'arrête pas le lot ; renvoi idempotent « deja »). Types : `pva`, `visite`, `photo`, `client`, `piece`.
+  Synchro au démarrage, au retour du réseau (`online`), toutes les 5 min et après chaque saisie (`src/lib/terrain/synchronisation.ts`).
+- **Check-in GPS** : distance au PVA par PostGIS (`controler_checkin`) ; `dans_zone` = distance ≤ `gps_rayon_checkin_m` ET précision ≤
+  `gps_precision_max_m` ; visite hors zone enregistrée mais signalée ; un PVA sans position prend celle de sa 1re visite précise.
+  Même règle côté téléphone pour l'information immédiate (`src/lib/terrain/geo.ts`). Visites inaltérables.
+- **Devis et factures hors ligne** : numéro dans la **série du commercial** (`profils.code_serie`, ex. `FA-2026-C01-00012`), compteur local
+  jamais réutilisé, réaligné à chaque synchro (`dernier_numero_terrain`). Le serveur refuse un numéro hors série
+  (`controler_numero_terrain`) et un **prix différent de la grille** (`controler_prix_terrain`). Une pièce refusée reste visible
+  « Refusé » avec le motif. Le téléphone bloque une facture qui dépasserait le plafond de crédit connu.
+- Photos : compression JPEG ≤ 1 280 px (`src/lib/terrain/image.ts`) → Storage privé `photos-terrain/<id commercial>/<pva>/…`.
+- Responsable commercial (`/commercial`) : carte des PVA (couleur fixe par commercial, point creux = rupture), indicateurs (visites/jour,
+  hors zone, taux de rupture, nouveaux PVA, couverture quartiers/communes, CA par commercial vs objectif), visites et positions des check-ins
+  par jour, tournées (`tournees`, `tournee_etapes`) et objectifs mensuels (`objectifs_commerciaux`).
+- Carte : Leaflet (`src/components/carte/carte.tsx`, chargée côté navigateur via `CarteDynamique`), tuiles `NEXT_PUBLIC_TUILES_URL`
+  (OpenStreetMap par défaut ; prendre un fournisseur de tuiles en production).
+- Palette catégorielle partagée : `src/lib/graphiques/couleurs.ts` (jamais importer une constante depuis un fichier « use client » côté serveur).
 
 ## 7. Seuils d'alerte (paramétrables)
 

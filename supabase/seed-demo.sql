@@ -242,3 +242,99 @@ begin
     end if;
   end loop;
 end $$;
+
+-- -----------------------------------------------------------------------------
+-- Terrain : séries de numérotation, marques concurrentes, points de vente, visites, tournée, objectifs.
+-- -----------------------------------------------------------------------------
+update public.profils set code_serie = 'C01' where identifiant = 'commercial1';
+update public.profils set code_serie = 'C02' where identifiant = 'commercial2';
+update public.profils set code_serie = 'C03' where identifiant = 'commercial3';
+
+insert into public.marques_concurrentes (libelle) values ('Marque concurrente A (démo)'), ('Marque concurrente B (démo)'), ('Import Asie (démo)');
+
+do $$
+declare
+  c1 uuid := '20000000-0000-0000-0000-000000000009';
+  c2 uuid := '20000000-0000-0000-0000-000000000010';
+  c3 uuid := '20000000-0000-0000-0000-000000000011';
+  v_pva record;
+  j integer;
+  v_visite uuid;
+  v_lat float8;
+  v_lon float8;
+  i integer := 0;
+begin
+  -- 24 PVA : coordonnées approximatives des quartiers (démo).
+  insert into public.pva (id, nom, type_client_id, responsable, telephone, quartier_id, repere, position, precision_m, potentiel_colis_mois, commercial_id, client_id)
+  select gen_random_uuid(), v.nom, (select id from public.types_clients where libelle = v.type), v.resp, v.tel,
+         (select id from public.quartiers where nom = v.quartier), v.repere,
+         extensions.st_setsrid(extensions.st_makepoint(v.lon, v.lat), 4326)::extensions.geography, 8, v.potentiel,
+         (select id from public.profils where identifiant = v.commercial),
+         (select id from public.clients where nom = v.client)
+  from (values
+    ('Ets Diallo & Frères', 'Grossiste', 'Alpha Diallo', '+224 621 10 10 01', 'Madina', 'Entrée principale du marché', 9.5372, -13.6771, 400, 'commercial1', 'Ets Diallo & Frères (démo)'),
+    ('Grossiste Bonfi', 'Grossiste', 'Mamadou Bah', '+224 621 10 10 02', 'Bonfi', 'Face à la mosquée', 9.5301, -13.6858, 300, 'commercial1', 'Grossiste Bonfi (démo)'),
+    ('Grossiste Coyah', 'Grossiste', 'Sékou Sylla', '+224 621 10 10 08', 'Coyah-Centre', 'Gare routière', 9.7071, -13.3845, 250, 'commercial1', 'Grossiste Coyah (démo)'),
+    ('Boutique Fatou Madina', 'Détaillant', 'Fatou Keïta', '+224 622 20 20 01', 'Madina', 'Rue des tissus', 9.5385, -13.6760, 15, 'commercial1', null),
+    ('Alimentation Bonfi Centre', 'Détaillant', 'Ibrahima Camara', '+224 622 20 20 02', 'Bonfi', 'Carrefour Bonfi', 9.5312, -13.6840, 20, 'commercial1', null),
+    ('Semi-gros Coléah', 'Semi-grossiste', 'Oumar Sow', '+224 622 20 20 03', 'Coléah', 'Près du pont', 9.5225, -13.6905, 80, 'commercial1', null),
+    ('Kiosque Matam', 'Détaillant', 'Aïssata Barry', '+224 622 20 20 04', 'Coléah', 'Station-service', 9.5240, -13.6880, 10, 'commercial1', null),
+    ('Pharmacie Madina (B2B)', 'B2B', 'Dr Condé', '+224 622 20 20 05', 'Madina', 'Boulevard du Commerce', 9.5360, -13.6790, 30, 'commercial1', null),
+    ('Kaloum Distribution', 'Grossiste', 'Fatou Camara', '+224 621 10 10 03', 'Almamya', 'Avenue de la République', 9.5095, -13.7118, 500, 'commercial2', 'Kaloum Distribution (démo)'),
+    ('Semi-gros Hamdallaye', 'Semi-grossiste', 'Ibrahima Sow', '+224 621 10 10 04', 'Hamdallaye', 'Carrefour Hamdallaye', 9.5605, -13.6548, 120, 'commercial2', 'Semi-gros Hamdallaye (démo)'),
+    ('Hôtel Kaloum', 'B2B', 'Économat', '+224 621 10 10 07', 'Boulbinet', 'Corniche', 9.5048, -13.7175, 40, 'commercial2', 'Hôtel Kaloum (démo)'),
+    ('Boutique Almamya', 'Détaillant', 'Mariama Sylla', '+224 622 30 30 01', 'Almamya', 'Marché Niger', 9.5110, -13.7100, 12, 'commercial2', null),
+    ('Alimentation Sandervalia', 'Détaillant', 'Kémoko Touré', '+224 622 30 30 02', 'Sandervalia', 'Rond-point', 9.5150, -13.7060, 18, 'commercial2', null),
+    ('Superette Dixinn', 'Supermarché', 'Gérant', '+224 622 30 30 03', 'Dixinn-Centre', 'Près de l''université', 9.5450, -13.6700, 60, 'commercial2', null),
+    ('Boutique Landréah', 'Détaillant', 'Hawa Diallo', '+224 622 30 30 04', 'Landréah', 'Marché Landréah', 9.5510, -13.6650, 10, 'commercial2', null),
+    ('Kiosque Belle-Vue', 'Détaillant', 'Saliou Bah', '+224 622 30 30 05', 'Belle-Vue', 'Stade', 9.5480, -13.6620, 8, 'commercial2', null),
+    ('Supermarché Kipé', 'Supermarché', 'Service achats', '+224 621 10 10 05', 'Kipé', 'Route Le Prince', 9.6152, -13.6270, 150, 'commercial3', 'Supermarché Kipé (démo)'),
+    ('Boutique Matoto', 'Détaillant', 'Aïcha Touré', '+224 621 10 10 06', 'Matoto-Centre', 'Marché Matoto', 9.5795, -13.6005, 25, 'commercial3', 'Boutique Matoto (démo)'),
+    ('Semi-gros Enta', 'Semi-grossiste', 'Lansana Camara', '+224 622 40 40 01', 'Enta', 'Carrefour Enta', 9.5900, -13.6150, 90, 'commercial3', null),
+    ('Alimentation Gbessia', 'Détaillant', 'Néné Bah', '+224 622 40 40 02', 'Gbessia', 'Aéroport', 9.5770, -13.6120, 15, 'commercial3', null),
+    ('Boutique Yimbaya', 'Détaillant', 'Moussa Keïta', '+224 622 40 40 03', 'Yimbaya', 'École', 9.5850, -13.5950, 10, 'commercial3', null),
+    ('Kiosque Taouyah', 'Détaillant', 'Djénabou Sow', '+224 622 40 40 04', 'Taouyah', 'Rond-point Taouyah', 9.5700, -13.6450, 9, 'commercial3', null),
+    ('Alimentation Nongo', 'Détaillant', 'Abdoulaye Diallo', '+224 622 40 40 05', 'Nongo', 'Marché Nongo', 9.6300, -13.6250, 14, 'commercial3', null),
+    ('Superette Cosa', 'Supermarché', 'Gérant', '+224 622 40 40 06', 'Cosa', 'Carrefour Cosa', 9.6050, -13.6350, 50, 'commercial3', null)
+  ) as v(nom, type, resp, tel, quartier, repere, lat, lon, potentiel, commercial, client);
+
+  -- Les PVA de démonstration existent depuis deux mois (seuls ceux créés ensuite comptent comme « nouveaux »).
+  update public.pva set created_at = now() - interval '60 days';
+  -- Deux PVA récemment ouverts par commercial.
+  update public.pva set created_at = now() - interval '3 days'
+  where id in (select id from public.pva where client_id is null order by nom limit 6);
+
+  -- Visites : chaque PVA visité tous les 3 à 5 jours sur 30 jours ; quelques check-ins hors zone ; ruptures ponctuelles.
+  for v_pva in select p.id, p.commercial_id, extensions.st_y(p.position::extensions.geometry) as lat, extensions.st_x(p.position::extensions.geometry) as lon from public.pva p order by p.nom loop
+    i := i + 1;
+    for j in reverse 30..1 loop
+      if (j + i) % (3 + i % 3) = 0 then
+        v_visite := gen_random_uuid();
+        -- 1 visite sur 12 : check-in à environ 400 m du PVA (hors zone).
+        v_lat := v_pva.lat + case when (j * 7 + i * 3) % 13 = 0 then 0.0036 else ((j * 7 + i) % 9 - 4) * 0.00004 end;
+        v_lon := v_pva.lon + ((j * 5 + i) % 9 - 4) * 0.00004;
+        insert into public.visites (id, pva_id, commercial_id, checkin_at, position, precision_m, stock_papel_colis, rupture, notes)
+        values (v_visite, v_pva.id, v_pva.commercial_id,
+                (public.aujourdhui_conakry() - j)::timestamp + make_interval(hours => 9 + (i % 7), mins => (j * 7) % 60),
+                extensions.st_setsrid(extensions.st_makepoint(v_lon, v_lat), 4326)::extensions.geography, 6 + (j % 10),
+                case when (j + i) % 7 = 0 then 0 else 2 + (j * i) % 15 end, (j + i) % 7 = 0,
+                case when (j + i) % 7 = 0 then 'Rupture : demande une livraison rapide' else '' end);
+        insert into public.visite_prix (visite_id, produit_id, prix_gnf)
+        values (v_visite, '10000000-0000-0000-0000-000000000001', case when i % 4 = 0 then 5500 else 5000 end);
+        if (j + i) % 5 = 0 then
+          insert into public.visite_concurrence (visite_id, marque_id, produit, prix_gnf)
+          values (v_visite, (select id from public.marques_concurrentes order by libelle offset (i % 3) limit 1), 'Mouchoirs 100', 4500 + (i % 3) * 250);
+        end if;
+      end if;
+    end loop;
+  end loop;
+
+  -- Tournée du jour du commercial 1 : ses 6 premiers PVA.
+  insert into public.tournees (id, commercial_id, date_tournee) values ('80000000-0000-0000-0000-000000000001', c1, public.aujourdhui_conakry());
+  insert into public.tournee_etapes (tournee_id, pva_id, ordre)
+  select '80000000-0000-0000-0000-000000000001', id, row_number() over (order by nom) from public.pva where commercial_id = c1 order by nom limit 6;
+
+  -- Objectifs du mois.
+  insert into public.objectifs_commerciaux (commercial_id, mois, visites, nouveaux_pva, ca_ht_gnf, colis)
+  select c, date_trunc('month', public.aujourdhui_conakry())::date, 120, 10, 300000000, 1500 from unnest(array[c1, c2, c3]) c;
+end $$;

@@ -3,14 +3,14 @@ import { notFound } from "next/navigation";
 import { Badge, Bouton, Carte, TitrePage } from "@/components/ui";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { changerActivation } from "../actions";
-import { FormulaireMotDePasse, FormulaireRoles } from "./formulaires";
+import { FormulaireCodeSerie, FormulaireMotDePasse, FormulaireRoles } from "./formulaires";
 
 export default async function PageUtilisateur({ params }: PageProps<"/admin/utilisateurs/[id]">) {
   const { id } = await params;
   const supabase = await clientServeur();
   const { data: p } = await supabase
     .from("profils")
-    .select("id, identifiant, nom, prenom, telephone, actif, created_at, utilisateur_roles(role)")
+    .select("id, identifiant, nom, prenom, telephone, actif, created_at, code_serie, utilisateur_roles(role)")
     .eq("id", id)
     .maybeSingle();
   if (!p) notFound();
@@ -30,6 +30,11 @@ export default async function PageUtilisateur({ params }: PageProps<"/admin/util
           <FormulaireRoles utilisateurId={p.id} roles={p.utilisateur_roles.map((r) => r.role)} />
         </Carte>
         <div className="flex flex-col gap-4">
+          {p.utilisateur_roles.some((r) => r.role === "commercial_terrain") && (
+            <Carte titre="Série de numérotation (application terrain)">
+              <FormulaireCodeSerie utilisateurId={p.id} code={p.code_serie} />
+            </Carte>
+          )}
           <Carte titre="Mot de passe">
             <FormulaireMotDePasse utilisateurId={p.id} />
           </Carte>

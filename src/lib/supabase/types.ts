@@ -811,6 +811,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"marques_concurrentes": {
+                  Row: {
+                    "actif": boolean,"created_at": string,"id": string,"libelle": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"created_at"?: string,"id"?: string,"libelle": string
+                  }
+                  Update: {
+                    "actif"?: boolean,"created_at"?: string,"id"?: string,"libelle"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"modes_paiement": {
                   Row: {
                     "actif": boolean,"created_at": string,"id": string,"libelle": string,"ordre": number
@@ -885,6 +898,25 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"objectifs_commerciaux": {
+                  Row: {
+                    "ca_ht_gnf": number,"colis": number,"commercial_id": string,"id": string,"mois": string,"nouveaux_pva": number,"visites": number
+                  }
+                  Insert: {
+                    "ca_ht_gnf"?: number,"colis"?: number,"commercial_id": string,"id"?: string,"mois": string,"nouveaux_pva"?: number,"visites"?: number
+                  }
+                  Update: {
+                    "ca_ht_gnf"?: number,"colis"?: number,"commercial_id"?: string,"id"?: string,"mois"?: string,"nouveaux_pva"?: number,"visites"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "objectifs_commerciaux_commercial_id_fkey"
+      columns: ["commercial_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"operateurs": {
                   Row: {
@@ -1087,16 +1119,90 @@ isOneToOne: false
                   ]
                 },"profils": {
                   Row: {
-                    "actif": boolean,"created_at": string,"id": string,"identifiant": string,"nom": string,"prenom": string,"telephone": string | null,"updated_at": string
+                    "actif": boolean,"code_serie": string | null,"created_at": string,"id": string,"identifiant": string,"nom": string,"prenom": string,"telephone": string | null,"updated_at": string
                   }
                   Insert: {
-                    "actif"?: boolean,"created_at"?: string,"id": string,"identifiant": string,"nom": string,"prenom"?: string,"telephone"?: string | null,"updated_at"?: string
+                    "actif"?: boolean,"code_serie"?: string | null,"created_at"?: string,"id": string,"identifiant": string,"nom": string,"prenom"?: string,"telephone"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "actif"?: boolean,"created_at"?: string,"id"?: string,"identifiant"?: string,"nom"?: string,"prenom"?: string,"telephone"?: string | null,"updated_at"?: string
+                    "actif"?: boolean,"code_serie"?: string | null,"created_at"?: string,"id"?: string,"identifiant"?: string,"nom"?: string,"prenom"?: string,"telephone"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     
+                  ]
+                },"pva": {
+                  Row: {
+                    "actif": boolean,"client_id": string | null,"commercial_id": string,"created_at": string,"id": string,"nom": string,"notes": string,"position": unknown,"potentiel_colis_mois": number | null,"precision_m": number | null,"quartier_id": string | null,"repere": string,"responsable": string,"telephone": string,"type_client_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"client_id"?: string | null,"commercial_id"?: string,"created_at"?: string,"id": string,"nom": string,"notes"?: string,"position"?: unknown,"potentiel_colis_mois"?: number | null,"precision_m"?: number | null,"quartier_id"?: string | null,"repere"?: string,"responsable"?: string,"telephone"?: string,"type_client_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "actif"?: boolean,"client_id"?: string | null,"commercial_id"?: string,"created_at"?: string,"id"?: string,"nom"?: string,"notes"?: string,"position"?: unknown,"potentiel_colis_mois"?: number | null,"precision_m"?: number | null,"quartier_id"?: string | null,"repere"?: string,"responsable"?: string,"telephone"?: string,"type_client_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pva_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pva_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "soldes_clients"
+      referencedColumns: ["client_id"]
+    },{
+      foreignKeyName: "pva_commercial_id_fkey"
+      columns: ["commercial_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pva_quartier_id_fkey"
+      columns: ["quartier_id"]
+isOneToOne: false
+      referencedRelation: "quartiers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pva_type_client_id_fkey"
+      columns: ["type_client_id"]
+isOneToOne: false
+      referencedRelation: "types_clients"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"pva_photos": {
+                  Row: {
+                    "auteur_id": string | null,"chemin": string,"created_at": string,"id": string,"pva_id": string,"visite_id": string | null
+                  }
+                  Insert: {
+                    "auteur_id"?: string | null,"chemin": string,"created_at"?: string,"id": string,"pva_id": string,"visite_id"?: string | null
+                  }
+                  Update: {
+                    "auteur_id"?: string | null,"chemin"?: string,"created_at"?: string,"id"?: string,"pva_id"?: string,"visite_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pva_photos_auteur_id_fkey"
+      columns: ["auteur_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pva_photos_pva_id_fkey"
+      columns: ["pva_id"]
+isOneToOne: false
+      referencedRelation: "pva"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pva_photos_pva_id_fkey"
+      columns: ["pva_id"]
+isOneToOne: false
+      referencedRelation: "pva_carte"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"quartiers": {
                   Row: {
@@ -1236,6 +1342,62 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"tournee_etapes": {
+                  Row: {
+                    "ordre": number,"pva_id": string,"tournee_id": string
+                  }
+                  Insert: {
+                    "ordre"?: number,"pva_id": string,"tournee_id": string
+                  }
+                  Update: {
+                    "ordre"?: number,"pva_id"?: string,"tournee_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "tournee_etapes_pva_id_fkey"
+      columns: ["pva_id"]
+isOneToOne: false
+      referencedRelation: "pva"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournee_etapes_pva_id_fkey"
+      columns: ["pva_id"]
+isOneToOne: false
+      referencedRelation: "pva_carte"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournee_etapes_tournee_id_fkey"
+      columns: ["tournee_id"]
+isOneToOne: false
+      referencedRelation: "tournees"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"tournees": {
+                  Row: {
+                    "commercial_id": string,"created_at": string,"created_by": string | null,"date_tournee": string,"id": string,"notes": string
+                  }
+                  Insert: {
+                    "commercial_id": string,"created_at"?: string,"created_by"?: string | null,"date_tournee": string,"id"?: string,"notes"?: string
+                  }
+                  Update: {
+                    "commercial_id"?: string,"created_at"?: string,"created_by"?: string | null,"date_tournee"?: string,"id"?: string,"notes"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "tournees_commercial_id_fkey"
+      columns: ["commercial_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournees_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"types_clients": {
                   Row: {
                     "actif": boolean,"created_at": string,"dotation": boolean,"id": string,"libelle": string,"niveau_prix": string,"ordre": number
@@ -1286,6 +1448,111 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"visite_concurrence": {
+                  Row: {
+                    "id": string,"marque_id": string,"prix_gnf": number | null,"produit": string,"visite_id": string
+                  }
+                  Insert: {
+                    "id"?: string,"marque_id": string,"prix_gnf"?: number | null,"produit"?: string,"visite_id": string
+                  }
+                  Update: {
+                    "id"?: string,"marque_id"?: string,"prix_gnf"?: number | null,"produit"?: string,"visite_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "visite_concurrence_marque_id_fkey"
+      columns: ["marque_id"]
+isOneToOne: false
+      referencedRelation: "marques_concurrentes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "visite_concurrence_visite_id_fkey"
+      columns: ["visite_id"]
+isOneToOne: false
+      referencedRelation: "visites"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "visite_concurrence_visite_id_fkey"
+      columns: ["visite_id"]
+isOneToOne: false
+      referencedRelation: "visites_carte"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"visite_prix": {
+                  Row: {
+                    "prix_gnf": number,"produit_id": string,"visite_id": string
+                  }
+                  Insert: {
+                    "prix_gnf": number,"produit_id": string,"visite_id": string
+                  }
+                  Update: {
+                    "prix_gnf"?: number,"produit_id"?: string,"visite_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "visite_prix_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "of_avancement"
+      referencedColumns: ["produit_id"]
+    },{
+      foreignKeyName: "visite_prix_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["produit_id"]
+    },{
+      foreignKeyName: "visite_prix_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "produits"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "visite_prix_visite_id_fkey"
+      columns: ["visite_id"]
+isOneToOne: false
+      referencedRelation: "visites"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "visite_prix_visite_id_fkey"
+      columns: ["visite_id"]
+isOneToOne: false
+      referencedRelation: "visites_carte"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"visites": {
+                  Row: {
+                    "checkin_at": string,"commercial_id": string,"dans_zone": boolean | null,"distance_m": number | null,"id": string,"notes": string,"position": unknown,"precision_m": number | null,"pva_id": string,"rupture": boolean,"stock_papel_colis": number | null,"synchronise_le": string
+                  }
+                  Insert: {
+                    "checkin_at": string,"commercial_id"?: string,"dans_zone"?: boolean | null,"distance_m"?: number | null,"id": string,"notes"?: string,"position"?: unknown,"precision_m"?: number | null,"pva_id": string,"rupture"?: boolean,"stock_papel_colis"?: number | null,"synchronise_le"?: string
+                  }
+                  Update: {
+                    "checkin_at"?: string,"commercial_id"?: string,"dans_zone"?: boolean | null,"distance_m"?: number | null,"id"?: string,"notes"?: string,"position"?: unknown,"precision_m"?: number | null,"pva_id"?: string,"rupture"?: boolean,"stock_papel_colis"?: number | null,"synchronise_le"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "visites_commercial_id_fkey"
+      columns: ["commercial_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "visites_pva_id_fkey"
+      columns: ["pva_id"]
+isOneToOne: false
+      referencedRelation: "pva"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "visites_pva_id_fkey"
+      columns: ["pva_id"]
+isOneToOne: false
+      referencedRelation: "pva_carte"
+      referencedColumns: ["id"]
+    }
                   ]
                 }
           }
@@ -1519,6 +1786,43 @@ isOneToOne: false
       referencedColumns: ["code"]
     }
                   ]
+                },"pva_carte": {
+                  Row: {
+                    "actif": boolean | null,"client_id": string | null,"commercial_id": string | null,"commercial_nom": string | null,"commune_nom": string | null,"created_at": string | null,"derniere_rupture": boolean | null,"derniere_visite": string | null,"id": string | null,"latitude": number | null,"longitude": number | null,"nom": string | null,"notes": string | null,"potentiel_colis_mois": number | null,"quartier_id": string | null,"quartier_nom": string | null,"repere": string | null,"responsable": string | null,"telephone": string | null,"type_client_id": string | null,"type_libelle": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pva_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pva_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "soldes_clients"
+      referencedColumns: ["client_id"]
+    },{
+      foreignKeyName: "pva_commercial_id_fkey"
+      columns: ["commercial_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pva_quartier_id_fkey"
+      columns: ["quartier_id"]
+isOneToOne: false
+      referencedRelation: "quartiers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pva_type_client_id_fkey"
+      columns: ["type_client_id"]
+isOneToOne: false
+      referencedRelation: "types_clients"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"reste_a_livrer": {
                   Row: {
                     "commande_id": string | null,"conditionnement_id": string | null,"paquets_commandes": number | null,"paquets_restants": number | null
@@ -1563,6 +1867,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"visites_carte": {
+                  Row: {
+                    "checkin_at": string | null,"commercial_id": string | null,"commercial_nom": string | null,"dans_zone": boolean | null,"distance_m": number | null,"id": string | null,"latitude": number | null,"longitude": number | null,"notes": string | null,"precision_m": number | null,"pva_id": string | null,"pva_nom": string | null,"rupture": boolean | null,"stock_papel_colis": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "visites_commercial_id_fkey"
+      columns: ["commercial_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "visites_pva_id_fkey"
+      columns: ["pva_id"]
+isOneToOne: false
+      referencedRelation: "pva"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "visites_pva_id_fkey"
+      columns: ["pva_id"]
+isOneToOne: false
+      referencedRelation: "pva_carte"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Functions: {
@@ -1590,6 +1919,9 @@ isOneToOne: false
 "definir_prix":
 { Args: { "p_date_debut": string,"p_niveau": string,"p_note"?: string,"p_prix_paquet_gnf": number,"p_produit": string }; Returns: string
                            },
+"dernier_numero_terrain":
+{ Args: { "p_prefixe": string }; Returns: number
+                           },
 "enregistrer_paiement":
 { Args: { "p_date"?: string,"p_facture": string,"p_mode": string,"p_montant": number,"p_notes"?: string,"p_reference"?: string }; Returns: string
                            },
@@ -1604,6 +1936,9 @@ isOneToOne: false
                            },
 "mes_roles":
 { Args: Record<PropertyKey, never>; Returns: (Database["public"]['Enums']["role_code"])[]
+                           },
+"nombre_fr":
+{ Args: { "n": number }; Returns: string
                            },
 "ouvrir_inventaire":
 { Args: { "p_famille"?: Database["public"]['Enums']["famille_article"],"p_libelle": string }; Returns: string
@@ -1628,6 +1963,9 @@ isOneToOne: false
                            },
 "remettre_dotation":
 { Args: { "p_conditionnement": string,"p_dotation": string,"p_paquets": number }; Returns: undefined
+                           },
+"synchroniser_terrain":
+{ Args: { "p_operations": Json }; Returns: Json
                            },
 "taux_a_la_date":
 { Args: { "p_date": string,"p_devise": string }; Returns: number

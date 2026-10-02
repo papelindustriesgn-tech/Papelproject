@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description: "ERP de Papel Industries — Coyah, Guinée",
   applicationName: "Papel ERP",
   robots: { index: false, follow: false },
+  appleWebApp: { capable: true, title: "Papel", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

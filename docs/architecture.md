@@ -106,7 +106,7 @@ Le middleware redirige chaque utilisateur vers son espace ; un utilisateur n'a a
 - La validation d'une fiche génère les mouvements de stock (consommation MP, entrée PF) et les alertes.
 - Vue `kpi_production` : tonnes, paquets, colis, rendement réel vs théorique, perte, temps d'arrêt, TRS = disponibilité × performance × qualité.
 
-### 4.5 Commercial terrain
+### 4.5 Commercial terrain (✅ livré — migration `20261005000600_terrain.sql`)
 - `pva` (id client-UUID, nom, type, responsable, téléphone, quartier_id, ville, **position geography(Point)**, potentiel, commercial_id, client_id éventuel, statut)
 - `pva_photos` (pva_id, chemin storage, date)
 - `marques_concurrentes` · `pva_concurrence` (visite_id, marque, produit, prix constaté)
@@ -143,7 +143,7 @@ Chaque étape se termine par un **point** (démo, tests, CLAUDE.md à jour) avan
 2. ✅ **Stocks** : articles, lots bobines, mouvements, inventaires, seuils, jours de couverture.
 3. ✅ **Production** : OF, fiches de poste, validation → mouvements de stock, KPI et alertes rendement/perte/arrêts, TRS.
 4. ✅ **Ventes simples** : clients, grille de prix historisée, commande → livraison → facture → paiement, dotation sur encaissé.
-5. **PWA terrain** : PVA + GPS + photos, visites avec check-in, commandes et encaissements hors ligne, synchro ; vue responsable commercial avec carte.
+5. ✅ **PWA terrain** : PVA + GPS + photos, visites avec check-in, commandes et encaissements hors ligne, synchro ; vue responsable commercial avec carte.
 6. **Tableau de bord Direction** : filtres de période + comparaison période précédente, alertes du jour, export PDF.
 
 **Phase 2** : achats et conteneurs (coût de revient complet par lot) → logistique → qualité → maintenance.

@@ -287,6 +287,18 @@ export const REFERENTIELS: Referentiel[] = [
       { nom: "ordre", libelle: "Ordre", type: "entier" },
     ],
   },
+  // --- Commercial ------------------------------------------------------------
+  {
+    code: "marques-concurrentes",
+    table: "marques_concurrentes",
+    titre: "Marques concurrentes",
+    description: "Marques relevées par les commerciaux lors des visites.",
+    espaces: ["commercial", "admin"],
+    cle: "id",
+    tri: "libelle",
+    archivable: true,
+    champs: [{ nom: "libelle", libelle: "Marque", type: "texte", requis: true, max: 60 }],
+  },
 ];
 
 export function referentiel(code: string): Referentiel | undefined {
