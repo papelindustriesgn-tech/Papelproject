@@ -396,3 +396,36 @@ begin
     ('40000000-0000-0000-0000-000000000002', 500, j + 20, 'Stock de film bas', 'approuvee', '20000000-0000-0000-0000-000000000004', v_bc),
     ('40000000-0000-0000-0000-000000000005', 40, j + 30, 'Encre pour impression des sachets', 'soumise', '20000000-0000-0000-0000-000000000004', null);
 end $$;
+
+-- -----------------------------------------------------------------------------
+-- Logistique : véhicules, chauffeurs (dont le compte « logistique »), tournées passées livrées.
+-- Les bons de livraison d'hier restent à planifier.
+-- -----------------------------------------------------------------------------
+insert into public.vehicules (id, immatriculation, libelle, type_vehicule, capacite_colis) values
+  ('70000000-0000-0000-0000-000000000001', 'RC-1234-A', 'Camion 10 t', 'Camion', 1500),
+  ('70000000-0000-0000-0000-000000000002', 'RC-5678-B', 'Fourgonnette', 'Fourgon', 250);
+insert into public.chauffeurs (id, nom, telephone, permis, profil_id) values
+  ('71000000-0000-0000-0000-000000000001', 'Mamadou Cissé', '+224 620 00 00 12', 'C', '20000000-0000-0000-0000-000000000012'),
+  ('71000000-0000-0000-0000-000000000002', 'Ibrahima Sow', '+224 622 33 44 55', 'C', null);
+
+do $$
+declare
+  v_jour date;
+  v_tournee uuid;
+  v_km integer := 48200;
+begin
+  for v_jour in select distinct date_livraison from public.livraisons where statut = 'validee' and date_livraison < public.aujourdhui_conakry() - 1 order by 1 loop
+    insert into public.tournees_livraison (date_tournee, vehicule_id, chauffeur_id, created_by)
+    values (v_jour, '70000000-0000-0000-0000-000000000001', ('71000000-0000-0000-0000-00000000000' || (1 + extract(day from v_jour)::int % 2))::uuid, '20000000-0000-0000-0000-000000000012')
+    returning id into v_tournee;
+    update public.livraisons set tournee_id = v_tournee, ordre = 1, statut_remise = 'livree', receptionnaire = 'Gérant',
+           remise_le = (v_jour + time '11:30') at time zone 'Africa/Conakry', remis_par = '20000000-0000-0000-0000-000000000012'
+     where date_livraison = v_jour and statut = 'validee';
+    update public.tournees_livraison set statut = 'terminee', depart_le = (v_jour + time '08:00') at time zone 'Africa/Conakry',
+           retour_le = (v_jour + time '15:00') at time zone 'Africa/Conakry', km_depart = v_km, km_retour = v_km + 60 + extract(day from v_jour)::int
+     where id = v_tournee;
+    v_km := v_km + 60 + extract(day from v_jour)::int;
+    insert into public.depenses_tournee (tournee_id, type_id, montant_gnf)
+    values (v_tournee, (select id from public.types_depenses_tournee where libelle = 'Carburant'), 350000 + extract(day from v_jour)::int * 5000);
+  end loop;
+end $$;

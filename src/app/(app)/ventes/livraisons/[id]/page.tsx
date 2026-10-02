@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { BoutonImprimer } from "@/components/ui/bouton-imprimer";
-import { formaterDate } from "@/lib/formulaires/dates";
+import { formaterDate, formaterDateHeure } from "@/lib/formulaires/dates";
+import { STATUTS_REMISE } from "@/lib/logistique/libelles";
 import { formaterStockProduitFini, type Paquets } from "@/lib/metier/unites";
 import { afficherStock } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -15,7 +16,7 @@ export default async function PageLivraison({ params }: PageProps<"/ventes/livra
   const supabase = await clientServeur();
   const { data: l } = await supabase
     .from("livraisons")
-    .select("*, pieces_vente(id, numero, clients(nom, adresse, telephone)), lignes_livraison(id, conditionnement_id, paquets, conditionnements(libelle, paquets_par_colis, produits(libelle)))")
+    .select("*, tournees_livraison(numero), pieces_vente(id, numero, clients(nom, adresse, telephone)), lignes_livraison(id, conditionnement_id, paquets, paquets_retournes, conditionnements(libelle, paquets_par_colis, produits(libelle)))")
     .eq("id", id)
     .maybeSingle();
   if (!l) notFound();
@@ -38,8 +39,17 @@ export default async function PageLivraison({ params }: PageProps<"/ventes/livra
       <TitrePage
         titre={`Bon de livraison ${l.numero ?? "(brouillon)"}`}
         sousTitre={`${l.pieces_vente?.clients?.nom} · ${l.pieces_vente?.clients?.adresse ?? ""} · ${l.pieces_vente?.clients?.telephone ?? ""} · ${formaterDate(l.date_livraison)}`}
-        action={brouillon ? <Badge ton="alerte">À valider</Badge> : <Badge ton="succes">Livrée</Badge>}
+        action={brouillon ? <Badge ton="alerte">À valider</Badge> : <Badge ton={STATUTS_REMISE[l.statut_remise].ton}>{STATUTS_REMISE[l.statut_remise].libelle}</Badge>}
       />
+      {!brouillon && (
+        <p className="mb-3 text-gray-700 print:hidden">
+          {l.tournees_livraison ? `Tournée ${l.tournees_livraison.numero}` : "Pas encore planifiée dans une tournée (Logistique)"}
+          {l.remise_le && ` · remis le ${formaterDateHeure(l.remise_le)}${l.receptionnaire ? ` à ${l.receptionnaire}` : ""}`}
+          {l.commentaire_remise && ` · ${l.commentaire_remise}`}
+          {l.lignes_livraison.some((x) => x.paquets_retournes > 0) &&
+            ` · rapporté : ${l.lignes_livraison.reduce((t, x) => t + x.paquets_retournes, 0)} paquets (revenus en stock, restent à livrer ; faire un avoir si la facture est émise)`}
+        </p>
+      )}
       <Carte titre="Produits à livrer">
         <Tableau entetes={["Produit", "Quantité", ...(brouillon ? ["Stock disponible"] : [])]}>
           {l.lignes_livraison.map((ll) => {

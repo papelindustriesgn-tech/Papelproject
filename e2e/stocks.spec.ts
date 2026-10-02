@@ -11,7 +11,7 @@ test.describe("magasin", () => {
     await expect(page.getByText("Matière première disponible")).toBeVisible();
     await expect(page.getByText(/\d+,\d+ t/).first()).toBeVisible();
     await expect(page.getByText(/Jours de couverture MP/)).toBeVisible();
-    await expect(page.getByText(/paquets \(\d+ colis\)/).first()).toBeVisible();
+    await expect(page.getByText(/paquets \(\d+ colis/).first()).toBeVisible();
   });
 
   test("réception d'une bobine jumbo puis consommation partielle", async ({ page }) => {

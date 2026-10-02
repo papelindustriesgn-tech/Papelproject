@@ -329,6 +329,54 @@ export const REFERENTIELS: Referentiel[] = [
       { nom: "ordre", libelle: "Ordre", type: "entier" },
     ],
   },
+  // --- Logistique ---------------------------------------------------------------
+  {
+    code: "vehicules",
+    table: "vehicules",
+    titre: "Véhicules",
+    description: "Camions et fourgons de livraison ; la capacité (en colis) est contrôlée au chargement.",
+    espaces: ["logistique", "admin"],
+    cle: "id",
+    tri: "immatriculation",
+    archivable: true,
+    champs: [
+      { nom: "immatriculation", libelle: "Immatriculation", type: "texte", requis: true, max: 20 },
+      { nom: "libelle", libelle: "Désignation", type: "texte", max: 60 },
+      { nom: "type_vehicule", libelle: "Type", type: "texte", max: 30 },
+      { nom: "capacite_colis", libelle: "Capacité (colis)", type: "entier", aide: "Vide = pas de contrôle" },
+      { nom: "notes", libelle: "Notes", type: "texte_long", max: 300 },
+    ],
+  },
+  {
+    code: "chauffeurs",
+    table: "chauffeurs",
+    titre: "Chauffeurs",
+    description: "Chauffeurs-livreurs ; le compte de connexion (rôle Logistique) est facultatif.",
+    espaces: ["logistique", "admin"],
+    cle: "id",
+    tri: "nom",
+    archivable: true,
+    champs: [
+      { nom: "nom", libelle: "Nom", type: "texte", requis: true, max: 80 },
+      { nom: "telephone", libelle: "Téléphone", type: "texte", max: 30 },
+      { nom: "permis", libelle: "Permis", type: "texte", max: 20 },
+      { nom: "profil_id", libelle: "Compte de connexion", type: "reference", reference: { table: "profils", libelle: "identifiant" } },
+    ],
+  },
+  {
+    code: "types-depenses-tournee",
+    table: "types_depenses_tournee",
+    titre: "Types de dépenses de tournée",
+    description: "Carburant, péage, manutention, réparation en route…",
+    espaces: ["logistique", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
 ];
 
 export function referentiel(code: string): Referentiel | undefined {

@@ -156,3 +156,8 @@ insert into public.types_frais (libelle, ordre) values
 insert into public.types_documents (libelle, ordre) values
   ('Facture fournisseur', 1), ('Connaissement (BL)', 2), ('Packing list', 3), ('Certificat d''origine', 4),
   ('Déclaration en douane', 5), ('Bon de livraison', 6), ('Autre', 7);
+
+-- Logistique : types de dépenses de tournée (modifiables dans Logistique → Listes de référence).
+insert into public.types_depenses_tournee (libelle, ordre) values
+  ('Carburant', 1), ('Péage et taxes de route', 2), ('Manutention', 3), ('Réparation en route', 4), ('Autre', 9)
+on conflict (libelle) do nothing;

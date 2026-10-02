@@ -11,7 +11,7 @@ Chaîne couverte : achat MP → stock → production → stock produits finis �
 **Next.js 16** : `middleware` s'appelle désormais `proxy` (`src/proxy.ts`) ; `cookies()`, `params`, `searchParams` sont asynchrones.
 Lire `node_modules/next/dist/docs/` avant d'utiliser une API Next inconnue.
 
-Commandes : `npm run verifier` (types + lint + Vitest), `npm run test:db` (pgTAP), `npm run test:e2e` (Playwright),
+Commandes : `npm run verifier` (types + lint + Vitest), `npm run test:db` (pgTAP, sur une base fraîchement réinitialisée), `npm run test:e2e` (Playwright),
 `npm run db:reset` (migrations + seed), `npm run test:e2e:complet` (base neuve + build + serveur + Playwright), `npm run db:types` (régénère `src/lib/supabase/types.ts` après chaque migration).
 
 ---
@@ -203,6 +203,23 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 - Réception : `receptionner_bobine_conteneur` (Magasin → Bobines, choix du conteneur) → lot au coût de revient complet, fournisseur du BC.
 - Transit (vue `transit`) : kg des conteneurs non livrés, affiché dans les tableaux de bord Magasin et Direction.
 - Documents (facture, BL, packing list…) : Storage privé `documents-achats/<objet>/<id>/…`, lien de téléchargement signé 5 min.
+
+## 6 octies. Logistique et livraison (phase 2 – étape 2)
+
+- Listes modifiables : **véhicules** (capacité en colis, contrôlée au chargement), **chauffeurs** (compte de connexion facultatif),
+  **types de dépenses de tournée** (carburant, péage…).
+- **Tournée** (`tournees_livraison`, `TL-AAAA-NNNNN` ; le nom `tournees` désigne les tournées de visite des commerciaux) :
+  planifiée → en cours → terminée (ou annulée, ce qui libère ses bons). Elle regroupe des **BL validés** (créés dans Ventes).
+  Fonctions atomiques : `affecter_livraison` (capacité), `retirer_livraison`, `demarrer_tournee` (km départ),
+  `enregistrer_remise`, `terminer_tournee` (toutes les remises saisies, km retour ≥ départ).
+- **Remise** (`/logistique/livraisons/[id]`, écran mobile) : livrée / partielle / refusée ; réceptionnaire + **signature au doigt**
+  obligatoires (sauf refus, motif obligatoire), photo compressée, position GPS. Preuves en Storage privé `preuves-livraison/<BL>/…`.
+  Les paquets rapportés font un mouvement « retour » et **restent à livrer** (`reste_a_livrer` déduit `paquets_retournes`) ;
+  si la facture est émise, la finance fait un avoir.
+- Un BL validé est **figé** pour les utilisateurs (trigger `livraison_figee`) : tournée et remise ne changent que par les fonctions.
+- Indicateurs (`src/lib/metier/logistique.ts`, testés) : livraisons réussies (livrées ÷ remises), taux de retour (paquets),
+  coût par colis livré, coût au km ; agrégation = sommes puis taux recalculés. Vue `tournees_livraison_etat`.
+- Alerte Direction : BL validés depuis plus de 2 jours et non remis.
 
 ## 7. Seuils d'alerte (paramétrables)
 

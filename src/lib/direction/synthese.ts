@@ -10,7 +10,7 @@ import { clientServeur } from "@/lib/supabase/serveur";
 
 export interface Alerte {
   gravite: "critique" | "importante";
-  domaine: "Stock" | "Production" | "Ventes" | "Distribution";
+  domaine: "Stock" | "Production" | "Ventes" | "Distribution" | "Logistique";
   message: string;
   lien: string;
 }
@@ -41,7 +41,7 @@ async function coutDesVentes(du: string, au: string): Promise<number> {
 
 export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
   const supabase = await clientServeur();
-  const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, alertesStock, factures, distribution, distributionPrec, pva, transit] = await Promise.all([
+  const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, alertesStock, factures, distribution, distributionPrec, pva, transit, enRetard] = await Promise.all([
     chargerIndicateursVentes(p.du, p.au, p.nbJours),
     chargerIndicateursVentes(p.precedente.du, p.precedente.au, p.nbJours),
     chargerFiches({ du: p.du, au: p.au }),
@@ -55,6 +55,8 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
     chargerIndicateursCommerciaux(p.precedente.du, p.precedente.au, p.nbJours),
     supabase.from("pva_carte").select("type_libelle, actif"),
     supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
+    // Bons de livraison validés depuis plus de 2 jours et toujours pas remis au client.
+    supabase.from("livraisons").select("id", { count: "exact", head: true }).eq("statut", "validee").eq("statut_remise", "a_livrer").lt("date_livraison", hier(hier(p.au))),
   ]);
 
   // Production : colis produits par produit et rendement par jour.
@@ -88,6 +90,8 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
     alertes.push({ gravite: Number(fa.jours_retard) > 60 ? "critique" : "importante", domaine: "Ventes", message: `Impayé ${fa.numero} – ${fa.client_nom} : ${Number(fa.solde_gnf).toLocaleString("fr-FR")} GNF, ${fa.jours_retard} j de retard`, lien: `/ventes/pieces/${fa.id}` });
   if ((distribution.tauxRupture ?? 0) > 0.15)
     alertes.push({ gravite: "importante", domaine: "Distribution", message: `Taux de rupture chez les points de vente : ${Math.round((distribution.tauxRupture ?? 0) * 100)} %`, lien: "/commercial" });
+  if ((enRetard.count ?? 0) > 0)
+    alertes.push({ gravite: "importante", domaine: "Logistique", message: `${enRetard.count} bon(s) de livraison validé(s) depuis plus de 2 jours et non remis au client`, lien: "/logistique" });
   alertes.sort((a, b) => (a.gravite === b.gravite ? 0 : a.gravite === "critique" ? -1 : 1));
 
   const m = margeBrute(ventes.caHtGnf, cout);

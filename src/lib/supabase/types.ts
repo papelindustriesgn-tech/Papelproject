@@ -173,6 +173,25 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"chauffeurs": {
+                  Row: {
+                    "actif": boolean,"created_at": string,"id": string,"nom": string,"permis": string,"profil_id": string | null,"telephone": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"created_at"?: string,"id"?: string,"nom": string,"permis"?: string,"profil_id"?: string | null,"telephone"?: string
+                  }
+                  Update: {
+                    "actif"?: boolean,"created_at"?: string,"id"?: string,"nom"?: string,"permis"?: string,"profil_id"?: string | null,"telephone"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "chauffeurs_profil_id_fkey"
+      columns: ["profil_id"]
+isOneToOne: true
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"clients": {
                   Row: {
                     "actif": boolean,"adresse": string,"code": string,"commercial_id": string | null,"condition_paiement": string,"created_at": string,"created_by": string | null,"delai_paiement_jours": number,"id": string,"nif": string,"nom": string,"notes": string,"plafond_credit_gnf": number,"quartier_id": string | null,"responsable": string,"telephone": string,"type_client_id": string,"updated_at": string
@@ -338,6 +357,37 @@ isOneToOne: false
       columns: ["bc_id"]
 isOneToOne: false
       referencedRelation: "bons_commande"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"depenses_tournee": {
+                  Row: {
+                    "created_at": string,"id": string,"montant_gnf": number,"reference": string,"tournee_id": string,"type_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"montant_gnf": number,"reference"?: string,"tournee_id": string,"type_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"montant_gnf"?: number,"reference"?: string,"tournee_id"?: string,"type_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "depenses_tournee_tournee_id_fkey"
+      columns: ["tournee_id"]
+isOneToOne: false
+      referencedRelation: "tournees_livraison"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "depenses_tournee_tournee_id_fkey"
+      columns: ["tournee_id"]
+isOneToOne: false
+      referencedRelation: "tournees_livraison_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "depenses_tournee_type_id_fkey"
+      columns: ["type_id"]
+isOneToOne: false
+      referencedRelation: "types_depenses_tournee"
       referencedColumns: ["id"]
     }
                   ]
@@ -850,13 +900,13 @@ isOneToOne: false
                   ]
                 },"lignes_livraison": {
                   Row: {
-                    "conditionnement_id": string,"id": string,"livraison_id": string,"paquets": number
+                    "conditionnement_id": string,"id": string,"livraison_id": string,"paquets": number,"paquets_retournes": number
                   }
                   Insert: {
-                    "conditionnement_id": string,"id"?: string,"livraison_id": string,"paquets": number
+                    "conditionnement_id": string,"id"?: string,"livraison_id": string,"paquets": number,"paquets_retournes"?: number
                   }
                   Update: {
-                    "conditionnement_id"?: string,"id"?: string,"livraison_id"?: string,"paquets"?: number
+                    "conditionnement_id"?: string,"id"?: string,"livraison_id"?: string,"paquets"?: number,"paquets_retournes"?: number
                   }
                   Relationships: [
                     {
@@ -931,13 +981,13 @@ isOneToOne: false
                   ]
                 },"livraisons": {
                   Row: {
-                    "commande_id": string,"created_at": string,"created_by": string | null,"date_livraison": string,"id": string,"notes": string,"numero": string | null,"statut": string,"valide_le": string | null,"valide_par": string | null
+                    "commande_id": string,"commentaire_remise": string,"created_at": string,"created_by": string | null,"date_livraison": string,"id": string,"latitude": number | null,"longitude": number | null,"notes": string,"numero": string | null,"ordre": number,"photo_chemin": string | null,"precision_m": number | null,"receptionnaire": string,"remis_par": string | null,"remise_le": string | null,"signature_chemin": string | null,"statut": string,"statut_remise": string,"tournee_id": string | null,"valide_le": string | null,"valide_par": string | null
                   }
                   Insert: {
-                    "commande_id": string,"created_at"?: string,"created_by"?: string | null,"date_livraison"?: string,"id"?: string,"notes"?: string,"numero"?: string | null,"statut"?: string,"valide_le"?: string | null,"valide_par"?: string | null
+                    "commande_id": string,"commentaire_remise"?: string,"created_at"?: string,"created_by"?: string | null,"date_livraison"?: string,"id"?: string,"latitude"?: number | null,"longitude"?: number | null,"notes"?: string,"numero"?: string | null,"ordre"?: number,"photo_chemin"?: string | null,"precision_m"?: number | null,"receptionnaire"?: string,"remis_par"?: string | null,"remise_le"?: string | null,"signature_chemin"?: string | null,"statut"?: string,"statut_remise"?: string,"tournee_id"?: string | null,"valide_le"?: string | null,"valide_par"?: string | null
                   }
                   Update: {
-                    "commande_id"?: string,"created_at"?: string,"created_by"?: string | null,"date_livraison"?: string,"id"?: string,"notes"?: string,"numero"?: string | null,"statut"?: string,"valide_le"?: string | null,"valide_par"?: string | null
+                    "commande_id"?: string,"commentaire_remise"?: string,"created_at"?: string,"created_by"?: string | null,"date_livraison"?: string,"id"?: string,"latitude"?: number | null,"longitude"?: number | null,"notes"?: string,"numero"?: string | null,"ordre"?: number,"photo_chemin"?: string | null,"precision_m"?: number | null,"receptionnaire"?: string,"remis_par"?: string | null,"remise_le"?: string | null,"signature_chemin"?: string | null,"statut"?: string,"statut_remise"?: string,"tournee_id"?: string | null,"valide_le"?: string | null,"valide_par"?: string | null
                   }
                   Relationships: [
                     {
@@ -957,6 +1007,24 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "livraisons_remis_par_fkey"
+      columns: ["remis_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "livraisons_tournee_id_fkey"
+      columns: ["tournee_id"]
+isOneToOne: false
+      referencedRelation: "tournees_livraison"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "livraisons_tournee_id_fkey"
+      columns: ["tournee_id"]
+isOneToOne: false
+      referencedRelation: "tournees_livraison_etat"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "livraisons_valide_par_fkey"
@@ -1602,6 +1670,37 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"tournees_livraison": {
+                  Row: {
+                    "chauffeur_id": string,"created_at": string,"created_by": string | null,"date_tournee": string,"depart_le": string | null,"id": string,"km_depart": number | null,"km_retour": number | null,"notes": string,"numero": string | null,"retour_le": string | null,"statut": string,"vehicule_id": string
+                  }
+                  Insert: {
+                    "chauffeur_id": string,"created_at"?: string,"created_by"?: string | null,"date_tournee"?: string,"depart_le"?: string | null,"id"?: string,"km_depart"?: number | null,"km_retour"?: number | null,"notes"?: string,"numero"?: string | null,"retour_le"?: string | null,"statut"?: string,"vehicule_id": string
+                  }
+                  Update: {
+                    "chauffeur_id"?: string,"created_at"?: string,"created_by"?: string | null,"date_tournee"?: string,"depart_le"?: string | null,"id"?: string,"km_depart"?: number | null,"km_retour"?: number | null,"notes"?: string,"numero"?: string | null,"retour_le"?: string | null,"statut"?: string,"vehicule_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "tournees_livraison_chauffeur_id_fkey"
+      columns: ["chauffeur_id"]
+isOneToOne: false
+      referencedRelation: "chauffeurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournees_livraison_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournees_livraison_vehicule_id_fkey"
+      columns: ["vehicule_id"]
+isOneToOne: false
+      referencedRelation: "vehicules"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"types_clients": {
                   Row: {
                     "actif": boolean,"created_at": string,"dotation": boolean,"id": string,"libelle": string,"niveau_prix": string,"ordre": number
@@ -1620,6 +1719,19 @@ isOneToOne: false
       referencedRelation: "niveaux_prix"
       referencedColumns: ["code"]
     }
+                  ]
+                },"types_depenses_tournee": {
+                  Row: {
+                    "actif": boolean,"id": string,"libelle": string,"ordre": number
+                  }
+                  Insert: {
+                    "actif"?: boolean,"id"?: string,"libelle": string,"ordre"?: number
+                  }
+                  Update: {
+                    "actif"?: boolean,"id"?: string,"libelle"?: string,"ordre"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"types_documents": {
                   Row: {
@@ -1665,6 +1777,19 @@ isOneToOne: false
       referencedRelation: "profils"
       referencedColumns: ["id"]
     }
+                  ]
+                },"vehicules": {
+                  Row: {
+                    "actif": boolean,"capacite_colis": number | null,"created_at": string,"id": string,"immatriculation": string,"libelle": string,"notes": string,"type_vehicule": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"capacite_colis"?: number | null,"created_at"?: string,"id"?: string,"immatriculation": string,"libelle"?: string,"notes"?: string,"type_vehicule"?: string
+                  }
+                  Update: {
+                    "actif"?: boolean,"capacite_colis"?: number | null,"created_at"?: string,"id"?: string,"immatriculation"?: string,"libelle"?: string,"notes"?: string,"type_vehicule"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"villes": {
                   Row: {
@@ -2116,6 +2241,37 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"tournees_livraison_etat": {
+                  Row: {
+                    "capacite_colis": number | null,"chauffeur_id": string | null,"chauffeur_nom": string | null,"chauffeur_profil_id": string | null,"colis_charges": number | null,"colis_livres": number | null,"created_at": string | null,"created_by": string | null,"date_tournee": string | null,"depart_le": string | null,"depenses_gnf": number | null,"id": string | null,"immatriculation": string | null,"km_depart": number | null,"km_parcourus": number | null,"km_retour": number | null,"nb_livraisons": number | null,"nb_livrees": number | null,"nb_partielles": number | null,"nb_refusees": number | null,"nb_remises": number | null,"notes": string | null,"numero": string | null,"paquets_charges": number | null,"paquets_livres": number | null,"retour_le": string | null,"statut": string | null,"vehicule_id": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "chauffeurs_profil_id_fkey"
+      columns: ["chauffeur_profil_id"]
+isOneToOne: true
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournees_livraison_chauffeur_id_fkey"
+      columns: ["chauffeur_id"]
+isOneToOne: false
+      referencedRelation: "chauffeurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournees_livraison_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournees_livraison_vehicule_id_fkey"
+      columns: ["vehicule_id"]
+isOneToOne: false
+      referencedRelation: "vehicules"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"transit": {
                   Row: {
                     "kg_en_transit": number | null,"nb_conteneurs": number | null
@@ -2160,6 +2316,9 @@ isOneToOne: false
 "activer_audit":
 { Args: { "p_cle"?: string,"p_table": unknown }; Returns: undefined
                            },
+"affecter_livraison":
+{ Args: { "p_livraison": string,"p_tournee": string }; Returns: undefined
+                           },
 "annuler_piece":
 { Args: { "p_piece": string }; Returns: undefined
                            },
@@ -2175,11 +2334,17 @@ isOneToOne: false
 "definir_prix":
 { Args: { "p_date_debut": string,"p_niveau": string,"p_note"?: string,"p_prix_paquet_gnf": number,"p_produit": string }; Returns: string
                            },
+"demarrer_tournee":
+{ Args: { "p_km": number,"p_tournee": string }; Returns: undefined
+                           },
 "dernier_numero_terrain":
 { Args: { "p_prefixe": string }; Returns: number
                            },
 "enregistrer_paiement":
 { Args: { "p_date"?: string,"p_facture": string,"p_mode": string,"p_montant": number,"p_notes"?: string,"p_reference"?: string }; Returns: string
+                           },
+"enregistrer_remise":
+{ Args: { "p_commentaire"?: string,"p_latitude"?: number,"p_livraison": string,"p_longitude"?: number,"p_photo"?: string,"p_precision"?: number,"p_receptionnaire": string,"p_retours"?: Json,"p_signature"?: string,"p_statut": string }; Returns: undefined
                            },
 "envoyer_bc":
 { Args: { "p_bc": string }; Returns: string
@@ -2189,6 +2354,9 @@ isOneToOne: false
                            },
 "est_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"exiger_logistique":
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "hook_jeton_acces":
 { Args: { "event": Json }; Returns: Json
@@ -2226,14 +2394,23 @@ isOneToOne: false
 "remettre_dotation":
 { Args: { "p_conditionnement": string,"p_dotation": string,"p_paquets": number }; Returns: undefined
                            },
+"retirer_livraison":
+{ Args: { "p_livraison": string }; Returns: undefined
+                           },
 "synchroniser_terrain":
 { Args: { "p_operations": Json }; Returns: Json
                            },
 "taux_a_la_date":
 { Args: { "p_date": string,"p_devise": string }; Returns: number
                            },
+"terminer_tournee":
+{ Args: { "p_km": number,"p_tournee": string }; Returns: undefined
+                           },
 "transformer_piece":
 { Args: { "p_piece": string,"p_type": Database["public"]['Enums']["type_piece"] }; Returns: string
+                           },
+"utilisateur_a_role":
+{ Args: { "p_role": Database["public"]['Enums']["role_code"],"p_utilisateur": string }; Returns: boolean
                            },
 "valider_avoir":
 { Args: { "p_avoir": string,"p_retour_stock"?: boolean }; Returns: string
