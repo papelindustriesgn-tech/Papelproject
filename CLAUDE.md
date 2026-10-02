@@ -4,7 +4,7 @@ ERP de **Papel Industries**, fabricant guinéen de mouchoirs en papier (usine de
 Chaîne couverte : achat MP → stock → production → stock produits finis → distribution → vente → encaissement → pilotage.
 
 > Ce fichier est la référence des règles métier et des conventions de code. Le tenir à jour à chaque phase.
-> État : **Phase 1 — étapes 1 (fondations) et 2 (stocks) livrées.** Prochaine : étape 3 (production). Plan : `docs/architecture.md`.
+> État : **Phase 1 — étapes 1 (fondations), 2 (stocks) et 3 (production) livrées.** Prochaine : étape 4 (ventes simples). Plan : `docs/architecture.md`.
 
 @AGENTS.md
 
@@ -35,7 +35,7 @@ Commandes : `npm run verifier` (types + lint + Vitest), `npm run test:db` (pgTAP
 - Supabase : PostgreSQL, Auth, Storage (photos), RLS (droits), PostGIS (géolocalisation).
 - Hébergement Vercel. Graphiques Recharts. Exports Excel et PDF.
 - Application commerciaux : PWA Android installable, **hors ligne**, synchronisation automatique.
-- Migrations SQL versionnées (`supabase/migrations`), données de démo (`supabase/seed.sql`).
+- Migrations SQL versionnées (`supabase/migrations`), configuration initiale (`supabase/donnees-initiales.sql`) et démo (`supabase/seed-demo.sql`).
 - Code commenté en français.
 
 ## 2. Contraintes Guinée
@@ -65,6 +65,7 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 
 - **Le prix est fixé AU PAQUET, identique quelle que soit la taille du colis** (confirmé par la direction).
   Prix du colis = prix du paquet × paquets du conditionnement (ex. Petit colis de 50 = 170 000 GNF HT ; Grand colis de 30 = 229 980 GNF HT).
+- **Prix, TVA et paramètres commerciaux : saisis par la direction elle-même dans l'interface** (valeurs de départ ci-dessous, modifiables).
 - **Prix HORS TAXES ; TVA 18 % AJOUTÉE sur la facture** (paramètres `tva_applicable` = oui, `tva_taux` = 18 %), calculée sur le total HT
   avec un seul arrondi (`src/lib/metier/tva.ts`). À valider avec le comptable selon le régime fiscal de Papel.
 
@@ -111,6 +112,27 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 - Jours de couverture = stock ÷ (sorties consommation/vente/sortie/dotation/rebut des N derniers jours ÷ N), N = `stock_periode_consommation_jours`.
 - Inventaire : photo du théorique à l'ouverture, comptage, validation → un mouvement « inventaire » par écart.
 - Écritures sensibles par fonctions SQL atomiques : `receptionner_bobine`, `ouvrir_inventaire`, `valider_inventaire`.
+
+## 6 ter. Production (étape 3)
+
+- Listes modifiables (Production → Listes de référence) : postes (heures, un poste peut passer minuit), équipes, opérateurs
+  (sans compte informatique), lignes, **cadences nominales** (paquets/min par ligne × produit, nécessaires au TRS),
+  causes d'arrêt (**planifié** : pause, nettoyage prévu → réduit le temps d'ouverture ; **non planifié** → réduit la disponibilité), campagnes.
+- Ordre de fabrication (OF) : produit × conditionnement, quantité visée en **colis**, numéro automatique `OF-AAAA-NNNN` ;
+  avancement = paquets des fiches validées rattachées à l'OF.
+- Fiche de poste : une par (jour × poste × ligne). Production saisie en **colis complets + paquets en vrac** (conversion par `unites.ts`),
+  rebuts en kg, bobines consommées (lot + kg), emballages, arrêts (cause + durée), opérateurs présents. Durée du poste figée à la création.
+- **Validation** (`valider_fiche_production`, atomique) : sorties des consommations au CMP, entrée des produits finis au **coût de revient
+  matière** (coût des consommations réparti au prorata du poids théorique de papier : paquets × poids d'un paquet). Fiche validée = figée.
+  Les rebuts ne font pas de mouvement : leur papier est déjà dans les kg consommés.
+- Indicateurs (`src/lib/metier/production.ts`, testés) :
+  - ratio rendement = Σ(paquets ÷ rendement théorique du produit) ÷ tonnes consommées (= réel/théorique pour un seul produit) ;
+  - rendement réel par produit (paquets/t) calculé sur les fiches mono-produit ;
+  - taux de perte = rebuts kg ÷ papier kg ;
+  - TRS = disponibilité × performance × qualité (rebuts convertis en paquets via le poids d'un paquet) ; non calculé sans cadence.
+  - Agrégation sur une période = concaténation des fiches (pas de moyenne de pourcentages).
+- Périodes d'analyse et période précédente de même durée : `src/lib/formulaires/periode.ts`.
+- Graphiques : Recharts, palette catégorielle validée (`src/components/graphiques/production.tsx`), ordre de couleur fixe.
 
 ## 7. Seuils d'alerte (paramétrables)
 

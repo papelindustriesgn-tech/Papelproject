@@ -12,7 +12,7 @@ achat des matières premières → stock → production → distribution → ven
 |---|---|---|
 | Phase 1 – étape 1 | Fondations : connexion, rôles, droits (RLS), journal d'audit, paramètres, taux de change, produits et prix, calculs métier testés | ✅ Livrée |
 | Phase 1 – étape 2 | Stocks : articles, bobines par lot, mouvements, coût moyen pondéré, inventaires, jours de couverture, alertes ; listes de référence modifiables ; TVA | ✅ Livrée |
-| Phase 1 – étape 3 | Production | À venir |
+| Phase 1 – étape 3 | Production : fiches de poste, ordres de fabrication, rendement réel/théorique, pertes, arrêts, TRS, alertes, coût de revient des produits finis, tableau de bord | ✅ Livrée |
 | Phase 1 – étape 4 | Ventes simples | À venir |
 | Phase 1 – étape 5 | Application terrain hors ligne | À venir |
 | Phase 1 – étape 6 | Tableau de bord Direction | À venir |

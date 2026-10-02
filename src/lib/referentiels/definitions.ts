@@ -5,7 +5,7 @@
  * Les droits restent contrôlés par la RLS de chaque table.
  */
 
-export type TypeChamp = "texte" | "texte_long" | "entier" | "choix" | "reference";
+export type TypeChamp = "texte" | "texte_long" | "entier" | "decimal" | "date" | "heure" | "choix" | "reference";
 
 export interface ChampReferentiel {
   nom: string;
@@ -145,6 +145,115 @@ export const REFERENTIELS: Referentiel[] = [
       { nom: "telephone", libelle: "Téléphone", type: "texte", max: 30 },
       { nom: "email", libelle: "E-mail", type: "texte", max: 100 },
       { nom: "notes", libelle: "Notes", type: "texte_long", max: 500 },
+    ],
+  },
+  // --- Production -------------------------------------------------------------
+  {
+    code: "postes",
+    table: "postes",
+    titre: "Postes",
+    description: "Postes de travail (matin, après-midi, nuit…). Un poste peut passer minuit.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 40 },
+      { nom: "heure_debut", libelle: "Début", type: "heure", requis: true },
+      { nom: "heure_fin", libelle: "Fin", type: "heure", requis: true },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  {
+    code: "equipes",
+    table: "equipes",
+    titre: "Équipes",
+    description: "Équipes de production.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "libelle",
+    archivable: true,
+    champs: [{ nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 40 }],
+  },
+  {
+    code: "operateurs",
+    table: "operateurs",
+    titre: "Opérateurs",
+    description: "Personnel de production (pas besoin de compte informatique).",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "nom",
+    archivable: true,
+    champs: [
+      { nom: "nom", libelle: "Nom", type: "texte", requis: true, max: 60 },
+      { nom: "prenom", libelle: "Prénom", type: "texte", max: 60 },
+      { nom: "matricule", libelle: "Matricule", type: "texte", max: 20 },
+      { nom: "equipe_id", libelle: "Équipe", type: "reference", reference: { table: "equipes", libelle: "libelle" } },
+    ],
+  },
+  {
+    code: "lignes-production",
+    table: "lignes_production",
+    titre: "Lignes de production",
+    description: "Lignes de fabrication de l'usine.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "libelle",
+    archivable: true,
+    champs: [{ nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 }],
+  },
+  {
+    code: "cadences",
+    table: "cadences_nominales",
+    titre: "Cadences nominales",
+    description: "Paquets par minute d'une ligne pour un produit, à la vitesse prévue par le constructeur. Indispensable au calcul du TRS.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "created_at",
+    archivable: false,
+    champs: [
+      { nom: "ligne_id", libelle: "Ligne", type: "reference", requis: true, reference: { table: "lignes_production", libelle: "libelle" } },
+      { nom: "produit_id", libelle: "Produit", type: "reference", requis: true, reference: { table: "produits", libelle: "libelle" } },
+      { nom: "paquets_minute", libelle: "Paquets / minute", type: "decimal", requis: true },
+    ],
+  },
+  {
+    code: "causes-arret",
+    table: "causes_arret",
+    titre: "Causes d'arrêt",
+    description: "Un arrêt planifié (pause, nettoyage prévu) ne pénalise pas la disponibilité ; un arrêt non planifié (panne, coupure…) oui.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "libelle",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+      {
+        nom: "type_arret",
+        libelle: "Type",
+        type: "choix",
+        requis: true,
+        options: [
+          { valeur: "non_planifie", libelle: "Non planifié" },
+          { valeur: "planifie", libelle: "Planifié" },
+        ],
+      },
+    ],
+  },
+  {
+    code: "campagnes",
+    table: "campagnes",
+    titre: "Campagnes de production",
+    description: "Périodes de production regroupant des ordres de fabrication.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "date_debut",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 80 },
+      { nom: "date_debut", libelle: "Début", type: "date", requis: true },
+      { nom: "date_fin", libelle: "Fin", type: "date", requis: true },
+      { nom: "notes", libelle: "Objectif / notes", type: "texte_long", max: 300 },
     ],
   },
 ];

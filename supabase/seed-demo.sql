@@ -77,8 +77,10 @@ declare
   v_kg_jour numeric;
   v_paq_petit integer;
   v_paq_grand integer;
-  art_petit uuid := (select id from public.articles where conditionnement_id = (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50));
-  art_grand uuid := (select id from public.articles where conditionnement_id = (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000002' and paquets_par_colis = 30));
+  v_poste record;
+  v_fiche uuid;
+  v_grand boolean;
+  v_facteur numeric;
 begin
   -- 40 bobines reçues sur 60 jours (poids 950 à 1 290 kg, coût réel rendu usine ≈ 13 500 GNF/kg).
   for j in 1..40 loop
@@ -96,33 +98,105 @@ begin
     (public.aujourdhui_conakry() - 45, 'reception', '40000000-0000-0000-0000-000000000004', 9000, 'unite', 1500, 'Stock initial'),
     (public.aujourdhui_conakry() - 45, 'reception', '40000000-0000-0000-0000-000000000005', 60, 'litre', 85000, 'Stock initial');
 
-  -- 30 jours de production : consommation des bobines (plus anciennes d'abord), entrée produits finis, ventes.
-  for j in reverse 30..1 loop
+  -- 30 jours de production : de vraies fiches de poste, validées (consommation des bobines les plus
+  -- anciennes d'abord, production, rebuts, arrêts, opérateurs), puis ventes de 85 % de la production.
+  insert into public.cadences_nominales (ligne_id, produit_id, paquets_minute)
+  select l.id, p.id, case p.code when 'PETIT100' then 12 else 8 end
+  from public.lignes_production l cross join public.produits p;
+
+  insert into public.operateurs (nom, prenom, matricule, equipe_id)
+  select v.nom, v.prenom, v.matricule, (select id from public.equipes where libelle = v.equipe)
+  from (values
+    ('Camara', 'Mohamed', 'OP-001', 'Équipe A'), ('Sylla', 'Aminata', 'OP-002', 'Équipe A'), ('Diallo', 'Thierno', 'OP-003', 'Équipe A'),
+    ('Bah', 'Mamadou', 'OP-004', 'Équipe B'), ('Soumah', 'Fanta', 'OP-005', 'Équipe B'), ('Keïta', 'Lamine', 'OP-006', 'Équipe B')
+  ) as v(nom, prenom, matricule, equipe);
+
+  insert into public.campagnes (libelle, date_debut, date_fin, notes)
+  values ('Campagne en cours (démo)', public.aujourdhui_conakry() - 30, public.aujourdhui_conakry() + 30, 'Objectif : assurer les commandes des grossistes');
+
+  insert into public.ordres_fabrication (id, campagne_id, conditionnement_id, ligne_id, quantite_colis, date_debut_prevue, date_fin_prevue, statut)
+  values
+    ('50000000-0000-0000-0000-000000000001', (select id from public.campagnes limit 1),
+     (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50),
+     (select id from public.lignes_production limit 1), 6000, public.aujourdhui_conakry() - 30, public.aujourdhui_conakry() + 30, 'planifie'),
+    ('50000000-0000-0000-0000-000000000002', (select id from public.campagnes limit 1),
+     (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000002' and paquets_par_colis = 30),
+     (select id from public.lignes_production limit 1), 2500, public.aujourdhui_conakry() - 30, public.aujourdhui_conakry() + 30, 'planifie');
+
+  for j in reverse 30..0 loop
     v_date := public.aujourdhui_conakry() - j;
-    v_kg_jour := 820 + (j * 71) % 260;
-    v_besoin := v_kg_jour;
-    for v_lot in
-      select l.id, sl.quantite from public.lots l join public.stocks_lots sl on sl.lot_id = l.id
-      where sl.quantite > 0 and l.date_reception <= v_date order by l.date_reception, l.numero_lot
-    loop
-      exit when v_besoin <= 0;
-      v_pris := least(v_besoin, v_lot.quantite);
-      insert into public.mouvements_stock (date_operation, type, article_id, lot_id, quantite, unite, motif)
-      values (v_date, 'consommation', '40000000-0000-0000-0000-000000000001', v_lot.id, -v_pris, 'kg', 'Production du jour');
-      v_besoin := v_besoin - v_pris;
+    for v_poste in select * from public.postes where libelle in ('Matin', 'Après-midi') order by ordre loop
+      v_fiche := gen_random_uuid();
+      -- Le matin : Petit 100 ; l'après-midi : Grand 100.
+      v_grand := v_poste.libelle = 'Après-midi';
+      insert into public.fiches_production (id, date_production, poste_id, ligne_id, equipe_id, of_id)
+      values (v_fiche, v_date, v_poste.id, (select id from public.lignes_production limit 1),
+              (select id from public.equipes where libelle = case when v_grand then 'Équipe B' else 'Équipe A' end),
+              case when v_grand then '50000000-0000-0000-0000-000000000002'::uuid else '50000000-0000-0000-0000-000000000001'::uuid end);
+      insert into public.fiche_operateurs (fiche_id, operateur_id)
+      select v_fiche, o.id from public.operateurs o join public.equipes e on e.id = o.equipe_id
+      where e.libelle = case when v_grand then 'Équipe B' else 'Équipe A' end;
+
+      -- Papier consommé et variations réalistes (rendement 90 à 101 % du théorique, rebuts 2 à 7 %).
+      v_kg_jour := 380 + ((j * 71 + v_poste.ordre * 37) % 140);
+      v_facteur := 0.90 + ((j * 13 + v_poste.ordre * 7) % 12) / 100.0;
+      v_besoin := v_kg_jour;
+      for v_lot in
+        select l.id, sl.quantite from public.lots l join public.stocks_lots sl on sl.lot_id = l.id
+        where sl.quantite > 0 and l.date_reception <= v_date and l.statut = 'disponible'
+        order by l.date_reception, l.numero_lot
+      loop
+        exit when v_besoin <= 0;
+        v_pris := least(v_besoin, v_lot.quantite);
+        insert into public.fiche_consommations (fiche_id, article_id, lot_id, quantite)
+        values (v_fiche, '40000000-0000-0000-0000-000000000001', v_lot.id, v_pris);
+        v_besoin := v_besoin - v_pris;
+      end loop;
+      v_kg_jour := v_kg_jour - v_besoin;
+
+      if v_grand then
+        v_paq_grand := floor(v_kg_jour / 1000 * 6508 * v_facteur / 30) * 30;
+        insert into public.fiche_productions (fiche_id, conditionnement_id, paquets, rebuts_kg)
+        values (v_fiche, (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000002' and paquets_par_colis = 30),
+                v_paq_grand, round(v_kg_jour * (0.02 + ((j * 3) % 6) / 100.0), 1));
+        insert into public.fiche_consommations (fiche_id, article_id, quantite) values
+          (v_fiche, '40000000-0000-0000-0000-000000000003', round(v_paq_grand * 0.0028, 1)),
+          (v_fiche, '40000000-0000-0000-0000-000000000004', v_paq_grand / 30);
+      else
+        v_paq_petit := floor(v_kg_jour / 1000 * 10175 * v_facteur / 50) * 50;
+        insert into public.fiche_productions (fiche_id, conditionnement_id, paquets, rebuts_kg)
+        values (v_fiche, (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50),
+                v_paq_petit, round(v_kg_jour * (0.02 + ((j * 5) % 6) / 100.0), 1));
+        insert into public.fiche_consommations (fiche_id, article_id, quantite) values
+          (v_fiche, '40000000-0000-0000-0000-000000000002', round(v_paq_petit * 0.0021, 1)),
+          (v_fiche, '40000000-0000-0000-0000-000000000004', v_paq_petit / 50);
+      end if;
+
+      -- Arrêts : pause de 30 min, et des pannes / coupures certains jours.
+      insert into public.fiche_arrets (fiche_id, cause_id, duree_min) values (v_fiche, (select id from public.causes_arret where libelle = 'Pause'), 30);
+      if (j + v_poste.ordre) % 3 = 0 then
+        insert into public.fiche_arrets (fiche_id, cause_id, duree_min, commentaire)
+        values (v_fiche, (select id from public.causes_arret where libelle = 'Coupure de courant / groupe électrogène'), 15 + (j * 7) % 40, 'Démarrage du groupe');
+      end if;
+      if (j * 2 + v_poste.ordre) % 5 = 0 then
+        insert into public.fiche_arrets (fiche_id, cause_id, duree_min)
+        values (v_fiche, (select id from public.causes_arret where libelle in ('Panne mécanique', 'Bourrage', 'Manque de bobine') order by libelle offset (j % 3) limit 1), 10 + (j * 11) % 50);
+      end if;
+
+      -- Toutes les fiches sont validées, sauf celle de l'après-midi d'aujourd'hui (brouillon en cours de saisie).
+      if not (j = 0 and v_grand) then
+        perform public.valider_fiche_production(v_fiche);
+      end if;
     end loop;
-    -- 70 % du papier en Petit, 30 % en Grand ; rendement réel ≈ 96 % du théorique ; colis complets.
-    v_paq_petit := floor((v_kg_jour - v_besoin) * 0.7 / 1000 * 10175 * 0.96 / 50) * 50;
-    v_paq_grand := floor((v_kg_jour - v_besoin) * 0.3 / 1000 * 6508 * 0.96 / 30) * 30;
-    insert into public.mouvements_stock (date_operation, type, article_id, quantite, unite, motif) values
-      (v_date, 'production', art_petit, v_paq_petit, 'paquet', 'Production du jour'),
-      (v_date, 'production', art_grand, v_paq_grand, 'paquet', 'Production du jour'),
-      (v_date, 'consommation', '40000000-0000-0000-0000-000000000002', -round(v_paq_petit * 0.0021, 1), 'kg', 'Production du jour'),
-      (v_date, 'consommation', '40000000-0000-0000-0000-000000000003', -round(v_paq_grand * 0.0028, 1), 'kg', 'Production du jour'),
-      (v_date, 'consommation', '40000000-0000-0000-0000-000000000004', -(v_paq_petit / 50 + v_paq_grand / 30), 'unite', 'Production du jour');
-    -- Ventes : environ 85 % de la production, en colis complets.
-    insert into public.mouvements_stock (date_operation, type, article_id, quantite, unite, motif) values
-      (v_date, 'vente', art_petit, -(floor(v_paq_petit * 0.85 / 50) * 50), 'paquet', 'Livraisons clients (démo)'),
-      (v_date, 'vente', art_grand, -(floor(v_paq_grand * 0.85 / 30) * 30), 'paquet', 'Livraisons clients (démo)');
+
+    -- Ventes du jour : environ 85 % de la production validée, en colis complets.
+    insert into public.mouvements_stock (date_operation, type, article_id, quantite, unite, motif)
+    select v_date, 'vente', a.id, -(floor(sum(fp.paquets) * 0.85 / c.paquets_par_colis) * c.paquets_par_colis), 'paquet', 'Livraisons clients (démo)'
+    from public.fiche_productions fp
+    join public.fiches_production f on f.id = fp.fiche_id and f.date_production = v_date and f.statut = 'validee'
+    join public.conditionnements c on c.id = fp.conditionnement_id
+    join public.articles a on a.conditionnement_id = c.id
+    group by a.id, c.paquets_par_colis
+    having floor(sum(fp.paquets) * 0.85 / c.paquets_par_colis) > 0;
   end loop;
 end $$;

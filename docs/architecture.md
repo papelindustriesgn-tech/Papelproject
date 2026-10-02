@@ -93,7 +93,7 @@ Le middleware redirige chaque utilisateur vers son espace ; un utilisateur n'a a
 - Vue `stocks_courants` (article × lot × entrepôt) et vue `couverture_stock` (jours de couverture)
 - `inventaires` / `inventaire_lignes` (théorique, compté, écart → ajustement auto)
 
-### 4.4 Production
+### 4.4 Production (✅ livré — migration `20261003000400_production.sql` ; listes modifiables postes/équipes/opérateurs/lignes/cadences/causes/campagnes)
 - `equipements` (ligne : V-fold, gaufrage, scie à bûches, flow-pack, bundling, compresseur, groupe ; cadence nominale paquets/min)
 - `campagnes` · `ordres_fabrication` (produit, quantité visée en colis, dates, statut)
 - `postes` (matin | après-midi | nuit, heures début/fin)
@@ -141,7 +141,7 @@ Chaque étape se termine par un **point** (démo, tests, CLAUDE.md à jour) avan
 **Phase 1 — MVP**
 1. ✅ **Fondations** : projet Next.js, Supabase local, auth, rôles, RLS de base, audit, paramètres + taux de change, module `unites` et calculs métier testés, squelette des espaces, seed.
 2. ✅ **Stocks** : articles, lots bobines, mouvements, inventaires, seuils, jours de couverture.
-3. **Production** : OF, fiches de poste, validation → mouvements de stock, KPI et alertes rendement/perte/arrêts, TRS.
+3. ✅ **Production** : OF, fiches de poste, validation → mouvements de stock, KPI et alertes rendement/perte/arrêts, TRS.
 4. **Ventes simples** : clients, grille de prix historisée, commande → livraison → facture → paiement, dotation sur encaissé.
 5. **PWA terrain** : PVA + GPS + photos, visites avec check-in, commandes et encaissements hors ligne, synchro ; vue responsable commercial avec carte.
 6. **Tableau de bord Direction** : filtres de période + comparaison période précédente, alertes du jour, export PDF.

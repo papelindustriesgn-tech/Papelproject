@@ -23,7 +23,7 @@ export function validerSaisie(
       if (c.requis) erreurs[c.nom] = `${c.libelle} : champ obligatoire.`;
       // Texte vide → chaîne vide ; nombre vide → non envoyé (la base applique sa valeur par défaut).
       else if (c.type === "texte" || c.type === "texte_long") donnees[c.nom] = "";
-      else if (c.type !== "entier") donnees[c.nom] = null;
+      else if (c.type !== "entier" && c.type !== "decimal") donnees[c.nom] = null;
       continue;
     }
     switch (c.type) {
@@ -33,6 +33,20 @@ export function validerSaisie(
         else donnees[c.nom] = n;
         break;
       }
+      case "decimal": {
+        const n = lireNombre(brut);
+        if (n === null) erreurs[c.nom] = `${c.libelle} : nombre attendu.`;
+        else donnees[c.nom] = n;
+        break;
+      }
+      case "date":
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(brut)) erreurs[c.nom] = `${c.libelle} : date invalide.`;
+        else donnees[c.nom] = brut;
+        break;
+      case "heure":
+        if (!/^([01]\d|2[0-3]):[0-5]\d(:\d\d)?$/.test(brut)) erreurs[c.nom] = `${c.libelle} : heure invalide (ex. 06:00).`;
+        else donnees[c.nom] = brut.slice(0, 5);
+        break;
       case "choix":
         if (!c.options?.some((o) => o.valeur === brut)) erreurs[c.nom] = `${c.libelle} : choix invalide.`;
         else donnees[c.nom] = brut;

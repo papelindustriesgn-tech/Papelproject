@@ -31,9 +31,10 @@ function SaisieChamp({ c, valeur, erreur, options, desactive }: { c: ChampRefere
         <input
           id={id}
           name={c.nom}
-          defaultValue={valeur ?? ""}
+          defaultValue={c.type === "heure" ? (valeur ?? "").slice(0, 5) : c.type === "decimal" ? (valeur ?? "").replace(".", ",") : (valeur ?? "")}
           disabled={desactive}
-          inputMode={c.type === "entier" ? "numeric" : undefined}
+          inputMode={c.type === "entier" ? "numeric" : c.type === "decimal" ? "decimal" : undefined}
+          type={c.type === "date" ? "date" : c.type === "heure" ? "time" : "text"}
           className={base}
           aria-invalid={erreur ? true : undefined}
         />

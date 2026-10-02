@@ -105,3 +105,30 @@ insert into public.categories_articles (famille, libelle) values
   ('emballage', 'Encres'),
   ('piece_detachee', 'Pièces mécaniques'),
   ('piece_detachee', 'Pièces électriques');
+
+-- -----------------------------------------------------------------------------
+-- Production : postes, équipes, ligne, causes d'arrêt (modifiables dans Production → Listes de référence).
+-- Cadences nominales : à saisir par l'équipe (nécessaires au calcul du TRS).
+-- -----------------------------------------------------------------------------
+insert into public.postes (libelle, heure_debut, heure_fin, ordre) values
+  ('Matin', '06:00', '14:00', 1),
+  ('Après-midi', '14:00', '22:00', 2),
+  ('Nuit', '22:00', '06:00', 3);
+
+insert into public.equipes (libelle) values ('Équipe A'), ('Équipe B'), ('Équipe C');
+
+insert into public.lignes_production (libelle) values ('Ligne 1');
+
+insert into public.causes_arret (libelle, type_arret) values
+  ('Panne mécanique', 'non_planifie'),
+  ('Panne électrique', 'non_planifie'),
+  ('Coupure de courant / groupe électrogène', 'non_planifie'),
+  ('Manque de bobine', 'non_planifie'),
+  ('Manque d''emballage', 'non_planifie'),
+  ('Bourrage', 'non_planifie'),
+  ('Changement de format / réglage', 'non_planifie'),
+  ('Problème qualité', 'non_planifie'),
+  ('Absence de personnel', 'non_planifie'),
+  ('Pause', 'planifie'),
+  ('Nettoyage planifié', 'planifie'),
+  ('Maintenance préventive', 'planifie');

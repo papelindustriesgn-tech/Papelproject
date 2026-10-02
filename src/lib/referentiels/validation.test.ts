@@ -28,6 +28,15 @@ describe("validation des listes de référence", () => {
     const communes = referentiel("communes")!;
     expect("erreurs" in validerSaisie(communes, { ville_id: "'; drop table", nom: "X" }, true)).toBe(true);
   });
+  it("décimaux, dates et heures", () => {
+    const def = { ...referentiel("villes")!, champs: [
+      { nom: "d", libelle: "D", type: "decimal" as const },
+      { nom: "j", libelle: "J", type: "date" as const },
+      { nom: "h", libelle: "H", type: "heure" as const },
+    ] };
+    expect(validerSaisie(def, { d: "12,5", j: "2026-10-02", h: "06:00:00" }, true)).toEqual({ donnees: { d: 12.5, j: "2026-10-02", h: "06:00" } });
+    expect("erreurs" in validerSaisie(def, { d: "x", j: "02/10/2026", h: "25:00" }, true)).toBe(true);
+  });
   it("codes de listes uniques", () => {
     expect(new Set(REFERENTIELS.map((r) => r.code)).size).toBe(REFERENTIELS.length);
   });
