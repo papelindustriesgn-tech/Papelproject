@@ -16,6 +16,8 @@ achat des matières premières → stock → production → distribution → ven
 | Phase 1 – étape 4 | Ventes : clients, devis → commande → livraison → facture TTC → paiement, dotation sur l'encaissé, avoirs, impayés et relances, documents imprimables, tableau de bord (CA, DSO…) | ✅ Livrée |
 | Phase 1 – étape 5 | Application terrain installable et hors ligne (PVA, check-in GPS, photos, prix et concurrence, devis et factures numérotés hors ligne, synchronisation) ; supervision du responsable commercial (carte, visites, tournées, objectifs) | ✅ Livrée |
 | Phase 1 – étape 6 | Tableau de bord Direction (5 domaines, comparaison, alertes du jour, carte, PDF, rapport hebdomadaire) | ✅ Livrée |
+| Phase 2 – étape 1 | Achats : demandes d'achat, bons de commande (USD au taux du jour), conteneurs (suivi prévu/réel), frais d'approche, coût de revient complet au kg, réception des bobines par conteneur, transit, documents joints | ✅ Livrée |
+| Phase 2 – étape 2 | Logistique : véhicules, chauffeurs, tournées, chargement, preuve de livraison (signature, photo, GPS), retours | 🔄 En cours |
 
 ## Installation en local
 

@@ -189,6 +189,21 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
   taux de rupture terrain > 15 %. Triées : critiques d'abord.
 - Export PDF = impression du navigateur (CSS `@media print`, cartes masquées) ; rapport hebdomadaire `/direction/rapport`.
 
+## 6 septies. Achats et conteneurs (phase 2 – étape 1)
+
+- Listes modifiables : fournisseurs (devise habituelle), **types de frais d'approche** (fret, transit, douane, transport…), **types de documents**.
+- **Demande d'achat** (`DA-AAAA-NNNNN`) : émise par le magasin, la production, la maintenance ou les achats (`/<espace>/demandes`,
+  composant `MesDemandes`) ; le demandeur voit les siennes ; les achats approuvent ou refusent, puis la rattachent à un bon de commande.
+- **Bon de commande** : brouillon modifiable → `envoyer_bc` (numéro `BC-`, **taux USD du jour figé**, demandes liées « commandée »).
+  Lignes saisies en tonnes possible pour un article au kg (conversion `unites.ts`) ; montant de ligne calculé par la base (USD en centimes).
+- **Conteneur** : dates prévues et réelles (embarquement, port, dédouanement, livraison) ; **statut déduit des dates réelles**.
+  Frais d'approche en GNF ou USD (taux à la date du frais, `montant_gnf` calculé par la base).
+- **Coût de revient** (vue `couts_conteneurs`, fonctions pures `src/lib/metier/achats.ts`) = (marchandise au prorata du poids + frais)
+  ÷ **poids net déclaré** (packing list ; stable pendant une réception partielle) ; comparé au coût prévu (frais estimés du BC).
+- Réception : `receptionner_bobine_conteneur` (Magasin → Bobines, choix du conteneur) → lot au coût de revient complet, fournisseur du BC.
+- Transit (vue `transit`) : kg des conteneurs non livrés, affiché dans les tableaux de bord Magasin et Direction.
+- Documents (facture, BL, packing list…) : Storage privé `documents-achats/<objet>/<id>/…`, lien de téléchargement signé 5 min.
+
 ## 7. Seuils d'alerte (paramétrables)
 
 - Production : rendement < **95 %** du théorique ; perte > **5 %** ; arrêt > **30 min**.

@@ -32,7 +32,7 @@ test.describe("achats", () => {
     await expect(ligne).toContainText("Approuvée");
 
     await achats.goto("/achats/commandes/nouveau");
-    await achats.getByLabel("Fournisseur").selectOption({ label: "Fournisseur pâte A (démo)" });
+    await achats.getByLabel("Fournisseur").selectOption({ label: "Fournisseur pâte A (démo) (USD)" });
     await achats.getByLabel("Frais d'approche estimés (GNF)").fill("10 000 000");
     await achats.getByRole("checkbox", { name: new RegExp(numero) }).check();
     await achats.getByRole("button", { name: "Créer et ajouter les lignes" }).click();
@@ -43,10 +43,10 @@ test.describe("achats", () => {
     await achats.getByLabel("Prix (USD / t)").fill("950");
     await achats.getByRole("button", { name: "Ajouter", exact: true }).click();
     await expect(achats.getByText("Ligne ajoutée.")).toBeVisible();
-    await expect(achats.getByText("20 000 kg").first()).toBeVisible();
+    await expect(achats.getByText("Total : 19 000,00 USD")).toBeVisible();
 
     await achats.getByRole("button", { name: "Valider et envoyer au fournisseur" }).click();
-    await expect(achats.getByText(/Bon de commande BC-\d+ envoyé/)).toBeVisible();
+    await expect(achats.getByText(/Bon de commande BC-[\d-]+ envoyé/)).toBeVisible();
 
     // 3. Conteneur : déclaration, frais d'approche, suivi jusqu'à la livraison.
     await achats.getByLabel("Référence du conteneur").fill(reference);
