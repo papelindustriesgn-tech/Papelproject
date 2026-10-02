@@ -10,7 +10,7 @@ import { clientServeur } from "@/lib/supabase/serveur";
 
 export interface Alerte {
   gravite: "critique" | "importante";
-  domaine: "Stock" | "Production" | "Ventes" | "Distribution" | "Logistique";
+  domaine: "Stock" | "Production" | "Ventes" | "Distribution" | "Logistique" | "Qualité" | "Maintenance";
   message: string;
   lien: string;
 }
@@ -41,7 +41,7 @@ async function coutDesVentes(du: string, au: string): Promise<number> {
 
 export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
   const supabase = await clientServeur();
-  const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, alertesStock, factures, distribution, distributionPrec, pva, transit, enRetard] = await Promise.all([
+  const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, alertesStock, factures, distribution, distributionPrec, pva, transit, enRetard, ncCritiques, piecesCritiques] = await Promise.all([
     chargerIndicateursVentes(p.du, p.au, p.nbJours),
     chargerIndicateursVentes(p.precedente.du, p.precedente.au, p.nbJours),
     chargerFiches({ du: p.du, au: p.au }),
@@ -57,6 +57,8 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
     supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
     // Bons de livraison validés depuis plus de 2 jours et toujours pas remis au client.
     supabase.from("livraisons").select("id", { count: "exact", head: true }).eq("statut", "validee").eq("statut_remise", "a_livrer").lt("date_livraison", hier(hier(p.au))),
+    supabase.from("non_conformites").select("id, numero, description").eq("gravite", "critique").neq("statut", "cloturee"),
+    supabase.from("pieces_critiques_alerte").select("article_id, libelle, equipements"),
   ]);
 
   // Production : colis produits par produit et rendement par jour.
@@ -92,6 +94,10 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
     alertes.push({ gravite: "importante", domaine: "Distribution", message: `Taux de rupture chez les points de vente : ${Math.round((distribution.tauxRupture ?? 0) * 100)} %`, lien: "/commercial" });
   if ((enRetard.count ?? 0) > 0)
     alertes.push({ gravite: "importante", domaine: "Logistique", message: `${enRetard.count} bon(s) de livraison validé(s) depuis plus de 2 jours et non remis au client`, lien: "/logistique" });
+  for (const n of ncCritiques.data ?? [])
+    alertes.push({ gravite: "critique", domaine: "Qualité", message: `Non-conformité critique ${n.numero} : ${n.description}`, lien: `/qualite/non-conformites/${n.id}` });
+  for (const pc of piecesCritiques.data ?? [])
+    alertes.push({ gravite: "importante", domaine: "Maintenance", message: `Pièce critique sous le seuil : ${pc.libelle} (${pc.equipements})`, lien: "/maintenance" });
   alertes.sort((a, b) => (a.gravite === b.gravite ? 0 : a.gravite === "critique" ? -1 : 1));
 
   const m = margeBrute(ventes.caHtGnf, cout);

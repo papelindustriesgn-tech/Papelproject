@@ -422,6 +422,12 @@ isOneToOne: false
       referencedRelation: "etat_stock"
       referencedColumns: ["article_id"]
     },{
+      foreignKeyName: "demandes_achat_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "pieces_critiques_alerte"
+      referencedColumns: ["article_id"]
+    },{
       foreignKeyName: "demandes_achat_demandeur_id_fkey"
       columns: ["demandeur_id"]
 isOneToOne: false
@@ -540,6 +546,68 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"equipement_pieces": {
+                  Row: {
+                    "article_id": string,"critique": boolean,"equipement_id": string,"id": string
+                  }
+                  Insert: {
+                    "article_id": string,"critique"?: boolean,"equipement_id": string,"id"?: string
+                  }
+                  Update: {
+                    "article_id"?: string,"critique"?: boolean,"equipement_id"?: string,"id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "equipement_pieces_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "alertes_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "equipement_pieces_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "equipement_pieces_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "equipement_pieces_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "pieces_critiques_alerte"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "equipement_pieces_equipement_id_fkey"
+      columns: ["equipement_id"]
+isOneToOne: false
+      referencedRelation: "equipements"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"equipements": {
+                  Row: {
+                    "actif": boolean,"categorie": string,"code": string,"created_at": string,"criticite": string,"date_mise_service": string | null,"id": string,"libelle": string,"ligne_id": string | null,"marque_modele": string,"notes": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"categorie"?: string,"code": string,"created_at"?: string,"criticite"?: string,"date_mise_service"?: string | null,"id"?: string,"libelle": string,"ligne_id"?: string | null,"marque_modele"?: string,"notes"?: string
+                  }
+                  Update: {
+                    "actif"?: boolean,"categorie"?: string,"code"?: string,"created_at"?: string,"criticite"?: string,"date_mise_service"?: string | null,"id"?: string,"libelle"?: string,"ligne_id"?: string | null,"marque_modele"?: string,"notes"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "equipements_ligne_id_fkey"
+      columns: ["ligne_id"]
+isOneToOne: false
+      referencedRelation: "lignes_production"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"equipes": {
                   Row: {
                     "actif": boolean,"created_at": string,"id": string,"libelle": string
@@ -618,6 +686,12 @@ isOneToOne: false
       columns: ["article_id"]
 isOneToOne: false
       referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "fiche_consommations_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "pieces_critiques_alerte"
       referencedColumns: ["article_id"]
     },{
       foreignKeyName: "fiche_consommations_fiche_id_fkey"
@@ -879,6 +953,92 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"intervention_pieces": {
+                  Row: {
+                    "article_id": string,"id": string,"intervention_id": string,"quantite": number
+                  }
+                  Insert: {
+                    "article_id": string,"id"?: string,"intervention_id": string,"quantite": number
+                  }
+                  Update: {
+                    "article_id"?: string,"id"?: string,"intervention_id"?: string,"quantite"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "intervention_pieces_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "alertes_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "intervention_pieces_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "intervention_pieces_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "intervention_pieces_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "pieces_critiques_alerte"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "intervention_pieces_intervention_id_fkey"
+      columns: ["intervention_id"]
+isOneToOne: false
+      referencedRelation: "interventions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "intervention_pieces_intervention_id_fkey"
+      columns: ["intervention_id"]
+isOneToOne: false
+      referencedRelation: "interventions_etat"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"interventions": {
+                  Row: {
+                    "arret_machine": boolean,"cause": string,"cout_externe_gnf": number,"cout_main_oeuvre_gnf": number,"created_at": string,"debut": string | null,"description": string,"equipement_id": string,"fin": string | null,"id": string,"intervenant": string,"numero": string | null,"plan_id": string | null,"priorite": string,"signale_le": string,"signale_par": string | null,"statut": string,"travaux": string,"type_intervention": string
+                  }
+                  Insert: {
+                    "arret_machine"?: boolean,"cause"?: string,"cout_externe_gnf"?: number,"cout_main_oeuvre_gnf"?: number,"created_at"?: string,"debut"?: string | null,"description": string,"equipement_id": string,"fin"?: string | null,"id"?: string,"intervenant"?: string,"numero"?: string | null,"plan_id"?: string | null,"priorite"?: string,"signale_le"?: string,"signale_par"?: string | null,"statut"?: string,"travaux"?: string,"type_intervention": string
+                  }
+                  Update: {
+                    "arret_machine"?: boolean,"cause"?: string,"cout_externe_gnf"?: number,"cout_main_oeuvre_gnf"?: number,"created_at"?: string,"debut"?: string | null,"description"?: string,"equipement_id"?: string,"fin"?: string | null,"id"?: string,"intervenant"?: string,"numero"?: string | null,"plan_id"?: string | null,"priorite"?: string,"signale_le"?: string,"signale_par"?: string | null,"statut"?: string,"travaux"?: string,"type_intervention"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "interventions_equipement_id_fkey"
+      columns: ["equipement_id"]
+isOneToOne: false
+      referencedRelation: "equipements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "interventions_plan_id_fkey"
+      columns: ["plan_id"]
+isOneToOne: false
+      referencedRelation: "echeances_preventif"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "interventions_plan_id_fkey"
+      columns: ["plan_id"]
+isOneToOne: false
+      referencedRelation: "plans_preventifs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "interventions_signale_par_fkey"
+      columns: ["signale_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"inventaire_lignes": {
                   Row: {
                     "article_id": string,"ecart": number | null,"id": string,"inventaire_id": string,"lot_id": string | null,"quantite_comptee": number | null,"quantite_theorique": number
@@ -907,6 +1067,12 @@ isOneToOne: false
       columns: ["article_id"]
 isOneToOne: false
       referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "inventaire_lignes_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "pieces_critiques_alerte"
       referencedColumns: ["article_id"]
     },{
       foreignKeyName: "inventaire_lignes_inventaire_id_fkey"
@@ -994,6 +1160,12 @@ isOneToOne: false
       columns: ["article_id"]
 isOneToOne: false
       referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "lignes_bc_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "pieces_critiques_alerte"
       referencedColumns: ["article_id"]
     },{
       foreignKeyName: "lignes_bc_bc_id_fkey"
@@ -1169,6 +1341,12 @@ isOneToOne: false
       referencedRelation: "etat_stock"
       referencedColumns: ["article_id"]
     },{
+      foreignKeyName: "lots_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "pieces_critiques_alerte"
+      referencedColumns: ["article_id"]
+    },{
       foreignKeyName: "lots_conteneur_id_fkey"
       columns: ["conteneur_id"]
 isOneToOne: false
@@ -1273,6 +1451,12 @@ isOneToOne: false
       columns: ["article_id"]
 isOneToOne: false
       referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "mouvements_stock_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "pieces_critiques_alerte"
       referencedColumns: ["article_id"]
     },{
       foreignKeyName: "mouvements_stock_auteur_id_fkey"
@@ -1590,6 +1774,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"plans_preventifs": {
+                  Row: {
+                    "actif": boolean,"consignes": string,"created_at": string,"derniere_realisation": string | null,"duree_estimee_min": number | null,"equipement_id": string,"frequence_jours": number,"id": string,"libelle": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"consignes"?: string,"created_at"?: string,"derniere_realisation"?: string | null,"duree_estimee_min"?: number | null,"equipement_id": string,"frequence_jours": number,"id"?: string,"libelle": string
+                  }
+                  Update: {
+                    "actif"?: boolean,"consignes"?: string,"created_at"?: string,"derniere_realisation"?: string | null,"duree_estimee_min"?: number | null,"equipement_id"?: string,"frequence_jours"?: number,"id"?: string,"libelle"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "plans_preventifs_equipement_id_fkey"
+      columns: ["equipement_id"]
+isOneToOne: false
+      referencedRelation: "equipements"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"postes": {
                   Row: {
                     "actif": boolean,"created_at": string,"heure_debut": string,"heure_fin": string,"id": string,"libelle": string,"ordre": number
@@ -1794,6 +1997,12 @@ isOneToOne: true
       columns: ["article_id"]
 isOneToOne: true
       referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "stocks_articles_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: true
+      referencedRelation: "pieces_critiques_alerte"
       referencedColumns: ["article_id"]
     }
                   ]
@@ -2257,6 +2466,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"echeances_preventif": {
+                  Row: {
+                    "actif": boolean | null,"consignes": string | null,"created_at": string | null,"criticite": string | null,"derniere_realisation": string | null,"duree_estimee_min": number | null,"equipement_code": string | null,"equipement_id": string | null,"equipement_libelle": string | null,"frequence_jours": number | null,"id": string | null,"jours_restants": number | null,"libelle": string | null,"prochaine_echeance": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "plans_preventifs_equipement_id_fkey"
+      columns: ["equipement_id"]
+isOneToOne: false
+      referencedRelation: "equipements"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"etat_lots": {
                   Row: {
                     "article_code": string | null,"article_id": string | null,"article_libelle": string | null,"cout_kg_gnf": number | null,"created_at": string | null,"date_reception": string | null,"diametre_mm": number | null,"fournisseur_id": string | null,"fournisseur_nom": string | null,"grammage_g_m2": number | null,"id": string | null,"largeur_mm": number | null,"notes": string | null,"numero_lot": string | null,"plis": number | null,"poids_net_kg": number | null,"poids_restant_kg": number | null,"statut": Database["public"]['Enums']["statut_lot"] | null,"updated_at": string | null
@@ -2279,6 +2501,12 @@ isOneToOne: false
       columns: ["article_id"]
 isOneToOne: false
       referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "lots_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "pieces_critiques_alerte"
       referencedColumns: ["article_id"]
     },{
       foreignKeyName: "lots_fournisseur_id_fkey"
@@ -2393,6 +2621,43 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"interventions_etat": {
+                  Row: {
+                    "arret_machine": boolean | null,"cause": string | null,"cout_externe_gnf": number | null,"cout_main_oeuvre_gnf": number | null,"cout_pieces_gnf": number | null,"created_at": string | null,"criticite": string | null,"debut": string | null,"description": string | null,"duree_min": number | null,"equipement_code": string | null,"equipement_id": string | null,"equipement_libelle": string | null,"fin": string | null,"id": string | null,"intervenant": string | null,"ligne_id": string | null,"numero": string | null,"plan_id": string | null,"priorite": string | null,"signale_le": string | null,"signale_par": string | null,"statut": string | null,"travaux": string | null,"type_intervention": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "equipements_ligne_id_fkey"
+      columns: ["ligne_id"]
+isOneToOne: false
+      referencedRelation: "lignes_production"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "interventions_equipement_id_fkey"
+      columns: ["equipement_id"]
+isOneToOne: false
+      referencedRelation: "equipements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "interventions_plan_id_fkey"
+      columns: ["plan_id"]
+isOneToOne: false
+      referencedRelation: "echeances_preventif"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "interventions_plan_id_fkey"
+      columns: ["plan_id"]
+isOneToOne: false
+      referencedRelation: "plans_preventifs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "interventions_signale_par_fkey"
+      columns: ["signale_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"of_avancement": {
                   Row: {
                     "campagne_id": string | null,"campagne_libelle": string | null,"conditionnement_id": string | null,"conditionnement_libelle": string | null,"created_at": string | null,"created_by": string | null,"date_debut_prevue": string | null,"date_fin_prevue": string | null,"id": string | null,"ligne_id": string | null,"ligne_libelle": string | null,"notes": string | null,"numero": string | null,"paquets_par_colis": number | null,"paquets_produits": number | null,"produit_id": string | null,"produit_libelle": string | null,"quantite_colis": number | null,"statut": Database["public"]['Enums']["statut_of"] | null,"updated_at": string | null
@@ -2429,6 +2694,13 @@ isOneToOne: false
       referencedRelation: "lignes_production"
       referencedColumns: ["id"]
     }
+                  ]
+                },"pieces_critiques_alerte": {
+                  Row: {
+                    "article_id": string | null,"code": string | null,"equipements": string | null,"libelle": string | null,"quantite": number | null,"seuil_alerte": number | null,"unite": Database["public"]['Enums']["unite_stock"] | null
+                  }
+                  Relationships: [
+                    
                   ]
                 },"prix_actuels": {
                   Row: {
@@ -2666,6 +2938,9 @@ isOneToOne: false
 "exiger_logistique":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"generer_preventifs":
+{ Args: { "p_horizon_jours"?: number }; Returns: number
+                           },
 "hook_jeton_acces":
 { Args: { "event": Json }; Returns: Json
                            },
@@ -2710,6 +2985,9 @@ isOneToOne: false
                            },
 "taux_a_la_date":
 { Args: { "p_date": string,"p_devise": string }; Returns: number
+                           },
+"terminer_intervention":
+{ Args: { "p_intervention": string }; Returns: undefined
                            },
 "terminer_tournee":
 { Args: { "p_km": number,"p_tournee": string }; Returns: undefined

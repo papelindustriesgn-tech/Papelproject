@@ -4,7 +4,7 @@ ERP de **Papel Industries**, fabricant guinéen de mouchoirs en papier (usine de
 Chaîne couverte : achat MP → stock → production → stock produits finis → distribution → vente → encaissement → pilotage.
 
 > Ce fichier est la référence des règles métier et des conventions de code. Le tenir à jour à chaque phase.
-> État : **Phase 1 (MVP) livrée** (bilan : `docs/bilan-phase-1.md`). En cours : **phase 2** (achats, logistique, qualité, maintenance). Plan : `docs/architecture.md`.
+> État : **Phases 1 et 2 livrées** (bilans : `docs/bilan-phase-1.md`, `docs/bilan-phase-2.md`). En cours : **phase 3** (finance). Plan : `docs/architecture.md`.
 
 @AGENTS.md
 
@@ -238,6 +238,20 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
   (`tracer_fiche`) ; lot PF → bobines consommées + livraisons. Côté clients c'est une **estimation** (même conditionnement livré
   dans la fenêtre), car les ventes ne suivent pas les numéros de lot.
 - Indicateurs : conformité réception / production, NC ouvertes (critiques), délai moyen de clôture, actions en retard, bobines bloquées.
+
+## 6 decies. Maintenance (phase 2 – étape 4)
+
+- Équipements (liste modifiable, criticité A/B/C, ligne), pièces de rechange = **articles « pièce détachée »** du stock, associées
+  à un équipement (`equipement_pieces`, drapeau critique → vue `pieces_critiques_alerte`).
+- **Ordre de travail** (`interventions`, `OT-AAAA-NNNNN`) : curatif (panne), préventif, amélioration. La production signale une panne
+  (`/production/pannes`, composant `SignalerPanne`) ; seule la maintenance la traite. `terminer_intervention` exige début, fin,
+  travaux (et cause si curatif), sort les pièces du stock (mouvement « consommation », refus si stock insuffisant) et fait avancer
+  le plan préventif. OT terminé ou annulé = figé.
+- **Préventif** : `plans_preventifs` (fréquence en jours), vue `echeances_preventif` ; `generer_preventifs(horizon)` crée les OT
+  à échéance, sans doublon.
+- Fiabilité (`src/lib/metier/maintenance.ts`, testé) : temps requis = jours × `maintenance_heures_ouverture_jour` (16 h) ;
+  panne = curative avec arrêt machine ; MTBF = (requis − arrêts) ÷ pannes ; MTTR = arrêts ÷ pannes ; disponibilité = (requis − arrêts) ÷ requis.
+- Saisie date + heure : champs `datetime-local` en heure de Conakry (= UTC) → `lireDateHeure` / `versDateHeureLocale`.
 
 ## 7. Seuils d'alerte (paramétrables)
 

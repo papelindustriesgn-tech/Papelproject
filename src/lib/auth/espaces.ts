@@ -54,7 +54,7 @@ export const ESPACES: Espace[] = [
   { code: "achats", libelle: "Achats", description: "Fournisseurs, commandes, conteneurs", roles: ["achats"], disponibilite: "Phase 2 – étape 1" },
   { code: "logistique", libelle: "Logistique", description: "Tournées, véhicules, preuves de livraison", roles: ["logistique"], disponibilite: "Phase 2 – étape 2" },
   { code: "qualite", libelle: "Qualité", description: "Contrôles, non-conformités, traçabilité", roles: ["qualite"], disponibilite: "Phase 2 – étape 3" },
-  { code: "maintenance", libelle: "Maintenance", description: "Équipements, préventif, pannes", roles: ["maintenance"], disponibilite: "Phase 2" },
+  { code: "maintenance", libelle: "Maintenance", description: "Équipements, préventif, pannes", roles: ["maintenance"], disponibilite: "Phase 2 – étape 4" },
   { code: "finance", libelle: "Finance", description: "Trésorerie, créances, dettes, résultat", roles: ["finance"], disponibilite: "Phase 3" },
   { code: "admin", libelle: "Administration", description: "Utilisateurs, paramètres, produits, journal", roles: ["admin"], disponibilite: "Disponible" },
 ];

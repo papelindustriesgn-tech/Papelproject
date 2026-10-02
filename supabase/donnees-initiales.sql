@@ -185,3 +185,8 @@ on conflict (libelle) do nothing;
 insert into public.parametres (cle, valeur, libelle, description, categorie, type_valeur, unite) values
   ('tracabilite_fenetre_jours', '30', 'Fenêtre de traçabilité', 'Un lot de produits finis est supposé livré dans les N jours suivant sa production (recherche des clients concernés)', 'qualite', 'entier', 'jours')
 on conflict (cle) do nothing;
+
+-- Maintenance : temps d'ouverture servant au calcul du MTBF et de la disponibilité.
+insert into public.parametres (cle, valeur, libelle, description, categorie, type_valeur, unite) values
+  ('maintenance_heures_ouverture_jour', '16', 'Heures d''ouverture par jour', 'Temps requis des équipements (2 postes de 8 h) pour le MTBF et la disponibilité', 'maintenance', 'nombre', 'h')
+on conflict (cle) do nothing;

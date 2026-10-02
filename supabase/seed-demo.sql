@@ -473,3 +473,71 @@ begin
          (v_nc, 'Ajouter le réglage de température à la fiche de changement de film', 'Chef de production', public.aujourdhui_conakry() - 5, public.aujourdhui_conakry() - 6, true);
   perform public.cloturer_nc(v_nc);
 end $$;
+
+-- -----------------------------------------------------------------------------
+-- Maintenance : parc de la ligne 1, pièces de rechange en stock, plans préventifs, 60 jours d'interventions.
+-- -----------------------------------------------------------------------------
+insert into public.equipements (id, code, libelle, ligne_id, categorie, criticite, marque_modele, date_mise_service) values
+  ('80000000-0000-0000-0000-000000000001', 'L1-DER', 'Dérouleur de bobines', (select id from public.lignes_production where libelle = 'Ligne 1'), 'Ligne', 'A', 'Démo', '2026-01-15'),
+  ('80000000-0000-0000-0000-000000000002', 'L1-PLI', 'Plieuse – interfolieuse', (select id from public.lignes_production where libelle = 'Ligne 1'), 'Ligne', 'A', 'Démo', '2026-01-15'),
+  ('80000000-0000-0000-0000-000000000003', 'L1-SCI', 'Scie de coupe', (select id from public.lignes_production where libelle = 'Ligne 1'), 'Ligne', 'A', 'Démo', '2026-01-15'),
+  ('80000000-0000-0000-0000-000000000004', 'L1-ENS', 'Ensacheuse flow-pack', (select id from public.lignes_production where libelle = 'Ligne 1'), 'Ligne', 'A', 'Démo', '2026-01-15'),
+  ('80000000-0000-0000-0000-000000000005', 'UT-GE', 'Groupe électrogène 250 kVA', null, 'Utilités', 'A', 'Démo', '2025-12-01'),
+  ('80000000-0000-0000-0000-000000000006', 'UT-CMP', 'Compresseur d''air', null, 'Utilités', 'B', 'Démo', '2025-12-01');
+
+insert into public.articles (id, code, libelle, famille, categorie_id, unite, suivi_par_lot, seuil_alerte)
+select v.id::uuid, v.code, v.libelle, 'piece_detachee', (select id from public.categories_articles c where c.libelle = v.categorie), 'unite', false, v.seuil
+from (values
+  ('41000000-0000-0000-0000-000000000001', 'PDR-COUR-PLI', 'Courroie de plieuse', 'Pièces mécaniques', 2),
+  ('41000000-0000-0000-0000-000000000002', 'PDR-LAME-SCI', 'Lame de scie circulaire', 'Pièces mécaniques', 2),
+  ('41000000-0000-0000-0000-000000000003', 'PDR-RES-SOUD', 'Résistance de soudure ensacheuse', 'Pièces électriques', 3),
+  ('41000000-0000-0000-0000-000000000004', 'PDR-ROUL-6205', 'Roulement 6205', 'Pièces mécaniques', 4),
+  ('41000000-0000-0000-0000-000000000005', 'PDR-FILT-GE', 'Filtre à huile groupe électrogène', 'Pièces mécaniques', 2)
+) as v(id, code, libelle, categorie, seuil);
+
+insert into public.mouvements_stock (date_operation, type, article_id, quantite, unite, cout_unitaire_gnf, motif)
+select public.aujourdhui_conakry() - 70, 'reception', v.id::uuid, v.qte, 'unite', v.cout, 'Stock initial démo'
+from (values
+  ('41000000-0000-0000-0000-000000000001', 4, 450000), ('41000000-0000-0000-0000-000000000002', 3, 1200000),
+  ('41000000-0000-0000-0000-000000000003', 6, 350000), ('41000000-0000-0000-0000-000000000004', 10, 85000),
+  ('41000000-0000-0000-0000-000000000005', 6, 120000)
+) as v(id, qte, cout);
+
+insert into public.equipement_pieces (equipement_id, article_id, critique) values
+  ('80000000-0000-0000-0000-000000000002', '41000000-0000-0000-0000-000000000001', true),
+  ('80000000-0000-0000-0000-000000000002', '41000000-0000-0000-0000-000000000004', false),
+  ('80000000-0000-0000-0000-000000000003', '41000000-0000-0000-0000-000000000002', true),
+  ('80000000-0000-0000-0000-000000000004', '41000000-0000-0000-0000-000000000003', true),
+  ('80000000-0000-0000-0000-000000000001', '41000000-0000-0000-0000-000000000004', false),
+  ('80000000-0000-0000-0000-000000000005', '41000000-0000-0000-0000-000000000005', true);
+
+insert into public.plans_preventifs (id, equipement_id, libelle, frequence_jours, duree_estimee_min, consignes, derniere_realisation) values
+  ('81000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000002', 'Graissage et contrôle des courroies', 7, 45, 'Graisse au lithium ; tension des courroies', public.aujourdhui_conakry() - 9),
+  ('81000000-0000-0000-0000-000000000002', '80000000-0000-0000-0000-000000000003', 'Affûtage / changement de lame', 30, 60, '', public.aujourdhui_conakry() - 20),
+  ('81000000-0000-0000-0000-000000000003', '80000000-0000-0000-0000-000000000005', 'Vidange et filtre à huile', 15, 90, 'Huile 15W40, 18 L', public.aujourdhui_conakry() - 14),
+  ('81000000-0000-0000-0000-000000000004', '80000000-0000-0000-0000-000000000004', 'Nettoyage des mâchoires de soudure', 7, 30, '', public.aujourdhui_conakry() - 3);
+
+do $$
+declare
+  v_i uuid;
+  j integer;
+  v_debut timestamptz;
+begin
+  perform set_config('request.jwt.claims', json_build_object('sub', '20000000-0000-0000-0000-000000000006', 'role', 'authenticated')::text, true);
+  -- Pannes (curatives, machine arrêtée) réparties sur 60 jours.
+  for j in 1..9 loop
+    v_debut := ((public.aujourdhui_conakry() - j * 6) + time '09:00' + (j % 4) * interval '2 hours') at time zone 'Africa/Conakry';
+    insert into public.interventions (equipement_id, type_intervention, priorite, description, signale_le, signale_par, arret_machine, debut, fin, intervenant, cause, travaux, cout_main_oeuvre_gnf)
+    values ((array['80000000-0000-0000-0000-000000000002', '80000000-0000-0000-0000-000000000004', '80000000-0000-0000-0000-000000000003', '80000000-0000-0000-0000-000000000005'])[1 + j % 4]::uuid,
+            'curative', 'urgente', (array['Courroie cassée', 'Soudure des sachets défaillante', 'Coupe irrégulière', 'Groupe ne démarre pas'])[1 + j % 4],
+            v_debut - interval '10 minutes', '20000000-0000-0000-0000-000000000005', true, v_debut, v_debut + (25 + (j * 17) % 90) * interval '1 minute',
+            'Moussa Condé', (array['Usure', 'Résistance grillée', 'Lame émoussée', 'Batterie déchargée'])[1 + j % 4], 'Remplacement et essais', 50000)
+    returning id into v_i;
+    if j % 4 = 0 then insert into public.intervention_pieces (intervention_id, article_id, quantite) values (v_i, '41000000-0000-0000-0000-000000000001', 1); end if;
+    if j % 4 = 1 then insert into public.intervention_pieces (intervention_id, article_id, quantite) values (v_i, '41000000-0000-0000-0000-000000000003', 1); end if;
+    perform public.terminer_intervention(v_i);
+  end loop;
+  -- Une panne signalée par la production, pas encore prise en charge.
+  insert into public.interventions (equipement_id, type_intervention, priorite, description, signale_par, arret_machine)
+  values ('80000000-0000-0000-0000-000000000006', 'curative', 'normale', 'Fuite d''air au niveau du raccord principal', '20000000-0000-0000-0000-000000000005', false);
+end $$;

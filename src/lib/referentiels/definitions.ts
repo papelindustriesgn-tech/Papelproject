@@ -430,6 +430,37 @@ export const REFERENTIELS: Referentiel[] = [
       { nom: "ordre", libelle: "Ordre", type: "entier" },
     ],
   },
+  // --- Maintenance -------------------------------------------------------------
+  {
+    code: "equipements",
+    table: "equipements",
+    titre: "Équipements",
+    description: "Parc machines et utilités ; criticité A (arrête la production), B (ralentit), C (sans impact direct).",
+    espaces: ["maintenance", "admin"],
+    cle: "id",
+    tri: "code",
+    archivable: true,
+    champs: [
+      { nom: "code", libelle: "Code", type: "texte", requis: true, max: 20 },
+      { nom: "libelle", libelle: "Désignation", type: "texte", requis: true, max: 80 },
+      { nom: "ligne_id", libelle: "Ligne de production", type: "reference", reference: { table: "lignes_production", libelle: "libelle" } },
+      { nom: "categorie", libelle: "Catégorie", type: "texte", max: 40 },
+      {
+        nom: "criticite",
+        libelle: "Criticité",
+        type: "choix",
+        requis: true,
+        options: [
+          { valeur: "A", libelle: "A – arrête la production" },
+          { valeur: "B", libelle: "B – ralentit la production" },
+          { valeur: "C", libelle: "C – sans impact direct" },
+        ],
+      },
+      { nom: "marque_modele", libelle: "Marque / modèle", type: "texte", max: 80 },
+      { nom: "date_mise_service", libelle: "Mise en service", type: "date" },
+      { nom: "notes", libelle: "Notes", type: "texte_long", max: 500 },
+    ],
+  },
 ];
 
 export function referentiel(code: string): Referentiel | undefined {
