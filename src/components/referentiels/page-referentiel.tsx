@@ -49,8 +49,9 @@ export async function PageReferentiel({
   const options: OptionsReferences = {};
   for (const c of def.champs) {
     if (c.type === "reference" && c.reference) {
-      const { data } = await supabase.from(c.reference.table).select(`id, ${c.reference.libelle}`).order(c.reference.libelle).limit(2000);
-      options[c.nom] = ((data ?? []) as unknown as Record<string, string>[]).map((d) => ({ valeur: d.id, libelle: d[c.reference!.libelle] }));
+      const cle = c.reference.cle ?? "id";
+      const { data } = await supabase.from(c.reference.table).select(`${cle}, ${c.reference.libelle}`).order(c.reference.libelle).limit(2000);
+      options[c.nom] = ((data ?? []) as unknown as Record<string, string>[]).map((d) => ({ valeur: d[cle], libelle: d[c.reference!.libelle] }));
     }
   }
 
@@ -67,6 +68,7 @@ export async function PageReferentiel({
     const v = texte(ligne, nom);
     if (c.type === "reference") return options[nom]?.find((o) => o.valeur === v)?.libelle ?? "";
     if (c.type === "choix") return c.options?.find((o) => o.valeur === v)?.libelle ?? v;
+    if (c.type === "booleen") return v === "true" ? "oui" : "non";
     return v;
   };
 

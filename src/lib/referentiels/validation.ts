@@ -1,7 +1,7 @@
 import type { Referentiel } from "./definitions";
 import { lireNombre } from "@/lib/formulaires/nombres";
 
-export type Donnees = Record<string, string | number | null>;
+export type Donnees = Record<string, string | number | boolean | null>;
 
 /**
  * Valide une saisie selon la définition de la liste. Renvoie les données à enregistrer
@@ -18,6 +18,11 @@ export function validerSaisie(
   for (const c of def.champs) {
     if (!creation && c.figeApresCreation) continue;
     const brut = (valeurs[c.nom] ?? "").trim();
+    // Case à cocher : absente du formulaire = non cochée.
+    if (c.type === "booleen") {
+      donnees[c.nom] = brut === "on" || brut === "true";
+      continue;
+    }
 
     if (brut === "") {
       if (c.requis) erreurs[c.nom] = `${c.libelle} : champ obligatoire.`;
@@ -52,7 +57,8 @@ export function validerSaisie(
         else donnees[c.nom] = brut;
         break;
       case "reference":
-        if (!/^[0-9a-f-]{36}$/i.test(brut)) erreurs[c.nom] = `${c.libelle} : sélection invalide.`;
+        if (!(c.reference?.cle && c.reference.cle !== "id" ? /^[a-z0-9_]{1,40}$/.test(brut) : /^[0-9a-f-]{36}$/i.test(brut)))
+          erreurs[c.nom] = `${c.libelle} : sélection invalide.`;
         else donnees[c.nom] = brut;
         break;
       default:

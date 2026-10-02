@@ -90,7 +90,6 @@ export function FeuilleComptage({ inventaireId, lignes, modifiable }: { inventai
           </Bouton>
         )}
       </form>
-      {!modifiable && etatValidation.ok && <Message ton="succes">{etatValidation.message}</Message>}
       {modifiable && (
         <form action={valider} className="flex flex-col gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3">
           {etatValidation.message && <Message ton={etatValidation.ok ? "succes" : "erreur"}>{etatValidation.message}</Message>}

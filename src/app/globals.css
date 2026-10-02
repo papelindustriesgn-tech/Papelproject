@@ -29,3 +29,14 @@ body {
   outline: 3px solid var(--color-papel-500);
   outline-offset: 2px;
 }
+
+/* Impression des documents (factures, bons de livraison) : fond blanc, couleurs de la marque conservées. */
+@media print {
+  body {
+    background: #ffffff;
+  }
+  .imprimer-couleurs {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

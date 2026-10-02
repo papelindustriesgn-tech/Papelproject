@@ -114,7 +114,7 @@ Le middleware redirige chaque utilisateur vers son espace ; un utilisateur n'a a
 - `tournees` (commercial, date, liste ordonnée de PVA)
 - `objectifs_commerciaux` (commercial, période, indicateur, cible)
 
-### 4.6 Ventes (simples en phase 1)
+### 4.6 Ventes (✅ livré — migration `20261004000500_ventes.sql` : pièces de vente unifiées devis/commande/facture/avoir, livraisons, paiements, dotations, relances)
 - `clients` (niveau, conditions : comptant | credit, plafond_credit_gnf, pva_id éventuel, commercial_id)
 - `commandes` / `commande_lignes` (article, quantite_colis, prix_colis_gnf figé, origine : bureau | terrain)
 - `livraisons` / `livraison_lignes` (sortie de stock PF) — enrichies en phase 2 (logistique)
@@ -142,7 +142,7 @@ Chaque étape se termine par un **point** (démo, tests, CLAUDE.md à jour) avan
 1. ✅ **Fondations** : projet Next.js, Supabase local, auth, rôles, RLS de base, audit, paramètres + taux de change, module `unites` et calculs métier testés, squelette des espaces, seed.
 2. ✅ **Stocks** : articles, lots bobines, mouvements, inventaires, seuils, jours de couverture.
 3. ✅ **Production** : OF, fiches de poste, validation → mouvements de stock, KPI et alertes rendement/perte/arrêts, TRS.
-4. **Ventes simples** : clients, grille de prix historisée, commande → livraison → facture → paiement, dotation sur encaissé.
+4. ✅ **Ventes simples** : clients, grille de prix historisée, commande → livraison → facture → paiement, dotation sur encaissé.
 5. **PWA terrain** : PVA + GPS + photos, visites avec check-in, commandes et encaissements hors ligne, synchro ; vue responsable commercial avec carte.
 6. **Tableau de bord Direction** : filtres de période + comparaison période précédente, alertes du jour, export PDF.
 

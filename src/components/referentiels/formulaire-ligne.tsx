@@ -12,6 +12,13 @@ function SaisieChamp({ c, valeur, erreur, options, desactive }: { c: ChampRefere
   const id = useId();
   const base = `min-h-11 w-full rounded-lg border bg-white px-3 ${erreur ? "border-red-600" : "border-gray-300"} disabled:bg-gray-100`;
   const choix = c.type === "choix" ? (c.options ?? []) : c.type === "reference" ? (options[c.nom] ?? []) : null;
+  if (c.type === "booleen")
+    return (
+      <label htmlFor={id} className="flex min-h-11 basis-36 items-center gap-2 self-end">
+        <input id={id} type="checkbox" name={c.nom} defaultChecked={valeur === "true"} disabled={desactive} className="size-5 accent-papel-700" />
+        <span className="font-medium text-gray-700">{c.libelle}</span>
+      </label>
+    );
   return (
     <label htmlFor={id} className="flex min-w-0 flex-1 basis-36 flex-col gap-1">
       <span className="text-sm font-medium text-gray-700">

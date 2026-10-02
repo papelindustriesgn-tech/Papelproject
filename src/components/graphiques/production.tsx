@@ -64,3 +64,18 @@ export function GraphiqueArrets({ donnees }: { donnees: { cause: string; minutes
     </ResponsiveContainer>
   );
 }
+
+/** Barres simples par jour (une seule série), ex. chiffre d'affaires HT quotidien. */
+export function GraphiqueBarresJour({ donnees, unite }: { donnees: { date: string; valeur: number }[]; unite: string }) {
+  return (
+    <ResponsiveContainer width="100%" height={240}>
+      <BarChart data={donnees} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+        <CartesianGrid stroke={GRILLE} vertical={false} />
+        <XAxis dataKey="date" tickFormatter={jourCourt} {...axe} minTickGap={16} />
+        <YAxis tickFormatter={(v) => (v >= 1_000_000 ? `${fmt(v / 1_000_000)} M` : v >= 1000 ? `${fmt(v / 1000)} k` : fmt(v))} {...axe} width={52} />
+        <Tooltip formatter={(v) => [`${fmt(v)} ${unite}`, ""]} labelFormatter={(l) => `Le ${jourCourt(String(l))}`} />
+        <Bar dataKey="valeur" fill={COULEURS_SERIES[0]} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}

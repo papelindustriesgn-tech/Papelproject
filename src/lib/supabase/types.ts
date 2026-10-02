@@ -148,6 +148,43 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"clients": {
+                  Row: {
+                    "actif": boolean,"adresse": string,"code": string,"commercial_id": string | null,"condition_paiement": string,"created_at": string,"created_by": string | null,"delai_paiement_jours": number,"id": string,"nif": string,"nom": string,"notes": string,"plafond_credit_gnf": number,"quartier_id": string | null,"responsable": string,"telephone": string,"type_client_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"adresse"?: string,"code"?: string,"commercial_id"?: string | null,"condition_paiement"?: string,"created_at"?: string,"created_by"?: string | null,"delai_paiement_jours"?: number,"id"?: string,"nif"?: string,"nom": string,"notes"?: string,"plafond_credit_gnf"?: number,"quartier_id"?: string | null,"responsable"?: string,"telephone"?: string,"type_client_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "actif"?: boolean,"adresse"?: string,"code"?: string,"commercial_id"?: string | null,"condition_paiement"?: string,"created_at"?: string,"created_by"?: string | null,"delai_paiement_jours"?: number,"id"?: string,"nif"?: string,"nom"?: string,"notes"?: string,"plafond_credit_gnf"?: number,"quartier_id"?: string | null,"responsable"?: string,"telephone"?: string,"type_client_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "clients_commercial_id_fkey"
+      columns: ["commercial_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "clients_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "clients_quartier_id_fkey"
+      columns: ["quartier_id"]
+isOneToOne: false
+      referencedRelation: "quartiers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "clients_type_client_id_fkey"
+      columns: ["type_client_id"]
+isOneToOne: false
+      referencedRelation: "types_clients"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"communes": {
                   Row: {
                     "id": string,"nom": string,"ville_id": string
@@ -166,6 +203,19 @@ isOneToOne: false
       referencedRelation: "villes"
       referencedColumns: ["id"]
     }
+                  ]
+                },"compteurs": {
+                  Row: {
+                    "prefixe": string,"valeur": number
+                  }
+                  Insert: {
+                    "prefixe": string,"valeur"?: number
+                  }
+                  Update: {
+                    "prefixe"?: string,"valeur"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"conditionnements": {
                   Row: {
@@ -192,6 +242,49 @@ isOneToOne: false
       referencedColumns: ["produit_id"]
     },{
       foreignKeyName: "conditionnements_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "produits"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"dotations": {
+                  Row: {
+                    "facture_id": string,"id": string,"paquets_dus": number,"paquets_remis": number,"produit_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "facture_id": string,"id"?: string,"paquets_dus"?: number,"paquets_remis"?: number,"produit_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "facture_id"?: string,"id"?: string,"paquets_dus"?: number,"paquets_remis"?: number,"produit_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "dotations_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "factures_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "dotations_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "pieces_vente"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "dotations_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "of_avancement"
+      referencedColumns: ["produit_id"]
+    },{
+      foreignKeyName: "dotations_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["produit_id"]
+    },{
+      foreignKeyName: "dotations_produit_id_fkey"
       columns: ["produit_id"]
 isOneToOne: false
       referencedRelation: "produits"
@@ -563,6 +656,74 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"lignes_livraison": {
+                  Row: {
+                    "conditionnement_id": string,"id": string,"livraison_id": string,"paquets": number
+                  }
+                  Insert: {
+                    "conditionnement_id": string,"id"?: string,"livraison_id": string,"paquets": number
+                  }
+                  Update: {
+                    "conditionnement_id"?: string,"id"?: string,"livraison_id"?: string,"paquets"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lignes_livraison_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: false
+      referencedRelation: "conditionnements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lignes_livraison_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: false
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["conditionnement_id"]
+    },{
+      foreignKeyName: "lignes_livraison_livraison_id_fkey"
+      columns: ["livraison_id"]
+isOneToOne: false
+      referencedRelation: "livraisons"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"lignes_piece": {
+                  Row: {
+                    "conditionnement_id": string,"created_at": string,"id": string,"montant_ht_gnf": number,"paquets": number,"paquets_vrac": number,"piece_id": string,"prix_paquet_gnf": number,"quantite_colis": number
+                  }
+                  Insert: {
+                    "conditionnement_id": string,"created_at"?: string,"id"?: string,"montant_ht_gnf": number,"paquets": number,"paquets_vrac"?: number,"piece_id": string,"prix_paquet_gnf": number,"quantite_colis"?: number
+                  }
+                  Update: {
+                    "conditionnement_id"?: string,"created_at"?: string,"id"?: string,"montant_ht_gnf"?: number,"paquets"?: number,"paquets_vrac"?: number,"piece_id"?: string,"prix_paquet_gnf"?: number,"quantite_colis"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lignes_piece_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: false
+      referencedRelation: "conditionnements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lignes_piece_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: false
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["conditionnement_id"]
+    },{
+      foreignKeyName: "lignes_piece_piece_id_fkey"
+      columns: ["piece_id"]
+isOneToOne: false
+      referencedRelation: "factures_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lignes_piece_piece_id_fkey"
+      columns: ["piece_id"]
+isOneToOne: false
+      referencedRelation: "pieces_vente"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"lignes_production": {
                   Row: {
                     "actif": boolean,"created_at": string,"id": string,"libelle": string
@@ -575,6 +736,43 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"livraisons": {
+                  Row: {
+                    "commande_id": string,"created_at": string,"created_by": string | null,"date_livraison": string,"id": string,"notes": string,"numero": string | null,"statut": string,"valide_le": string | null,"valide_par": string | null
+                  }
+                  Insert: {
+                    "commande_id": string,"created_at"?: string,"created_by"?: string | null,"date_livraison"?: string,"id"?: string,"notes"?: string,"numero"?: string | null,"statut"?: string,"valide_le"?: string | null,"valide_par"?: string | null
+                  }
+                  Update: {
+                    "commande_id"?: string,"created_at"?: string,"created_by"?: string | null,"date_livraison"?: string,"id"?: string,"notes"?: string,"numero"?: string | null,"statut"?: string,"valide_le"?: string | null,"valide_par"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "livraisons_commande_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: false
+      referencedRelation: "factures_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "livraisons_commande_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: false
+      referencedRelation: "pieces_vente"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "livraisons_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "livraisons_valide_par_fkey"
+      columns: ["valide_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"lots": {
                   Row: {
@@ -612,6 +810,19 @@ isOneToOne: false
       referencedRelation: "fournisseurs"
       referencedColumns: ["id"]
     }
+                  ]
+                },"modes_paiement": {
+                  Row: {
+                    "actif": boolean,"created_at": string,"id": string,"libelle": string,"ordre": number
+                  }
+                  Insert: {
+                    "actif"?: boolean,"created_at"?: string,"id"?: string,"libelle": string,"ordre"?: number
+                  }
+                  Update: {
+                    "actif"?: boolean,"created_at"?: string,"id"?: string,"libelle"?: string,"ordre"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"mouvements_stock": {
                   Row: {
@@ -737,6 +948,43 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"paiements": {
+                  Row: {
+                    "created_at": string,"date_paiement": string,"facture_id": string,"id": string,"mode_id": string,"montant_gnf": number,"notes": string,"reference": string,"saisi_par": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"date_paiement"?: string,"facture_id": string,"id"?: string,"mode_id": string,"montant_gnf": number,"notes"?: string,"reference"?: string,"saisi_par"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"date_paiement"?: string,"facture_id"?: string,"id"?: string,"mode_id"?: string,"montant_gnf"?: number,"notes"?: string,"reference"?: string,"saisi_par"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "paiements_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "factures_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "paiements_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "pieces_vente"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "paiements_mode_id_fkey"
+      columns: ["mode_id"]
+isOneToOne: false
+      referencedRelation: "modes_paiement"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "paiements_saisi_par_fkey"
+      columns: ["saisi_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"parametres": {
                   Row: {
                     "categorie": string,"cle": string,"description": string,"libelle": string,"type_valeur": string,"unite": string | null,"updated_at": string,"updated_by": string | null,"valeur": NonNullable<Json>
@@ -751,6 +999,61 @@ isOneToOne: false
                     {
       foreignKeyName: "parametres_updated_by_fkey"
       columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"pieces_vente": {
+                  Row: {
+                    "client_id": string,"commercial_id": string | null,"created_at": string,"created_by": string | null,"date_echeance": string | null,"date_piece": string,"id": string,"notes": string,"numero": string | null,"origine_id": string | null,"statut": Database["public"]['Enums']["statut_piece"],"total_ht_gnf": number,"total_ttc_gnf": number,"total_tva_gnf": number,"tva_taux": number,"type_piece": Database["public"]['Enums']["type_piece"],"updated_at": string,"valide_le": string | null,"valide_par": string | null
+                  }
+                  Insert: {
+                    "client_id": string,"commercial_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_echeance"?: string | null,"date_piece"?: string,"id"?: string,"notes"?: string,"numero"?: string | null,"origine_id"?: string | null,"statut"?: Database["public"]['Enums']["statut_piece"],"total_ht_gnf"?: number,"total_ttc_gnf"?: number,"total_tva_gnf"?: number,"tva_taux"?: number,"type_piece": Database["public"]['Enums']["type_piece"],"updated_at"?: string,"valide_le"?: string | null,"valide_par"?: string | null
+                  }
+                  Update: {
+                    "client_id"?: string,"commercial_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_echeance"?: string | null,"date_piece"?: string,"id"?: string,"notes"?: string,"numero"?: string | null,"origine_id"?: string | null,"statut"?: Database["public"]['Enums']["statut_piece"],"total_ht_gnf"?: number,"total_ttc_gnf"?: number,"total_tva_gnf"?: number,"tva_taux"?: number,"type_piece"?: Database["public"]['Enums']["type_piece"],"updated_at"?: string,"valide_le"?: string | null,"valide_par"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pieces_vente_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pieces_vente_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "soldes_clients"
+      referencedColumns: ["client_id"]
+    },{
+      foreignKeyName: "pieces_vente_commercial_id_fkey"
+      columns: ["commercial_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pieces_vente_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pieces_vente_origine_id_fkey"
+      columns: ["origine_id"]
+isOneToOne: false
+      referencedRelation: "factures_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pieces_vente_origine_id_fkey"
+      columns: ["origine_id"]
+isOneToOne: false
+      referencedRelation: "pieces_vente"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pieces_vente_valide_par_fkey"
+      columns: ["valide_par"]
 isOneToOne: false
       referencedRelation: "profils"
       referencedColumns: ["id"]
@@ -811,6 +1114,37 @@ isOneToOne: false
       columns: ["commune_id"]
 isOneToOne: false
       referencedRelation: "communes"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"relances": {
+                  Row: {
+                    "auteur_id": string | null,"canal": string,"created_at": string,"date_relance": string,"facture_id": string,"id": string,"note": string,"promesse_date": string | null
+                  }
+                  Insert: {
+                    "auteur_id"?: string | null,"canal"?: string,"created_at"?: string,"date_relance"?: string,"facture_id": string,"id"?: string,"note"?: string,"promesse_date"?: string | null
+                  }
+                  Update: {
+                    "auteur_id"?: string | null,"canal"?: string,"created_at"?: string,"date_relance"?: string,"facture_id"?: string,"id"?: string,"note"?: string,"promesse_date"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "relances_auteur_id_fkey"
+      columns: ["auteur_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "relances_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "factures_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "relances_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "pieces_vente"
       referencedColumns: ["id"]
     }
                   ]
@@ -900,6 +1234,25 @@ isOneToOne: true
 isOneToOne: false
       referencedRelation: "profils"
       referencedColumns: ["id"]
+    }
+                  ]
+                },"types_clients": {
+                  Row: {
+                    "actif": boolean,"created_at": string,"dotation": boolean,"id": string,"libelle": string,"niveau_prix": string,"ordre": number
+                  }
+                  Insert: {
+                    "actif"?: boolean,"created_at"?: string,"dotation"?: boolean,"id"?: string,"libelle": string,"niveau_prix"?: string,"ordre"?: number
+                  }
+                  Update: {
+                    "actif"?: boolean,"created_at"?: string,"dotation"?: boolean,"id"?: string,"libelle"?: string,"niveau_prix"?: string,"ordre"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "types_clients_niveau_prix_fkey"
+      columns: ["niveau_prix"]
+isOneToOne: false
+      referencedRelation: "niveaux_prix"
+      referencedColumns: ["code"]
     }
                   ]
                 },"utilisateur_roles": {
@@ -1054,6 +1407,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"factures_etat": {
+                  Row: {
+                    "avoirs_gnf": number | null,"client_code": string | null,"client_id": string | null,"client_nom": string | null,"commercial_id": string | null,"date_echeance": string | null,"date_piece": string | null,"id": string | null,"jours_retard": number | null,"numero": string | null,"paye_gnf": number | null,"solde_gnf": number | null,"total_ht_gnf": number | null,"total_ttc_gnf": number | null,"total_tva_gnf": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pieces_vente_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pieces_vente_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "soldes_clients"
+      referencedColumns: ["client_id"]
+    },{
+      foreignKeyName: "pieces_vente_commercial_id_fkey"
+      columns: ["commercial_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"fiches_resume": {
                   Row: {
                     "arret_max_min": number | null,"arrets_non_planifies_min": number | null,"arrets_planifies_min": number | null,"cout_matiere_gnf": number | null,"date_production": string | null,"duree_poste_min": number | null,"equipe_id": string | null,"equipe_libelle": string | null,"id": string | null,"ligne_id": string | null,"ligne_libelle": string | null,"nb_operateurs": number | null,"notes": string | null,"of_id": string | null,"of_numero": string | null,"papier_kg": number | null,"paquets": number | null,"poste_id": string | null,"poste_libelle": string | null,"poste_ordre": number | null,"rebuts_kg": number | null,"statut": Database["public"]['Enums']["statut_fiche"] | null
@@ -1141,6 +1519,50 @@ isOneToOne: false
       referencedColumns: ["code"]
     }
                   ]
+                },"reste_a_livrer": {
+                  Row: {
+                    "commande_id": string | null,"conditionnement_id": string | null,"paquets_commandes": number | null,"paquets_restants": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lignes_piece_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: false
+      referencedRelation: "conditionnements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lignes_piece_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: false
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["conditionnement_id"]
+    },{
+      foreignKeyName: "lignes_piece_piece_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: false
+      referencedRelation: "factures_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lignes_piece_piece_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: false
+      referencedRelation: "pieces_vente"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"soldes_clients": {
+                  Row: {
+                    "client_id": string | null,"code": string | null,"commercial_id": string | null,"condition_paiement": string | null,"echu_gnf": number | null,"encours_gnf": number | null,"nom": string | null,"plafond_credit_gnf": number | null,"retard_max_jours": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "clients_commercial_id_fkey"
+      columns: ["commercial_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Functions: {
@@ -1153,14 +1575,23 @@ isOneToOne: false
 "activer_audit":
 { Args: { "p_cle"?: string,"p_table": unknown }; Returns: undefined
                            },
+"annuler_piece":
+{ Args: { "p_piece": string }; Returns: undefined
+                           },
 "aujourdhui_conakry":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"calculer_dotation_facture":
+{ Args: { "p_facture": string }; Returns: undefined
                            },
 "creer_produit":
 { Args: { "p_code": string,"p_date_prix"?: string,"p_grammage": number,"p_largeur_mm": number,"p_libelle": string,"p_longueur_mm": number,"p_nb_mouchoirs": number,"p_paquets_par_colis": number,"p_plis": number,"p_prix_paquet_gnf"?: number,"p_taux_perte": number }; Returns: string
                            },
 "definir_prix":
 { Args: { "p_date_debut": string,"p_niveau": string,"p_note"?: string,"p_prix_paquet_gnf": number,"p_produit": string }; Returns: string
+                           },
+"enregistrer_paiement":
+{ Args: { "p_date"?: string,"p_facture": string,"p_mode": string,"p_montant": number,"p_notes"?: string,"p_reference"?: string }; Returns: string
                            },
 "est_actif":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -1177,24 +1608,51 @@ isOneToOne: false
 "ouvrir_inventaire":
 { Args: { "p_famille"?: Database["public"]['Enums']["famille_article"],"p_libelle": string }; Returns: string
                            },
+"parametre_num":
+{ Args: { "p_cle": string,"p_defaut": number }; Returns: number
+                           },
+"peut_ecrire_piece":
+{ Args: { "p_piece": string }; Returns: boolean
+                           },
+"preparer_livraison":
+{ Args: { "p_commande": string }; Returns: string
+                           },
 "prix_en_vigueur":
 { Args: { "p_date"?: string,"p_niveau": string,"p_produit": string }; Returns: number
+                           },
+"prochain_numero":
+{ Args: { "p_prefixe": string }; Returns: string
                            },
 "receptionner_bobine":
 { Args: { "p_article": string,"p_cout_kg_gnf": number,"p_date"?: string,"p_diametre_mm"?: number,"p_fournisseur"?: string,"p_grammage"?: number,"p_largeur_mm"?: number,"p_notes"?: string,"p_numero_lot": string,"p_plis"?: number,"p_poids_kg": number }; Returns: string
                            },
+"remettre_dotation":
+{ Args: { "p_conditionnement": string,"p_dotation": string,"p_paquets": number }; Returns: undefined
+                           },
 "taux_a_la_date":
 { Args: { "p_date": string,"p_devise": string }; Returns: number
+                           },
+"transformer_piece":
+{ Args: { "p_piece": string,"p_type": Database["public"]['Enums']["type_piece"] }; Returns: string
+                           },
+"valider_avoir":
+{ Args: { "p_avoir": string,"p_retour_stock"?: boolean }; Returns: string
                            },
 "valider_fiche_production":
 { Args: { "p_fiche": string }; Returns: number
                            },
 "valider_inventaire":
 { Args: { "p_inventaire": string }; Returns: number
+                           },
+"valider_livraison":
+{ Args: { "p_livraison": string }; Returns: string
+                           },
+"valider_piece":
+{ Args: { "p_piece": string }; Returns: string
                            }
           }
           Enums: {
-            "famille_article": "matiere_premiere"|"emballage"|"produit_fini"|"piece_detachee"|"autre","role_code": "direction"|"achats"|"magasin"|"production"|"maintenance"|"qualite"|"commercial_terrain"|"responsable_commercial"|"logistique"|"finance"|"admin","statut_fiche": "brouillon"|"validee","statut_inventaire": "en_cours"|"valide"|"annule","statut_lot": "disponible"|"bloque"|"epuise","statut_of": "planifie"|"en_cours"|"termine"|"annule","type_mouvement": "reception"|"production"|"retour"|"consommation"|"sortie"|"vente"|"dotation"|"rebut"|"ajustement"|"inventaire","unite_stock": "kg"|"paquet"|"unite"|"rouleau"|"litre"|"metre"
+            "famille_article": "matiere_premiere"|"emballage"|"produit_fini"|"piece_detachee"|"autre","role_code": "direction"|"achats"|"magasin"|"production"|"maintenance"|"qualite"|"commercial_terrain"|"responsable_commercial"|"logistique"|"finance"|"admin","statut_fiche": "brouillon"|"validee","statut_inventaire": "en_cours"|"valide"|"annule","statut_lot": "disponible"|"bloque"|"epuise","statut_of": "planifie"|"en_cours"|"termine"|"annule","statut_piece": "brouillon"|"valide"|"annule","type_mouvement": "reception"|"production"|"retour"|"consommation"|"sortie"|"vente"|"dotation"|"rebut"|"ajustement"|"inventaire","type_piece": "devis"|"commande"|"facture"|"avoir","unite_stock": "kg"|"paquet"|"unite"|"rouleau"|"litre"|"metre"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -1314,7 +1772,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "famille_article": ["matiere_premiere", "emballage", "produit_fini", "piece_detachee", "autre"],"role_code": ["direction", "achats", "magasin", "production", "maintenance", "qualite", "commercial_terrain", "responsable_commercial", "logistique", "finance", "admin"],"statut_fiche": ["brouillon", "validee"],"statut_inventaire": ["en_cours", "valide", "annule"],"statut_lot": ["disponible", "bloque", "epuise"],"statut_of": ["planifie", "en_cours", "termine", "annule"],"type_mouvement": ["reception", "production", "retour", "consommation", "sortie", "vente", "dotation", "rebut", "ajustement", "inventaire"],"unite_stock": ["kg", "paquet", "unite", "rouleau", "litre", "metre"]
+            "famille_article": ["matiere_premiere", "emballage", "produit_fini", "piece_detachee", "autre"],"role_code": ["direction", "achats", "magasin", "production", "maintenance", "qualite", "commercial_terrain", "responsable_commercial", "logistique", "finance", "admin"],"statut_fiche": ["brouillon", "validee"],"statut_inventaire": ["en_cours", "valide", "annule"],"statut_lot": ["disponible", "bloque", "epuise"],"statut_of": ["planifie", "en_cours", "termine", "annule"],"statut_piece": ["brouillon", "valide", "annule"],"type_mouvement": ["reception", "production", "retour", "consommation", "sortie", "vente", "dotation", "rebut", "ajustement", "inventaire"],"type_piece": ["devis", "commande", "facture", "avoir"],"unite_stock": ["kg", "paquet", "unite", "rouleau", "litre", "metre"]
           }
         }
 } as const

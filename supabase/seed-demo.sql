@@ -67,6 +67,21 @@ from (values
   ('40000000-0000-0000-0000-000000000005', 'EMB-ENCRE', 'Encre d''impression', 'emballage', 'Encres', 'litre', false, 20)
 ) as v(id, code, libelle, famille, categorie, unite, lot, seuil);
 
+insert into public.clients (nom, type_client_id, responsable, telephone, adresse, quartier_id, condition_paiement, delai_paiement_jours, plafond_credit_gnf, commercial_id)
+select v.nom, (select id from public.types_clients where libelle = v.type), v.resp, v.tel, v.adresse,
+       (select id from public.quartiers where nom = v.quartier), v.cond, v.delai, v.plafond,
+       (select id from public.profils where identifiant = v.commercial)
+from (values
+  ('Ets Diallo & Frères (démo)', 'Grossiste', 'Alpha Diallo', '+224 621 10 10 01', 'Marché Madina', 'Madina', 'credit', 15, 400000000, 'commercial1'),
+  ('Grossiste Bonfi (démo)', 'Grossiste', 'Mamadou Bah', '+224 621 10 10 02', 'Bonfi marché', 'Bonfi', 'credit', 15, 300000000, 'commercial1'),
+  ('Kaloum Distribution (démo)', 'Grossiste', 'Fatou Camara', '+224 621 10 10 03', 'Avenue de la République', 'Almamya', 'credit', 30, 500000000, 'commercial2'),
+  ('Semi-gros Hamdallaye (démo)', 'Semi-grossiste', 'Ibrahima Sow', '+224 621 10 10 04', 'Carrefour Hamdallaye', 'Hamdallaye', 'comptant', 0, 0, 'commercial2'),
+  ('Supermarché Kipé (démo)', 'Supermarché', 'Service achats', '+224 621 10 10 05', 'Route Le Prince', 'Kipé', 'credit', 30, 200000000, 'commercial3'),
+  ('Boutique Matoto (démo)', 'Détaillant', 'Aïcha Touré', '+224 621 10 10 06', 'Marché Matoto', 'Matoto-Centre', 'comptant', 0, 0, 'commercial3'),
+  ('Hôtel Kaloum (démo)', 'B2B', 'Économat', '+224 621 10 10 07', 'Boulbinet', 'Boulbinet', 'credit', 30, 100000000, 'commercial2'),
+  ('Grossiste Coyah (démo)', 'Grossiste', 'Sékou Sylla', '+224 621 10 10 08', 'Marché de Coyah', 'Coyah-Centre', 'credit', 15, 300000000, 'commercial1')
+) as v(nom, type, resp, tel, adresse, quartier, cond, delai, plafond, commercial);
+
 do $$
 declare
   j integer;
@@ -81,7 +96,15 @@ declare
   v_fiche uuid;
   v_grand boolean;
   v_facteur numeric;
+  v_client uuid;
+  v_piece uuid;
+  v_livraison uuid;
+  v_facture uuid;
+  v_ttc bigint;
 begin
+  -- Les fonctions de vente contrôlent les droits : on agit au nom du compte de démonstration « finance ».
+  perform set_config('request.jwt.claims', json_build_object('sub', '20000000-0000-0000-0000-000000000013', 'role', 'authenticated')::text, true);
+
   -- 40 bobines reçues sur 60 jours (poids 950 à 1 290 kg, coût réel rendu usine ≈ 13 500 GNF/kg).
   for j in 1..40 loop
     perform public.receptionner_bobine(
@@ -189,14 +212,33 @@ begin
       end if;
     end loop;
 
-    -- Ventes du jour : environ 85 % de la production validée, en colis complets.
-    insert into public.mouvements_stock (date_operation, type, article_id, quantite, unite, motif)
-    select v_date, 'vente', a.id, -(floor(sum(fp.paquets) * 0.85 / c.paquets_par_colis) * c.paquets_par_colis), 'paquet', 'Livraisons clients (démo)'
-    from public.fiche_productions fp
-    join public.fiches_production f on f.id = fp.fiche_id and f.date_production = v_date and f.statut = 'validee'
-    join public.conditionnements c on c.id = fp.conditionnement_id
-    join public.articles a on a.conditionnement_id = c.id
-    group by a.id, c.paquets_par_colis
-    having floor(sum(fp.paquets) * 0.85 / c.paquets_par_colis) > 0;
+    -- Ventes du jour : une commande d'un client (≈ 85 % de la production), livrée et facturée le jour même.
+    if j > 0 then
+      v_client := (select id from public.clients order by code offset (j % 8) limit 1);
+      insert into public.pieces_vente (id, type_piece, client_id, date_piece, commercial_id)
+      values (gen_random_uuid(), 'commande', v_client, v_date, (select commercial_id from public.clients where id = v_client))
+      returning id into v_piece;
+      insert into public.lignes_piece (piece_id, conditionnement_id, quantite_colis, paquets, montant_ht_gnf, prix_paquet_gnf)
+      select v_piece, fp.conditionnement_id, floor(sum(fp.paquets) * 0.85 / c.paquets_par_colis)::int, 1, 0, null
+      from public.fiche_productions fp
+      join public.fiches_production f on f.id = fp.fiche_id and f.date_production = v_date and f.statut = 'validee'
+      join public.conditionnements c on c.id = fp.conditionnement_id
+      group by fp.conditionnement_id, c.paquets_par_colis
+      having floor(sum(fp.paquets) * 0.85 / c.paquets_par_colis) > 0;
+      perform public.valider_piece(v_piece);
+      v_livraison := public.preparer_livraison(v_piece);
+      update public.livraisons set date_livraison = v_date where id = v_livraison;
+      perform public.valider_livraison(v_livraison);
+      v_facture := public.transformer_piece(v_piece, 'facture');
+      update public.pieces_vente set date_piece = v_date where id = v_facture;
+      perform public.valider_piece(v_facture);
+      -- Paiements : 60 % payées comptant, 25 % partiellement, 15 % impayées.
+      v_ttc := (select total_ttc_gnf from public.pieces_vente where id = v_facture);
+      if j % 7 not in (2, 5) and j % 4 <> 3 then
+        perform public.enregistrer_paiement(v_facture, v_ttc, (select id from public.modes_paiement order by ordre offset (j % 3) limit 1), least(v_date + (j % 5), public.aujourdhui_conakry()), 'Démo');
+      elsif j % 4 = 3 then
+        perform public.enregistrer_paiement(v_facture, (v_ttc / 2)::bigint, (select id from public.modes_paiement order by ordre offset 1 limit 1), least(v_date + 3, public.aujourdhui_conakry()), 'Acompte démo');
+      end if;
+    end if;
   end loop;
 end $$;

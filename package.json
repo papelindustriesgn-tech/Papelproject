@@ -14,7 +14,8 @@
     "db:start": "supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,mailpit,realtime",
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types typescript --local > src/lib/supabase/types.ts",
-    "verifier": "npm run typecheck && npm run lint && npm test"
+    "verifier": "npm run typecheck && npm run lint && npm test",
+    "test:e2e:complet": "bash scripts/e2e.sh"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

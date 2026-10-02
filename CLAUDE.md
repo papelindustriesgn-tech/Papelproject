@@ -4,7 +4,7 @@ ERP de **Papel Industries**, fabricant guinéen de mouchoirs en papier (usine de
 Chaîne couverte : achat MP → stock → production → stock produits finis → distribution → vente → encaissement → pilotage.
 
 > Ce fichier est la référence des règles métier et des conventions de code. Le tenir à jour à chaque phase.
-> État : **Phase 1 — étapes 1 (fondations), 2 (stocks) et 3 (production) livrées.** Prochaine : étape 4 (ventes simples). Plan : `docs/architecture.md`.
+> État : **Phase 1 — étapes 1 à 4 livrées (fondations, stocks, production, ventes).** Prochaine : étape 5 (application terrain hors ligne). Plan : `docs/architecture.md`.
 
 @AGENTS.md
 
@@ -12,7 +12,7 @@ Chaîne couverte : achat MP → stock → production → stock produits finis �
 Lire `node_modules/next/dist/docs/` avant d'utiliser une API Next inconnue.
 
 Commandes : `npm run verifier` (types + lint + Vitest), `npm run test:db` (pgTAP), `npm run test:e2e` (Playwright),
-`npm run db:reset` (migrations + seed), `npm run db:types` (régénère `src/lib/supabase/types.ts` après chaque migration).
+`npm run db:reset` (migrations + seed), `npm run test:e2e:complet` (base neuve + build + serveur + Playwright), `npm run db:types` (régénère `src/lib/supabase/types.ts` après chaque migration).
 
 ---
 
@@ -87,7 +87,7 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
   Prix conseillés du Grand 100 : non communiqués (à saisir dans l'interface).
 - **Dotation** : 4 paquets offerts pour 100 achetés (paramètre `taux_dotation`, **4 %** par défaut), du **même produit**,
   calculée **uniquement sur les montants encaissés** (jamais sur le facturé non payé).
-  - Clients éligibles : paramètre `dotation_types_eligibles` (grossistes par défaut ; B2B activable).
+  - Clients éligibles : colonne `dotation` du **type de client** (table `types_clients`, modifiable ; grossistes par défaut).
   - Calcul cumulatif (`src/lib/metier/dotation.ts`) : paiements partiels sans perte ni doublon ; remise en colis complets, le reste reporté.
 - **Commerciaux terrain** : font des **devis et factures** depuis leur téléphone (hors ligne). Ils **n'encaissent pas** :
   aucun encaissement n'est saisi par le terrain ; les paiements sont enregistrés au bureau (finance).
@@ -133,6 +133,27 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
   - Agrégation sur une période = concaténation des fiches (pas de moyenne de pourcentages).
 - Périodes d'analyse et période précédente de même durée : `src/lib/formulaires/periode.ts`.
 - Graphiques : Recharts, palette catégorielle validée (`src/components/graphiques/production.tsx`), ordre de couleur fixe.
+
+## 6 quater. Ventes (étape 4)
+
+- Listes modifiables : **types de clients** (niveau de prix appliqué, dotation oui/non), **modes de paiement**.
+- Clients : code automatique `CL-NNNNN`, comptant ou crédit (délai, **plafond** : une facture qui le ferait dépasser est refusée).
+- **Pièces de vente** (une seule table, comme Odoo) : devis → commande → facture ; facture → avoir. Lignes en colis + paquets en vrac,
+  **prix HT au paquet figé** à la création (grille en vigueur pour le niveau de prix du type de client, sinon prix Papel).
+- Validation (`valider_piece`) : numéro **continu sans trou** par type et par an (`DEV-`, `CMD-`, `FA-`, `AV-AAAA-NNNNN`, table `compteurs`),
+  TVA sur le total HT (un arrondi), échéance = date + délai du client. Pièce validée = figée (correction par avoir).
+- Livraison (bon `BL-`) : depuis une commande validée, partielle possible ; validation = sorties de stock « vente » (stock insuffisant → refus).
+- Paiements **saisis au bureau uniquement** (rôle finance) via `enregistrer_paiement` : refus au-delà du reste dû ; recalcul de la dotation.
+- Dotation (`calculer_dotation_facture`, même méthode que `dotation.ts`, part payée calculée sur le TTC) ; remise physique
+  (`remettre_dotation`) = sortie de stock « dotation » dans le même produit.
+- Avoir (`valider_avoir`) : reprend les lignes de la facture (quantités ajustables), remet les paquets en stock (« retour »), ne peut pas dépasser le reste dû.
+- Impayés : tranches d'ancienneté, relances (canal, compte rendu, promesse de paiement).
+- Indicateurs (`src/lib/ventes/indicateurs.ts`) : CA HT (factures − avoirs), volumes paquets/colis, prix moyen, commandes, clients actifs,
+  nouveaux clients, encaissements, créances, échu, **DSO** = créances ÷ CA TTC × jours (`src/lib/metier/ventes.ts`).
+- Documents imprimables (facture, devis, avoir, bon de livraison) avec **montant en lettres** (`nombreEnLettres`, orthographe rectifiée) ;
+  « Imprimer / enregistrer en PDF » via le navigateur (pas de dépendance PDF lourde).
+- Après une validation qui fige la page, l'action redirige avec `?succes=` (bandeau `BandeauSucces`, helper `avecSucces`).
+- Messages d'erreur SQL : nombres formatés à la française avec `public.nombre_fr()`.
 
 ## 7. Seuils d'alerte (paramétrables)
 

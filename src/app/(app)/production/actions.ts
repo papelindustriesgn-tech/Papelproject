@@ -7,6 +7,7 @@ import { exigerEspace } from "@/lib/auth/session";
 import { schemaDateIso } from "@/lib/formulaires/dates";
 import { erreursZod, messageErreurBase, valeursFormulaire, type EtatFormulaire } from "@/lib/formulaires/etat";
 import { lireNombre } from "@/lib/formulaires/nombres";
+import { avecSucces } from "@/lib/formulaires/succes";
 import { colis, colisVersPaquets, paquets as paq, somme } from "@/lib/metier/unites";
 import { clientServeur } from "@/lib/supabase/serveur";
 import type { Database } from "@/lib/supabase/types";
@@ -85,7 +86,7 @@ export async function validerFiche(ficheId: string, _e: EtatFormulaire): Promise
   if (error) return { message: messageErreurBase(error) };
   rafraichirFiche(ficheId);
   revalidatePath("/magasin", "layout");
-  return { ok: true, message: "Fiche validée : bobines sorties du stock, produits finis entrés au coût de revient." };
+  redirect(avecSucces(`/production/fiches/${ficheId}`, "Fiche validée : bobines sorties du stock, produits finis entrés au coût de revient."));
 }
 
 // -----------------------------------------------------------------------------

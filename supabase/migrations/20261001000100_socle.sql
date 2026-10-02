@@ -267,6 +267,18 @@ returns numeric language sql stable set search_path = '' as $$
   );
 $$;
 
+-- Nombre au format français pour les messages d'erreur : 1250.5 → « 1 250,5 », 3060000 → « 3 060 000 ».
+create or replace function public.nombre_fr(n numeric)
+returns text language plpgsql immutable set search_path = '' as $$
+declare
+  t text;
+begin
+  if n is null then return ''; end if;
+  t := to_char(round(n, 3), 'FM999G999G999G999G990D000');
+  t := replace(replace(t, ',', ' '), '.', ',');
+  return rtrim(rtrim(t, '0'), ',');
+end $$;
+
 -- Date métier du jour à Conakry.
 create or replace function public.aujourdhui_conakry()
 returns date language sql stable set search_path = '' as $$

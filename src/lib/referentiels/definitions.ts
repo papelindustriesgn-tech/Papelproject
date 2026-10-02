@@ -5,7 +5,7 @@
  * Les droits restent contrôlés par la RLS de chaque table.
  */
 
-export type TypeChamp = "texte" | "texte_long" | "entier" | "decimal" | "date" | "heure" | "choix" | "reference";
+export type TypeChamp = "texte" | "texte_long" | "entier" | "decimal" | "date" | "heure" | "booleen" | "choix" | "reference";
 
 export interface ChampReferentiel {
   nom: string;
@@ -16,8 +16,8 @@ export interface ChampReferentiel {
   aide?: string;
   /** Pour « choix » : valeurs fixes. */
   options?: { valeur: string; libelle: string }[];
-  /** Pour « reference » : table liée et colonne affichée. */
-  reference?: { table: string; libelle: string };
+  /** Pour « reference » : table liée, colonne affichée et clé (« id » par défaut). */
+  reference?: { table: string; libelle: string; cle?: string };
   /** Champ non modifiable après création (ex. un code). */
   figeApresCreation?: boolean;
   /** Valeur automatique à la création si vide. */
@@ -254,6 +254,37 @@ export const REFERENTIELS: Referentiel[] = [
       { nom: "date_debut", libelle: "Début", type: "date", requis: true },
       { nom: "date_fin", libelle: "Fin", type: "date", requis: true },
       { nom: "notes", libelle: "Objectif / notes", type: "texte_long", max: 300 },
+    ],
+  },
+  // --- Ventes ----------------------------------------------------------------
+  {
+    code: "types-clients",
+    table: "types_clients",
+    titre: "Types de clients",
+    description: "Niveau de prix appliqué et droit à la dotation (X paquets offerts pour 100 achetés, sur l'encaissé).",
+    espaces: ["ventes", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 40 },
+      { nom: "niveau_prix", libelle: "Niveau de prix", type: "reference", requis: true, reference: { table: "niveaux_prix", libelle: "libelle", cle: "code" } },
+      { nom: "dotation", libelle: "Reçoit la dotation", type: "booleen" },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  {
+    code: "modes-paiement",
+    table: "modes_paiement",
+    titre: "Modes de paiement",
+    description: "Espèces, Orange Money, MTN Mobile Money, virement, chèque…",
+    espaces: ["ventes", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 40 },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
     ],
   },
 ];

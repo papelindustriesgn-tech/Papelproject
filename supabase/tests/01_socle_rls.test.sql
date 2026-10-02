@@ -2,7 +2,7 @@
 -- Lancement : npx supabase test db
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(20);
+select plan(22);
 
 -- Se connecter « comme » un utilisateur de démo.
 create or replace function pg_temp.connecter(p_identifiant text) returns void language plpgsql as $$
@@ -100,6 +100,10 @@ select throws_ok(
   '22023', null, 'Un prix historisé ne peut pas être modifié'
 );
 select pg_temp.deconnecter();
+
+-- --- Format des nombres dans les messages ------------------------------------
+select is(public.nombre_fr(1250.5), '1 250,5', 'Nombre décimal au format français');
+select is(public.nombre_fr(3060000), '3 060 000', 'Grand nombre entier avec espaces');
 
 select * from finish();
 rollback;

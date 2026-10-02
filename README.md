@@ -13,7 +13,7 @@ achat des matières premières → stock → production → distribution → ven
 | Phase 1 – étape 1 | Fondations : connexion, rôles, droits (RLS), journal d'audit, paramètres, taux de change, produits et prix, calculs métier testés | ✅ Livrée |
 | Phase 1 – étape 2 | Stocks : articles, bobines par lot, mouvements, coût moyen pondéré, inventaires, jours de couverture, alertes ; listes de référence modifiables ; TVA | ✅ Livrée |
 | Phase 1 – étape 3 | Production : fiches de poste, ordres de fabrication, rendement réel/théorique, pertes, arrêts, TRS, alertes, coût de revient des produits finis, tableau de bord | ✅ Livrée |
-| Phase 1 – étape 4 | Ventes simples | À venir |
+| Phase 1 – étape 4 | Ventes : clients, devis → commande → livraison → facture TTC → paiement, dotation sur l'encaissé, avoirs, impayés et relances, documents imprimables, tableau de bord (CA, DSO…) | ✅ Livrée |
 | Phase 1 – étape 5 | Application terrain hors ligne | À venir |
 | Phase 1 – étape 6 | Tableau de bord Direction | À venir |
 
@@ -55,6 +55,8 @@ npm run verifier     # types + lint + tests unitaires des calculs (Vitest)
 npm run test:db      # tests des droits en base (pgTAP) — Supabase local requis
 npm run build && npm start   # puis, dans un autre terminal :
 npm run test:e2e     # parcours dans un navigateur mobile (Playwright)
+# ou, en une commande (base neuve + build + serveur + tests) :
+npm run test:e2e:complet
 ```
 
 ## Mise en production (Supabase + Vercel)

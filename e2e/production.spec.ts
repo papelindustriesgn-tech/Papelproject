@@ -54,7 +54,7 @@ test.describe("production", () => {
 
     await page.getByRole("button", { name: "Valider la fiche" }).click();
     await page.getByRole("button", { name: "Oui, valider définitivement" }).click();
-    // La page se recharge en lecture seule : le badge « Validée » remplace le bouton.
+    await expect(page.getByText(/Fiche validée : bobines sorties du stock/)).toBeVisible();
     await expect(page.getByText(/^Validée le /)).toBeVisible();
     await expect(page.getByText(/GNF \/ paquet/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Ajouter" })).toHaveCount(0);

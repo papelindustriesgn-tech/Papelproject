@@ -22,7 +22,6 @@ insert into public.parametres (cle, valeur, libelle, description, categorie, typ
   ('seuil_perte_max', '0.05', 'Alerte perte élevée', 'Alerte si taux de perte > ce seuil', 'production', 'pourcentage', null),
   ('seuil_arret_minutes', '30', 'Alerte arrêt long', 'Alerte si un arrêt dépasse cette durée', 'production', 'entier', 'min'),
   ('taux_dotation', '0.04', 'Taux de dotation', 'Paquets offerts pour 100 achetés, sur montants encaissés', 'ventes', 'pourcentage', null),
-  ('dotation_types_eligibles', '["grossiste"]', 'Clients éligibles à la dotation', 'Types de clients : grossiste, b2b…', 'ventes', 'liste', null),
   ('stock_jours_couverture_alerte', '15', 'Alerte couverture de stock', 'Alerte si jours de couverture < ce seuil', 'stock', 'entier', 'jours'),
   ('stock_periode_consommation_jours', '30', 'Période de consommation moyenne', 'Pour le calcul des jours de couverture', 'stock', 'entier', 'jours'),
   ('gps_rayon_checkin_m', '100', 'Rayon de check-in', 'Distance maximale entre le commercial et le PVA', 'terrain', 'entier', 'm'),
@@ -132,3 +131,17 @@ insert into public.causes_arret (libelle, type_arret) values
   ('Pause', 'planifie'),
   ('Nettoyage planifié', 'planifie'),
   ('Maintenance préventive', 'planifie');
+
+-- -----------------------------------------------------------------------------
+-- Ventes : types de clients (niveau de prix appliqué, dotation oui/non) et modes de paiement.
+-- Modifiables dans Ventes → Listes de référence.
+-- -----------------------------------------------------------------------------
+insert into public.types_clients (libelle, niveau_prix, dotation, ordre) values
+  ('Grossiste', 'papel', true, 1),
+  ('Semi-grossiste', 'papel', false, 2),
+  ('Détaillant', 'papel', false, 3),
+  ('Supermarché', 'papel', false, 4),
+  ('B2B', 'papel', false, 5);
+
+insert into public.modes_paiement (libelle, ordre) values
+  ('Espèces', 1), ('Orange Money', 2), ('MTN Mobile Money', 3), ('Virement bancaire', 4), ('Chèque', 5);

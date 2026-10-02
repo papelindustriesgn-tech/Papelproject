@@ -225,7 +225,7 @@ begin
   v_nouvelle_qte := v_stock.quantite + new.quantite;
   if v_nouvelle_qte < 0 then
     raise exception 'Stock insuffisant pour « % » : disponible %, demandé %.',
-      v_article.libelle, v_stock.quantite, abs(new.quantite) using errcode = '22023';
+      v_article.libelle, public.nombre_fr(v_stock.quantite), public.nombre_fr(abs(new.quantite)) using errcode = '22023';
   end if;
 
   -- Stock du lot
@@ -240,7 +240,7 @@ begin
     insert into public.stocks_lots (lot_id) values (new.lot_id) on conflict do nothing;
     select quantite into v_lot_qte from public.stocks_lots where lot_id = new.lot_id for update;
     if v_lot_qte + new.quantite < 0 then
-      raise exception 'Poids insuffisant sur la bobine % : reste % kg.', v_lot.numero_lot, v_lot_qte using errcode = '22023';
+      raise exception 'Poids insuffisant sur la bobine % : reste % kg.', v_lot.numero_lot, public.nombre_fr(v_lot_qte) using errcode = '22023';
     end if;
     update public.stocks_lots set quantite = v_lot_qte + new.quantite, updated_at = now() where lot_id = new.lot_id;
     v_cout_lot := nullif(v_lot.cout_kg_gnf, 0);

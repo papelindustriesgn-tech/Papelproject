@@ -37,6 +37,11 @@ describe("validation des listes de référence", () => {
     expect(validerSaisie(def, { d: "12,5", j: "2026-10-02", h: "06:00:00" }, true)).toEqual({ donnees: { d: 12.5, j: "2026-10-02", h: "06:00" } });
     expect("erreurs" in validerSaisie(def, { d: "x", j: "02/10/2026", h: "25:00" }, true)).toBe(true);
   });
+  it("cases à cocher", () => {
+    const def = { ...referentiel("villes")!, champs: [{ nom: "b", libelle: "B", type: "booleen" as const }] };
+    expect(validerSaisie(def, { b: "on" }, true)).toEqual({ donnees: { b: true } });
+    expect(validerSaisie(def, {}, true)).toEqual({ donnees: { b: false } });
+  });
   it("codes de listes uniques", () => {
     expect(new Set(REFERENTIELS.map((r) => r.code)).size).toBe(REFERENTIELS.length);
   });

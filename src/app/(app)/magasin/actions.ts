@@ -7,6 +7,7 @@ import { exigerEspace } from "@/lib/auth/session";
 import { schemaDateIso } from "@/lib/formulaires/dates";
 import { erreursZod, messageErreurBase, valeursFormulaire, type EtatFormulaire } from "@/lib/formulaires/etat";
 import { lireNombre } from "@/lib/formulaires/nombres";
+import { avecSucces } from "@/lib/formulaires/succes";
 import { TYPES_MOUVEMENT } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 import type { Database } from "@/lib/supabase/types";
@@ -241,5 +242,5 @@ export async function validerInventaire(inventaireId: string, _e: EtatFormulaire
   const { data, error } = await supabase.rpc("valider_inventaire", { p_inventaire: inventaireId });
   if (error) return { message: messageErreurBase(error) };
   rafraichir();
-  return { ok: true, message: `Inventaire validé : ${data} écart(s) passé(s) en stock.` };
+  redirect(avecSucces(`/magasin/inventaires/${inventaireId}`, `Inventaire validé : ${data} écart(s) passé(s) en stock.`));
 }
