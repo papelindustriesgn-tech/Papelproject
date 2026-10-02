@@ -4,7 +4,15 @@ ERP de **Papel Industries**, fabricant guinéen de mouchoirs en papier (usine de
 Chaîne couverte : achat MP → stock → production → stock produits finis → distribution → vente → encaissement → pilotage.
 
 > Ce fichier est la référence des règles métier et des conventions de code. Le tenir à jour à chaque phase.
-> État : **Phase 0 — cadrage** (architecture proposée dans `docs/architecture.md`, en attente de validation).
+> État : **Phase 1 — étape 1 (fondations) livrée.** Prochaine : étape 2 (stocks). Plan : `docs/architecture.md`.
+
+@AGENTS.md
+
+**Next.js 16** : `middleware` s'appelle désormais `proxy` (`src/proxy.ts`) ; `cookies()`, `params`, `searchParams` sont asynchrones.
+Lire `node_modules/next/dist/docs/` avant d'utiliser une API Next inconnue.
+
+Commandes : `npm run verifier` (types + lint + Vitest), `npm run test:db` (pgTAP), `npm run test:e2e` (Playwright),
+`npm run db:reset` (migrations + seed), `npm run db:types` (régénère `src/lib/supabase/types.ts` après chaque migration).
 
 ---
 
@@ -33,28 +41,38 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 - Types TypeScript « marqués » (`Tonnes`, `Kg`, `Paquets`, `Colis`…) : additionner des colis et des paquets ne compile pas.
 - En base, chaque quantité a une unité explicite (nom de colonne suffixé : `quantite_paquets`, `poids_kg`…).
 - Unité de stockage de référence : MP en **kg**, produits finis en **paquets** (le colis est une vue dérivée).
+- Le nombre de paquets par colis dépend du **conditionnement** (table `conditionnements`) : on ne code jamais « 50 » ou « 30 » en dur.
 
 ## 4. Produits (paramétrables dans Admin)
 
-| Produit   | Mouchoirs | Plis | Format (mm) | Paquets / colis | Rendement théorique | Prix distributeur actuel |
-|-----------|-----------|------|-------------|-----------------|---------------------|--------------------------|
-| Petit 100 | 100       | 3    | 190 × 126   | 50              | 10 175 paquets/t    | 175 000 GNF / colis      |
-| Grand 100 | 100       | 3    | 190 × 197   | 30              | 6 508 paquets/t     | 230 000 GNF / colis      |
+| Produit   | Mouchoirs | Plis | Format (mm) | Conditionnements (paquets / colis) | Rendement théorique | Prix Papel actuel |
+|-----------|-----------|------|-------------|------------------------------------|---------------------|-------------------|
+| Petit 100 | 100       | 3    | 190 × 126   | 50 (défaut), 80 ou 100 selon le client | 10 175 paquets/t | **3 400 GNF / paquet** |
+| Grand 100 | 100       | 3    | 190 × 197   | 30                                 | 6 508 paquets/t     | **7 666 GNF / paquet** |
+
+- **Le prix est fixé AU PAQUET.** Prix du colis = prix du paquet × paquets du conditionnement (ex. Petit colis de 50 = 170 000 GNF ; Grand colis de 30 = 229 980 GNF).
 
 - Grammage de référence : **13 g/m² par pli**. Pertes de référence : **5 %**.
 - Formule du rendement théorique (vérifie les valeurs ci-dessus) :
   `poids_paquet_g = (L_m × l_m) × plis × grammage × nb_mouchoirs`
-  `rendement_theorique = 1 000 000 g × (1 − taux_perte) ÷ poids_paquet_g`
-  - Petit : 0,190 × 0,126 × 3 × 13 × 100 = 93,37 g → 10 710 × 0,95 ≈ **10 175 paquets/t**
-  - Grand : 0,190 × 0,197 × 3 × 13 × 100 = 145,98 g → 6 850 × 0,95 ≈ **6 508 paquets/t**
+  `rendement_theorique = arrondi(1 000 000 g × (1 − taux_perte) ÷ poids_paquet_g)` (arrondi à l'entier le plus proche)
+  Formule implémentée deux fois, à l'identique : `src/lib/metier/rendement.ts` et colonne générée `produits.rendement_theorique_paquets_t`.
+  - Petit : 0,190 × 0,126 × 3 × 13 × 100 = 93,366 g → 950 000 ÷ 93,366 = 10 174,98 → **10 175 paquets/t**
+  - Grand : 0,190 × 0,197 × 3 × 13 × 100 = 145,977 g → 950 000 ÷ 145,977 = 6 507,88 → **6 508 paquets/t**
 - Le système compare **toujours** le rendement RÉEL (paquets produits ÷ tonnes consommées) au théorique.
-- **Historique des prix conservé** : un prix a une date de début et une date de fin, jamais écrasé.
+- **Historique des prix conservé** : un prix a une date de début et une date de fin, jamais écrasé (table `grille_prix`, fonction `definir_prix`, contrainte anti-chevauchement, trigger d'immuabilité).
 
 ## 5. Distribution et prix
 
 - Chaîne : Papel → grossiste → semi-grossiste → détaillant (PVA) → consommateur.
-- Prix conseillés par niveau (grille de prix par niveau, historisée).
-- **Dotation grossiste** : X colis offerts pour 100 achetés (paramétrable, **4 %** par défaut), calculée **uniquement sur les montants encaissés** (jamais sur le facturé non payé).
+- Prix conseillés par niveau (grille de prix par niveau, historisée) : `papel`, `grossiste`, `semi_grossiste`, `detaillant` (= PVC).
+- **Dotation** : 4 paquets offerts pour 100 achetés (paramètre `taux_dotation`, **4 %** par défaut), du **même produit**,
+  calculée **uniquement sur les montants encaissés** (jamais sur le facturé non payé).
+  - Clients éligibles : paramètre `dotation_types_eligibles` (grossistes par défaut ; B2B activable).
+  - Calcul cumulatif (`src/lib/metier/dotation.ts`) : paiements partiels sans perte ni doublon ; remise en colis complets, le reste reporté.
+- **Commerciaux terrain** : font des **devis et factures** depuis leur téléphone (hors ligne). Ils **n'encaissent pas** :
+  aucun encaissement n'est saisi par le terrain ; les paiements sont enregistrés au bureau (finance).
+- Site unique : **usine de Coyah** (pas de dépôt). Stock suivi **en temps réel** (chaque entrée/sortie est un mouvement).
 
 ## 6. Coûts
 
@@ -70,6 +88,9 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 
 ## 8. Rôles (chaque rôle ne voit QUE son interface)
 
+Connexion par **identifiant + mot de passe** (e-mail technique `identifiant@papel.local`, pas de SMS). Comptes créés uniquement par l'admin
+ou la Direction (inscription publique désactivée). Un téléphone par commercial.
+
 1. Direction (PDG, DG) — accès total + tableau de bord global
 2. Achats et approvisionnement
 3. Magasin (magasinier)
@@ -82,8 +103,12 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 10. Comptabilité et finance
 11. Administrateur système — utilisateurs, rôles, paramètres
 
-- Droits appliqués **en base (RLS)**, pas seulement dans l'interface.
-- **Journal d'audit** de toutes les modifications (qui, quoi, quand, avant/après).
+- Droits appliqués **en base (RLS)**, pas seulement dans l'interface. Fonctions : `a_role(r)`, `a_un_role(...)` (inclut toujours la Direction), `est_admin()`, `est_actif()`.
+  Un compte désactivé perd tous ses droits. Seule la Direction attribue le rôle Direction.
+- Les rôles sont aussi copiés dans le jeton (claim `papel_roles`, hook `hook_jeton_acces`) pour les redirections du proxy ; l'autorité reste la table `utilisateur_roles`.
+- Espaces et rôles autorisés : `src/lib/auth/espaces.ts`. Chaque espace a un `layout.tsx` qui appelle `exigerEspace()`.
+- **Journal d'audit** de toutes les modifications (qui, quoi, quand, avant/après) : table `journal_audit` en ajout seul ;
+  toute nouvelle table métier doit appeler `select public.activer_audit('public.ma_table');` dans sa migration.
 
 ## 9. Conventions de code
 
@@ -91,7 +116,11 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 - Calculs métier critiques (rendement, unités, coûts, marges, dotations, devises) : fonctions pures dans `src/lib/metier/`, **testées** (Vitest).
 - Validation des formulaires avec Zod, messages d'erreur en français.
 - Identifiants UUID générés côté client pour tout ce qui peut être créé hors ligne (synchronisation idempotente).
-- Tests RLS en SQL (pgTAP), parcours critiques en Playwright.
+- Tests RLS en SQL (pgTAP, `supabase/tests/`), parcours critiques en Playwright (`e2e/`, écran mobile 360 px).
+- Server Actions : valider avec Zod, renvoyer un `EtatFormulaire` (`src/lib/formulaires/etat.ts`), traduire les erreurs SQL avec `messageErreurBase`.
+- Nombres saisis à la française (« 9 450 », « 0,05 ») : `lireNombre()` ; pourcentages saisis en % et stockés en fraction (5 → 0,05).
+- Interface : composants `src/components/ui`, boutons ≥ 44 px, police système (aucune police téléchargée), couleur marque `papel-700` = #07524D.
+- Comptabilité : le comptable suivra très probablement le **SYSCOHADA** ; prévoir des exports **Excel/CSV** compatibles (phase 3).
 
 ## 10. Phases
 

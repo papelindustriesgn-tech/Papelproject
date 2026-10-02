@@ -1,4 +1,6 @@
-# Papel ERP — Proposition d'architecture (à valider)
+# Papel ERP — Architecture
+
+> Validée le 01/10/2026 avec les réponses de la direction (voir § 6).
 
 ## 1. Vue d'ensemble
 
@@ -76,9 +78,10 @@ Le middleware redirige chaque utilisateur vers son espace ; un utilisateur n'a a
 
 ### 4.2 Référentiel produits et unités
 - `articles` (id, code, libellé, **famille** : matiere_premiere | emballage | produit_fini | piece_detachee, **unite_stock** : kg | unite | paquet, seuil_alerte, actif)
-- `produits_finis` (article_id, nb_mouchoirs, plis, longueur_mm, largeur_mm, grammage_g_m2_pli, paquets_par_colis, colis_par_palette, taux_perte_ref, rendement_theorique_paquets_t **calculé**)
-- `prix_produits` (article_id, niveau_client, prix_colis_gnf, date_debut, date_fin) — historique
-- `prix_conseilles` (article_id, niveau : grossiste | semi_grossiste | detaillant | consommateur, prix, dates)
+- ✅ `produits` (code, nb_mouchoirs, plis, longueur_mm, largeur_mm, grammage_g_m2_pli, taux_perte_ref, poids_paquet_g et rendement_theorique_paquets_t **calculés**)
+- ✅ `conditionnements` (produit, paquets_par_colis : 50/80/100 pour le Petit, 30 pour le Grand, colis_par_palette)
+- ✅ `grille_prix` (produit, niveau : papel | grossiste | semi_grossiste | detaillant, **prix_paquet_gnf**, date_debut, date_fin) — historique sans chevauchement
+- Étape 2 : un article produit fini par (produit × conditionnement), stocké en paquets
 
 ### 4.3 Stocks
 - `entrepots` (usine Coyah MP, magasin PF, dépôts éventuels)
@@ -112,9 +115,11 @@ Le middleware redirige chaque utilisateur vers son espace ; un utilisateur n'a a
 - `clients` (niveau, conditions : comptant | credit, plafond_credit_gnf, pva_id éventuel, commercial_id)
 - `commandes` / `commande_lignes` (article, quantite_colis, prix_colis_gnf figé, origine : bureau | terrain)
 - `livraisons` / `livraison_lignes` (sortie de stock PF) — enrichies en phase 2 (logistique)
-- `factures` / `facture_lignes` (numérotation séquentielle sans trou)
-- `paiements` (client, montant, devise, taux, mode : espèces | Orange Money | MTN MoMo | virement | chèque, encaissé par, hors ligne ?)
-- `dotations` (client, période, base_encaisse_gnf, colis_dus, colis_remis)
+- `devis`, `factures` / lignes : créables **hors ligne par le commercial**. Numérotation par série propre à chaque commercial
+  (ex. `FA-2026-C01-00042`), continue et sans trou dans chaque série, attribuée sur le téléphone : pas de collision possible hors ligne.
+  Facture en PDF partageable (WhatsApp) depuis le téléphone.
+- `paiements` saisis **au bureau uniquement** (client, montant, devise, taux, mode, référence) — les commerciaux n'encaissent pas
+- `dotations` (client, facture, produit, base_encaisse_gnf, paquets_dus, paquets_remis) — même produit, clients éligibles paramétrables
 - `retours` (phase 1 simple : retour en stock ou rebut)
 
 ### 4.7 Phase 2
@@ -142,9 +147,17 @@ Chaque étape se termine par un **point** (démo, tests, CLAUDE.md à jour) avan
 
 **Phase 3** : finance (caisse/banque, dettes/créances, compte de résultat, BFR, seuil de rentabilité) → trésorerie prévisionnelle → rapports automatiques → exports comptables.
 
-## 6. Hypothèses par défaut (modifiables)
+## 6. Décisions (réponses de la direction, 01/10/2026)
 
-- Valorisation des stocks au **coût moyen pondéré (CMP)**, traçabilité par lot conservée.
-- Rayon de check-in GPS : 100 m ; une visite hors zone est enregistrée mais signalée.
-- Cadence nominale de la ligne saisie par équipement (nécessaire au TRS).
-- Le commercial terrain prend des commandes et encaisse ; la livraison vient de l'usine ou d'un dépôt.
+1. Hébergement : au choix de l'équipe technique → développement en local, puis Supabase (région Europe) + Vercel.
+2. Connexion identifiant + mot de passe ; un téléphone par commercial ; le commercial fait **devis et factures**.
+3. **Aucun encaissement** par le terrain dans l'ERP.
+4. Dotation : même produit ; grossistes (B2B activable par paramètre).
+5. Prix **au paquet** : Petit 3 400 GNF, Grand 7 666 GNF. Colis Petit de 50, 80 ou 100 paquets selon le client ; Grand 30.
+6. Site unique : Coyah.
+7. Stock en temps réel (entrées/sorties). Valorisation au coût moyen pondéré (CMP) pour la marge, traçabilité par lot.
+8. Dimensionnement standard PME ; cadence nominale paramétrable par équipement.
+9. Comptabilité : SYSCOHADA probable ; exports Excel/CSV.
+10. Pas de reprise de données ; logo fourni (vert #07524D).
+
+Hypothèses restantes : rayon de check-in GPS 100 m (visite hors zone enregistrée mais signalée) ; TVA désactivée par défaut (paramètre).
