@@ -6,6 +6,7 @@ const SOUS_MENU = [
   { href: "/admin/parametres", libelle: "Paramètres" },
   { href: "/admin/produits", libelle: "Produits et prix" },
   { href: "/admin/taux-change", libelle: "Taux de change" },
+  { href: "/admin/listes", libelle: "Listes de référence" },
   { href: "/admin/journal", libelle: "Journal d'audit" },
 ];
 

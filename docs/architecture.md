@@ -83,7 +83,10 @@ Le middleware redirige chaque utilisateur vers son espace ; un utilisateur n'a a
 - ✅ `grille_prix` (produit, niveau : papel | grossiste | semi_grossiste | detaillant, **prix_paquet_gnf**, date_debut, date_fin) — historique sans chevauchement
 - Étape 2 : un article produit fini par (produit × conditionnement), stocké en paquets
 
-### 4.3 Stocks
+### 4.3 Stocks (✅ livré — voir migration `20261002000300_stocks.sql`)
+- Site unique : pas de table d'entrepôts. `categories_articles`, `fournisseurs` (listes modifiables), `articles`, `lots`,
+  `mouvements_stock` (signé, inaltérable), `stocks_articles` / `stocks_lots` (temps réel, CMP), `inventaires`, vues `etat_stock`, `etat_lots`, `alertes_stock`.
+- Ancienne proposition, pour mémoire :
 - `entrepots` (usine Coyah MP, magasin PF, dépôts éventuels)
 - `lots` (article_id, numero_lot, fournisseur_id, date_reception, cout_unitaire_gnf, attributs MP : poids_net_kg, grammage, largeur_mm, diametre_mm, plis ; statut)
 - `mouvements_stock` (id, date_operation, type : entree | sortie | transfert | ajustement | consommation | production | vente | retour, article_id, lot_id, entrepot_source, entrepot_dest, **quantite + unite** (dans l'unité de stock de l'article), cout_unitaire_gnf, document_type, document_id, auteur) — journal en ajout seul
@@ -136,8 +139,8 @@ Le middleware redirige chaque utilisateur vers son espace ; un utilisateur n'a a
 Chaque étape se termine par un **point** (démo, tests, CLAUDE.md à jour) avant la suivante.
 
 **Phase 1 — MVP**
-1. **Fondations** : projet Next.js, Supabase local, auth, rôles, RLS de base, audit, paramètres + taux de change, module `unites` et calculs métier testés, squelette des espaces, seed.
-2. **Stocks** : articles, lots bobines, mouvements, inventaires, seuils, jours de couverture.
+1. ✅ **Fondations** : projet Next.js, Supabase local, auth, rôles, RLS de base, audit, paramètres + taux de change, module `unites` et calculs métier testés, squelette des espaces, seed.
+2. ✅ **Stocks** : articles, lots bobines, mouvements, inventaires, seuils, jours de couverture.
 3. **Production** : OF, fiches de poste, validation → mouvements de stock, KPI et alertes rendement/perte/arrêts, TRS.
 4. **Ventes simples** : clients, grille de prix historisée, commande → livraison → facture → paiement, dotation sur encaissé.
 5. **PWA terrain** : PVA + GPS + photos, visites avec check-in, commandes et encaissements hors ligne, synchro ; vue responsable commercial avec carte.
@@ -160,4 +163,7 @@ Chaque étape se termine par un **point** (démo, tests, CLAUDE.md à jour) avan
 9. Comptabilité : SYSCOHADA probable ; exports Excel/CSV.
 10. Pas de reprise de données ; logo fourni (vert #07524D).
 
-Hypothèses restantes : rayon de check-in GPS 100 m (visite hors zone enregistrée mais signalée) ; TVA désactivée par défaut (paramètre).
+Compléments du 02/10/2026 : prix au paquet identique quelle que soit la taille du colis ; prix HT + TVA 18 % ajoutée ;
+prix conseillés Petit 3 600 (max grossiste) / 4 000 / 5 000 ; **ERP paramétrable « à la Odoo »** : toutes les listes sont modifiables par les équipes.
+
+Hypothèses restantes : rayon de check-in GPS 100 m (visite hors zone enregistrée mais signalée).

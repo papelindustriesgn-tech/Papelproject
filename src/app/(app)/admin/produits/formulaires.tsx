@@ -3,14 +3,12 @@
 import { useActionState } from "react";
 import { Bouton, Champ, Message, Selection } from "@/components/ui";
 import { ETAT_INITIAL } from "@/lib/formulaires/etat";
-import { ajouterConditionnement, definirPrix, modifierProduit } from "./actions";
+import { ajouterConditionnement, creerProduit, definirPrix, modifierProduit } from "./actions";
 
-export const LIBELLES_NIVEAUX: Record<string, string> = {
-  papel: "Prix Papel (distributeur)",
-  grossiste: "Conseillé grossiste → semi-grossiste",
-  semi_grossiste: "Conseillé semi-grossiste → détaillant",
-  detaillant: "Conseillé au consommateur (PVC)",
-};
+export interface Niveau {
+  code: string;
+  libelle: string;
+}
 
 export interface ProduitEditable {
   id: string;
@@ -70,7 +68,7 @@ export function FormulaireConditionnement({ produitId }: { produitId: string }) 
   );
 }
 
-export function FormulairePrix({ produitId, dateDuJour }: { produitId: string; dateDuJour: string }) {
+export function FormulairePrix({ produitId, dateDuJour, niveaux }: { produitId: string; dateDuJour: string; niveaux: Niveau[] }) {
   const [etat, action, enCours] = useActionState(definirPrix.bind(null, produitId), ETAT_INITIAL);
   const v = etat.ok ? {} : (etat.valeurs ?? {});
   return (
@@ -78,18 +76,44 @@ export function FormulairePrix({ produitId, dateDuJour }: { produitId: string; d
       {etat.message && <Message ton={etat.ok ? "succes" : "erreur"}>{etat.message}</Message>}
       <div className="grid gap-3 sm:grid-cols-2">
         <Selection libelle="Niveau" name="niveau" defaultValue={v.niveau ?? "papel"} erreur={etat.erreurs?.niveau}>
-          {Object.entries(LIBELLES_NIVEAUX).map(([k, l]) => (
-            <option key={k} value={k}>
-              {l}
+          {niveaux.map((n) => (
+            <option key={n.code} value={n.code}>
+              {n.libelle}
             </option>
           ))}
         </Selection>
-        <Champ libelle="Prix du paquet (GNF)" name="prix_paquet_gnf" inputMode="numeric" defaultValue={v.prix_paquet_gnf} erreur={etat.erreurs?.prix_paquet_gnf} />
+        <Champ libelle="Prix du paquet HT (GNF)" name="prix_paquet_gnf" inputMode="numeric" defaultValue={v.prix_paquet_gnf} erreur={etat.erreurs?.prix_paquet_gnf} />
         <Champ libelle="À partir du" name="date_debut" type="date" defaultValue={v.date_debut ?? dateDuJour} erreur={etat.erreurs?.date_debut} />
         <Champ libelle="Note" name="note" defaultValue={v.note} erreur={etat.erreurs?.note} />
       </div>
       <Bouton type="submit" disabled={enCours} className="self-start">
         Définir le nouveau prix
+      </Bouton>
+    </form>
+  );
+}
+
+export function FormulaireNouveauProduit() {
+  const [etat, action, enCours] = useActionState(creerProduit, ETAT_INITIAL);
+  const v = etat.ok ? {} : (etat.valeurs ?? {});
+  const e = etat.erreurs ?? {};
+  return (
+    <form action={action} className="flex flex-col gap-3">
+      {etat.message && <Message ton={etat.ok ? "succes" : "erreur"}>{etat.message}</Message>}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Champ libelle="Code" name="code" required defaultValue={v.code} erreur={e.code} aide="Ex. : PETIT100" autoCapitalize="characters" />
+        <Champ libelle="Libellé" name="libelle" required defaultValue={v.libelle} erreur={e.libelle} />
+        <Champ libelle="Mouchoirs par paquet" name="nb_mouchoirs" inputMode="numeric" required defaultValue={v.nb_mouchoirs ?? "100"} erreur={e.nb_mouchoirs} />
+        <Champ libelle="Plis" name="plis" inputMode="numeric" required defaultValue={v.plis ?? "3"} erreur={e.plis} />
+        <Champ libelle="Longueur (mm)" name="longueur_mm" inputMode="decimal" required defaultValue={v.longueur_mm} erreur={e.longueur_mm} />
+        <Champ libelle="Largeur (mm)" name="largeur_mm" inputMode="decimal" required defaultValue={v.largeur_mm} erreur={e.largeur_mm} />
+        <Champ libelle="Grammage par pli (g/m²)" name="grammage_g_m2_pli" inputMode="decimal" required defaultValue={v.grammage_g_m2_pli ?? "13"} erreur={e.grammage_g_m2_pli} />
+        <Champ libelle="Pertes de référence (%)" name="taux_perte_pct" inputMode="decimal" required defaultValue={v.taux_perte_pct ?? "5"} erreur={e.taux_perte_pct} />
+        <Champ libelle="Paquets par colis (colis par défaut)" name="paquets_par_colis" inputMode="numeric" required defaultValue={v.paquets_par_colis} erreur={e.paquets_par_colis} />
+        <Champ libelle="Prix Papel du paquet HT (GNF)" name="prix_paquet_gnf" inputMode="numeric" defaultValue={v.prix_paquet_gnf} erreur={e.prix_paquet_gnf} aide="Facultatif" />
+      </div>
+      <Bouton type="submit" disabled={enCours} className="self-start">
+        Créer le produit
       </Bouton>
     </form>
   );

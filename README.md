@@ -11,7 +11,7 @@ achat des matières premières → stock → production → distribution → ven
 | Étape | Contenu | État |
 |---|---|---|
 | Phase 1 – étape 1 | Fondations : connexion, rôles, droits (RLS), journal d'audit, paramètres, taux de change, produits et prix, calculs métier testés | ✅ Livrée |
-| Phase 1 – étape 2 | Stocks | À venir |
+| Phase 1 – étape 2 | Stocks : articles, bobines par lot, mouvements, coût moyen pondéré, inventaires, jours de couverture, alertes ; listes de référence modifiables ; TVA | ✅ Livrée |
 | Phase 1 – étape 3 | Production | À venir |
 | Phase 1 – étape 4 | Ventes simples | À venir |
 | Phase 1 – étape 5 | Application terrain hors ligne | À venir |
@@ -61,10 +61,13 @@ npm run test:e2e     # parcours dans un navigateur mobile (Playwright)
 
 1. **Supabase** : créer un projet (région Europe, ex. Paris `eu-west-3`, la plus proche de Conakry).
    Plan **Pro** recommandé : sauvegardes quotidiennes automatiques et restauration à une date (PITR en option).
-2. Lier le projet et pousser les migrations (sans les données de démonstration) :
+2. Lier le projet, pousser les migrations, puis charger **une seule fois** la configuration initiale
+   (paramètres, produits, prix, niveaux de prix, catégories, géographie — tout reste modifiable ensuite dans l'interface).
+   Ne **jamais** charger `seed-demo.sql` en production.
    ```bash
    npx supabase link --project-ref <ref-du-projet>
    npx supabase db push
+   psql "<chaîne de connexion du projet>" -f supabase/donnees-initiales.sql
    ```
 3. Dans le tableau de bord Supabase :
    - **Authentication → Hooks** : activer « Customize Access Token (JWT) Claims » avec la fonction `public.hook_jeton_acces`.
@@ -99,7 +102,9 @@ src/lib/metier/     calculs métier purs et testés (unités, rendement, devises
 src/lib/auth/       rôles, espaces, session
 src/lib/supabase/   clients Supabase et types générés
 supabase/migrations migrations SQL versionnées
-supabase/seed.sql   données de démonstration
+supabase/donnees-initiales.sql  configuration de départ (production comprise)
+supabase/seed-demo.sql          données de démonstration (local uniquement)
+src/lib/referentiels/           listes de référence modifiables (définitions + page générique)
 supabase/tests/     tests des droits (pgTAP)
 e2e/                parcours de bout en bout (Playwright)
 ```

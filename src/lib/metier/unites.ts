@@ -19,7 +19,7 @@ export type Cartons = Quantite<"carton">;
 export type Palettes = Quantite<"palette">;
 export type Bobines = Quantite<"bobine">;
 
-export type CodeUnite = "kg" | "tonne" | "paquet" | "colis" | "carton" | "palette" | "bobine";
+export type CodeUnite = "kg" | "tonne" | "paquet" | "colis" | "carton" | "palette" | "bobine" | "unite" | "rouleau" | "litre" | "metre";
 
 export const LIBELLES_UNITES: Record<CodeUnite, { singulier: string; pluriel: string; symbole: string }> = {
   kg: { singulier: "kilogramme", pluriel: "kilogrammes", symbole: "kg" },
@@ -29,6 +29,10 @@ export const LIBELLES_UNITES: Record<CodeUnite, { singulier: string; pluriel: st
   carton: { singulier: "carton", pluriel: "cartons", symbole: "ctn" },
   palette: { singulier: "palette", pluriel: "palettes", symbole: "pal." },
   bobine: { singulier: "bobine jumbo", pluriel: "bobines jumbo", symbole: "bob." },
+  unite: { singulier: "unité", pluriel: "unités", symbole: "u." },
+  rouleau: { singulier: "rouleau", pluriel: "rouleaux", symbole: "rlx" },
+  litre: { singulier: "litre", pluriel: "litres", symbole: "L" },
+  metre: { singulier: "mètre", pluriel: "mètres", symbole: "m" },
 };
 
 /** Erreur levée pour toute quantité ou tout facteur invalide. Message en français. */
@@ -153,10 +157,30 @@ export function colisVersPalettes(nb: Colis, c: Conditionnement): { palettes: Pa
 const formatEntier = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
 const formatDecimal = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 });
 
-/** Formate une quantité avec son unité, ex. « 1 250 paquets », « 3,25 t ». */
+/** Espaces fines insécables → espaces simples (affichage homogène). */
+const espaces = (t: string) => t.replace(/[\u202f\u00a0]/g, " ");
+
+/** Unités pouvant avoir des décimales (poids, volumes, longueurs). */
+const UNITES_DECIMALES: CodeUnite[] = ["kg", "tonne", "litre", "metre"];
+
+/** Formate une quantité avec son unité, ex. « 1 250 paquets », « 3,25 t », « 12,5 L ». */
 export function formaterQuantite(valeur: number, unite: CodeUnite): string {
   const l = LIBELLES_UNITES[unite];
-  if (unite === "tonne") return `${formatDecimal.format(valeur)} t`;
-  if (unite === "kg") return `${formatDecimal.format(valeur)} kg`;
-  return `${formatEntier.format(valeur)} ${Math.abs(valeur) > 1 ? l.pluriel : l.singulier}`;
+  if (UNITES_DECIMALES.includes(unite)) return espaces(`${formatDecimal.format(valeur)} ${l.symbole}`);
+  return espaces(`${formatEntier.format(valeur)} ${Math.abs(valeur) > 1 ? l.pluriel : l.singulier}`);
+}
+
+/**
+ * Stock d'un produit fini : paquets ET colis, ex. « 29 650 paquets (593 colis) » ou
+ * « 1 234 paquets (24 colis + 34 paquets) ».
+ */
+export function formaterStockProduitFini(nb: Paquets, c: Conditionnement): string {
+  const { colis: nbColis, restePaquets } = paquetsVersColis(nb, c);
+  const detail = restePaquets > 0 ? `${formaterQuantite(nbColis, "colis")} + ${formaterQuantite(restePaquets, "paquet")}` : formaterQuantite(nbColis, "colis");
+  return `${formaterQuantite(nb, "paquet")} (${detail})`;
+}
+
+/** Poids en kg affiché en tonnes au-delà d'une tonne : « 16,31 t », « 850 kg ». */
+export function formaterPoids(poids: Kg): string {
+  return Math.abs(poids) >= KG_PAR_TONNE ? formaterQuantite(kgVersTonnes(poids), "tonne") : formaterQuantite(poids, "kg");
 }

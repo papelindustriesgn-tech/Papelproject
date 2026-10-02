@@ -1,15 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-
-const MOT_DE_PASSE = "Papel2026!";
-
-async function connecter(page: Page, identifiant: string, motDePasse = MOT_DE_PASSE) {
-  await page.goto("/connexion");
-  await page.getByLabel("Identifiant").fill(identifiant);
-  await page.getByLabel("Mot de passe").fill(motDePasse);
-  await page.getByRole("button", { name: "Se connecter" }).click();
-  // Attend la fin de la connexion (sauf si on teste un échec).
-  if (motDePasse !== "mauvais-mdp") await page.waitForURL((url) => !url.pathname.startsWith("/connexion"));
-}
+import { expect, test } from "@playwright/test";
+import { connecter } from "./aide";
 
 test("un visiteur non connecté est renvoyé vers la connexion", async ({ page }) => {
   await page.goto("/admin/utilisateurs");
@@ -17,7 +7,7 @@ test("un visiteur non connecté est renvoyé vers la connexion", async ({ page }
 });
 
 test("mauvais mot de passe : message en français", async ({ page }) => {
-  await connecter(page, "magasin", "mauvais-mdp");
+  await connecter(page, "magasin", "mauvais-mdp", false);
   await expect(page.getByRole("alert").filter({ hasText: "incorrect" })).toHaveText("Identifiant ou mot de passe incorrect.");
 });
 

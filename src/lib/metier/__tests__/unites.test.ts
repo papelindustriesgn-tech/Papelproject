@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  colis, colisVersPaquets, colisVersPalettes, equivalentColis, ErreurUnite, formaterQuantite, kg, kgVersTonnes,
+  colis, colisVersPaquets, colisVersPalettes, equivalentColis, ErreurUnite, formaterPoids, formaterQuantite, formaterStockProduitFini, kg, kgVersTonnes,
   paquets, paquetsVersColis, palettes, palettesVersColis, poidsTotalBobines, somme, tonnes, tonnesVersKg,
 } from "../unites";
 
@@ -55,8 +55,18 @@ describe("paquets ↔ colis selon le conditionnement", () => {
 
 describe("affichage", () => {
   it("formate en français", () => {
-    expect(formaterQuantite(1250, "paquet").replace(/\s/g, " ")).toBe("1 250 paquets");
+    expect(formaterQuantite(1250, "paquet")).toBe("1 250 paquets");
     expect(formaterQuantite(1, "colis")).toBe("1 colis");
     expect(formaterQuantite(3.25, "tonne")).toBe("3,25 t");
+    expect(formaterQuantite(12.5, "litre")).toBe("12,5 L");
+    expect(formaterQuantite(3, "unite")).toBe("3 unités");
+  });
+  it("produits finis en paquets ET en colis", () => {
+    expect(formaterStockProduitFini(paquets(29650), COLIS_PETIT_50)).toBe("29 650 paquets (593 colis)");
+    expect(formaterStockProduitFini(paquets(1234), COLIS_PETIT_50)).toBe("1 234 paquets (24 colis + 34 paquets)");
+  });
+  it("poids en kg ou en tonnes", () => {
+    expect(formaterPoids(kg(16305))).toBe("16,31 t");
+    expect(formaterPoids(kg(850))).toBe("850 kg");
   });
 });

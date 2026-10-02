@@ -4,7 +4,7 @@ ERP de **Papel Industries**, fabricant guinéen de mouchoirs en papier (usine de
 Chaîne couverte : achat MP → stock → production → stock produits finis → distribution → vente → encaissement → pilotage.
 
 > Ce fichier est la référence des règles métier et des conventions de code. Le tenir à jour à chaque phase.
-> État : **Phase 1 — étape 1 (fondations) livrée.** Prochaine : étape 2 (stocks). Plan : `docs/architecture.md`.
+> État : **Phase 1 — étapes 1 (fondations) et 2 (stocks) livrées.** Prochaine : étape 3 (production). Plan : `docs/architecture.md`.
 
 @AGENTS.md
 
@@ -15,6 +15,19 @@ Commandes : `npm run verifier` (types + lint + Vitest), `npm run test:db` (pgTAP
 `npm run db:reset` (migrations + seed), `npm run db:types` (régénère `src/lib/supabase/types.ts` après chaque migration).
 
 ---
+
+## 0. Principe directeur : un ERP paramétrable « à la Odoo »
+
+**Les équipes de Papel saisissent et modifient elles-mêmes leurs données : rien n'est figé dans le code.**
+- Toute liste métier (niveaux de prix, villes/communes/quartiers, catégories d'articles, fournisseurs, puis causes d'arrêt,
+  marques concurrentes, types de clients…) est une **table** éditable dans l'interface — jamais un `enum` SQL ni une constante TS.
+  Exceptions assumées : les codes qui pilotent une logique du code (rôles, familles d'articles, unités, types de mouvement).
+- Nouvelle liste simple → la déclarer dans `src/lib/referentiels/definitions.ts` : la page générique `/<espace>/listes/<code>`
+  fournit recherche, ajout, modification, archivage (ou suppression si inutilisée) et export Excel.
+- Écrans de liste : recherche + filtres dans l'URL (`BarreFiltres`), **export Excel** (`ExportCsv` : CSV « ; » + BOM).
+- On **archive** (`actif = false`) plutôt que supprimer ce qui a servi ; les historiques (prix, mouvements, audit) sont inaltérables.
+- Données : `supabase/donnees-initiales.sql` = configuration de départ (chargée aussi en production, puis modifiée dans l'interface) ;
+  `supabase/seed-demo.sql` = démonstration locale uniquement (comptes à mot de passe connu, stocks fictifs).
 
 ## 1. Stack
 
@@ -50,7 +63,10 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 | Petit 100 | 100       | 3    | 190 × 126   | 50 (défaut), 80 ou 100 selon le client | 10 175 paquets/t | **3 400 GNF / paquet** |
 | Grand 100 | 100       | 3    | 190 × 197   | 30                                 | 6 508 paquets/t     | **7 666 GNF / paquet** |
 
-- **Le prix est fixé AU PAQUET.** Prix du colis = prix du paquet × paquets du conditionnement (ex. Petit colis de 50 = 170 000 GNF ; Grand colis de 30 = 229 980 GNF).
+- **Le prix est fixé AU PAQUET, identique quelle que soit la taille du colis** (confirmé par la direction).
+  Prix du colis = prix du paquet × paquets du conditionnement (ex. Petit colis de 50 = 170 000 GNF HT ; Grand colis de 30 = 229 980 GNF HT).
+- **Prix HORS TAXES ; TVA 18 % AJOUTÉE sur la facture** (paramètres `tva_applicable` = oui, `tva_taux` = 18 %), calculée sur le total HT
+  avec un seul arrondi (`src/lib/metier/tva.ts`). À valider avec le comptable selon le régime fiscal de Papel.
 
 - Grammage de référence : **13 g/m² par pli**. Pertes de référence : **5 %**.
 - Formule du rendement théorique (vérifie les valeurs ci-dessus) :
@@ -65,7 +81,9 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 ## 5. Distribution et prix
 
 - Chaîne : Papel → grossiste → semi-grossiste → détaillant (PVA) → consommateur.
-- Prix conseillés par niveau (grille de prix par niveau, historisée) : `papel`, `grossiste`, `semi_grossiste`, `detaillant` (= PVC).
+- Niveaux de prix (table `niveaux_prix`, modifiable ; `papel` obligatoire) — Petit 100, prix au paquet :
+  Papel → grossiste **3 400** ; grossiste → semi-grossiste **3 600 max** ; semi-grossiste → détaillant **4 000** ; détaillant → consommateur **5 000**.
+  Prix conseillés du Grand 100 : non communiqués (à saisir dans l'interface).
 - **Dotation** : 4 paquets offerts pour 100 achetés (paramètre `taux_dotation`, **4 %** par défaut), du **même produit**,
   calculée **uniquement sur les montants encaissés** (jamais sur le facturé non payé).
   - Clients éligibles : paramètre `dotation_types_eligibles` (grossistes par défaut ; B2B activable).
@@ -79,6 +97,20 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 - Coût matière réel = prix fournisseur + fret + transit + douane + transport jusqu'à l'usine + pertes.
 - Postes de coûts variables : pâte/bobines, films, sacs, boîtes, cartons, encres, transport, douane.
 - Charges fixes mensuelles saisies séparément.
+
+## 6 bis. Stocks (étape 2)
+
+- Site unique (Coyah) : pas d'emplacements. Stock **temps réel** = somme des mouvements, tenu dans `stocks_articles` / `stocks_lots` par trigger.
+- `mouvements_stock` : journal **inaltérable** (ni UPDATE ni DELETE) ; quantité **signée** dans l'unité de l'article (imposée par la base) ;
+  le type impose le signe ; motif obligatoire pour sortie diverse, rebut, ajustement. Erreur → mouvement inverse.
+- Stock négatif refusé (verrou de ligne + contrôle). Bobines : article `suivi_par_lot` (kg) → lot obligatoire ; une bobine bloquée ne sort pas.
+- Valorisation au **coût moyen pondéré** : entrée au coût saisi (sinon coût du lot, sinon CMP) ; sortie au CMP ; stock à zéro → valeur à zéro.
+  Produits finis valorisés à 0 tant que le coût de revient de production n'existe pas (étape 3).
+- Produits finis : un article par (produit × conditionnement), créé automatiquement, stocké en **paquets**, affiché « paquets (colis) ».
+- Unité, famille et suivi par lot d'un article sont **définitifs** (sinon créer un nouvel article).
+- Jours de couverture = stock ÷ (sorties consommation/vente/sortie/dotation/rebut des N derniers jours ÷ N), N = `stock_periode_consommation_jours`.
+- Inventaire : photo du théorique à l'ouverture, comptage, validation → un mouvement « inventaire » par écart.
+- Écritures sensibles par fonctions SQL atomiques : `receptionner_bobine`, `ouvrir_inventaire`, `valider_inventaire`.
 
 ## 7. Seuils d'alerte (paramétrables)
 

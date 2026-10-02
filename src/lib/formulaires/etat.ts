@@ -40,6 +40,8 @@ export function messageErreurBase(erreur: { code?: string; message?: string } | 
       return "Cet élément existe déjà (doublon).";
     case "23503":
       return "Opération impossible : cet élément est utilisé ailleurs.";
+    case "23502":
+      return "Un champ obligatoire n'est pas rempli.";
     case "23514":
       return "Valeur refusée : elle ne respecte pas les règles de saisie.";
     case "23P01":

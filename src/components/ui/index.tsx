@@ -36,7 +36,7 @@ export function Bouton({
 
 export function Carte({ titre, action, children, className }: { titre?: ReactNode; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cx("rounded-xl border border-gray-200 bg-white p-4 shadow-sm", className)}>
+    <section className={cx("min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm", className)}>
       {(titre || action) && (
         <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
           {titre && <h2 className="text-lg font-bold text-papel-900">{titre}</h2>}
@@ -57,7 +57,7 @@ export function Champ({
 }: InputHTMLAttributes<HTMLInputElement> & { libelle: string; erreur?: string; aide?: string }) {
   const id = props.id ?? props.name;
   return (
-    <div className={cx("flex flex-col gap-1", className)}>
+    <div className={cx("flex min-w-0 flex-col gap-1", className)}>
       <label htmlFor={id} className="font-medium text-gray-800">
         {libelle}
         {props.required && <span className="text-red-700"> *</span>}
@@ -67,7 +67,7 @@ export function Champ({
         aria-invalid={erreur ? true : undefined}
         aria-describedby={erreur ? `${id}-erreur` : undefined}
         className={cx(
-          "min-h-11 rounded-lg border bg-white px-3 py-2 text-base",
+          "min-h-11 w-full min-w-0 rounded-lg border bg-white px-3 py-2 text-base",
           erreur ? "border-red-600" : "border-gray-300 focus:border-papel-500",
         )}
         {...props}
@@ -91,14 +91,14 @@ export function Selection({
 }: SelectHTMLAttributes<HTMLSelectElement> & { libelle: string; erreur?: string }) {
   const id = props.id ?? props.name;
   return (
-    <div className={cx("flex flex-col gap-1", className)}>
+    <div className={cx("flex min-w-0 flex-col gap-1", className)}>
       <label htmlFor={id} className="font-medium text-gray-800">
         {libelle}
       </label>
       <select
         id={id}
         aria-invalid={erreur ? true : undefined}
-        className={cx("min-h-11 rounded-lg border bg-white px-3 py-2 text-base", erreur ? "border-red-600" : "border-gray-300")}
+        className={cx("min-h-11 w-full min-w-0 rounded-lg border bg-white px-3 py-2 text-base", erreur ? "border-red-600" : "border-gray-300")}
         {...props}
       >
         {children}

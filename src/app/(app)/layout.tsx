@@ -33,7 +33,7 @@ export default async function CoqueApplication({ children }: LayoutProps<"/">) {
         <aside className="border-b border-gray-200 bg-white p-2 md:w-56 md:border-b-0 md:border-r">
           <Navigation liens={liens} />
         </aside>
-        <main className="w-full max-w-6xl flex-1 p-4">{children}</main>
+        <main className="w-full min-w-0 max-w-6xl flex-1 p-4">{children}</main>
       </div>
     </div>
   );

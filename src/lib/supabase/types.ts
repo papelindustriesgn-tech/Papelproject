@@ -23,7 +23,63 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "communes": {
+            "articles": {
+                  Row: {
+                    "actif": boolean,"categorie_id": string | null,"code": string,"conditionnement_id": string | null,"created_at": string,"famille": Database["public"]['Enums']["famille_article"],"id": string,"libelle": string,"notes": string,"produit_id": string | null,"seuil_alerte": number,"suivi_par_lot": boolean,"unite": Database["public"]['Enums']["unite_stock"],"updated_at": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"categorie_id"?: string | null,"code": string,"conditionnement_id"?: string | null,"created_at"?: string,"famille": Database["public"]['Enums']["famille_article"],"id"?: string,"libelle": string,"notes"?: string,"produit_id"?: string | null,"seuil_alerte"?: number,"suivi_par_lot"?: boolean,"unite": Database["public"]['Enums']["unite_stock"],"updated_at"?: string
+                  }
+                  Update: {
+                    "actif"?: boolean,"categorie_id"?: string | null,"code"?: string,"conditionnement_id"?: string | null,"created_at"?: string,"famille"?: Database["public"]['Enums']["famille_article"],"id"?: string,"libelle"?: string,"notes"?: string,"produit_id"?: string | null,"seuil_alerte"?: number,"suivi_par_lot"?: boolean,"unite"?: Database["public"]['Enums']["unite_stock"],"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "articles_categorie_id_fkey"
+      columns: ["categorie_id"]
+isOneToOne: false
+      referencedRelation: "categories_articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "articles_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: true
+      referencedRelation: "conditionnements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "articles_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: true
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["conditionnement_id"]
+    },{
+      foreignKeyName: "articles_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["produit_id"]
+    },{
+      foreignKeyName: "articles_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "produits"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"categories_articles": {
+                  Row: {
+                    "actif": boolean,"created_at": string,"famille": Database["public"]['Enums']["famille_article"],"id": string,"libelle": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"created_at"?: string,"famille": Database["public"]['Enums']["famille_article"],"id"?: string,"libelle": string
+                  }
+                  Update: {
+                    "actif"?: boolean,"created_at"?: string,"famille"?: Database["public"]['Enums']["famille_article"],"id"?: string,"libelle"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"communes": {
                   Row: {
                     "id": string,"nom": string,"ville_id": string
                   }
@@ -67,15 +123,28 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"grille_prix": {
+                },"fournisseurs": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"date_debut": string,"date_fin": string | null,"id": string,"niveau": Database["public"]['Enums']["niveau_prix"],"note": string | null,"prix_paquet_gnf": number,"produit_id": string
+                    "actif": boolean,"contact": string,"created_at": string,"email": string,"id": string,"nom": string,"notes": string,"pays": string,"telephone": string,"updated_at": string
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"date_debut": string,"date_fin"?: string | null,"id"?: string,"niveau": Database["public"]['Enums']["niveau_prix"],"note"?: string | null,"prix_paquet_gnf": number,"produit_id": string
+                    "actif"?: boolean,"contact"?: string,"created_at"?: string,"email"?: string,"id"?: string,"nom": string,"notes"?: string,"pays"?: string,"telephone"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"date_debut"?: string,"date_fin"?: string | null,"id"?: string,"niveau"?: Database["public"]['Enums']["niveau_prix"],"note"?: string | null,"prix_paquet_gnf"?: number,"produit_id"?: string
+                    "actif"?: boolean,"contact"?: string,"created_at"?: string,"email"?: string,"id"?: string,"nom"?: string,"notes"?: string,"pays"?: string,"telephone"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"grille_prix": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"date_debut": string,"date_fin": string | null,"id": string,"niveau": string,"note": string | null,"prix_paquet_gnf": number,"produit_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"date_debut": string,"date_fin"?: string | null,"id"?: string,"niveau": string,"note"?: string | null,"prix_paquet_gnf": number,"produit_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"date_debut"?: string,"date_fin"?: string | null,"id"?: string,"niveau"?: string,"note"?: string | null,"prix_paquet_gnf"?: number,"produit_id"?: string
                   }
                   Relationships: [
                     {
@@ -84,6 +153,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "profils"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "grille_prix_niveau_fkey"
+      columns: ["niveau"]
+isOneToOne: false
+      referencedRelation: "niveaux_prix"
+      referencedColumns: ["code"]
     },{
       foreignKeyName: "grille_prix_produit_id_fkey"
       columns: ["produit_id"]
@@ -98,6 +173,80 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"inventaire_lignes": {
+                  Row: {
+                    "article_id": string,"ecart": number | null,"id": string,"inventaire_id": string,"lot_id": string | null,"quantite_comptee": number | null,"quantite_theorique": number
+                  }
+                  Insert: {
+                    "article_id": string,"ecart"?: never,"id"?: string,"inventaire_id": string,"lot_id"?: string | null,"quantite_comptee"?: number | null,"quantite_theorique": number
+                  }
+                  Update: {
+                    "article_id"?: string,"ecart"?: never,"id"?: string,"inventaire_id"?: string,"lot_id"?: string | null,"quantite_comptee"?: number | null,"quantite_theorique"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inventaire_lignes_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "alertes_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "inventaire_lignes_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inventaire_lignes_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "inventaire_lignes_inventaire_id_fkey"
+      columns: ["inventaire_id"]
+isOneToOne: false
+      referencedRelation: "inventaires"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inventaire_lignes_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "etat_lots"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inventaire_lignes_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "lots"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"inventaires": {
+                  Row: {
+                    "created_at": string,"cree_par": string | null,"date_inventaire": string,"famille": Database["public"]['Enums']["famille_article"] | null,"id": string,"libelle": string,"statut": Database["public"]['Enums']["statut_inventaire"],"valide_le": string | null,"valide_par": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"cree_par"?: string | null,"date_inventaire"?: string,"famille"?: Database["public"]['Enums']["famille_article"] | null,"id"?: string,"libelle": string,"statut"?: Database["public"]['Enums']["statut_inventaire"],"valide_le"?: string | null,"valide_par"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"cree_par"?: string | null,"date_inventaire"?: string,"famille"?: Database["public"]['Enums']["famille_article"] | null,"id"?: string,"libelle"?: string,"statut"?: Database["public"]['Enums']["statut_inventaire"],"valide_le"?: string | null,"valide_par"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "inventaires_cree_par_fkey"
+      columns: ["cree_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "inventaires_valide_par_fkey"
+      columns: ["valide_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"journal_audit": {
                   Row: {
                     "apres": Json | null,"avant": Json | null,"enregistrement_id": string | null,"horodatage": string,"id": number,"operation": string,"table_nom": string,"utilisateur_id": string | null
@@ -107,6 +256,105 @@ isOneToOne: false
                   }
                   Update: {
                     "apres"?: Json | null,"avant"?: Json | null,"enregistrement_id"?: string | null,"horodatage"?: string,"id"?: never,"operation"?: string,"table_nom"?: string,"utilisateur_id"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"lots": {
+                  Row: {
+                    "article_id": string,"cout_kg_gnf": number,"created_at": string,"date_reception": string,"diametre_mm": number | null,"fournisseur_id": string | null,"grammage_g_m2": number | null,"id": string,"largeur_mm": number | null,"notes": string,"numero_lot": string,"plis": number | null,"poids_net_kg": number,"statut": Database["public"]['Enums']["statut_lot"],"updated_at": string
+                  }
+                  Insert: {
+                    "article_id": string,"cout_kg_gnf"?: number,"created_at"?: string,"date_reception"?: string,"diametre_mm"?: number | null,"fournisseur_id"?: string | null,"grammage_g_m2"?: number | null,"id"?: string,"largeur_mm"?: number | null,"notes"?: string,"numero_lot": string,"plis"?: number | null,"poids_net_kg": number,"statut"?: Database["public"]['Enums']["statut_lot"],"updated_at"?: string
+                  }
+                  Update: {
+                    "article_id"?: string,"cout_kg_gnf"?: number,"created_at"?: string,"date_reception"?: string,"diametre_mm"?: number | null,"fournisseur_id"?: string | null,"grammage_g_m2"?: number | null,"id"?: string,"largeur_mm"?: number | null,"notes"?: string,"numero_lot"?: string,"plis"?: number | null,"poids_net_kg"?: number,"statut"?: Database["public"]['Enums']["statut_lot"],"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lots_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "alertes_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "lots_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lots_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "lots_fournisseur_id_fkey"
+      columns: ["fournisseur_id"]
+isOneToOne: false
+      referencedRelation: "fournisseurs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"mouvements_stock": {
+                  Row: {
+                    "article_id": string,"auteur_id": string | null,"cout_unitaire_gnf": number | null,"created_at": string,"date_operation": string,"document_id": string | null,"document_type": string | null,"id": string,"lot_id": string | null,"motif": string,"quantite": number,"stock_apres": number | null,"type": Database["public"]['Enums']["type_mouvement"],"unite": Database["public"]['Enums']["unite_stock"],"valeur_gnf": number | null
+                  }
+                  Insert: {
+                    "article_id": string,"auteur_id"?: string | null,"cout_unitaire_gnf"?: number | null,"created_at"?: string,"date_operation"?: string,"document_id"?: string | null,"document_type"?: string | null,"id"?: string,"lot_id"?: string | null,"motif"?: string,"quantite": number,"stock_apres"?: number | null,"type": Database["public"]['Enums']["type_mouvement"],"unite": Database["public"]['Enums']["unite_stock"],"valeur_gnf"?: number | null
+                  }
+                  Update: {
+                    "article_id"?: string,"auteur_id"?: string | null,"cout_unitaire_gnf"?: number | null,"created_at"?: string,"date_operation"?: string,"document_id"?: string | null,"document_type"?: string | null,"id"?: string,"lot_id"?: string | null,"motif"?: string,"quantite"?: number,"stock_apres"?: number | null,"type"?: Database["public"]['Enums']["type_mouvement"],"unite"?: Database["public"]['Enums']["unite_stock"],"valeur_gnf"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "mouvements_stock_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "alertes_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "mouvements_stock_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mouvements_stock_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "mouvements_stock_auteur_id_fkey"
+      columns: ["auteur_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mouvements_stock_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "etat_lots"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mouvements_stock_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "lots"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"niveaux_prix": {
+                  Row: {
+                    "actif": boolean,"code": string,"created_at": string,"description": string,"libelle": string,"ordre": number,"updated_at": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"code": string,"created_at"?: string,"description"?: string,"libelle": string,"ordre"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "actif"?: boolean,"code"?: string,"created_at"?: string,"description"?: string,"libelle"?: string,"ordre"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -188,6 +436,62 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"stocks_articles": {
+                  Row: {
+                    "article_id": string,"cmp_gnf": number,"derniere_entree": string | null,"derniere_sortie": string | null,"quantite": number,"updated_at": string,"valeur_gnf": number
+                  }
+                  Insert: {
+                    "article_id": string,"cmp_gnf"?: number,"derniere_entree"?: string | null,"derniere_sortie"?: string | null,"quantite"?: number,"updated_at"?: string,"valeur_gnf"?: number
+                  }
+                  Update: {
+                    "article_id"?: string,"cmp_gnf"?: number,"derniere_entree"?: string | null,"derniere_sortie"?: string | null,"quantite"?: number,"updated_at"?: string,"valeur_gnf"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "stocks_articles_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: true
+      referencedRelation: "alertes_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "stocks_articles_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: true
+      referencedRelation: "articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stocks_articles_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: true
+      referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    }
+                  ]
+                },"stocks_lots": {
+                  Row: {
+                    "lot_id": string,"quantite": number,"updated_at": string
+                  }
+                  Insert: {
+                    "lot_id": string,"quantite"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "lot_id"?: string,"quantite"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "stocks_lots_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: true
+      referencedRelation: "etat_lots"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stocks_lots_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: true
+      referencedRelation: "lots"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"taux_change": {
                   Row: {
                     "created_at": string,"date_effet": string,"devise": string,"id": string,"note": string | null,"saisi_par": string | null,"taux_gnf": number
@@ -242,12 +546,123 @@ isOneToOne: false
                 }
           }
           Views: {
-            "prix_actuels": {
+            "alertes_stock": {
                   Row: {
-                    "conditionnement_id": string | null,"conditionnement_libelle": string | null,"date_debut": string | null,"niveau": Database["public"]['Enums']["niveau_prix"] | null,"paquets_par_colis": number | null,"prix_colis_gnf": number | null,"prix_paquet_gnf": number | null,"produit_code": string | null,"produit_id": string | null,"produit_libelle": string | null
+                    "actif": boolean | null,"article_id": string | null,"categorie_id": string | null,"cmp_gnf": number | null,"code": string | null,"conditionnement_id": string | null,"conso_jour": number | null,"derniere_entree": string | null,"derniere_sortie": string | null,"famille": Database["public"]['Enums']["famille_article"] | null,"jours_couverture": number | null,"libelle": string | null,"nb_lots_en_stock": number | null,"niveau_alerte": string | null,"paquets_par_colis": number | null,"produit_id": string | null,"quantite": number | null,"seuil_alerte": number | null,"suivi_par_lot": boolean | null,"unite": Database["public"]['Enums']["unite_stock"] | null,"valeur_gnf": number | null
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "articles_categorie_id_fkey"
+      columns: ["categorie_id"]
+isOneToOne: false
+      referencedRelation: "categories_articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "articles_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: true
+      referencedRelation: "conditionnements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "articles_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: true
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["conditionnement_id"]
+    },{
+      foreignKeyName: "articles_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["produit_id"]
+    },{
+      foreignKeyName: "articles_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "produits"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"etat_lots": {
+                  Row: {
+                    "article_code": string | null,"article_id": string | null,"article_libelle": string | null,"cout_kg_gnf": number | null,"created_at": string | null,"date_reception": string | null,"diametre_mm": number | null,"fournisseur_id": string | null,"fournisseur_nom": string | null,"grammage_g_m2": number | null,"id": string | null,"largeur_mm": number | null,"notes": string | null,"numero_lot": string | null,"plis": number | null,"poids_net_kg": number | null,"poids_restant_kg": number | null,"statut": Database["public"]['Enums']["statut_lot"] | null,"updated_at": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lots_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "alertes_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "lots_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lots_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "lots_fournisseur_id_fkey"
+      columns: ["fournisseur_id"]
+isOneToOne: false
+      referencedRelation: "fournisseurs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"etat_stock": {
+                  Row: {
+                    "actif": boolean | null,"article_id": string | null,"categorie_id": string | null,"cmp_gnf": number | null,"code": string | null,"conditionnement_id": string | null,"conso_jour": number | null,"derniere_entree": string | null,"derniere_sortie": string | null,"famille": Database["public"]['Enums']["famille_article"] | null,"jours_couverture": number | null,"libelle": string | null,"nb_lots_en_stock": number | null,"paquets_par_colis": number | null,"produit_id": string | null,"quantite": number | null,"seuil_alerte": number | null,"suivi_par_lot": boolean | null,"unite": Database["public"]['Enums']["unite_stock"] | null,"valeur_gnf": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "articles_categorie_id_fkey"
+      columns: ["categorie_id"]
+isOneToOne: false
+      referencedRelation: "categories_articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "articles_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: true
+      referencedRelation: "conditionnements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "articles_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: true
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["conditionnement_id"]
+    },{
+      foreignKeyName: "articles_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["produit_id"]
+    },{
+      foreignKeyName: "articles_produit_id_fkey"
+      columns: ["produit_id"]
+isOneToOne: false
+      referencedRelation: "produits"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"prix_actuels": {
+                  Row: {
+                    "conditionnement_id": string | null,"conditionnement_libelle": string | null,"date_debut": string | null,"niveau": string | null,"paquets_par_colis": number | null,"prix_colis_gnf": number | null,"prix_paquet_gnf": number | null,"produit_code": string | null,"produit_id": string | null,"produit_libelle": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "grille_prix_niveau_fkey"
+      columns: ["niveau"]
+isOneToOne: false
+      referencedRelation: "niveaux_prix"
+      referencedColumns: ["code"]
+    }
                   ]
                 }
           }
@@ -264,8 +679,11 @@ isOneToOne: false
 "aujourdhui_conakry":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"creer_produit":
+{ Args: { "p_code": string,"p_date_prix"?: string,"p_grammage": number,"p_largeur_mm": number,"p_libelle": string,"p_longueur_mm": number,"p_nb_mouchoirs": number,"p_paquets_par_colis": number,"p_plis": number,"p_prix_paquet_gnf"?: number,"p_taux_perte": number }; Returns: string
+                           },
 "definir_prix":
-{ Args: { "p_date_debut": string,"p_niveau": Database["public"]['Enums']["niveau_prix"],"p_note"?: string,"p_prix_paquet_gnf": number,"p_produit": string }; Returns: string
+{ Args: { "p_date_debut": string,"p_niveau": string,"p_note"?: string,"p_prix_paquet_gnf": number,"p_produit": string }; Returns: string
                            },
 "est_actif":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -279,15 +697,24 @@ isOneToOne: false
 "mes_roles":
 { Args: Record<PropertyKey, never>; Returns: (Database["public"]['Enums']["role_code"])[]
                            },
+"ouvrir_inventaire":
+{ Args: { "p_famille"?: Database["public"]['Enums']["famille_article"],"p_libelle": string }; Returns: string
+                           },
 "prix_en_vigueur":
-{ Args: { "p_date"?: string,"p_niveau": Database["public"]['Enums']["niveau_prix"],"p_produit": string }; Returns: number
+{ Args: { "p_date"?: string,"p_niveau": string,"p_produit": string }; Returns: number
+                           },
+"receptionner_bobine":
+{ Args: { "p_article": string,"p_cout_kg_gnf": number,"p_date"?: string,"p_diametre_mm"?: number,"p_fournisseur"?: string,"p_grammage"?: number,"p_largeur_mm"?: number,"p_notes"?: string,"p_numero_lot": string,"p_plis"?: number,"p_poids_kg": number }; Returns: string
                            },
 "taux_a_la_date":
 { Args: { "p_date": string,"p_devise": string }; Returns: number
+                           },
+"valider_inventaire":
+{ Args: { "p_inventaire": string }; Returns: number
                            }
           }
           Enums: {
-            "niveau_prix": "papel"|"grossiste"|"semi_grossiste"|"detaillant","role_code": "direction"|"achats"|"magasin"|"production"|"maintenance"|"qualite"|"commercial_terrain"|"responsable_commercial"|"logistique"|"finance"|"admin"
+            "famille_article": "matiere_premiere"|"emballage"|"produit_fini"|"piece_detachee"|"autre","role_code": "direction"|"achats"|"magasin"|"production"|"maintenance"|"qualite"|"commercial_terrain"|"responsable_commercial"|"logistique"|"finance"|"admin","statut_inventaire": "en_cours"|"valide"|"annule","statut_lot": "disponible"|"bloque"|"epuise","type_mouvement": "reception"|"production"|"retour"|"consommation"|"sortie"|"vente"|"dotation"|"rebut"|"ajustement"|"inventaire","unite_stock": "kg"|"paquet"|"unite"|"rouleau"|"litre"|"metre"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -407,7 +834,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "niveau_prix": ["papel", "grossiste", "semi_grossiste", "detaillant"],"role_code": ["direction", "achats", "magasin", "production", "maintenance", "qualite", "commercial_terrain", "responsable_commercial", "logistique", "finance", "admin"]
+            "famille_article": ["matiere_premiere", "emballage", "produit_fini", "piece_detachee", "autre"],"role_code": ["direction", "achats", "magasin", "production", "maintenance", "qualite", "commercial_terrain", "responsable_commercial", "logistique", "finance", "admin"],"statut_inventaire": ["en_cours", "valide", "annule"],"statut_lot": ["disponible", "bloque", "epuise"],"type_mouvement": ["reception", "production", "retour", "consommation", "sortie", "vente", "dotation", "rebut", "ajustement", "inventaire"],"unite_stock": ["kg", "paquet", "unite", "rouleau", "litre", "metre"]
           }
         }
 } as const
