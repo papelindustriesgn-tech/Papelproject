@@ -16,9 +16,10 @@ const NIVEAUX_ALERTE: Record<string, { libelle: string; ton: "erreur" | "alerte"
 
 export default async function TableauDeBordMagasin() {
   const supabase = await clientServeur();
-  const [{ data: etat }, { data: alertes }] = await Promise.all([
+  const [{ data: etat }, { data: alertes }, { data: transit }] = await Promise.all([
     supabase.from("etat_stock").select("*").eq("actif", true),
     supabase.from("alertes_stock").select("article_id, code, libelle, unite, quantite, seuil_alerte, jours_couverture, paquets_par_colis, niveau_alerte"),
+    supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
   ]);
   const lignes = etat ?? [];
   const mp = lignes.filter((l) => l.famille === "matiere_premiere");
@@ -40,7 +41,7 @@ export default async function TableauDeBordMagasin() {
           detail={consoMpJour > 0 ? `Consommation moyenne : ${formaterPoids(kg(consoMpJour))}/jour` : "Pas de consommation récente"}
           ton={couvertureMp !== null && couvertureMp < 15 ? "alerte" : "normal"}
         />
-        <Indicateur libelle="Tonnes en transit" valeur="—" detail="Disponible avec le module Achats (phase 2)" />
+        <Indicateur libelle="Tonnes en transit" valeur={formaterPoids(kg(Number(transit?.kg_en_transit ?? 0)))} detail={`${transit?.nb_conteneurs ?? 0} conteneur(s) commandé(s), en mer ou au port`} />
         <Indicateur libelle="Valeur du stock" valeur={gnf(valeurTotale)} detail="Au coût moyen pondéré" />
       </div>
 

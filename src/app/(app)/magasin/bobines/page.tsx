@@ -28,10 +28,12 @@ export default async function PageBobines({ searchParams }: PageProps<"/magasin/
   if (q) requete = requete.ilike("numero_lot", motifRecherche(q));
   if (statut) requete = requete.eq("statut", statut as Database["public"]["Enums"]["statut_lot"]);
   else requete = requete.neq("statut", "epuise");
-  const [{ data }, { data: articles }, { data: fournisseurs }] = await Promise.all([
+  const [{ data }, { data: articles }, { data: fournisseurs }, { data: conteneurs }] = await Promise.all([
     requete,
     supabase.from("articles").select("id, libelle").eq("suivi_par_lot", true).eq("actif", true).order("libelle"),
     supabase.from("fournisseurs").select("id, nom").eq("actif", true).order("nom"),
+    // Conteneurs arrivés et pas encore entièrement réceptionnés
+    supabase.from("couts_conteneurs").select("id, reference, bc_numero, poids_net_prevu_kg, kg_recus").in("statut", ["au_port", "dedouane", "livre"]),
   ]);
   const lots = data ?? [];
   const enStock = lots.filter((l) => Number(l.poids_restant_kg) > 0);
@@ -46,7 +48,11 @@ export default async function PageBobines({ searchParams }: PageProps<"/magasin/
         <Indicateur libelle="Bobines bloquées" valeur={lots.filter((l) => l.statut === "bloque").length} ton={lots.some((l) => l.statut === "bloque") ? "alerte" : "normal"} />
       </div>
       <Carte titre="Réception d'une bobine" className="mb-4">
-        <FormulaireReception articles={(articles ?? []).map((a) => ({ id: a.id, libelle: a.libelle }))} fournisseurs={fournisseurs ?? []} dateDuJour={aujourdhui()} />
+        <FormulaireReception articles={(articles ?? []).map((a) => ({ id: a.id, libelle: a.libelle }))} fournisseurs={fournisseurs ?? []}
+          conteneurs={(conteneurs ?? [])
+            .filter((c) => Number(c.kg_recus) < Number(c.poids_net_prevu_kg))
+            .map((c) => ({ id: c.id!, libelle: `${c.reference} (${c.bc_numero}) — reçu ${nombre(c.kg_recus, 0)} / ${nombre(c.poids_net_prevu_kg, 0)} kg` }))}
+          dateDuJour={aujourdhui()} />
       </Carte>
       <Carte titre="Bobines">
         <BarreFiltres

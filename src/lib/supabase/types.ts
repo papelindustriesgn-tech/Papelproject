@@ -72,6 +72,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"bons_commande": {
+                  Row: {
+                    "created_at": string,"created_by": string | null,"date_commande": string,"date_livraison_prevue": string | null,"devise": string,"fournisseur_id": string,"frais_estimes_gnf": number,"id": string,"incoterm": string,"notes": string,"numero": string | null,"statut": Database["public"]['Enums']["statut_bc"],"taux_change": number,"updated_at": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"created_by"?: string | null,"date_commande"?: string,"date_livraison_prevue"?: string | null,"devise"?: string,"fournisseur_id": string,"frais_estimes_gnf"?: number,"id"?: string,"incoterm"?: string,"notes"?: string,"numero"?: string | null,"statut"?: Database["public"]['Enums']["statut_bc"],"taux_change"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"created_by"?: string | null,"date_commande"?: string,"date_livraison_prevue"?: string | null,"devise"?: string,"fournisseur_id"?: string,"frais_estimes_gnf"?: number,"id"?: string,"incoterm"?: string,"notes"?: string,"numero"?: string | null,"statut"?: Database["public"]['Enums']["statut_bc"],"taux_change"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bons_commande_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bons_commande_fournisseur_id_fkey"
+      columns: ["fournisseur_id"]
+isOneToOne: false
+      referencedRelation: "fournisseurs"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"cadences_nominales": {
                   Row: {
                     "created_at": string,"id": string,"ligne_id": string,"paquets_minute": number,"produit_id": string
@@ -245,6 +270,99 @@ isOneToOne: false
       columns: ["produit_id"]
 isOneToOne: false
       referencedRelation: "produits"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"conteneurs": {
+                  Row: {
+                    "bc_id": string,"created_at": string,"date_arrivee_port_prevue": string | null,"date_arrivee_port_reelle": string | null,"date_dedouanement_prevue": string | null,"date_dedouanement_reelle": string | null,"date_embarquement_prevue": string | null,"date_embarquement_reelle": string | null,"date_livraison_prevue": string | null,"date_livraison_reelle": string | null,"id": string,"navire": string,"notes": string,"poids_net_prevu_kg": number,"reference": string,"statut": Database["public"]['Enums']["statut_conteneur"],"updated_at": string
+                  }
+                  Insert: {
+                    "bc_id": string,"created_at"?: string,"date_arrivee_port_prevue"?: string | null,"date_arrivee_port_reelle"?: string | null,"date_dedouanement_prevue"?: string | null,"date_dedouanement_reelle"?: string | null,"date_embarquement_prevue"?: string | null,"date_embarquement_reelle"?: string | null,"date_livraison_prevue"?: string | null,"date_livraison_reelle"?: string | null,"id"?: string,"navire"?: string,"notes"?: string,"poids_net_prevu_kg"?: number,"reference": string,"statut"?: Database["public"]['Enums']["statut_conteneur"],"updated_at"?: string
+                  }
+                  Update: {
+                    "bc_id"?: string,"created_at"?: string,"date_arrivee_port_prevue"?: string | null,"date_arrivee_port_reelle"?: string | null,"date_dedouanement_prevue"?: string | null,"date_dedouanement_reelle"?: string | null,"date_embarquement_prevue"?: string | null,"date_embarquement_reelle"?: string | null,"date_livraison_prevue"?: string | null,"date_livraison_reelle"?: string | null,"id"?: string,"navire"?: string,"notes"?: string,"poids_net_prevu_kg"?: number,"reference"?: string,"statut"?: Database["public"]['Enums']["statut_conteneur"],"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "conteneurs_bc_id_fkey"
+      columns: ["bc_id"]
+isOneToOne: false
+      referencedRelation: "bons_commande"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"demandes_achat": {
+                  Row: {
+                    "article_id": string,"bc_id": string | null,"commentaire": string,"created_at": string,"date_besoin": string | null,"demandeur_id": string | null,"id": string,"motif": string,"numero": string | null,"quantite": number,"statut": Database["public"]['Enums']["statut_demande"],"traite_par": string | null
+                  }
+                  Insert: {
+                    "article_id": string,"bc_id"?: string | null,"commentaire"?: string,"created_at"?: string,"date_besoin"?: string | null,"demandeur_id"?: string | null,"id"?: string,"motif"?: string,"numero"?: string | null,"quantite": number,"statut"?: Database["public"]['Enums']["statut_demande"],"traite_par"?: string | null
+                  }
+                  Update: {
+                    "article_id"?: string,"bc_id"?: string | null,"commentaire"?: string,"created_at"?: string,"date_besoin"?: string | null,"demandeur_id"?: string | null,"id"?: string,"motif"?: string,"numero"?: string | null,"quantite"?: number,"statut"?: Database["public"]['Enums']["statut_demande"],"traite_par"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "demandes_achat_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "alertes_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "demandes_achat_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "demandes_achat_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "demandes_achat_demandeur_id_fkey"
+      columns: ["demandeur_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "demandes_achat_traite_par_fkey"
+      columns: ["traite_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "demandes_bc_fk"
+      columns: ["bc_id"]
+isOneToOne: false
+      referencedRelation: "bons_commande"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"documents": {
+                  Row: {
+                    "chemin": string,"created_at": string,"created_by": string | null,"id": string,"nom_fichier": string,"objet_id": string,"objet_type": string,"taille_octets": number | null,"type_document_id": string | null
+                  }
+                  Insert: {
+                    "chemin": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"nom_fichier": string,"objet_id": string,"objet_type": string,"taille_octets"?: number | null,"type_document_id"?: string | null
+                  }
+                  Update: {
+                    "chemin"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"nom_fichier"?: string,"objet_id"?: string,"objet_type"?: string,"taille_octets"?: number | null,"type_document_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "documents_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "documents_type_document_id_fkey"
+      columns: ["type_document_id"]
+isOneToOne: false
+      referencedRelation: "types_documents"
       referencedColumns: ["id"]
     }
                   ]
@@ -515,16 +633,53 @@ isOneToOne: false
                   ]
                 },"fournisseurs": {
                   Row: {
-                    "actif": boolean,"contact": string,"created_at": string,"email": string,"id": string,"nom": string,"notes": string,"pays": string,"telephone": string,"updated_at": string
+                    "actif": boolean,"contact": string,"created_at": string,"devise": string,"email": string,"id": string,"nom": string,"notes": string,"pays": string,"telephone": string,"updated_at": string
                   }
                   Insert: {
-                    "actif"?: boolean,"contact"?: string,"created_at"?: string,"email"?: string,"id"?: string,"nom": string,"notes"?: string,"pays"?: string,"telephone"?: string,"updated_at"?: string
+                    "actif"?: boolean,"contact"?: string,"created_at"?: string,"devise"?: string,"email"?: string,"id"?: string,"nom": string,"notes"?: string,"pays"?: string,"telephone"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "actif"?: boolean,"contact"?: string,"created_at"?: string,"email"?: string,"id"?: string,"nom"?: string,"notes"?: string,"pays"?: string,"telephone"?: string,"updated_at"?: string
+                    "actif"?: boolean,"contact"?: string,"created_at"?: string,"devise"?: string,"email"?: string,"id"?: string,"nom"?: string,"notes"?: string,"pays"?: string,"telephone"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     
+                  ]
+                },"frais_approche": {
+                  Row: {
+                    "conteneur_id": string,"created_at": string,"created_by": string | null,"date_frais": string,"devise": string,"id": string,"montant": number,"montant_gnf": number,"prestataire": string,"reference": string,"taux_change": number,"type_frais_id": string
+                  }
+                  Insert: {
+                    "conteneur_id": string,"created_at"?: string,"created_by"?: string | null,"date_frais"?: string,"devise"?: string,"id"?: string,"montant": number,"montant_gnf"?: number,"prestataire"?: string,"reference"?: string,"taux_change"?: number,"type_frais_id": string
+                  }
+                  Update: {
+                    "conteneur_id"?: string,"created_at"?: string,"created_by"?: string | null,"date_frais"?: string,"devise"?: string,"id"?: string,"montant"?: number,"montant_gnf"?: number,"prestataire"?: string,"reference"?: string,"taux_change"?: number,"type_frais_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "frais_approche_conteneur_id_fkey"
+      columns: ["conteneur_id"]
+isOneToOne: false
+      referencedRelation: "conteneurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "frais_approche_conteneur_id_fkey"
+      columns: ["conteneur_id"]
+isOneToOne: false
+      referencedRelation: "couts_conteneurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "frais_approche_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "frais_approche_type_frais_id_fkey"
+      columns: ["type_frais_id"]
+isOneToOne: false
+      referencedRelation: "types_frais"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"grille_prix": {
                   Row: {
@@ -656,6 +811,43 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"lignes_bc": {
+                  Row: {
+                    "article_id": string,"bc_id": string,"id": string,"montant_devise": number,"prix_unitaire": number,"quantite": number
+                  }
+                  Insert: {
+                    "article_id": string,"bc_id": string,"id"?: string,"montant_devise"?: number,"prix_unitaire": number,"quantite": number
+                  }
+                  Update: {
+                    "article_id"?: string,"bc_id"?: string,"id"?: string,"montant_devise"?: number,"prix_unitaire"?: number,"quantite"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lignes_bc_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "alertes_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "lignes_bc_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "articles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lignes_bc_article_id_fkey"
+      columns: ["article_id"]
+isOneToOne: false
+      referencedRelation: "etat_stock"
+      referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "lignes_bc_bc_id_fkey"
+      columns: ["bc_id"]
+isOneToOne: false
+      referencedRelation: "bons_commande"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"lignes_livraison": {
                   Row: {
                     "conditionnement_id": string,"id": string,"livraison_id": string,"paquets": number
@@ -776,13 +968,13 @@ isOneToOne: false
                   ]
                 },"lots": {
                   Row: {
-                    "article_id": string,"cout_kg_gnf": number,"created_at": string,"date_reception": string,"diametre_mm": number | null,"fournisseur_id": string | null,"grammage_g_m2": number | null,"id": string,"largeur_mm": number | null,"notes": string,"numero_lot": string,"plis": number | null,"poids_net_kg": number,"statut": Database["public"]['Enums']["statut_lot"],"updated_at": string
+                    "article_id": string,"conteneur_id": string | null,"cout_kg_gnf": number,"created_at": string,"date_reception": string,"diametre_mm": number | null,"fournisseur_id": string | null,"grammage_g_m2": number | null,"id": string,"largeur_mm": number | null,"notes": string,"numero_lot": string,"plis": number | null,"poids_net_kg": number,"statut": Database["public"]['Enums']["statut_lot"],"updated_at": string
                   }
                   Insert: {
-                    "article_id": string,"cout_kg_gnf"?: number,"created_at"?: string,"date_reception"?: string,"diametre_mm"?: number | null,"fournisseur_id"?: string | null,"grammage_g_m2"?: number | null,"id"?: string,"largeur_mm"?: number | null,"notes"?: string,"numero_lot": string,"plis"?: number | null,"poids_net_kg": number,"statut"?: Database["public"]['Enums']["statut_lot"],"updated_at"?: string
+                    "article_id": string,"conteneur_id"?: string | null,"cout_kg_gnf"?: number,"created_at"?: string,"date_reception"?: string,"diametre_mm"?: number | null,"fournisseur_id"?: string | null,"grammage_g_m2"?: number | null,"id"?: string,"largeur_mm"?: number | null,"notes"?: string,"numero_lot": string,"plis"?: number | null,"poids_net_kg": number,"statut"?: Database["public"]['Enums']["statut_lot"],"updated_at"?: string
                   }
                   Update: {
-                    "article_id"?: string,"cout_kg_gnf"?: number,"created_at"?: string,"date_reception"?: string,"diametre_mm"?: number | null,"fournisseur_id"?: string | null,"grammage_g_m2"?: number | null,"id"?: string,"largeur_mm"?: number | null,"notes"?: string,"numero_lot"?: string,"plis"?: number | null,"poids_net_kg"?: number,"statut"?: Database["public"]['Enums']["statut_lot"],"updated_at"?: string
+                    "article_id"?: string,"conteneur_id"?: string | null,"cout_kg_gnf"?: number,"created_at"?: string,"date_reception"?: string,"diametre_mm"?: number | null,"fournisseur_id"?: string | null,"grammage_g_m2"?: number | null,"id"?: string,"largeur_mm"?: number | null,"notes"?: string,"numero_lot"?: string,"plis"?: number | null,"poids_net_kg"?: number,"statut"?: Database["public"]['Enums']["statut_lot"],"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -803,6 +995,18 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "etat_stock"
       referencedColumns: ["article_id"]
+    },{
+      foreignKeyName: "lots_conteneur_id_fkey"
+      columns: ["conteneur_id"]
+isOneToOne: false
+      referencedRelation: "conteneurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lots_conteneur_id_fkey"
+      columns: ["conteneur_id"]
+isOneToOne: false
+      referencedRelation: "couts_conteneurs"
+      referencedColumns: ["id"]
     },{
       foreignKeyName: "lots_fournisseur_id_fkey"
       columns: ["fournisseur_id"]
@@ -1417,6 +1621,32 @@ isOneToOne: false
       referencedColumns: ["code"]
     }
                   ]
+                },"types_documents": {
+                  Row: {
+                    "actif": boolean,"created_at": string,"id": string,"libelle": string,"ordre": number
+                  }
+                  Insert: {
+                    "actif"?: boolean,"created_at"?: string,"id"?: string,"libelle": string,"ordre"?: number
+                  }
+                  Update: {
+                    "actif"?: boolean,"created_at"?: string,"id"?: string,"libelle"?: string,"ordre"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"types_frais": {
+                  Row: {
+                    "actif": boolean,"created_at": string,"id": string,"libelle": string,"ordre": number
+                  }
+                  Insert: {
+                    "actif"?: boolean,"created_at"?: string,"id"?: string,"libelle": string,"ordre"?: number
+                  }
+                  Update: {
+                    "actif"?: boolean,"created_at"?: string,"id"?: string,"libelle"?: string,"ordre"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"utilisateur_roles": {
                   Row: {
                     "created_at": string,"role": Database["public"]['Enums']["role_code"],"utilisateur_id": string
@@ -1597,6 +1827,25 @@ isOneToOne: false
       columns: ["produit_id"]
 isOneToOne: false
       referencedRelation: "produits"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"couts_conteneurs": {
+                  Row: {
+                    "bc_id": string | null,"bc_numero": string | null,"cout_kg_gnf": number | null,"cout_kg_prevu_gnf": number | null,"date_commande": string | null,"date_livraison_reelle": string | null,"devise": string | null,"fournisseur_id": string | null,"frais_estimes_gnf": number | null,"frais_gnf": number | null,"id": string | null,"kg_bc": number | null,"kg_recus": number | null,"marchandise_gnf": number | null,"montant_bc_devise": number | null,"poids_net_prevu_kg": number | null,"reference": string | null,"statut": Database["public"]['Enums']["statut_conteneur"] | null,"taux_change": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bons_commande_fournisseur_id_fkey"
+      columns: ["fournisseur_id"]
+isOneToOne: false
+      referencedRelation: "fournisseurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "conteneurs_bc_id_fkey"
+      columns: ["bc_id"]
+isOneToOne: false
+      referencedRelation: "bons_commande"
       referencedColumns: ["id"]
     }
                   ]
@@ -1867,6 +2116,13 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"transit": {
+                  Row: {
+                    "kg_en_transit": number | null,"nb_conteneurs": number | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"visites_carte": {
                   Row: {
                     "checkin_at": string | null,"commercial_id": string | null,"commercial_nom": string | null,"dans_zone": boolean | null,"distance_m": number | null,"id": string | null,"latitude": number | null,"longitude": number | null,"notes": string | null,"precision_m": number | null,"pva_id": string | null,"pva_nom": string | null,"rupture": boolean | null,"stock_papel_colis": number | null
@@ -1925,6 +2181,9 @@ isOneToOne: false
 "enregistrer_paiement":
 { Args: { "p_date"?: string,"p_facture": string,"p_mode": string,"p_montant": number,"p_notes"?: string,"p_reference"?: string }; Returns: string
                            },
+"envoyer_bc":
+{ Args: { "p_bc": string }; Returns: string
+                           },
 "est_actif":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
@@ -1961,6 +2220,9 @@ isOneToOne: false
 "receptionner_bobine":
 { Args: { "p_article": string,"p_cout_kg_gnf": number,"p_date"?: string,"p_diametre_mm"?: number,"p_fournisseur"?: string,"p_grammage"?: number,"p_largeur_mm"?: number,"p_notes"?: string,"p_numero_lot": string,"p_plis"?: number,"p_poids_kg": number }; Returns: string
                            },
+"receptionner_bobine_conteneur":
+{ Args: { "p_article": string,"p_conteneur": string,"p_diametre_mm"?: number,"p_grammage"?: number,"p_largeur_mm"?: number,"p_numero_lot": string,"p_plis"?: number,"p_poids_kg": number }; Returns: string
+                           },
 "remettre_dotation":
 { Args: { "p_conditionnement": string,"p_dotation": string,"p_paquets": number }; Returns: undefined
                            },
@@ -1990,7 +2252,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "famille_article": "matiere_premiere"|"emballage"|"produit_fini"|"piece_detachee"|"autre","role_code": "direction"|"achats"|"magasin"|"production"|"maintenance"|"qualite"|"commercial_terrain"|"responsable_commercial"|"logistique"|"finance"|"admin","statut_fiche": "brouillon"|"validee","statut_inventaire": "en_cours"|"valide"|"annule","statut_lot": "disponible"|"bloque"|"epuise","statut_of": "planifie"|"en_cours"|"termine"|"annule","statut_piece": "brouillon"|"valide"|"annule","type_mouvement": "reception"|"production"|"retour"|"consommation"|"sortie"|"vente"|"dotation"|"rebut"|"ajustement"|"inventaire","type_piece": "devis"|"commande"|"facture"|"avoir","unite_stock": "kg"|"paquet"|"unite"|"rouleau"|"litre"|"metre"
+            "famille_article": "matiere_premiere"|"emballage"|"produit_fini"|"piece_detachee"|"autre","role_code": "direction"|"achats"|"magasin"|"production"|"maintenance"|"qualite"|"commercial_terrain"|"responsable_commercial"|"logistique"|"finance"|"admin","statut_bc": "brouillon"|"envoye"|"recu"|"annule","statut_conteneur": "commande"|"en_mer"|"au_port"|"dedouane"|"livre","statut_demande": "soumise"|"approuvee"|"refusee"|"commandee","statut_fiche": "brouillon"|"validee","statut_inventaire": "en_cours"|"valide"|"annule","statut_lot": "disponible"|"bloque"|"epuise","statut_of": "planifie"|"en_cours"|"termine"|"annule","statut_piece": "brouillon"|"valide"|"annule","type_mouvement": "reception"|"production"|"retour"|"consommation"|"sortie"|"vente"|"dotation"|"rebut"|"ajustement"|"inventaire","type_piece": "devis"|"commande"|"facture"|"avoir","unite_stock": "kg"|"paquet"|"unite"|"rouleau"|"litre"|"metre"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -2110,7 +2372,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "famille_article": ["matiere_premiere", "emballage", "produit_fini", "piece_detachee", "autre"],"role_code": ["direction", "achats", "magasin", "production", "maintenance", "qualite", "commercial_terrain", "responsable_commercial", "logistique", "finance", "admin"],"statut_fiche": ["brouillon", "validee"],"statut_inventaire": ["en_cours", "valide", "annule"],"statut_lot": ["disponible", "bloque", "epuise"],"statut_of": ["planifie", "en_cours", "termine", "annule"],"statut_piece": ["brouillon", "valide", "annule"],"type_mouvement": ["reception", "production", "retour", "consommation", "sortie", "vente", "dotation", "rebut", "ajustement", "inventaire"],"type_piece": ["devis", "commande", "facture", "avoir"],"unite_stock": ["kg", "paquet", "unite", "rouleau", "litre", "metre"]
+            "famille_article": ["matiere_premiere", "emballage", "produit_fini", "piece_detachee", "autre"],"role_code": ["direction", "achats", "magasin", "production", "maintenance", "qualite", "commercial_terrain", "responsable_commercial", "logistique", "finance", "admin"],"statut_bc": ["brouillon", "envoye", "recu", "annule"],"statut_conteneur": ["commande", "en_mer", "au_port", "dedouane", "livre"],"statut_demande": ["soumise", "approuvee", "refusee", "commandee"],"statut_fiche": ["brouillon", "validee"],"statut_inventaire": ["en_cours", "valide", "annule"],"statut_lot": ["disponible", "bloque", "epuise"],"statut_of": ["planifie", "en_cours", "termine", "annule"],"statut_piece": ["brouillon", "valide", "annule"],"type_mouvement": ["reception", "production", "retour", "consommation", "sortie", "vente", "dotation", "rebut", "ajustement", "inventaire"],"type_piece": ["devis", "commande", "facture", "avoir"],"unite_stock": ["kg", "paquet", "unite", "rouleau", "litre", "metre"]
           }
         }
 } as const

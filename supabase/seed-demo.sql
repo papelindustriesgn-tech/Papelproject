@@ -340,3 +340,59 @@ begin
   insert into public.objectifs_commerciaux (commercial_id, mois, visites, nouveaux_pva, ca_ht_gnf, colis)
   select c, date_trunc('month', public.aujourdhui_conakry())::date, 120, 10, 300000000, 1500 from unnest(array[c1, c2, c3]) c;
 end $$;
+
+-- -----------------------------------------------------------------------------
+-- Achats de démonstration : un conteneur livré (bobines déjà en stock), un en mer, un au port, un bon en brouillon.
+-- -----------------------------------------------------------------------------
+do $$
+declare
+  v_bc uuid;
+  v_ct uuid;
+  f uuid := '30000000-0000-0000-0000-000000000001';
+  bob uuid := '40000000-0000-0000-0000-000000000001';
+  j date := public.aujourdhui_conakry();
+begin
+  -- BC 1 : 44 t livrées en deux conteneurs (les 40 bobines de démonstration en proviennent).
+  insert into public.bons_commande (id, numero, fournisseur_id, date_commande, devise, taux_change, incoterm, date_livraison_prevue, frais_estimes_gnf, statut)
+  values (gen_random_uuid(), public.prochain_numero('BC-' || to_char(j, 'YYYY') || '-'), f, j - 110, 'USD', 9400, 'CFR Conakry', j - 60, 95000000, 'recu')
+  returning id into v_bc;
+  insert into public.lignes_bc (bc_id, article_id, quantite, prix_unitaire) values (v_bc, bob, 44000, 1.13);
+  insert into public.conteneurs (id, bc_id, reference, navire, poids_net_prevu_kg, date_embarquement_prevue, date_embarquement_reelle,
+    date_arrivee_port_prevue, date_arrivee_port_reelle, date_dedouanement_prevue, date_dedouanement_reelle, date_livraison_prevue, date_livraison_reelle)
+  values (gen_random_uuid(), v_bc, 'MSCU4410227', 'MSC Abidjan', 22000, j - 100, j - 98, j - 72, j - 70, j - 66, j - 64, j - 63, j - 62)
+  returning id into v_ct;
+  update public.lots set conteneur_id = v_ct where numero_lot <= 'JB-2026-0020';
+  insert into public.frais_approche (conteneur_id, type_frais_id, date_frais, devise, montant, prestataire)
+  select v_ct, t.id, j - 64, v.devise, v.montant, v.prest from (values
+    ('Fret maritime', 'USD', 210000::bigint, 'Armateur (démo)'), ('Transit', 'GNF', 4500000::bigint, 'Transitaire (démo)'),
+    ('Droits et taxes de douane', 'GNF', 21000000::bigint, 'Douanes'), ('Transport jusqu''à l''usine', 'GNF', 3500000::bigint, 'Transporteur (démo)')
+  ) as v(type, devise, montant, prest) join public.types_frais t on t.libelle = v.type;
+  insert into public.conteneurs (id, bc_id, reference, navire, poids_net_prevu_kg, date_embarquement_prevue, date_embarquement_reelle,
+    date_arrivee_port_prevue, date_arrivee_port_reelle, date_dedouanement_prevue, date_dedouanement_reelle, date_livraison_prevue, date_livraison_reelle)
+  values (gen_random_uuid(), v_bc, 'MSCU4410228', 'MSC Abidjan', 22000, j - 100, j - 98, j - 72, j - 70, j - 66, j - 65, j - 63, j - 61)
+  returning id into v_ct;
+  update public.lots set conteneur_id = v_ct where numero_lot > 'JB-2026-0020' and conteneur_id is null and numero_lot like 'JB-2026-%';
+
+  -- BC 2 : 40 t, un conteneur en mer et un au port de Conakry.
+  insert into public.bons_commande (id, numero, fournisseur_id, date_commande, devise, taux_change, incoterm, date_livraison_prevue, frais_estimes_gnf, statut)
+  values (gen_random_uuid(), public.prochain_numero('BC-' || to_char(j, 'YYYY') || '-'), f, j - 40, 'USD', 9450, 'CFR Conakry', j + 12, 90000000, 'envoye')
+  returning id into v_bc;
+  insert into public.lignes_bc (bc_id, article_id, quantite, prix_unitaire) values (v_bc, bob, 40000, 1.15);
+  insert into public.conteneurs (bc_id, reference, navire, poids_net_prevu_kg, date_embarquement_prevue, date_embarquement_reelle, date_arrivee_port_prevue, date_dedouanement_prevue, date_livraison_prevue)
+  values (v_bc, 'MSCU5520119', 'Maersk Dakar', 20000, j - 25, j - 24, j + 4, j + 8, j + 10);
+  insert into public.conteneurs (id, bc_id, reference, navire, poids_net_prevu_kg, date_embarquement_prevue, date_embarquement_reelle, date_arrivee_port_prevue, date_arrivee_port_reelle, date_dedouanement_prevue, date_livraison_prevue)
+  values (gen_random_uuid(), v_bc, 'MSCU5520120', 'Maersk Dakar', 20000, j - 28, j - 27, j - 3, j - 2, j + 2, j + 4)
+  returning id into v_ct;
+  insert into public.frais_approche (conteneur_id, type_frais_id, date_frais, devise, montant, prestataire)
+  select v_ct, t.id, j - 2, 'USD', 190000, 'Armateur (démo)' from public.types_frais t where t.libelle = 'Fret maritime';
+
+  -- BC 3 : emballages en GNF, brouillon ; deux demandes d'achat.
+  insert into public.bons_commande (fournisseur_id, date_commande, devise, statut, notes)
+  values ('30000000-0000-0000-0000-000000000002', j, 'GNF', 'brouillon', 'Films et sacs pour le mois prochain')
+  returning id into v_bc;
+  insert into public.lignes_bc (bc_id, article_id, quantite, prix_unitaire) values
+    (v_bc, '40000000-0000-0000-0000-000000000002', 500, 32000), (v_bc, '40000000-0000-0000-0000-000000000004', 10000, 1500);
+  insert into public.demandes_achat (article_id, quantite, date_besoin, motif, statut, demandeur_id, bc_id) values
+    ('40000000-0000-0000-0000-000000000002', 500, j + 20, 'Stock de film bas', 'approuvee', '20000000-0000-0000-0000-000000000004', v_bc),
+    ('40000000-0000-0000-0000-000000000005', 40, j + 30, 'Encre pour impression des sachets', 'soumise', '20000000-0000-0000-0000-000000000004', null);
+end $$;

@@ -144,6 +144,7 @@ export const REFERENTIELS: Referentiel[] = [
       { nom: "contact", libelle: "Contact", type: "texte", max: 100 },
       { nom: "telephone", libelle: "Téléphone", type: "texte", max: 30 },
       { nom: "email", libelle: "E-mail", type: "texte", max: 100 },
+      { nom: "devise", libelle: "Devise habituelle", type: "choix", requis: true, options: [{ valeur: "USD", libelle: "USD" }, { valeur: "GNF", libelle: "GNF" }] },
       { nom: "notes", libelle: "Notes", type: "texte_long", max: 500 },
     ],
   },
@@ -298,6 +299,35 @@ export const REFERENTIELS: Referentiel[] = [
     tri: "libelle",
     archivable: true,
     champs: [{ nom: "libelle", libelle: "Marque", type: "texte", requis: true, max: 60 }],
+  },
+  // --- Achats -----------------------------------------------------------------
+  {
+    code: "types-frais",
+    table: "types_frais",
+    titre: "Types de frais d'approche",
+    description: "Fret, assurance, transit, douane, manutention, transport jusqu'à l'usine…",
+    espaces: ["achats", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  {
+    code: "types-documents",
+    table: "types_documents",
+    titre: "Types de documents",
+    description: "Facture, connaissement (BL), packing list, déclaration en douane…",
+    espaces: ["achats", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
   },
 ];
 

@@ -24,7 +24,7 @@ export interface SyntheseDirection {
   nbFiches: number;
   marge: { margeGnf: number; taux: number | null; coutVentesGnf: number };
   margePrec: { margeGnf: number; taux: number | null };
-  stock: { kgMp: number; couvertureMpJours: number | null; valeurGnf: number; produitsFinis: { libelle: string; paquets: number; paquetsParColis: number | null }[] };
+  stock: { kgMp: number; couvertureMpJours: number | null; valeurGnf: number; produitsFinis: { libelle: string; paquets: number; paquetsParColis: number | null }[]; kgTransit: number; conteneursTransit: number };
   distribution: IndicateursCommerciaux & { grossistes: number; semiGrossistes: number };
   distributionPrec: IndicateursCommerciaux;
   alertes: Alerte[];
@@ -41,7 +41,7 @@ async function coutDesVentes(du: string, au: string): Promise<number> {
 
 export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
   const supabase = await clientServeur();
-  const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, alertesStock, factures, distribution, distributionPrec, pva] = await Promise.all([
+  const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, alertesStock, factures, distribution, distributionPrec, pva, transit] = await Promise.all([
     chargerIndicateursVentes(p.du, p.au, p.nbJours),
     chargerIndicateursVentes(p.precedente.du, p.precedente.au, p.nbJours),
     chargerFiches({ du: p.du, au: p.au }),
@@ -54,6 +54,7 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
     chargerIndicateursCommerciaux(p.du, p.au, p.nbJours),
     chargerIndicateursCommerciaux(p.precedente.du, p.precedente.au, p.nbJours),
     supabase.from("pva_carte").select("type_libelle, actif"),
+    supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
   ]);
 
   // Production : colis produits par produit et rendement par jour.
@@ -102,6 +103,8 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
     margePrec: margeBrute(ventesPrec.caHtGnf, coutPrec),
     stock: {
       kgMp,
+      kgTransit: Number(transit.data?.kg_en_transit ?? 0),
+      conteneursTransit: Number(transit.data?.nb_conteneurs ?? 0),
       couvertureMpJours: consoMp > 0 ? kgMp / consoMp : null,
       valeurGnf: lignes.reduce((s, l) => s + Number(l.valeur_gnf), 0),
       produitsFinis: lignes.filter((l) => l.famille === "produit_fini" && Number(l.quantite) > 0).map((l) => ({ libelle: l.libelle!, paquets: Number(l.quantite), paquetsParColis: l.paquets_par_colis })),

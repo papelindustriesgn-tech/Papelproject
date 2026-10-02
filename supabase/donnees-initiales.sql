@@ -145,3 +145,14 @@ insert into public.types_clients (libelle, niveau_prix, dotation, ordre) values
 
 insert into public.modes_paiement (libelle, ordre) values
   ('Espèces', 1), ('Orange Money', 2), ('MTN Mobile Money', 3), ('Virement bancaire', 4), ('Chèque', 5);
+
+-- -----------------------------------------------------------------------------
+-- Achats : types de frais d'approche et de documents (modifiables dans Achats → Listes de référence).
+-- -----------------------------------------------------------------------------
+insert into public.types_frais (libelle, ordre) values
+  ('Fret maritime', 1), ('Assurance', 2), ('Transit', 3), ('Droits et taxes de douane', 4),
+  ('Manutention portuaire', 5), ('Transport jusqu''à l''usine', 6), ('Autres frais', 7);
+
+insert into public.types_documents (libelle, ordre) values
+  ('Facture fournisseur', 1), ('Connaissement (BL)', 2), ('Packing list', 3), ('Certificat d''origine', 4),
+  ('Déclaration en douane', 5), ('Bon de livraison', 6), ('Autre', 7);

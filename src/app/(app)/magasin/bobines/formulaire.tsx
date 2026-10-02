@@ -8,8 +8,10 @@ import { receptionnerBobine } from "../actions";
 export function FormulaireReception({
   articles,
   fournisseurs,
+  conteneurs,
   dateDuJour,
 }: {
+  conteneurs: { id: string; libelle: string }[];
   articles: { id: string; libelle: string }[];
   fournisseurs: { id: string; nom: string }[];
   dateDuJour: string;
@@ -21,6 +23,16 @@ export function FormulaireReception({
     <form action={action} className="flex flex-col gap-3">
       {etat.message && <Message ton={etat.ok ? "succes" : "erreur"}>{etat.message}</Message>}
       <div className="grid gap-3 sm:grid-cols-3">
+        {conteneurs.length > 0 && (
+          <Selection libelle="Conteneur" name="conteneur_id" defaultValue={v.conteneur_id ?? ""} erreur={e.conteneur_id} title="Si choisi : fournisseur et coût de revient complet repris du conteneur" className="sm:col-span-3">
+            <option value="">— Hors conteneur (achat local) —</option>
+            {conteneurs.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.libelle}
+              </option>
+            ))}
+          </Selection>
+        )}
         <Selection libelle="Article" name="article_id" defaultValue={v.article_id ?? (articles.length === 1 ? articles[0].id : "")} erreur={e.article_id}>
           <option value="">— Choisir —</option>
           {articles.map((a) => (

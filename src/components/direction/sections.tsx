@@ -88,7 +88,7 @@ export function BlocsIndicateurs({ s }: { s: SyntheseDirection }) {
       <Section titre="Stock" lien="/magasin">
         <Indicateur libelle="Matière première" valeur={formaterPoids(kg(s.stock.kgMp))} />
         <Indicateur libelle="Jours de couverture MP" valeur={s.stock.couvertureMpJours === null ? "—" : `${nombre(s.stock.couvertureMpJours, 1)} j`} ton={s.stock.couvertureMpJours !== null && s.stock.couvertureMpJours < 15 ? "alerte" : "normal"} />
-        <Indicateur libelle="En transit" valeur="—" detail="Avec le module Achats (phase 2)" />
+        <Indicateur libelle="En transit" valeur={formaterPoids(kg(s.stock.kgTransit))} detail={`${s.stock.conteneursTransit} conteneur(s)`} />
         <Indicateur
           libelle="Produits finis"
           valeur={`${nombre(s.stock.produitsFinis.reduce((t, x) => t + x.paquets, 0))} paquets`}

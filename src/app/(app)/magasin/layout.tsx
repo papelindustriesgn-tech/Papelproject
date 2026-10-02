@@ -7,6 +7,7 @@ const SOUS_MENU = [
   { href: "/magasin/bobines", libelle: "Bobines" },
   { href: "/magasin/mouvements", libelle: "Mouvements" },
   { href: "/magasin/inventaires", libelle: "Inventaires" },
+  { href: "/magasin/demandes", libelle: "Demandes d'achat" },
   { href: "/magasin/listes", libelle: "Listes de référence" },
 ];
 

@@ -158,6 +158,7 @@ const schemaBobine = z.object({
   diametre_mm: optionnelPositif("Diamètre invalide."),
   plis: optionnelPositif("Nombre de plis invalide.").refine((n) => n === null || (Number.isInteger(n) && n <= 6), "Plis : entier de 1 à 6."),
   notes: z.string().trim().max(300),
+  conteneur_id: uuidOptionnel,
 });
 
 export async function receptionnerBobine(_e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
@@ -167,7 +168,19 @@ export async function receptionnerBobine(_e: EtatFormulaire, fd: FormData): Prom
   if (!lecture.success) return { erreurs: erreursZod(lecture.error), valeurs };
   const d = lecture.data;
   const supabase = await clientServeur();
-  const { error } = await supabase.rpc("receptionner_bobine", {
+  // Bobine d'un conteneur : fournisseur et coût de revient complet (prix + frais d'approche) viennent du conteneur.
+  const { error } = d.conteneur_id
+    ? await supabase.rpc("receptionner_bobine_conteneur", {
+        p_conteneur: d.conteneur_id,
+        p_article: d.article_id,
+        p_numero_lot: d.numero_lot,
+        p_poids_kg: d.poids_net_kg,
+        p_grammage: d.grammage_g_m2 ?? undefined,
+        p_largeur_mm: d.largeur_mm ?? undefined,
+        p_diametre_mm: d.diametre_mm ?? undefined,
+        p_plis: d.plis ?? undefined,
+      })
+    : await supabase.rpc("receptionner_bobine", {
     p_article: d.article_id,
     p_numero_lot: d.numero_lot,
     p_poids_kg: d.poids_net_kg,
