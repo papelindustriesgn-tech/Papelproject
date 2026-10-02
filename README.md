@@ -18,6 +18,7 @@ achat des matières premières → stock → production → distribution → ven
 | Phase 1 – étape 6 | Tableau de bord Direction (5 domaines, comparaison, alertes du jour, carte, PDF, rapport hebdomadaire) | ✅ Livrée |
 | Phase 2 – étape 1 | Achats : demandes d'achat, bons de commande (USD au taux du jour), conteneurs (suivi prévu/réel), frais d'approche, coût de revient complet au kg, réception des bobines par conteneur, transit, documents joints | ✅ Livrée |
 | Phase 2 – étape 2 | Logistique : véhicules, chauffeurs, tournées (capacité, feuille de route imprimable), preuve de livraison (signature, photo, GPS), retours en stock, dépenses et coût par colis | ✅ Livrée |
+| Phase 2 – étape 3 | Qualité : critères de contrôle paramétrables, contrôles à réception et en production, blocage des bobines, non-conformités et actions correctives, réclamations clients, traçabilité bobine ↔ lot de produits finis ↔ clients | ✅ Livrée |
 
 ## Installation en local
 

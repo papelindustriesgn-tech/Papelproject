@@ -23,7 +23,26 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "articles": {
+            "actions_correctives": {
+                  Row: {
+                    "commentaire": string,"created_at": string,"description": string,"echeance": string | null,"efficace": boolean | null,"id": string,"nc_id": string,"realisee_le": string | null,"responsable": string
+                  }
+                  Insert: {
+                    "commentaire"?: string,"created_at"?: string,"description": string,"echeance"?: string | null,"efficace"?: boolean | null,"id"?: string,"nc_id": string,"realisee_le"?: string | null,"responsable"?: string
+                  }
+                  Update: {
+                    "commentaire"?: string,"created_at"?: string,"description"?: string,"echeance"?: string | null,"efficace"?: boolean | null,"id"?: string,"nc_id"?: string,"realisee_le"?: string | null,"responsable"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "actions_correctives_nc_id_fkey"
+      columns: ["nc_id"]
+isOneToOne: false
+      referencedRelation: "non_conformites"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"articles": {
                   Row: {
                     "actif": boolean,"categorie_id": string | null,"code": string,"conditionnement_id": string | null,"created_at": string,"famille": Database["public"]['Enums']["famille_article"],"id": string,"libelle": string,"notes": string,"produit_id": string | null,"seuil_alerte": number,"suivi_par_lot": boolean,"unite": Database["public"]['Enums']["unite_stock"],"updated_at": string
                   }
@@ -311,6 +330,68 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"controles_qualite": {
+                  Row: {
+                    "controleur_id": string | null,"created_at": string,"date_controle": string,"etape": string,"fiche_id": string | null,"id": string,"lot_id": string | null,"notes": string,"resultat": string | null,"statut": string,"valide_le": string | null
+                  }
+                  Insert: {
+                    "controleur_id"?: string | null,"created_at"?: string,"date_controle"?: string,"etape": string,"fiche_id"?: string | null,"id"?: string,"lot_id"?: string | null,"notes"?: string,"resultat"?: string | null,"statut"?: string,"valide_le"?: string | null
+                  }
+                  Update: {
+                    "controleur_id"?: string | null,"created_at"?: string,"date_controle"?: string,"etape"?: string,"fiche_id"?: string | null,"id"?: string,"lot_id"?: string | null,"notes"?: string,"resultat"?: string | null,"statut"?: string,"valide_le"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "controles_qualite_controleur_id_fkey"
+      columns: ["controleur_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "controles_qualite_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "fiches_production"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "controles_qualite_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "fiches_resume"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "controles_qualite_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "tracabilite_bobines"
+      referencedColumns: ["fiche_id"]
+    },{
+      foreignKeyName: "controles_qualite_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "etat_lots"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "controles_qualite_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "lots"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"criteres_qualite": {
+                  Row: {
+                    "actif": boolean,"etape": string,"id": string,"libelle": string,"ordre": number,"type_mesure": string,"unite": string,"valeur_max": number | null,"valeur_min": number | null
+                  }
+                  Insert: {
+                    "actif"?: boolean,"etape": string,"id"?: string,"libelle": string,"ordre"?: number,"type_mesure"?: string,"unite"?: string,"valeur_max"?: number | null,"valeur_min"?: number | null
+                  }
+                  Update: {
+                    "actif"?: boolean,"etape"?: string,"id"?: string,"libelle"?: string,"ordre"?: number,"type_mesure"?: string,"unite"?: string,"valeur_max"?: number | null,"valeur_min"?: number | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"demandes_achat": {
                   Row: {
                     "article_id": string,"bc_id": string | null,"commentaire": string,"created_at": string,"date_besoin": string | null,"demandeur_id": string | null,"id": string,"motif": string,"numero": string | null,"quantite": number,"statut": Database["public"]['Enums']["statut_demande"],"traite_par": string | null
@@ -501,6 +582,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "fiches_resume"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fiche_arrets_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "tracabilite_bobines"
+      referencedColumns: ["fiche_id"]
     }
                   ]
                 },"fiche_consommations": {
@@ -545,6 +632,12 @@ isOneToOne: false
       referencedRelation: "fiches_resume"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "fiche_consommations_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "tracabilite_bobines"
+      referencedColumns: ["fiche_id"]
+    },{
       foreignKeyName: "fiche_consommations_lot_id_fkey"
       columns: ["lot_id"]
 isOneToOne: false
@@ -581,6 +674,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "fiches_resume"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fiche_operateurs_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "tracabilite_bobines"
+      referencedColumns: ["fiche_id"]
     },{
       foreignKeyName: "fiche_operateurs_operateur_id_fkey"
       columns: ["operateur_id"]
@@ -624,17 +723,23 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "fiches_resume"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fiche_productions_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "tracabilite_bobines"
+      referencedColumns: ["fiche_id"]
     }
                   ]
                 },"fiches_production": {
                   Row: {
-                    "chef_id": string | null,"cout_matiere_gnf": number | null,"created_at": string,"date_production": string,"duree_poste_min": number,"equipe_id": string | null,"id": string,"ligne_id": string,"notes": string,"of_id": string | null,"poste_id": string,"statut": Database["public"]['Enums']["statut_fiche"],"updated_at": string,"validee_le": string | null,"validee_par": string | null
+                    "chef_id": string | null,"code_lot": string | null,"cout_matiere_gnf": number | null,"created_at": string,"date_production": string,"duree_poste_min": number,"equipe_id": string | null,"id": string,"ligne_id": string,"notes": string,"of_id": string | null,"poste_id": string,"statut": Database["public"]['Enums']["statut_fiche"],"updated_at": string,"validee_le": string | null,"validee_par": string | null
                   }
                   Insert: {
-                    "chef_id"?: string | null,"cout_matiere_gnf"?: number | null,"created_at"?: string,"date_production"?: string,"duree_poste_min"?: number,"equipe_id"?: string | null,"id"?: string,"ligne_id": string,"notes"?: string,"of_id"?: string | null,"poste_id": string,"statut"?: Database["public"]['Enums']["statut_fiche"],"updated_at"?: string,"validee_le"?: string | null,"validee_par"?: string | null
+                    "chef_id"?: string | null,"code_lot"?: string | null,"cout_matiere_gnf"?: number | null,"created_at"?: string,"date_production"?: string,"duree_poste_min"?: number,"equipe_id"?: string | null,"id"?: string,"ligne_id": string,"notes"?: string,"of_id"?: string | null,"poste_id": string,"statut"?: Database["public"]['Enums']["statut_fiche"],"updated_at"?: string,"validee_le"?: string | null,"validee_par"?: string | null
                   }
                   Update: {
-                    "chef_id"?: string | null,"cout_matiere_gnf"?: number | null,"created_at"?: string,"date_production"?: string,"duree_poste_min"?: number,"equipe_id"?: string | null,"id"?: string,"ligne_id"?: string,"notes"?: string,"of_id"?: string | null,"poste_id"?: string,"statut"?: Database["public"]['Enums']["statut_fiche"],"updated_at"?: string,"validee_le"?: string | null,"validee_par"?: string | null
+                    "chef_id"?: string | null,"code_lot"?: string | null,"cout_matiere_gnf"?: number | null,"created_at"?: string,"date_production"?: string,"duree_poste_min"?: number,"equipe_id"?: string | null,"id"?: string,"ligne_id"?: string,"notes"?: string,"of_id"?: string | null,"poste_id"?: string,"statut"?: Database["public"]['Enums']["statut_fiche"],"updated_at"?: string,"validee_le"?: string | null,"validee_par"?: string | null
                   }
                   Relationships: [
                     {
@@ -1096,6 +1201,37 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"mesures_controle": {
+                  Row: {
+                    "commentaire": string,"conforme": boolean,"controle_id": string,"critere_id": string,"id": string,"valeur": number | null
+                  }
+                  Insert: {
+                    "commentaire"?: string,"conforme": boolean,"controle_id": string,"critere_id": string,"id"?: string,"valeur"?: number | null
+                  }
+                  Update: {
+                    "commentaire"?: string,"conforme"?: boolean,"controle_id"?: string,"critere_id"?: string,"id"?: string,"valeur"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "mesures_controle_controle_id_fkey"
+      columns: ["controle_id"]
+isOneToOne: false
+      referencedRelation: "controles_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mesures_controle_controle_id_fkey"
+      columns: ["controle_id"]
+isOneToOne: false
+      referencedRelation: "controles_qualite"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mesures_controle_critere_id_fkey"
+      columns: ["critere_id"]
+isOneToOne: false
+      referencedRelation: "criteres_qualite"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"modes_paiement": {
                   Row: {
                     "actif": boolean,"created_at": string,"id": string,"libelle": string,"ordre": number
@@ -1170,6 +1306,97 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"non_conformites": {
+                  Row: {
+                    "cause_racine": string,"client_id": string | null,"cloturee_le": string | null,"cloturee_par": string | null,"controle_id": string | null,"created_at": string,"created_by": string | null,"date_constat": string,"description": string,"fiche_id": string | null,"gravite": string,"id": string,"livraison_id": string | null,"lot_id": string | null,"numero": string | null,"origine": string,"statut": string,"type_id": string | null
+                  }
+                  Insert: {
+                    "cause_racine"?: string,"client_id"?: string | null,"cloturee_le"?: string | null,"cloturee_par"?: string | null,"controle_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_constat"?: string,"description": string,"fiche_id"?: string | null,"gravite"?: string,"id"?: string,"livraison_id"?: string | null,"lot_id"?: string | null,"numero"?: string | null,"origine": string,"statut"?: string,"type_id"?: string | null
+                  }
+                  Update: {
+                    "cause_racine"?: string,"client_id"?: string | null,"cloturee_le"?: string | null,"cloturee_par"?: string | null,"controle_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_constat"?: string,"description"?: string,"fiche_id"?: string | null,"gravite"?: string,"id"?: string,"livraison_id"?: string | null,"lot_id"?: string | null,"numero"?: string | null,"origine"?: string,"statut"?: string,"type_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "non_conformites_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "non_conformites_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "soldes_clients"
+      referencedColumns: ["client_id"]
+    },{
+      foreignKeyName: "non_conformites_cloturee_par_fkey"
+      columns: ["cloturee_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "non_conformites_controle_id_fkey"
+      columns: ["controle_id"]
+isOneToOne: false
+      referencedRelation: "controles_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "non_conformites_controle_id_fkey"
+      columns: ["controle_id"]
+isOneToOne: false
+      referencedRelation: "controles_qualite"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "non_conformites_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "non_conformites_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "fiches_production"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "non_conformites_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "fiches_resume"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "non_conformites_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "tracabilite_bobines"
+      referencedColumns: ["fiche_id"]
+    },{
+      foreignKeyName: "non_conformites_livraison_id_fkey"
+      columns: ["livraison_id"]
+isOneToOne: false
+      referencedRelation: "livraisons"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "non_conformites_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "etat_lots"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "non_conformites_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "lots"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "non_conformites_type_id_fkey"
+      columns: ["type_id"]
+isOneToOne: false
+      referencedRelation: "types_non_conformite"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"objectifs_commerciaux": {
                   Row: {
@@ -1759,6 +1986,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"types_non_conformite": {
+                  Row: {
+                    "actif": boolean,"id": string,"libelle": string,"ordre": number
+                  }
+                  Insert: {
+                    "actif"?: boolean,"id"?: string,"libelle": string,"ordre"?: number
+                  }
+                  Update: {
+                    "actif"?: boolean,"id"?: string,"libelle"?: string,"ordre"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"utilisateur_roles": {
                   Row: {
                     "created_at": string,"role": Database["public"]['Enums']["role_code"],"utilisateur_id": string
@@ -1952,6 +2192,49 @@ isOneToOne: false
       columns: ["produit_id"]
 isOneToOne: false
       referencedRelation: "produits"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"controles_etat": {
+                  Row: {
+                    "code_lot": string | null,"controleur_id": string | null,"created_at": string | null,"date_controle": string | null,"etape": string | null,"fiche_id": string | null,"id": string | null,"lot_id": string | null,"nb_mesures": number | null,"nb_non_conformes": number | null,"notes": string | null,"numero_lot": string | null,"resultat": string | null,"statut": string | null,"valide_le": string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "controles_qualite_controleur_id_fkey"
+      columns: ["controleur_id"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "controles_qualite_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "fiches_production"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "controles_qualite_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "fiches_resume"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "controles_qualite_fiche_id_fkey"
+      columns: ["fiche_id"]
+isOneToOne: false
+      referencedRelation: "tracabilite_bobines"
+      referencedColumns: ["fiche_id"]
+    },{
+      foreignKeyName: "controles_qualite_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "etat_lots"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "controles_qualite_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "lots"
       referencedColumns: ["id"]
     }
                   ]
@@ -2272,6 +2555,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"tracabilite_bobines": {
+                  Row: {
+                    "code_lot": string | null,"date_production": string | null,"fiche_id": string | null,"kg_consommes": number | null,"ligne": string | null,"lot_id": string | null,"poste": string | null,"statut_fiche": Database["public"]['Enums']["statut_fiche"] | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "fiche_consommations_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "etat_lots"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "fiche_consommations_lot_id_fkey"
+      columns: ["lot_id"]
+isOneToOne: false
+      referencedRelation: "lots"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"transit": {
                   Row: {
                     "kg_en_transit": number | null,"nb_conteneurs": number | null
@@ -2328,8 +2630,14 @@ isOneToOne: false
 "calculer_dotation_facture":
 { Args: { "p_facture": string }; Returns: undefined
                            },
+"cloturer_nc":
+{ Args: { "p_nc": string }; Returns: undefined
+                           },
 "creer_produit":
 { Args: { "p_code": string,"p_date_prix"?: string,"p_grammage": number,"p_largeur_mm": number,"p_libelle": string,"p_longueur_mm": number,"p_nb_mouchoirs": number,"p_paquets_par_colis": number,"p_plis": number,"p_prix_paquet_gnf"?: number,"p_taux_perte": number }; Returns: string
+                           },
+"decider_lot":
+{ Args: { "p_bloquer": boolean,"p_lot": string,"p_motif": string }; Returns: undefined
                            },
 "definir_prix":
 { Args: { "p_date_debut": string,"p_niveau": string,"p_note"?: string,"p_prix_paquet_gnf": number,"p_produit": string }; Returns: string
@@ -2406,6 +2714,11 @@ isOneToOne: false
 "terminer_tournee":
 { Args: { "p_km": number,"p_tournee": string }; Returns: undefined
                            },
+"tracer_fiche":
+{ Args: { "p_fiche": string }; Returns: {
+              "client_id": string,"client_nom": string,"conditionnement": string,"date_livraison": string,"livraison_id": string,"numero": string,"paquets": number
+            }[]
+                           },
 "transformer_piece":
 { Args: { "p_piece": string,"p_type": Database["public"]['Enums']["type_piece"] }; Returns: string
                            },
@@ -2414,6 +2727,9 @@ isOneToOne: false
                            },
 "valider_avoir":
 { Args: { "p_avoir": string,"p_retour_stock"?: boolean }; Returns: string
+                           },
+"valider_controle":
+{ Args: { "p_controle": string }; Returns: string
                            },
 "valider_fiche_production":
 { Args: { "p_fiche": string }; Returns: number

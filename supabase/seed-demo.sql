@@ -429,3 +429,47 @@ begin
     values (v_tournee, (select id from public.types_depenses_tournee where libelle = 'Carburant'), 350000 + extract(day from v_jour)::int * 5000);
   end loop;
 end $$;
+
+-- -----------------------------------------------------------------------------
+-- Qualité : contrôles à réception (une bobine hors tolérance → NC et blocage), contrôles en production,
+-- une réclamation client traitée.
+-- -----------------------------------------------------------------------------
+do $$
+declare
+  v_lot record;
+  v_fiche record;
+  v_controle uuid;
+  v_nc uuid;
+  i integer := 0;
+begin
+  perform set_config('request.jwt.claims', json_build_object('sub', '20000000-0000-0000-0000-000000000007', 'role', 'authenticated')::text, true);
+  for v_lot in select id, date_reception from public.lots where numero_lot like 'JB-%' order by date_reception desc limit 6 loop
+    i := i + 1;
+    insert into public.controles_qualite (etape, date_controle, lot_id, controleur_id) values ('reception', v_lot.date_reception, v_lot.id, '20000000-0000-0000-0000-000000000007') returning id into v_controle;
+    insert into public.mesures_controle (controle_id, critere_id, valeur, conforme)
+    select v_controle, id, case libelle when 'Grammage' then case when i = 2 then 14.1 else 12.9 + i * 0.05 end when 'Humidité' then 6.5 end, true
+    from public.criteres_qualite where etape = 'reception' and libelle in ('Grammage', 'Humidité', 'Aspect (trous, taches, mandrin)');
+    perform public.valider_controle(v_controle);
+  end loop;
+
+  i := 0;
+  for v_fiche in select id, date_production from public.fiches_production where statut = 'validee' order by date_production desc limit 8 loop
+    i := i + 1;
+    insert into public.controles_qualite (etape, date_controle, fiche_id, controleur_id) values ('production', v_fiche.date_production, v_fiche.id, '20000000-0000-0000-0000-000000000007') returning id into v_controle;
+    insert into public.mesures_controle (controle_id, critere_id, valeur, conforme)
+    select v_controle, id, case libelle when 'Mouchoirs par paquet' then case when i = 5 then 97 else 100 end when 'Longueur du mouchoir' then 190 end, true
+    from public.criteres_qualite where etape = 'production' and libelle in ('Mouchoirs par paquet', 'Longueur du mouchoir', 'Soudure du sachet');
+    perform public.valider_controle(v_controle);
+  end loop;
+
+  -- Réclamation d'un grossiste, analysée et clôturée.
+  insert into public.non_conformites (date_constat, origine, type_id, gravite, description, client_id, cause_racine, created_by)
+  values (public.aujourdhui_conakry() - 12, 'client', (select id from public.types_non_conformite where libelle = 'Réclamation client'), 'mineure',
+          'Sachets mal soudés sur 2 colis (paquets qui s''ouvrent)', (select id from public.clients order by code limit 1),
+          'Température de la barre de soudure trop basse après changement de film', '20000000-0000-0000-0000-000000000007')
+  returning id into v_nc;
+  insert into public.actions_correctives (nc_id, description, responsable, echeance, realisee_le, efficace)
+  values (v_nc, 'Remplacer les 2 colis chez le client', 'Responsable commercial', public.aujourdhui_conakry() - 10, public.aujourdhui_conakry() - 10, true),
+         (v_nc, 'Ajouter le réglage de température à la fiche de changement de film', 'Chef de production', public.aujourdhui_conakry() - 5, public.aujourdhui_conakry() - 6, true);
+  perform public.cloturer_nc(v_nc);
+end $$;

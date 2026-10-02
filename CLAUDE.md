@@ -221,6 +221,24 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
   coût par colis livré, coût au km ; agrégation = sommes puis taux recalculés. Vue `tournees_livraison_etat`.
 - Alerte Direction : BL validés depuis plus de 2 jours et non remis.
 
+## 6 nonies. Qualité (phase 2 – étape 3)
+
+- Listes modifiables : **critères de contrôle** (étape réception / production / produit fini ; « mesure » avec tolérances min-max
+  ou « visuel »), **types de non-conformité**. Paramètre `tracabilite_fenetre_jours` (30).
+- **Lot de produits finis = fiche de production** : `fiches_production.code_lot` = `PFAAMMJJ-n` (trigger), affiché sur la fiche
+  pour marquer les colis.
+- **Contrôle** : sur une bobine (réception) ou une fiche ; la conformité d'une mesure est **recalculée par la base** (trigger
+  `mesure_conformite`, même règle que `mesureConforme` dans `src/lib/metier/qualite.ts`). `valider_controle` fige le contrôle ;
+  s'il est non conforme : NC ouverte automatiquement et **bobine bloquée** (ne sort plus du stock).
+  `decider_lot` : blocage / libération par la qualité, motif obligatoire (tracé dans les notes du lot).
+- **Non-conformité** (`NC-AAAA-NNNNN`) : déclarée par la qualité, la production, le magasin ou le responsable commercial
+  (réclamation client) via le composant partagé `SignalerNc` ; analyse (cause racine), actions correctives (responsable, échéance,
+  réalisée, efficace) ; `cloturer_nc` exige cause racine + actions toutes réalisées ; NC clôturée figée.
+- **Traçabilité** (`/qualite/tracabilite`) : bobine → fiches qui l'ont consommée (vue `tracabilite_bobines`) → livraisons
+  (`tracer_fiche`) ; lot PF → bobines consommées + livraisons. Côté clients c'est une **estimation** (même conditionnement livré
+  dans la fenêtre), car les ventes ne suivent pas les numéros de lot.
+- Indicateurs : conformité réception / production, NC ouvertes (critiques), délai moyen de clôture, actions en retard, bobines bloquées.
+
 ## 7. Seuils d'alerte (paramétrables)
 
 - Production : rendement < **95 %** du théorique ; perte > **5 %** ; arrêt > **30 min**.

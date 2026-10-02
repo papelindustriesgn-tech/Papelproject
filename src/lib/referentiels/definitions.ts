@@ -377,6 +377,59 @@ export const REFERENTIELS: Referentiel[] = [
       { nom: "ordre", libelle: "Ordre", type: "entier" },
     ],
   },
+  // --- Qualité -----------------------------------------------------------------
+  {
+    code: "criteres-qualite",
+    table: "criteres_qualite",
+    titre: "Critères de contrôle",
+    description: "Points contrôlés à réception, en production et sur produit fini, avec leurs tolérances.",
+    espaces: ["qualite", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Critère", type: "texte", requis: true, max: 80 },
+      {
+        nom: "etape",
+        libelle: "Étape",
+        type: "choix",
+        requis: true,
+        options: [
+          { valeur: "reception", libelle: "Réception (bobines)" },
+          { valeur: "production", libelle: "En production" },
+          { valeur: "produit_fini", libelle: "Produit fini" },
+        ],
+      },
+      {
+        nom: "type_mesure",
+        libelle: "Type",
+        type: "choix",
+        requis: true,
+        options: [
+          { valeur: "mesure", libelle: "Mesure chiffrée" },
+          { valeur: "visuel", libelle: "Visuel (conforme / non conforme)" },
+        ],
+      },
+      { nom: "unite", libelle: "Unité", type: "texte", max: 20 },
+      { nom: "valeur_min", libelle: "Minimum toléré", type: "decimal" },
+      { nom: "valeur_max", libelle: "Maximum toléré", type: "decimal" },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  {
+    code: "types-non-conformite",
+    table: "types_non_conformite",
+    titre: "Types de non-conformité",
+    description: "Matière première, fabrication, emballage, réclamation client, hygiène et sécurité…",
+    espaces: ["qualite", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
 ];
 
 export function referentiel(code: string): Referentiel | undefined {

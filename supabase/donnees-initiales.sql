@@ -161,3 +161,27 @@ insert into public.types_documents (libelle, ordre) values
 insert into public.types_depenses_tournee (libelle, ordre) values
   ('Carburant', 1), ('Péage et taxes de route', 2), ('Manutention', 3), ('Réparation en route', 4), ('Autre', 9)
 on conflict (libelle) do nothing;
+
+-- Qualité : critères de contrôle et types de non-conformité (modifiables dans Qualité → Listes de référence).
+-- Tolérances de départ indicatives, à ajuster par le service qualité.
+insert into public.criteres_qualite (etape, libelle, type_mesure, unite, valeur_min, valeur_max, ordre) values
+  ('reception', 'Grammage', 'mesure', 'g/m²', 12.5, 13.5, 1),
+  ('reception', 'Humidité', 'mesure', '%', null, 8, 2),
+  ('reception', 'Largeur de la bobine', 'mesure', 'mm', null, null, 3),
+  ('reception', 'Aspect (trous, taches, mandrin)', 'visuel', '', null, null, 4),
+  ('production', 'Mouchoirs par paquet', 'mesure', 'mouchoirs', 100, 102, 1),
+  ('production', 'Longueur du mouchoir', 'mesure', 'mm', 187, 193, 2),
+  ('production', 'Soudure du sachet', 'visuel', '', null, null, 3),
+  ('production', 'Impression et marquage du lot', 'visuel', '', null, null, 4),
+  ('produit_fini', 'Paquets par colis', 'visuel', '', null, null, 1),
+  ('produit_fini', 'État du colis (fermeture, étiquette)', 'visuel', '', null, null, 2)
+on conflict (etape, libelle) do nothing;
+
+insert into public.types_non_conformite (libelle, ordre) values
+  ('Matière première non conforme', 1), ('Défaut de fabrication', 2), ('Emballage / conditionnement', 3),
+  ('Réclamation client', 4), ('Hygiène et sécurité', 5), ('Autre', 9)
+on conflict (libelle) do nothing;
+
+insert into public.parametres (cle, valeur, libelle, description, categorie, type_valeur, unite) values
+  ('tracabilite_fenetre_jours', '30', 'Fenêtre de traçabilité', 'Un lot de produits finis est supposé livré dans les N jours suivant sa production (recherche des clients concernés)', 'qualite', 'entier', 'jours')
+on conflict (cle) do nothing;

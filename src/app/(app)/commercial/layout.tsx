@@ -5,6 +5,7 @@ const SOUS_MENU = [
   { href: "/commercial", libelle: "Tableau de bord et carte" },
   { href: "/commercial/visites", libelle: "Visites" },
   { href: "/commercial/planification", libelle: "Tournées et objectifs" },
+  { href: "/commercial/reclamations", libelle: "Réclamations clients" },
   { href: "/commercial/listes", libelle: "Listes de référence" },
 ];
 

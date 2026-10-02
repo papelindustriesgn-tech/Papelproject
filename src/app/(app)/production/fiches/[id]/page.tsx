@@ -27,7 +27,7 @@ export default async function PageFiche({ params }: PageProps<"/production/fiche
   const { data: f } = await supabase
     .from("fiches_production")
     .select(
-      `id, date_production, statut, notes, equipe_id, of_id, ligne_id, duree_poste_min, cout_matiere_gnf, validee_le,
+      `id, date_production, statut, notes, equipe_id, of_id, ligne_id, duree_poste_min, cout_matiere_gnf, validee_le, code_lot,
        postes(libelle, heure_debut, heure_fin), lignes_production(libelle),
        fiche_productions(id, paquets, rebuts_kg, cout_unitaire_gnf, conditionnements(libelle, paquets_par_colis, produits(libelle))),
        fiche_consommations(id, quantite, articles(libelle, unite), lots(numero_lot)),
@@ -62,7 +62,7 @@ export default async function PageFiche({ params }: PageProps<"/production/fiche
       </Link>
       <TitrePage
         titre={`${f.postes?.libelle} du ${formaterDate(f.date_production)}`}
-        sousTitre={`${f.lignes_production?.libelle} · ${f.postes?.heure_debut.slice(0, 5)} – ${f.postes?.heure_fin.slice(0, 5)} · durée ${minutes(f.duree_poste_min)}`}
+        sousTitre={`Lot ${f.code_lot ?? "—"} · ${f.lignes_production?.libelle} · ${f.postes?.heure_debut.slice(0, 5)} – ${f.postes?.heure_fin.slice(0, 5)} · durée ${minutes(f.duree_poste_min)}`}
         action={modifiable ? <Badge ton="alerte">Brouillon</Badge> : <Badge ton="succes">Validée {f.validee_le ? `le ${formaterDateHeure(f.validee_le)}` : ""}</Badge>}
       />
 
