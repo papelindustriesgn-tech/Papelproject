@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculerDso, montantEnLettresGnf, nombreEnLettres, prixMoyenPaquet } from "../ventes";
+import { calculerDso, margeBrute, montantEnLettresGnf, nombreEnLettres, prixMoyenPaquet, variationRelative } from "../ventes";
 
 describe("nombres en lettres (orthographe rectifiée)", () => {
   it.each([
@@ -44,5 +44,19 @@ describe("indicateurs commerciaux", () => {
   it("prix moyen au paquet", () => {
     expect(prixMoyenPaquet(17_000_000, 5000)).toBe(3400);
     expect(prixMoyenPaquet(0, 0)).toBeNull();
+  });
+});
+
+describe("marge brute et variations", () => {
+  it("marge = CA HT − coût de revient des ventes", () => {
+    expect(margeBrute(17_000_000, 7_400_000)).toEqual({ margeGnf: 9_600_000, taux: 9_600_000 / 17_000_000 });
+    expect(margeBrute(0, 0)).toEqual({ margeGnf: 0, taux: null });
+    expect(() => margeBrute(100, -1)).toThrow();
+  });
+  it("variation par rapport à la période précédente", () => {
+    expect(variationRelative(110, 100)).toBeCloseTo(0.1);
+    expect(variationRelative(90, 100)).toBeCloseTo(-0.1);
+    expect(variationRelative(10, 0)).toBeNull();
+    expect(variationRelative(null, 5)).toBeNull();
   });
 });

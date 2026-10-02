@@ -81,6 +81,8 @@ from (values
   ('Hôtel Kaloum (démo)', 'B2B', 'Économat', '+224 621 10 10 07', 'Boulbinet', 'Boulbinet', 'credit', 30, 100000000, 'commercial2'),
   ('Grossiste Coyah (démo)', 'Grossiste', 'Sékou Sylla', '+224 621 10 10 08', 'Marché de Coyah', 'Coyah-Centre', 'credit', 15, 300000000, 'commercial1')
 ) as v(nom, type, resp, tel, adresse, quartier, cond, delai, plafond, commercial);
+-- Clients existants depuis plusieurs mois (seuls les clients créés ensuite comptent comme « nouveaux »).
+update public.clients set created_at = now() - interval '120 days';
 
 do $$
 declare

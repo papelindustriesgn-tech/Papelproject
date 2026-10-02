@@ -4,7 +4,7 @@ ERP de **Papel Industries**, fabricant guinéen de mouchoirs en papier (usine de
 Chaîne couverte : achat MP → stock → production → stock produits finis → distribution → vente → encaissement → pilotage.
 
 > Ce fichier est la référence des règles métier et des conventions de code. Le tenir à jour à chaque phase.
-> État : **Phase 1 — étapes 1 à 5 livrées (fondations, stocks, production, ventes, terrain).** Prochaine : étape 6 (tableau de bord Direction). Plan : `docs/architecture.md`.
+> État : **Phase 1 (MVP) livrée** (bilan : `docs/bilan-phase-1.md`). En cours : **phase 2** (achats, logistique, qualité, maintenance). Plan : `docs/architecture.md`.
 
 @AGENTS.md
 
@@ -179,6 +179,15 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 - Carte : Leaflet (`src/components/carte/carte.tsx`, chargée côté navigateur via `CarteDynamique`), tuiles `NEXT_PUBLIC_TUILES_URL`
   (OpenStreetMap par défaut ; prendre un fournisseur de tuiles en production).
 - Palette catégorielle partagée : `src/lib/graphiques/couleurs.ts` (jamais importer une constante depuis un fichier « use client » côté serveur).
+
+## 6 sexies. Tableau de bord Direction (étape 6)
+
+- `src/lib/direction/synthese.ts` assemble les indicateurs des modules (réutilise `chargerIndicateursVentes`, `chargerFiches`/`agreger`,
+  `chargerIndicateursCommerciaux`, `etat_stock`) pour la période ET la période précédente de même durée.
+- Marge brute = CA HT − coût matière des produits vendus (mouvements `vente` + `dotation` − `retour`, valorisés au CMP).
+- Alertes prioritaires : stock (rupture, sous seuil, couverture faible), fiches de production en alerte (veille et jour), impayés > 30 j,
+  taux de rupture terrain > 15 %. Triées : critiques d'abord.
+- Export PDF = impression du navigateur (CSS `@media print`, cartes masquées) ; rapport hebdomadaire `/direction/rapport`.
 
 ## 7. Seuils d'alerte (paramétrables)
 

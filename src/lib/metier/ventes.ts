@@ -82,3 +82,19 @@ export function calculerDso(creancesGnf: number, caTtcPeriodeGnf: number, nbJour
 export function prixMoyenPaquet(caHtGnf: number, paquets: number): number | null {
   return paquets > 0 ? Math.round(caHtGnf / paquets) : null;
 }
+
+/**
+ * Marge brute = CA HT − coût de revient des produits sortis pour la vente (et offerts en dotation),
+ * valorisés au coût moyen pondéré au moment de la sortie.
+ */
+export function margeBrute(caHtGnf: number, coutVentesGnf: number): { margeGnf: number; taux: number | null } {
+  if (coutVentesGnf < 0) throw new ErreurMontant("Le coût des ventes ne peut pas être négatif.");
+  const margeGnf = Math.round(caHtGnf - coutVentesGnf);
+  return { margeGnf, taux: caHtGnf > 0 ? margeGnf / caHtGnf : null };
+}
+
+/** Variation relative entre deux périodes (0,1 = +10 %) ; null si la période précédente est nulle. */
+export function variationRelative(actuel: number | null, precedent: number | null): number | null {
+  if (actuel === null || precedent === null || precedent === 0) return null;
+  return (actuel - precedent) / Math.abs(precedent);
+}

@@ -144,7 +144,7 @@ Chaque étape se termine par un **point** (démo, tests, CLAUDE.md à jour) avan
 3. ✅ **Production** : OF, fiches de poste, validation → mouvements de stock, KPI et alertes rendement/perte/arrêts, TRS.
 4. ✅ **Ventes simples** : clients, grille de prix historisée, commande → livraison → facture → paiement, dotation sur encaissé.
 5. ✅ **PWA terrain** : PVA + GPS + photos, visites avec check-in, commandes et encaissements hors ligne, synchro ; vue responsable commercial avec carte.
-6. **Tableau de bord Direction** : filtres de période + comparaison période précédente, alertes du jour, export PDF.
+6. ✅ **Tableau de bord Direction** : filtres de période + comparaison période précédente, alertes du jour, export PDF.
 
 **Phase 2** : achats et conteneurs (coût de revient complet par lot) → logistique → qualité → maintenance.
 

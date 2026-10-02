@@ -32,8 +32,17 @@ body {
 
 /* Impression des documents (factures, bons de livraison) : fond blanc, couleurs de la marque conservées. */
 @media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
   body {
     background: #ffffff;
+    font-size: 12px;
+  }
+  /* Les cartes Leaflet ne s'impriment pas bien (tuiles) : on les remplace par la légende. */
+  .leaflet-container {
+    display: none;
   }
   .imprimer-couleurs {
     print-color-adjust: exact;
