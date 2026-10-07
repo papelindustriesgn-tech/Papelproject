@@ -3,20 +3,25 @@ import { expectNoHorizontalOverflow } from "./helpers";
 
 test("landing publique : message clair, carte d'exemple, sections et CTA", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Ton statut étudiant devient un avantage");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Prouve que tu es étudiant");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Paie moins cher");
+  // Le héros et son histoire en 3 temps
+  await expect(page.getByText("L'histoire d'Aïssatou")).toBeVisible();
+  for (const step of ["1 · Le problème", "2 · La solution : Uny", "3 · Le résultat"])
+    await expect(page.getByText(step)).toBeVisible();
   await expect(page.getByText("Disponible dans toute la Guinée", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Créer mon compte/ }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /Obtenir ma carte gratuite/ })).toBeVisible();
   // Seule une carte d'EXEMPLE est affichée
   await expect(page.getByText("Exemple").first()).toBeVisible();
-  for (const id of ["avantages", "carte", "marketplace"]) await expect(page.locator(`#${id}`)).toBeAttached();
-  await expect(page.getByText("Rejoins la communauté Uny")).toBeVisible();
+  for (const id of ["histoire", "avantages", "carte"]) await expect(page.locator(`#${id}`)).toBeAttached();
+  await expect(page.getByText("Ton statut étudiant devient un avantage.")).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });
 
-test("« Découvrir Uny » fait défiler vers la présentation", async ({ page }) => {
+test("« Voir comment ça marche » fait défiler vers l'histoire", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Découvrir Uny" }).click();
-  await expect(page).toHaveURL(/#decouvrir/);
+  await page.getByRole("link", { name: "Voir comment ça marche" }).click();
+  await expect(page).toHaveURL(/#histoire/);
 });
 
 test("les pages protégées redirigent vers la connexion", async ({ page }) => {

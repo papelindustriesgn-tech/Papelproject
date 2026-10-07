@@ -12,17 +12,17 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <Logo />
           </Link>
           <nav className="text-ink/75 hidden items-center gap-6 text-sm font-semibold md:flex" aria-label="Sections">
+            <Link href="/#histoire" className="hover:text-ink">
+              Comment ça marche
+            </Link>
             <Link href="/#avantages" className="hover:text-ink">
               Avantages
             </Link>
-            <Link href="/#carte" className="hover:text-ink">
-              Uny Card
-            </Link>
-            <Link href="/#marketplace" className="hover:text-ink">
-              Marketplace
-            </Link>
             <Link href="/partenaires" className="hover:text-ink">
-              Partenaires
+              Commerçants
+            </Link>
+            <Link href="/universites" className="hover:text-ink">
+              Universités
             </Link>
           </nav>
           <Link href="/connexion" className="text-ink hover:text-brand-600 px-2 text-sm font-semibold">
