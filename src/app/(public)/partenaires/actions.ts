@@ -8,7 +8,7 @@ import { formValues, zodFieldErrors, type FormState } from "@/lib/actions/types"
 import { partnerApplicationEmail, sendEmail } from "@/lib/email";
 import { SUPPORT_EMAIL } from "@/lib/constants";
 
-const WANTS = ["avantages", "jobs", "logements", "marketplace"] as const;
+const WANTS = ["avantages", "marketplace"] as const;
 
 const schema = z.object({
   business_name: z.string().trim().min(2, "Nom requis").max(120),

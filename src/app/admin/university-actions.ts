@@ -272,7 +272,7 @@ export async function disableIntegration(universityId: number) {
 }
 
 // -----------------------------------------------------------------------------
-// BAC : vérification manuelle (aucune source officielle raccordée)
+// BAC : contrôle manuel du numéro de PV (aucune source officielle raccordée)
 // -----------------------------------------------------------------------------
 export async function reviewBac(id: string, _prev: FormState, formData: FormData): Promise<FormState> {
   const adminUser = await requireAdmin();
@@ -300,6 +300,7 @@ export async function reviewBac(id: string, _prev: FormState, formData: FormData
       reviewed_by: adminUser.id,
       reviewed_at: new Date().toISOString(),
       document_path: null,
+      candidate_number: null,
     })
     .eq("id", id);
   if (error)
@@ -307,7 +308,7 @@ export async function reviewBac(id: string, _prev: FormState, formData: FormData
       error:
         error.code === "23505" ? "Ce numéro de candidat est déjà vérifié pour un autre compte." : "Enregistrement impossible.",
     };
-  // Preuve minimale : le relevé est supprimé dès la décision
+  // Preuve minimale : numéro complet et éventuel ancien relevé effacés dès la décision
   if (bac.document_path) await admin.storage.from("verification-docs").remove([bac.document_path]);
   await admin.from("notifications").insert({
     user_id: bac.user_id,
@@ -315,8 +316,8 @@ export async function reviewBac(id: string, _prev: FormState, formData: FormData
     title: decision === "verify" ? "BAC vérifié ✅" : "BAC non vérifié",
     body:
       decision === "verify"
-        ? `Ton baccalauréat ${bac.exam_year} est vérifié. Le relevé envoyé a été supprimé.`
-        : `Motif : ${reason}. Tu peux envoyer un nouveau document.`,
+        ? `Ton baccalauréat ${bac.exam_year} est vérifié.`
+        : `Motif : ${reason}. Vérifie ton numéro de PV et renvoie ta demande.`,
     link: "/profil/verification",
   });
   await audit(
@@ -327,7 +328,7 @@ export async function reviewBac(id: string, _prev: FormState, formData: FormData
     bac.user_id,
   );
   revalidatePath("/admin/verifications");
-  return { ok: true, message: decision === "verify" ? "BAC vérifié ✅ Relevé supprimé." : "Refus envoyé à l'étudiant." };
+  return { ok: true, message: decision === "verify" ? "BAC vérifié ✅" : "Refus envoyé à l'étudiant." };
 }
 
 // -----------------------------------------------------------------------------

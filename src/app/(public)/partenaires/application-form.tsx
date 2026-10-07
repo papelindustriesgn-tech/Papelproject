@@ -10,8 +10,6 @@ import { applyAsPartner } from "./actions";
 const WANTS = [
   { value: "avantages", label: "🏷️ Offres étudiantes" },
   { value: "marketplace", label: "🛍️ Vendre mes produits" },
-  { value: "logements", label: "🏠 Logements" },
-  { value: "jobs", label: "💼 Jobs & stages" },
 ];
 
 export function ApplicationForm({ cities }: { cities: { id: number; name: string; slug: string }[] }) {

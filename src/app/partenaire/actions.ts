@@ -36,10 +36,6 @@ export async function savePartnerEntity(
 
   const supabase = await createClient();
   row.partner_id = partner.id;
-  if (kind === "jobs") {
-    row.company_name = partner.name;
-    row.logo_url = partner.logo_url;
-  }
 
   let savedId = id;
   if (kind === "boutique") {

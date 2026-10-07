@@ -4,13 +4,13 @@ import { ArrowRight, MessageSquareHeart, ShieldCheck } from "lucide-react";
 import { MiniPass } from "@/components/home/mini-pass";
 import { Shortcuts } from "@/components/home/shortcuts";
 import { Rail } from "@/components/home/rail";
-import { DealCard, HousingCard, ItemCard, JobCard } from "@/components/content/cards";
+import { DealCard, ItemCard } from "@/components/content/cards";
 import { SectionHeader } from "@/components/ui/section-header";
 import { FormMessage } from "@/components/ui/field";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { requireProfile, universityLabel } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { favoriteIds, listDeals, listHousing, listJobs, listMarket } from "@/lib/queries";
+import { favoriteIds, listDeals, listMarket } from "@/lib/queries";
 import { param, type SearchParams } from "@/lib/url";
 
 export const metadata: Metadata = { title: "Accueil" };
@@ -20,10 +20,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const profile = await requireProfile();
   const supabase = await createClient();
 
-  const [latest, jobs, housing, market, favDeals, survey] = await Promise.all([
+  const [latest, market, favDeals, survey] = await Promise.all([
     listDeals({ cityId: profile.city_id ?? undefined }),
-    listJobs({ cityId: profile.city_id ?? undefined }),
-    listHousing({ cityId: profile.city_id ?? undefined }),
     listMarket({ cityId: profile.city_id ?? undefined }),
     favoriteIds(supabase, profile.id, "deal"),
     supabase.from("survey_responses").select("user_id").eq("user_id", profile.id).maybeSingle(),
@@ -117,24 +115,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <DealCard key={d.id} deal={d} favorite={favDeals.has(d.id)} />
           ))}
         </div>
-      </section>
-
-      <section>
-        <SectionHeader title="💼 Nouveaux jobs & stages" href="/jobs" />
-        <Rail label="Nouveaux jobs">
-          {jobs.items.slice(0, 8).map((j) => (
-            <JobCard key={j.id} job={j} compact />
-          ))}
-        </Rail>
-      </section>
-
-      <section>
-        <SectionHeader title="🏠 Logements récents" href="/logement" />
-        <Rail label="Logements récents">
-          {housing.items.slice(0, 8).map((h) => (
-            <HousingCard key={h.id} home={h} compact />
-          ))}
-        </Rail>
       </section>
 
       <section>

@@ -15,6 +15,10 @@ export type AdminStats = {
   deals_active: number;
   partners_total: number;
   jobs_active: number;
+  universities_partner: number;
+  enrollments_pending: number;
+  enrollments_verified: number;
+  bac_pending: number;
   housing_active: number;
   marketplace_active: number;
   marketplace_total: number;

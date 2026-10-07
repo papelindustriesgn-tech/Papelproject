@@ -19,9 +19,11 @@ export async function getCardData(profile: Profile) {
   const url = card ? cardVerificationUrl(card.qr_token) : null;
   const svg = url ? await qrSvg(url) : null;
 
-  // Carte aux couleurs de l'université quand l'inscription a été confirmée par un établissement partenaire
+  // Carte aux couleurs de l'université pour un étudiant vérifié (inscription confirmée ou justificatif validé)
   const enrollment = card?.enrollment?.status === "verified" ? card.enrollment : null;
-  const config = enrollment ? await getUniversityCardConfig(enrollment.university_id) : null;
+  const universityId =
+    enrollment?.university_id ?? (profile.verification_status === "verified" ? profile.university_id : null);
+  const config = await getUniversityCardConfig(universityId);
 
   const status: CardDisplayStatus =
     card?.status === "revoked"
@@ -43,17 +45,15 @@ export async function getCardData(profile: Profile) {
     qrSvg: svg,
     branding: config?.branding ?? null,
     template: config?.template ?? null,
-    details: enrollment
-      ? {
-          faculty: enrollment.faculty,
-          department: enrollment.department,
-          program: enrollment.program,
-          study_level: enrollment.study_level,
-          student_number: enrollment.student_number,
-          academic_year: enrollment.academic_year,
-          expires_at: card ? formatDate(card.expires_at) : null,
-        }
-      : undefined,
+    details: {
+      faculty: enrollment?.faculty ?? null,
+      department: enrollment?.department ?? null,
+      program: enrollment?.program ?? profile.field_of_study,
+      study_level: enrollment?.study_level ?? profile.study_level,
+      student_number: enrollment?.student_number ?? null,
+      academic_year: enrollment?.academic_year ?? card?.academic_year ?? null,
+      expires_at: card ? formatDate(card.expires_at) : null,
+    },
   };
   return { data, card, url, svg };
 }

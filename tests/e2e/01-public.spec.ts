@@ -8,7 +8,7 @@ test("landing publique : message clair, carte d'exemple, sections et CTA", async
   await expect(page.getByRole("link", { name: /Créer mon compte/ }).first()).toBeVisible();
   // Seule une carte d'EXEMPLE est affichée
   await expect(page.getByText("Exemple").first()).toBeVisible();
-  for (const id of ["avantages", "carte", "jobs", "logement", "marketplace"]) await expect(page.locator(`#${id}`)).toBeAttached();
+  for (const id of ["avantages", "carte", "marketplace"]) await expect(page.locator(`#${id}`)).toBeAttached();
   await expect(page.getByText("Rejoins la communauté Uny")).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });
@@ -20,10 +20,21 @@ test("« Découvrir Uny » fait défiler vers la présentation", async ({ page }
 });
 
 test("les pages protégées redirigent vers la connexion", async ({ page }) => {
-  await page.goto("/jobs");
-  await expect(page).toHaveURL(/\/connexion\?next=%2Fjobs/);
+  await page.goto("/carte");
+  await expect(page).toHaveURL(/\/connexion\?next=%2Fcarte/);
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/connexion/);
+});
+
+test("logement et jobs sont retirés : anciens liens redirigés, plus de lien dans la navigation", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#jobs")).toHaveCount(0);
+  await expect(page.locator("#logement")).toHaveCount(0);
+  await expect(page.locator('a[href="/jobs"], a[href="/logement"], a[href="/#jobs"], a[href="/#logement"]')).toHaveCount(0);
+  await page.goto("/jobs");
+  await expect(page).not.toHaveURL(/\/jobs/);
+  await page.goto("/logement/abc");
+  await expect(page).not.toHaveURL(/\/logement/);
 });
 
 test("un QR code invalide est signalé comme non authentique", async ({ page }) => {

@@ -23,7 +23,7 @@ AVANTAGES · PARTENAIRES · MARKETPLACE
 | Niveau 3 : confirmation manuelle dans le portail | ✅ Fonctionnel |
 | Niveau 2 : import CSV/Excel et confirmation automatique | ✅ Fonctionnel |
 | Niveau 1 : connecteur API | ⚙️ Prêt, mais **aucune université n'est raccordée**. S'active seulement avec un accord signé, une clé et un test réussi. |
-| BAC : source officielle | ❌ **Non connectée** : aucun accès officiel. Vérification manuelle du relevé en attendant. |
+| BAC : source officielle | ❌ **Non connectée** : aucun accès officiel. Vérification manuelle par le numéro de PV du candidat en attendant. |
 | Emails étudiants | ⚙️ Réservation des adresses prête. Les boîtes seront créées chez le fournisseur une fois le domaine acheté (voir [EMAILS-ETUDIANTS.md](EMAILS-ETUDIANTS.md)). |
 
 ## 2. Ouvrir le portail d'une université
@@ -133,6 +133,8 @@ Les chemins des champs se règlent dans `field_mapping`, sans code. Exemple : `{
 
 ## 7. Carte personnalisée (moteur de templates)
 
+Où personnaliser : **Admin → Cartes personnalisées** (toutes les universités, bouton « Personnaliser la carte »), ou le portail de l'université (rubrique Carte).
+
 Aucune carte n'est codée à la main. Tables `university_branding` et `university_card_templates` (versionnées, une seule active).
 
 - **Toujours présents (identité Uny)** : logo uny., nom, photo, identifiant Uny, QR code sécurisé, statut de vérification.
@@ -140,15 +142,15 @@ Aucune carte n'est codée à la main. Tables `university_branding` et `universit
   - faculté, département, filière, niveau ;
   - matricule, année universitaire, date de validité ;
   - libellés personnalisables.
-- **Visibilité** : la carte personnalisée n'apparaît que pour une inscription **confirmée** par une université **partenaire**. Sinon, la carte Uny standard s'affiche.
+- **Visibilité** : dès qu'une carte est publiée pour une université, tous ses étudiants **vérifiés** (inscription confirmée ou justificatif validé) la voient, sauf si l'établissement est suspendu. Les étudiants non vérifiés gardent la carte Uny standard.
 
 ## 8. Baccalauréat
 
 - **Pas de connecteur officiel actif.** Aucun scraping ni contournement. Le connecteur `officialBacProvider` (`src/lib/verification/bac.ts`) reste « non connecté » tant qu'un accès légal n'est pas contractualisé avec l'organisme officiel.
 - **Procédure manuelle actuelle** :
-  1. L'étudiant envoie l'année, le numéro de candidat et son relevé.
-  2. L'admin contrôle le relevé dans **Admin → Vérifications → BAC**, éventuellement auprès de l'office des examens.
-  3. L'admin décide. Le relevé est **supprimé** à la décision.
+  1. L'étudiant indique l'année et son **numéro de PV** (aucun document à envoyer).
+  2. L'admin recherche ce numéro dans les résultats officiels publiés (**Admin → Vérifications → BAC**) et vérifie le nom et la mention « admis ».
+  3. L'admin décide. Le numéro complet est **effacé** à la décision.
 - **Preuve conservée** : source, méthode, date, statut, année, numéro **masqué** (••••4567) et son empreinte pour détecter les doublons.
 
 ## 9. Identifiant Uny

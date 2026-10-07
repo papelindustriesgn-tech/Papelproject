@@ -4,8 +4,9 @@
  * Uny n'interroge une source officielle QUE si un accès légal et autorisé existe (convention avec
  * le ministère ou l'organisme gestionnaire des résultats). Aucun scraping, aucun contournement.
  * Tant qu'aucun fournisseur officiel n'est raccordé, la vérification est manuelle : l'étudiant
- * envoie son relevé, l'équipe Uny contrôle, puis le document est supprimé. Seule une preuve
- * minimale est conservée : source, méthode, date, statut, année, numéro masqué + empreinte.
+ * donne l'année et son numéro de PV, l'équipe Uny le contrôle dans les résultats officiels publiés,
+ * puis le numéro complet est effacé. Seule une preuve minimale est conservée : source, méthode,
+ * date, statut, année, numéro masqué + empreinte.
  */
 
 export type BacInput = {
@@ -44,7 +45,7 @@ export const officialBacProvider: BacVerificationProvider = {
 export const BAC_METHODS = {
   official_api: "API officielle",
   official_exchange: "Échange de données officiel",
-  document: "Relevé contrôlé par Uny",
+  document: "Numéro de PV contrôlé par Uny",
 } as const;
 
 /** « 20231234567 » → « ••••4567 » */

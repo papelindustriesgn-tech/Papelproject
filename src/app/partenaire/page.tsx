@@ -24,10 +24,10 @@ export default async function PartnerHome() {
   startOfDay.setHours(0, 0, 0, 0);
   const monthAgo = new Date(startOfDay.getTime() - 30 * 86400_000).toISOString();
 
-  const count = (table: "deals" | "housing" | "jobs" | "marketplace_items") =>
+  const count = (table: "marketplace_items") =>
     supabase.from(table).select("id", { count: "exact", head: true }).eq("partner_id", partner.id);
 
-  const [today, month, recent, deals, housing, jobs, items] = await Promise.all([
+  const [today, month, recent, deals, items] = await Promise.all([
     supabase
       .from("card_validations")
       .select("id", { count: "exact", head: true })
@@ -48,8 +48,6 @@ export default async function PartnerHome() {
       .order("created_at", { ascending: false })
       .limit(8),
     supabase.from("deals").select("id, title, view_count, is_active, valid_until").eq("partner_id", partner.id),
-    count("housing"),
-    count("jobs"),
     count("marketplace_items"),
   ]);
 
@@ -58,8 +56,6 @@ export default async function PartnerHome() {
   const counts: Record<PartnerKind, number> = {
     offres: deals.data?.length ?? 0,
     boutique: items.count ?? 0,
-    logements: housing.count ?? 0,
-    jobs: jobs.count ?? 0,
   };
 
   return (
@@ -104,7 +100,7 @@ export default async function PartnerHome() {
 
       <section>
         <h2 className="mb-3 font-bold">Tes publications</h2>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-2">
           {(Object.keys(PARTNER_ENTITIES) as PartnerKind[]).map((k) => (
             <Link
               key={k}

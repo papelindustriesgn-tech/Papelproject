@@ -18,7 +18,7 @@ export default async function SettingsPage() {
       </div>
       <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <h2 className="mb-4 font-bold">Notifications</h2>
-        <NotificationPrefsForm email={p.notify_email} deals={p.notify_deals} jobs={p.notify_jobs} />
+        <NotificationPrefsForm email={p.notify_email} deals={p.notify_deals} />
       </section>
       <section className="space-y-2 rounded-[var(--radius-card)] bg-white p-5 text-sm shadow-[var(--shadow-card)]">
         <h2 className="mb-2 font-bold">Informations</h2>

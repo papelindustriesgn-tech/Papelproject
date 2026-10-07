@@ -23,8 +23,6 @@ const APP = [
   "/accueil",
   "/carte",
   "/avantages",
-  "/jobs",
-  "/logement",
   "/marketplace",
   "/marketplace/nouveau",
   "/marketplace/mes-annonces",
@@ -43,7 +41,7 @@ const ADMIN_PAGES = [
   "/admin/utilisateurs",
   "/admin/avantages",
   "/admin/avantages/nouveau",
-  "/admin/logements",
+  "/admin/cartes",
   "/admin/marketplace",
   "/admin/statistiques",
   "/admin/avis",
@@ -70,10 +68,6 @@ const PARTNER_PAGES = [
   "/partenaire/offres/nouveau",
   "/partenaire/boutique",
   "/partenaire/boutique/nouveau",
-  "/partenaire/logements",
-  "/partenaire/logements/nouveau",
-  "/partenaire/jobs",
-  "/partenaire/jobs/nouveau",
   "/partenaire/publier",
   "/partenaire/profil",
 ];
@@ -96,7 +90,7 @@ for (const vp of VIEWPORTS) {
       await expectNoHorizontalOverflow(page);
     }
     // Pages de détail
-    for (const list of ["/avantages", "/jobs", "/logement", "/marketplace"]) {
+    for (const list of ["/avantages", "/marketplace"]) {
       await page.goto(list);
       const href = await page
         .locator(`main a[href^="${list}/"]:not([href$="nouveau"]):not([href$="mes-annonces"])`)
@@ -109,10 +103,8 @@ for (const vp of VIEWPORTS) {
       // Navigation basse visible et complète sur mobile
       const nav = page.getByRole("navigation", { name: "Navigation principale" });
       await expect(nav).toBeVisible();
-      for (const l of ["Accueil", "Avantages", "Jobs", "Marketplace", "Profil"])
+      for (const l of ["Accueil", "Avantages", "Ma carte", "Marketplace", "Profil"])
         await expect(nav.getByRole("link", { name: l })).toBeVisible();
-      await expect(page.getByRole("link", { name: "Ma carte" })).toBeVisible();
-      await expect(page.getByRole("link", { name: "Logement" }).first()).toBeVisible();
     }
     await page.context().clearCookies();
     await login(page, ADMIN.email, ADMIN.password);
@@ -127,7 +119,7 @@ for (const vp of VIEWPORTS) {
     }
     if (vp.width < 1024) {
       const nav = page.getByRole("navigation", { name: "Navigation partenaire" });
-      for (const l of ["Accueil", "Offres", "Scanner", "Publier", "Fiche"])
+      for (const l of ["Accueil", "Offres", "Scanner", "Boutique", "Fiche"])
         await expect(nav.getByRole("link", { name: l })).toBeVisible();
     }
     for (const url of UNIVERSITY_PAGES) {

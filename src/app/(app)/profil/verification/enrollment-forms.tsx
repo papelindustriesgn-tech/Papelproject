@@ -1,13 +1,8 @@
 "use client";
 
-import { useActionState, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { FileUp, Loader2 } from "lucide-react";
+import { useActionState, useState } from "react";
 import { Field, FormMessage, Input, Select } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { createClient } from "@/lib/supabase/client";
-import { compressImage, randomName } from "@/lib/image-client";
 import { STUDY_LEVELS } from "@/lib/constants";
 import { submitBac, submitEnrollment } from "./actions";
 
@@ -97,80 +92,44 @@ export function EnrollmentForm({
   );
 }
 
-const MAX = 5 * 1024 * 1024;
-
-export function BacForm({ userId }: { userId: string }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<string | null>(null);
-  const [pending, start] = useTransition();
-  const input = useRef<HTMLInputElement>(null);
-  const router = useRouter();
-
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    const form = new FormData(e.currentTarget);
-    if (!file) return setError("Ajoute ton relevé de notes ou ton attestation de réussite.");
-    start(async () => {
-      let blob: Blob = file;
-      let ext = "pdf";
-      if (file.type.startsWith("image/")) {
-        blob = await compressImage(file, 2000, 0.85);
-        ext = "jpg";
-      } else if (file.type !== "application/pdf") return setError("Formats acceptés : photo ou PDF.");
-      if (blob.size > MAX) return setError("Fichier trop lourd (5 Mo maximum).");
-      const path = `${userId}/bac-${randomName(ext)}`;
-      const supabase = createClient();
-      const { error: upErr } = await supabase.storage
-        .from("verification-docs")
-        .upload(path, blob, { contentType: ext === "pdf" ? "application/pdf" : "image/jpeg" });
-      if (upErr) return setError("Envoi impossible. Vérifie ta connexion et réessaie.");
-      form.set("document_path", path);
-      const res = await submitBac({}, form);
-      if (res.error) setError(res.error);
-      else {
-        setDone(res.message ?? "Envoyé");
-        router.refresh();
-      }
-    });
-  }
-
-  if (done) return <FormMessage type="success">{done}</FormMessage>;
+export function BacForm() {
+  const [state, run] = useActionState(submitBac, {});
+  const fe = state.fieldErrors ?? {};
+  if (state.ok) return <FormMessage type="success">{state.message}</FormMessage>;
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <FormMessage>{error}</FormMessage>
+    <form action={run} className="space-y-4">
+      <FormMessage>{state.error}</FormMessage>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Année du BAC" htmlFor="exam_year">
-          <Input id="exam_year" name="exam_year" type="number" min={1990} max={new Date().getFullYear()} required />
+        <Field label="Année du BAC" htmlFor="exam_year" error={fe.exam_year}>
+          <Input
+            id="exam_year"
+            name="exam_year"
+            type="number"
+            min={1990}
+            max={new Date().getFullYear()}
+            required
+            defaultValue={state.values?.exam_year}
+          />
         </Field>
-        <Field label="Numéro de candidat (PV)" htmlFor="candidate_number">
-          <Input id="candidate_number" name="candidate_number" required maxLength={30} className="font-mono" autoComplete="off" />
+        <Field label="Numéro de PV du candidat" htmlFor="candidate_number" error={fe.candidate_number}>
+          <Input
+            id="candidate_number"
+            name="candidate_number"
+            required
+            maxLength={30}
+            className="font-mono uppercase"
+            autoComplete="off"
+            defaultValue={state.values?.candidate_number}
+          />
         </Field>
       </div>
-      <button
-        type="button"
-        onClick={() => input.current?.click()}
-        className="border-brand-200 bg-brand-50/40 hover:bg-brand-50 flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed px-4 py-5 text-center"
-      >
-        <FileUp className="text-brand-600 size-6" aria-hidden />
-        <span className="text-brand-800 max-w-full truncate text-sm font-semibold">
-          {file ? file.name : "Relevé de notes ou attestation de réussite"}
-        </span>
-        <span className="text-muted text-xs">Photo ou PDF · 5 Mo max · supprimé après vérification</span>
-      </button>
-      <input
-        ref={input}
-        type="file"
-        accept="image/jpeg,image/png,image/webp,application/pdf"
-        className="hidden"
-        data-testid="bac-input"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-      />
-      <Button type="submit" variant="outline" className="w-full" disabled={pending}>
-        {pending && <Loader2 className="size-4 animate-spin" />}
-        Envoyer pour vérification
-      </Button>
+      <p className="text-muted text-xs">
+        Aucun document à envoyer : l&apos;équipe Uny vérifie ton numéro de PV dans les résultats officiels du BAC, puis
+        l&apos;efface. Seule la preuve de vérification est gardée.
+      </p>
+      <SubmitButton variant="outline" className="w-full" pendingLabel="Envoi…">
+        Faire vérifier mon BAC
+      </SubmitButton>
     </form>
   );
 }

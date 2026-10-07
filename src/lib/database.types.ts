@@ -75,6 +75,7 @@ export type Database = {
       bac_verifications: {
         Row: {
           candidate_hash: string;
+          candidate_number: string | null;
           candidate_ref: string;
           created_at: string;
           document_path: string | null;
@@ -92,6 +93,7 @@ export type Database = {
         };
         Insert: {
           candidate_hash: string;
+          candidate_number?: string | null;
           candidate_ref: string;
           created_at?: string;
           document_path?: string | null;
@@ -109,6 +111,7 @@ export type Database = {
         };
         Update: {
           candidate_hash?: string;
+          candidate_number?: string | null;
           candidate_ref?: string;
           created_at?: string;
           document_path?: string | null;

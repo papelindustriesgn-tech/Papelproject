@@ -107,6 +107,7 @@ export async function saveCardDesign(universityId: number, _prev: FormState, for
   if (tplError) return { error: tplError.code === "P0001" ? tplError.message : "Publication impossible." };
   revalidatePath("/universite", "layout");
   revalidatePath(`/admin/universites/${universityId}`);
+  revalidatePath("/admin/cartes");
   revalidatePath("/carte");
   return { ok: true, message: `Carte publiée ✅ (version ${tpl.version}). Elle s'affiche déjà chez vos étudiants confirmés.` };
 }

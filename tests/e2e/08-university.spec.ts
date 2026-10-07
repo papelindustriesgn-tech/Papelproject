@@ -137,27 +137,24 @@ test("université : demande → portail → carte personnalisée → import → 
   await expect(page.getByText("Carte expirée").first()).toBeVisible();
 });
 
-test("BAC : relevé contrôlé par Uny puis supprimé, preuve minimale conservée", async ({ page }) => {
+test("BAC : vérification par le numéro de PV, numéro effacé après décision", async ({ page }) => {
   test.setTimeout(120_000);
   const s = await signUp(page);
   const candidate = `2022${Date.now()}`.slice(0, 13);
   await page.goto("/profil/verification");
   await page.waitForLoadState("networkidle");
+  await expect(page.locator("input[type=file][data-testid=bac-input]")).toHaveCount(0);
   await page.fill("#exam_year", "2022");
   await page.fill("#candidate_number", candidate);
-  await page.setInputFiles("[data-testid=bac-input]", {
-    name: "releve.pdf",
-    mimeType: "application/pdf",
-    buffer: Buffer.from("%PDF-1.4\n% releve de test\n"),
-  });
-  await page.getByRole("button", { name: "Envoyer pour vérification" }).click();
-  await expect(page.getByText(/Relevé envoyé ✅|en cours de vérification par l'équipe Uny/)).toBeVisible();
+  await page.getByRole("button", { name: "Faire vérifier mon BAC" }).click();
+  await expect(page.getByText(/Numéro de PV envoyé ✅|en cours de vérification par l'équipe Uny/)).toBeVisible();
   await logout(page);
 
   await login(page, ADMIN.email, ADMIN.password);
   await page.goto("/admin/verifications?type=bac");
   const card = page.locator("li", { hasText: `${s.first} ${s.last}` });
-  await expect(card.getByText(`candidat ••••${candidate.slice(-4)}`)).toBeVisible();
+  // L'admin voit le numéro de PV complet pour le contrôler dans les résultats officiels
+  await expect(card.getByText(candidate)).toBeVisible();
   await card.getByRole("button", { name: "BAC vérifié" }).click();
   await expect(card).toHaveCount(0);
 
@@ -167,12 +164,36 @@ test("BAC : relevé contrôlé par Uny puis supprimé, preuve minimale conservé
     )
   ).json();
   expect(row.status).toBe("verified");
-  expect(row.document_path).toBeNull();
+  expect(row.candidate_number).toBeNull();
   expect(row.candidate_ref).toBe(`••••${candidate.slice(-4)}`);
   expect(JSON.stringify(row)).not.toContain(candidate);
 
   await page.goto("/admin/verifications?type=registre");
   await expect(page.getByRole("cell", { name: `${s.first} ${s.last}` }).first()).toBeVisible();
+});
+
+test("cartes : l'admin personnalise la carte d'une université, ses étudiants vérifiés la voient", async ({ page }) => {
+  test.setTimeout(120_000);
+  const s = await signUp(page); // établissement : le premier de la liste
+  const [p] = await (await serviceRest(`profiles?email=eq.${s.email}&select=id,university_id`)).json();
+  await serviceRest(`profiles?id=eq.${p.id}`, { method: "PATCH", body: JSON.stringify({ verification_status: "verified" }) });
+  await logout(page);
+
+  const official = `Université Personnalisée ${Date.now()}`.slice(0, 60);
+  await login(page, ADMIN.email, ADMIN.password);
+  await page.goto("/admin/cartes");
+  await expect(page.getByRole("heading", { name: "Cartes personnalisées" })).toBeVisible();
+  await page.goto(`/admin/universites/${p.university_id}/carte`);
+  await page.waitForLoadState("networkidle");
+  await page.fill("#official_name", official);
+  await page.fill("#primary_color", "#7a1f2b");
+  await page.getByRole("button", { name: "Enregistrer et publier la carte" }).click();
+  await expect(page.getByText(/Carte publiée ✅/)).toBeVisible();
+  await logout(page);
+
+  await login(page, s.email, s.password);
+  await page.goto("/carte");
+  await expect(page.getByText(official).first()).toBeVisible();
 });
 
 test("emails étudiants : réservation prenom.nom avec gestion des homonymes", async ({ page }) => {

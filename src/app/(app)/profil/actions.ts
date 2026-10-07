@@ -127,7 +127,6 @@ export async function updateNotificationPrefs(_prev: FormState, formData: FormDa
     .update({
       notify_email: formData.get("notify_email") === "on",
       notify_deals: formData.get("notify_deals") === "on",
-      notify_jobs: formData.get("notify_jobs") === "on",
     })
     .eq("id", auth.user.id);
   if (error) return { error: "Enregistrement impossible." };

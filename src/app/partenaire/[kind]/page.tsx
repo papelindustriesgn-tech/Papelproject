@@ -47,39 +47,6 @@ async function load(kind: PartnerKind, partnerId: string): Promise<Row[]> {
         sub: `${formatGNF(i.price_gnf)} · ${i.view_count} vues`,
       }));
     }
-    case "logements": {
-      const { data } = await supabase
-        .from("housing")
-        .select("id, title, price_gnf, district, is_active, is_available, view_count, images")
-        .eq("partner_id", partnerId)
-        .order("created_at", { ascending: false });
-      return (data ?? []).map((h) => ({
-        id: h.id,
-        title: h.title,
-        active: h.is_active,
-        image: h.images?.[0] ?? null,
-        badge: h.is_available ? undefined : "Loué",
-        sub: `${formatGNF(h.price_gnf)}/mois · ${h.district} · ${h.view_count} vues`,
-      }));
-    }
-    case "jobs": {
-      const { data } = await supabase
-        .from("jobs")
-        .select("id, title, type, is_active, view_count, deadline, applications:job_applications(count)")
-        .eq("partner_id", partnerId)
-        .order("created_at", { ascending: false });
-      return (data ?? []).map((j) => {
-        const n = (j.applications as unknown as { count: number }[] | null)?.[0]?.count ?? 0;
-        return {
-          id: j.id,
-          title: j.title,
-          active: j.is_active,
-          image: null,
-          badge: n ? `${n} candidature${n > 1 ? "s" : ""}` : undefined,
-          sub: `${j.view_count} vues${j.deadline ? ` · jusqu'au ${formatDate(j.deadline)}` : ""}`,
-        };
-      });
-    }
   }
 }
 

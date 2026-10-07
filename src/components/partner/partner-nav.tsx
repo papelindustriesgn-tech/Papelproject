@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, Building2, House, LayoutDashboard, Megaphone, ScanLine, ShoppingBag, Tag } from "lucide-react";
+import { Building2, LayoutDashboard, ScanLine, ShoppingBag, Tag } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const ALL = [
@@ -10,8 +10,6 @@ const ALL = [
   { href: "/partenaire/scanner", label: "Scanner une carte", short: "Scanner", icon: ScanLine },
   { href: "/partenaire/offres", label: "Offres étudiantes", short: "Offres", icon: Tag },
   { href: "/partenaire/boutique", label: "Boutique", short: "Boutique", icon: ShoppingBag },
-  { href: "/partenaire/logements", label: "Logements", short: "Logements", icon: House },
-  { href: "/partenaire/jobs", label: "Jobs & stages", short: "Jobs", icon: Briefcase },
   { href: "/partenaire/profil", label: "Ma fiche partenaire", short: "Fiche", icon: Building2 },
 ];
 
@@ -46,13 +44,7 @@ export function PartnerSidebar() {
   );
 }
 
-const MOBILE = [
-  ALL[0],
-  ALL[2],
-  ALL[1],
-  { href: "/partenaire/publier", label: "Publier", short: "Publier", icon: Megaphone },
-  ALL[6],
-];
+const MOBILE = [ALL[0], ALL[2], ALL[1], ALL[3], ALL[4]];
 
 export function PartnerBottomNav() {
   const pathname = usePathname();
@@ -63,10 +55,7 @@ export function PartnerBottomNav() {
     >
       <ul className="mx-auto grid h-16 max-w-lg grid-cols-5">
         {MOBILE.map(({ href, short, icon: Icon }) => {
-          const active =
-            isActive(pathname, href) ||
-            (href === "/partenaire/publier" &&
-              ["/boutique", "/logements", "/jobs"].some((p) => pathname.startsWith(`/partenaire${p}`)));
+          const active = isActive(pathname, href);
           const scan = href === "/partenaire/scanner";
           return (
             <li key={href}>

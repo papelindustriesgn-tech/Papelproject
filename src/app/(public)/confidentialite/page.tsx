@@ -21,7 +21,7 @@ export default function PrivacyPage() {
       <h2>Utilisation</h2>
       <ul>
         <li>Créer ta carte Uny et vérifier ton statut étudiant.</li>
-        <li>Te donner accès aux avantages, jobs, logements et à la marketplace.</li>
+        <li>Te donner accès aux avantages et à la marketplace.</li>
         <li>T&apos;envoyer des emails liés à ton compte (confirmation, sécurité, vérification).</li>
       </ul>
       <h2>Protection</h2>

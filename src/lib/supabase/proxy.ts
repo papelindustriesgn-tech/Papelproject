@@ -6,8 +6,6 @@ const PROTECTED_PREFIXES = [
   "/accueil",
   "/carte",
   "/avantages",
-  "/jobs",
-  "/logement",
   "/marketplace",
   "/profil",
   "/notifications",

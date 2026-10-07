@@ -44,7 +44,10 @@ export async function requireUniversity() {
 
 export type UniversityCardConfig = { branding: CardBranding; template: CardTemplate };
 
-/** Identité visuelle + template actif. `preview` : aussi pour un établissement pas encore approuvé. */
+/**
+ * Identité visuelle + template publié. La carte personnalisée s'affiche dès qu'une carte a été publiée
+ * (par l'université ou l'admin Uny), sauf si l'établissement est suspendu. `preview` : toujours.
+ */
 export const getUniversityCardConfig = cache(
   async (universityId: number | null, preview = false): Promise<UniversityCardConfig | null> => {
     if (!universityId) return null;
@@ -60,7 +63,7 @@ export const getUniversityCardConfig = cache(
         .maybeSingle(),
     ]);
     if (!uni || !branding) return null;
-    if (uni.partner_status !== "partner" && !preview) return null;
+    if (!preview && (!template || uni.partner_status === "suspended")) return null;
     return {
       branding: {
         name: branding.official_name || uni.name,

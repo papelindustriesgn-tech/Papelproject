@@ -1,10 +1,10 @@
 import type { FieldSpec } from "@/lib/admin-entities";
-import { DEAL_CATEGORIES, HOUSING_TYPES, ITEM_CONDITIONS, JOB_TYPES, MARKET_CATEGORIES } from "@/lib/constants";
+import { DEAL_CATEGORIES, ITEM_CONDITIONS, MARKET_CATEGORIES } from "@/lib/constants";
 
-export type PartnerKind = "offres" | "boutique" | "logements" | "jobs";
+export type PartnerKind = "offres" | "boutique";
 
 type Config = {
-  table: "deals" | "marketplace_items" | "housing" | "jobs";
+  table: "deals" | "marketplace_items";
   singular: string;
   plural: string;
   emoji: string;
@@ -100,56 +100,6 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
           { value: "hidden", label: "Masqué" },
         ],
       },
-    ],
-  },
-  logements: {
-    table: "housing",
-    singular: "logement",
-    plural: "Logements",
-    emoji: "🏠",
-    intro: "Chambres, studios, colocations et appartements proposés aux étudiants.",
-    fields: [
-      {
-        name: "title",
-        label: "Titre",
-        type: "text",
-        required: true,
-        max: 140,
-        placeholder: "Studio meublé proche de l'université",
-      },
-      { name: "type", label: "Type", type: "select", required: true, options: opts(HOUSING_TYPES) },
-      { name: "images", label: "Photos", type: "images", max: 8 },
-      { name: "location", label: "Ville et quartier", type: "location", required: true, districtRequired: true },
-      { name: "price_gnf", label: "Loyer mensuel (GNF)", type: "number", required: true, min: 0, step: 1000 },
-      { name: "rooms", label: "Nombre de pièces", type: "number", required: true, min: 0, max: 20 },
-      { name: "description", label: "Description", type: "textarea", max: 3000 },
-      { name: "amenities", label: "Équipements", type: "tags", hint: "Séparés par des virgules : Meublé, Wi-Fi, Gardien…" },
-      { name: "available_from", label: "Disponible à partir du", type: "date" },
-      { name: "is_available", label: "Disponible (non loué)", type: "checkbox", defaultValue: true },
-      { name: "contact_name", label: "Nom du contact", type: "text", max: 120 },
-      { name: "contact_phone", label: "Téléphone du contact", type: "tel", max: 30 },
-      published,
-    ],
-  },
-  jobs: {
-    table: "jobs",
-    singular: "offre d'emploi",
-    plural: "Jobs & stages",
-    emoji: "💼",
-    intro: "Jobs étudiants, stages, alternances, missions freelance… Les étudiants postulent directement dans Uny.",
-    fields: [
-      { name: "title", label: "Intitulé du poste", type: "text", required: true, max: 140 },
-      { name: "type", label: "Type", type: "select", required: true, options: opts(JOB_TYPES) },
-      { name: "city", label: "Ville", type: "location", district: false },
-      { name: "location", label: "Lieu précis", type: "text", max: 120, placeholder: "Kaloum, Immeuble …" },
-      { name: "is_remote", label: "Possible à distance", type: "checkbox" },
-      { name: "compensation", label: "Rémunération", type: "text", max: 120, placeholder: "1 500 000 GNF/mois" },
-      { name: "description", label: "Description", type: "textarea", max: 5000 },
-      { name: "skills", label: "Compétences recherchées", type: "tags", hint: "Séparées par des virgules" },
-      { name: "deadline", label: "Date limite de candidature", type: "date" },
-      { name: "apply_url", label: "Lien de candidature externe (facultatif)", type: "url", max: 300 },
-      { name: "apply_email", label: "Email pour recevoir les candidatures (facultatif)", type: "email", max: 200 },
-      published,
     ],
   },
 };

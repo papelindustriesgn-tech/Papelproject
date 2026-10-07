@@ -37,6 +37,17 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: "6mb" },
   },
+  // Logement et jobs retirés d'Uny : les anciens liens renvoient vers l'accueil de chaque espace
+  async redirects() {
+    return [
+      { source: "/jobs/:path*", destination: "/accueil", permanent: false },
+      { source: "/logement/:path*", destination: "/accueil", permanent: false },
+      { source: "/partenaire/jobs/:path*", destination: "/partenaire", permanent: false },
+      { source: "/partenaire/logements/:path*", destination: "/partenaire", permanent: false },
+      { source: "/admin/jobs/:path*", destination: "/admin", permanent: false },
+      { source: "/admin/logements/:path*", destination: "/admin", permanent: false },
+    ];
+  },
   async headers() {
     return [
       { source: "/(.*)", headers: securityHeaders },

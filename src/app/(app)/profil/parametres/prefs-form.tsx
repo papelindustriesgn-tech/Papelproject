@@ -19,7 +19,7 @@ function Toggle({ name, label, hint, defaultChecked }: { name: string; label: st
   );
 }
 
-export function NotificationPrefsForm({ email, deals, jobs }: { email: boolean; deals: boolean; jobs: boolean }) {
+export function NotificationPrefsForm({ email, deals }: { email: boolean; deals: boolean }) {
   return (
     <ActionForm action={updateNotificationPrefs} submitLabel="Enregistrer">
       <div className="divide-line divide-y">
@@ -34,12 +34,6 @@ export function NotificationPrefsForm({ email, deals, jobs }: { email: boolean; 
           label="Nouveaux bons plans"
           hint="Les meilleures réductions près de chez toi."
           defaultChecked={deals}
-        />
-        <Toggle
-          name="notify_jobs"
-          label="Jobs & stages"
-          hint="Nouvelles opportunités correspondant à ton profil."
-          defaultChecked={jobs}
         />
       </div>
     </ActionForm>

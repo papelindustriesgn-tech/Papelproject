@@ -1,6 +1,6 @@
 # Espace partenaire Uny — mode d'emploi
 
-L'espace partenaire permet aux commerçants, bailleurs et entreprises de publier pour les étudiants et de vérifier leur carte Uny. Il fonctionne sur le site et dans l'application mobile (même compte).
+L'espace partenaire permet aux commerçants et entreprises de publier pour les étudiants et de vérifier leur carte Uny. Il fonctionne sur le site et dans l'application mobile (même compte).
 
 ## 1. Ajouter un partenaire
 
@@ -23,8 +23,6 @@ Si l'email appartient déjà à un compte Uny (par exemple un étudiant qui tien
 | **Scanner** | Scan du QR code de la carte Uny avec la caméra, ou saisie du numéro (UNY-GN-2026-7K3QXN, ou l’ancien format GN-2026-000145). Le partenaire choisit l'offre utilisée. |
 | **Offres étudiantes** | Réductions affichées dans « Avantages » |
 | **Boutique** | Produits vendus dans la marketplace, avec le badge « Partenaire Uny » |
-| **Logements** | Annonces affichées dans « Logement » |
-| **Jobs & stages** | Offres d'emploi ; les candidatures (nom, filière, téléphone, email) sont visibles sur chaque offre |
 | **Ma fiche** | Nom, logo, description, ville, quartier, adresse, téléphone ; changement de mot de passe ; suppression du compte |
 
 ## 3. Ce qui s'affiche au scan

@@ -15,8 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <ul className="text-brand-100 mt-8 space-y-3">
             <li>🎫 Carte étudiante digitale avec QR code</li>
             <li>🔥 Réductions chez les partenaires</li>
-            <li>💼 Jobs, stages et opportunités</li>
-            <li>🏠 Logements étudiants partout en Guinée</li>
+            <li>✅ Statut étudiant confirmé par ton université</li>
             <li>🛍 Marketplace entre étudiants</li>
           </ul>
         </div>

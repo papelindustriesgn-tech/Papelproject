@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, CreditCard, House } from "lucide-react";
+import { Bell, CreditCard } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Avatar } from "@/components/ui/avatar";
 
@@ -23,9 +23,6 @@ export function AppHeader({
           <Logo />
         </Link>
         <div className="hidden flex-1 lg:block" />
-        <Link href="/logement" className={`${iconBtn} lg:hidden`} aria-label="Logement">
-          <House className="size-5" aria-hidden />
-        </Link>
         <Link href="/notifications" className={iconBtn} aria-label={`Notifications${unread ? ` (${unread} non lues)` : ""}`}>
           <Bell className="size-5" aria-hidden />
           {unread > 0 && (

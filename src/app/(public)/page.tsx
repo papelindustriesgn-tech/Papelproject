@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck, QrCode, ShieldCheck, Smartphone, Sparkles, Store } from "lucide-react";
 import { LinkButton } from "@/components/ui/button";
 import { UnyCard } from "@/components/card/uny-card";
-import { DealCard, HousingCard, ItemCard, JobCard } from "@/components/content/cards";
+import { DealCard, ItemCard } from "@/components/content/cards";
 import { createPublicClient } from "@/lib/supabase/public";
 import { DEAL_CATEGORIES, SITE_URL } from "@/lib/constants";
 import { qrSvg } from "@/lib/qr";
@@ -16,7 +16,7 @@ const LANDING_LABELS: Record<string, string> = { restauration: "Restaurants", sh
 async function loadContent() {
   const supabase = createPublicClient();
   const today = new Date().toISOString().slice(0, 10);
-  const [deals, jobs, housing, market] = await Promise.all([
+  const [deals, market] = await Promise.all([
     supabase
       .from("deals")
       .select("id, title, discount_label, category, district, image_url, valid_until, is_demo, partner:partners(name, logo_url)")
@@ -26,20 +26,6 @@ async function loadContent() {
       .order("created_at", { ascending: false })
       .limit(4),
     supabase
-      .from("jobs")
-      .select("id, title, company_name, type, location, is_remote, compensation, deadline, is_demo, created_at")
-      .eq("is_active", true)
-      .or(`deadline.is.null,deadline.gte.${today}`)
-      .order("created_at", { ascending: false })
-      .limit(6),
-    supabase
-      .from("housing")
-      .select("id, title, type, district, price_gnf, rooms, images, is_available, available_from, is_demo")
-      .eq("is_active", true)
-      .eq("is_available", true)
-      .order("created_at", { ascending: false })
-      .limit(3),
-    supabase
       .from("marketplace_items")
       .select(
         "id, title, category, price_gnf, condition, district, created_at, is_demo, status, images:marketplace_images(url, position)",
@@ -48,12 +34,12 @@ async function loadContent() {
       .order("created_at", { ascending: false })
       .limit(8),
   ]);
-  return { deals: deals.data ?? [], jobs: jobs.data ?? [], housing: housing.data ?? [], market: market.data ?? [] };
+  return { deals: deals.data ?? [], market: market.data ?? [] };
 }
 
 export default async function LandingPage() {
-  const [{ deals, jobs, housing, market }, sampleQr] = await Promise.all([loadContent(), qrSvg(SITE_URL)]);
-  const hasDemo = [...deals, ...jobs, ...housing, ...market].some((x) => x.is_demo);
+  const [{ deals, market }, sampleQr] = await Promise.all([loadContent(), qrSvg(SITE_URL)]);
+  const hasDemo = [...deals, ...market].some((x) => x.is_demo);
 
   return (
     <>
@@ -77,7 +63,7 @@ export default async function LandingPage() {
               <span className="text-mango-400">.</span>
             </h1>
             <p className="text-muted mt-5 max-w-lg text-lg leading-relaxed">
-              Réductions, jobs, logements, bons plans et carte étudiante digitale réunis dans une seule application.
+              Réductions, bons plans, marketplace et carte étudiante digitale réunis dans une seule application.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <LinkButton href="/inscription" size="lg">
@@ -93,7 +79,7 @@ export default async function LandingPage() {
               className="text-ink hover:border-brand-300 border-line mt-5 inline-flex items-center gap-2 rounded-2xl border border-dashed bg-white/70 px-4 py-2.5 text-sm font-semibold"
             >
               <Store className="text-brand-600 size-4" aria-hidden />
-              Commerçant, bailleur ou entreprise ? <span className="text-brand-600">Espace partenaires</span>
+              Commerçant ou entreprise ? <span className="text-brand-600">Espace partenaires</span>
             </Link>
           </div>
           <div className="relative mx-auto w-full max-w-md md:max-w-none">
@@ -130,12 +116,11 @@ export default async function LandingPage() {
         <p className="text-muted mt-3 max-w-2xl">
           Uny réunit tout ce dont un étudiant a besoin au quotidien, pensé pour ton téléphone et les petites connexions.
         </p>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { e: "🎫", t: "Uny Card", d: "Ta carte étudiante digitale avec QR code vérifiable." },
             { e: "🔥", t: "Réductions", d: "Des tarifs étudiants chez les partenaires." },
-            { e: "💼", t: "Jobs & stages", d: "Jobs, stages, bourses, concours, formations." },
-            { e: "🏠", t: "Logement", d: "Chambres, studios et colocations partout en Guinée." },
+            { e: "✅", t: "Statut vérifié", d: "Ton inscription confirmée par ton université." },
             { e: "🛍️", t: "Marketplace", d: "Achète et vends entre étudiants." },
           ].map((f) => (
             <div key={f.t} className="bg-canvas rounded-[var(--radius-card)] p-5">
@@ -221,42 +206,6 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* JOBS */}
-      <section id="jobs" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16">
-        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Jobs, stages & opportunités.</h2>
-        <p className="text-muted mt-3 max-w-2xl">
-          Commercial étudiant, community manager, stage marketing ou finance, développeur junior… Trouve ton premier pas pro.
-        </p>
-        <div className="mt-8 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {jobs.map((j) => (
-            <JobCard key={j.id} job={j} />
-          ))}
-        </div>
-        <LinkButton href="/jobs" className="mt-6">
-          Voir les opportunités <ArrowRight className="size-4" />
-        </LinkButton>
-      </section>
-
-      {/* LOGEMENT */}
-      <section id="logement" className="bg-canvas scroll-mt-20 py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-            Trouve ton logement étudiant, à Conakry et partout en Guinée.
-          </h2>
-          <p className="text-muted mt-3 max-w-2xl">
-            Chambres, studios, colocations et appartements, filtrés par budget et par quartier.
-          </p>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {housing.map((h) => (
-              <HousingCard key={h.id} home={h} />
-            ))}
-          </div>
-          <LinkButton href="/logement" variant="outline" className="mt-6">
-            Voir les logements <ArrowRight className="size-4" />
-          </LinkButton>
-        </div>
-      </section>
-
       {/* MARKETPLACE */}
       <section id="marketplace" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16">
         <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Achète et vends entre étudiants.</h2>
@@ -283,10 +232,10 @@ export default async function LandingPage() {
       <section id="partenaires" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-16">
         <div className="grid items-center gap-6 rounded-[2rem] bg-white p-6 shadow-[var(--shadow-card)] sm:p-10 md:grid-cols-[1.4fr_1fr]">
           <div>
-            <p className="text-brand-700 text-sm font-bold">Pour les commerçants, bailleurs et entreprises</p>
+            <p className="text-brand-700 text-sm font-bold">Pour les commerçants et entreprises</p>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Deviens partenaire Uny.</h2>
             <p className="text-muted mt-3 max-w-xl">
-              Publie tes offres, ta boutique, tes logements et tes jobs pour les étudiants de toute la Guinée, et vérifie leur
+              Publie tes offres et ta boutique pour les étudiants de toute la Guinée, et vérifie leur
               carte en 2 secondes en scannant le QR code.
             </p>
           </div>

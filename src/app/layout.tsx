@@ -13,7 +13,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 const description =
-  "Uny, le passeport étudiant africain : carte étudiante digitale, réductions, jobs, stages, logements et marketplace réunis dans une seule application. Disponible dans toute la Guinée.";
+  "Uny, le passeport étudiant africain : carte étudiante digitale, réductions et marketplace réunis dans une seule application. Disponible dans toute la Guinée.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -26,9 +26,7 @@ export const metadata: Metadata = {
     "Conakry",
     "carte étudiante",
     "réductions étudiantes",
-    "jobs étudiants",
     "stages",
-    "logement étudiant",
   ],
   openGraph: {
     type: "website",

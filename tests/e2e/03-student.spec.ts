@@ -83,38 +83,6 @@ test("avantages : filtres, recherche, détail, favori", async ({ page }) => {
   await expect(page.getByText("Burger étudiant à -15 %")).toBeVisible();
 });
 
-test("jobs : filtre par type, sauvegarde, candidature", async ({ page }) => {
-  await signUp(page);
-  await page.goto("/jobs?type=stage");
-  await expect(page.getByText("Stage marketing")).toBeVisible();
-  await expect(page.getByText("Développeur web junior")).toHaveCount(0);
-  await page.getByText("Stage marketing").click();
-  await page.waitForLoadState("networkidle");
-  await Promise.all([
-    page.waitForResponse((r) => r.request().method() === "POST"),
-    page.getByRole("button", { name: "Ajouter aux favoris" }).click(),
-  ]);
-  await page.fill("#message", "Bonjour, je suis très motivée par ce stage marketing.");
-  await page.getByRole("button", { name: "Envoyer ma candidature" }).click();
-  await expect(page.getByText(/Candidature envoyée/)).toBeVisible();
-  await page.goto("/favoris");
-  await expect(page.getByText("Mes candidatures")).toBeVisible();
-  await expect(page.getByText("Jobs enregistrés")).toBeVisible();
-});
-
-test("logement : filtres budget / type / quartier et détail", async ({ page }) => {
-  await signUp(page);
-  await page.goto("/logement?budget=500000");
-  await expect(page.getByText("Chambre simple près de l'UGLC")).toBeVisible();
-  await expect(page.getByText("Studio moderne à Kipé")).toHaveCount(0);
-  await page.goto("/logement?type=colocation");
-  await expect(page.getByText("Colocation étudiante 3 chambres")).toBeVisible();
-  await page.goto("/logement?quartier=Kipé");
-  await page.getByText("Studio moderne à Kipé").click();
-  await expect(page.getByText("1 800 000 GNF")).toBeVisible();
-  await expect(page.getByText(/aucun propriétaire réel/)).toBeVisible();
-});
-
 test("marketplace : publier avec photo, modifier, marquer vendu, supprimer", async ({ page }) => {
   await signUp(page);
   const title = `Calculatrice Casio E2E ${Date.now()}`;

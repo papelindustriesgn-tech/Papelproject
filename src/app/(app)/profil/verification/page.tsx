@@ -140,7 +140,7 @@ export default async function VerificationPage() {
         <p className="text-muted mb-4 text-sm">
           Facultatif. Faire vérifier ton BAC renforce ton identité Uny (utile pour certains partenaires, bourses et concours).
           {!officialBacProvider.isConnected() &&
-            " La connexion aux résultats officiels n'est pas encore disponible : ton relevé est contrôlé par l'équipe Uny puis supprimé."}
+            " Indique simplement ton numéro de PV : l'équipe Uny le contrôle dans les résultats officiels."}
         </p>
         {bac && bac.length > 0 && (
           <ul className="divide-line mb-4 divide-y text-sm">
@@ -148,7 +148,7 @@ export default async function VerificationPage() {
               <li key={b.id} className="flex items-start justify-between gap-3 py-2">
                 <div>
                   <p className="font-semibold">
-                    BAC {b.exam_year} · candidat {b.candidate_ref}
+                    BAC {b.exam_year} · PV {b.candidate_ref}
                   </p>
                   <p className="text-muted text-xs">
                     {BAC_METHODS[b.method as keyof typeof BAC_METHODS]}
@@ -169,10 +169,10 @@ export default async function VerificationPage() {
         )}
         {bacWaiting ? (
           <p className="bg-mango-50 text-mango-700 rounded-2xl p-3 text-sm">
-            Ton relevé est en cours de vérification par l&apos;équipe Uny.
+            Ton numéro de PV est en cours de vérification par l&apos;équipe Uny.
           </p>
         ) : (
-          !bac?.some((b) => b.status === "verified") && <BacForm userId={p.id} />
+          !bac?.some((b) => b.status === "verified") && <BacForm />
         )}
       </section>
 

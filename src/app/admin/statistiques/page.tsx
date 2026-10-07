@@ -11,13 +11,12 @@ export default async function StatsPage() {
   await requireAdmin(); // le layout et la page sont rendus en parallèle
   const s = await getAdminStats();
   const supabase = await createClient();
-  const [{ data: topDeals }, { data: topJobs }, { data: unis }] = await Promise.all([
+  const [{ data: topDeals }, { data: unis }] = await Promise.all([
     supabase
       .from("deals")
       .select("id, title, view_count, partner:partners(name)")
       .order("view_count", { ascending: false })
       .limit(5),
-    supabase.from("jobs").select("id, title, company_name, view_count").order("view_count", { ascending: false }).limit(5),
     supabase
       .from("profiles")
       .select("university:universities!profiles_university_id_fkey(short_name, name)")
@@ -58,10 +57,8 @@ export default async function StatsPage() {
       </section>
       <section>
         <h2 className="mb-3 font-bold">Consultations</h2>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3">
           <StatCard label="Offres consultées" value={s.views_deal} />
-          <StatCard label="Jobs consultés" value={s.views_job} hint={`${s.applications_total} candidatures`} />
-          <StatCard label="Logements consultés" value={s.views_housing} />
           <StatCard
             label="Annonces marketplace vues"
             value={s.views_marketplace}
@@ -69,7 +66,7 @@ export default async function StatsPage() {
           />
         </div>
       </section>
-      <div className="grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
+      <div className="grid gap-4 [&>*]:min-w-0">
         <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
           <h2 className="mb-3 font-bold">Offres les plus vues</h2>
           <ol className="space-y-2 text-sm">
@@ -79,19 +76,6 @@ export default async function StatsPage() {
                   {i + 1}. {d.title} <span className="text-muted">— {d.partner?.name}</span>
                 </span>
                 <span className="shrink-0 font-bold tabular-nums">{d.view_count}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
-        <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
-          <h2 className="mb-3 font-bold">Jobs les plus vus</h2>
-          <ol className="space-y-2 text-sm">
-            {(topJobs ?? []).map((j, i) => (
-              <li key={j.id} className="flex justify-between gap-3">
-                <span className="min-w-0 truncate">
-                  {i + 1}. {j.title} <span className="text-muted">— {j.company_name}</span>
-                </span>
-                <span className="shrink-0 font-bold tabular-nums">{j.view_count}</span>
               </li>
             ))}
           </ol>
@@ -119,7 +103,7 @@ export default async function StatsPage() {
       <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <h2 className="font-bold">Données de démonstration</h2>
         <p className="text-muted mt-1 mb-4 text-sm">
-          Avant de présenter de vrais partenaires, supprime les partenaires, offres, jobs, logements et annonces fictifs (marqués
+          Avant de présenter de vrais partenaires, supprime les partenaires, offres et annonces fictifs (marqués
           « Démo »). Les comptes utilisateurs ne sont pas touchés.
         </p>
         <DemoCleanup />

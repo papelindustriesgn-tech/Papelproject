@@ -46,8 +46,8 @@ export default async function AdminHome() {
       </section>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Avantages actifs" value={s.deals_active} hint={`${s.partners_total} partenaires`} />
-        <StatCard label="Jobs actifs" value={s.jobs_active} hint={`${s.applications_total} candidatures`} />
-        <StatCard label="Logements actifs" value={s.housing_active} />
+        <StatCard label="Universités partenaires" value={s.universities_partner} />
+        <StatCard label="Inscriptions à confirmer" value={s.enrollments_pending} hint={`${s.enrollments_verified} confirmées`} />
         <StatCard label="Annonces marketplace" value={s.marketplace_active} hint={`${s.marketplace_total} au total`} />
       </div>
     </div>

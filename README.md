@@ -1,23 +1,23 @@
 # Uny — le passeport étudiant africain
 
 > **Être étudiant a ses avantages.**
-> Carte étudiante digitale, réductions, jobs & stages, logements et marketplace réunis dans une seule application web mobile-first (PWA).
+> Carte étudiante digitale, réductions et marketplace réunis dans une seule application web mobile-first (PWA).
 > Disponible dans **toute la Guinée** (18 villes) — architecture multi-pays prête (GN, SN, CI, ML…).
 
 ## Fonctionnalités
+
+> Logement et jobs ont été retirés d'Uny (pages, navigation, espace partenaire, admin). Les anciens liens redirigent vers l'accueil ; les données existantes sont conservées en base.
 
 | Module | Ce qui fonctionne |
 | --- | --- |
 | **Inscription / connexion** | Inscription en 2 étapes (< 3 min), confirmation par email, connexion par **email ou téléphone**, mot de passe oublié, changement d'email / mot de passe, déconnexion de tous les appareils |
 | **Vérification étudiante** | Envoi d'un justificatif (photo ou PDF, stockage **privé**), 3 statuts (Non vérifié / Vérification en cours / Étudiant vérifié), validation ou refus motivé par l'admin, notification + email |
 | **Uny Card** | Carte premium avec photo, établissement, filière, **Uny ID `UNY-GN-2026-7K3QXN`**, année universitaire, statut et **QR code** ; mode « Présenter » plein écran (horloge en direct anti-capture, écran maintenu allumé) ; page publique `/v/<jeton>` de vérification pour les partenaires |
-| **Dashboard** | « Bonjour Prénom 👋 », aperçu de la carte, raccourcis, meilleures réductions, nouvelles offres, jobs, logements, nouveautés marketplace |
+| **Dashboard** | « Bonjour Prénom 👋 », aperçu de la carte, raccourcis, meilleures réductions, nouvelles offres, nouveautés marketplace |
 | **Avantages** | Catalogue partenaires, filtres par catégorie et par quartier, recherche, favoris, détail avec conditions et validité |
-| **Jobs & opportunités** | 8 types (job, stage, alternance, freelance, bénévolat, concours, bourse, formation), recherche, favoris, **candidature intégrée** |
-| **Logement** | Chambres, studios, colocations, appartements ; filtres budget / quartier / type / disponibilité ; galerie photos ; contact appel/WhatsApp |
 | **Marketplace** | Publier avec photos (compressées sur le téléphone), modifier, masquer, marquer vendu, supprimer, « Mes annonces », contact vendeur |
 | **Profil** | Photo, informations, statut, numéro Uny, paramètres de notifications, sécurité, déconnexion |
-| **Espace partenaire** | Commerçants, bailleurs, entreprises : offres étudiantes, boutique (marketplace), logements, jobs avec candidatures, **scan du QR code de la carte** (caméra ou numéro) avec historique et statistiques. Demande en ligne `/partenaires`, validation par l'admin. Guide : [`docs/GUIDE-PARTENAIRES.md`](docs/GUIDE-PARTENAIRES.md) |
+| **Espace partenaire** | Commerçants et entreprises : offres étudiantes, boutique (marketplace), **scan du QR code de la carte** (caméra ou numéro) avec historique et statistiques. Demande en ligne `/partenaires`, validation par l'admin. Guide : [`docs/GUIDE-PARTENAIRES.md`](docs/GUIDE-PARTENAIRES.md) |
 | **Universités partenaires** | Portail `/universite` : confirmation des inscriptions (portail, import CSV/Excel en empreintes HMAC, connecteur API), cartes émises (expiration, révocation), statistiques limitées à l'établissement, **carte Uny aux couleurs de l'université** (moteur de templates versionné). Demande en ligne `/universites`. Guide : [`docs/UNIVERSITES.md`](docs/UNIVERSITES.md) |
 | **Identité étudiante** | Identifiant Uny non séquentiel `UNY-GN-2026-7K3QXN`, statuts `pending / verified / rejected / expired / manual_review`, vérification du BAC (preuve minimale, document supprimé après contrôle), emails étudiants `prenom.nom@etu…` gérés chez un fournisseur professionnel ([`docs/EMAILS-ETUDIANTS.md`](docs/EMAILS-ETUDIANTS.md)) |
 | **Toute la Guinée** | 18 villes ; chaque étudiant voit sa ville par défaut, ou « Toute la Guinée » |
@@ -82,9 +82,9 @@ src/
   app/
     (public)/        landing, conditions, confidentialité, hors ligne
     (auth)/          connexion, inscription, mot de passe oublié / réinitialisation
-    (app)/           espace étudiant : accueil, carte, avantages, jobs, logement, marketplace, profil, favoris, notifications
+    (app)/           espace étudiant : accueil, carte, avantages, marketplace, profil, favoris, notifications
     admin/           espace administrateur (layout séparé, accès admin vérifié côté serveur + RLS)
-    partenaire/      espace partenaire (offres, boutique, logements, jobs, scanner)
+    partenaire/      espace partenaire (offres, boutique, scanner)
     auth/            confirmation des liens email, déconnexion
     v/[token]/       vérification publique d'une carte (QR code)
   components/        design system (ui/), carte, contenus, admin, PWA

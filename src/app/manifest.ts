@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "Uny — Le passeport étudiant",
     short_name: "Uny",
-    description: "Carte étudiante digitale, réductions, jobs, logements et marketplace.",
+    description: "Carte étudiante digitale, réductions et marketplace.",
     start_url: "/accueil?source=pwa",
     scope: "/",
     display: "standalone",
@@ -22,7 +22,6 @@ export default function manifest(): MetadataRoute.Manifest {
     shortcuts: [
       { name: "Ma carte", url: "/carte", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
       { name: "Avantages", url: "/avantages", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
-      { name: "Jobs", url: "/jobs", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
     ],
   };
 }

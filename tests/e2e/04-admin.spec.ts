@@ -41,34 +41,6 @@ test("admin : statistiques, CRUD avantage, masquage, modération", async ({ page
   await page.getByRole("button", { name: "Supprimer" }).click();
   await expect(page).toHaveURL(/supprime=1/);
 
-  // Création d'un logement et d'un job
-  await page.goto("/admin/logements/nouveau");
-  await page.fill("#title", `Logement test admin ${run}`);
-  await page.selectOption("#type", "studio");
-  await page.selectOption("#location", { label: "Conakry" });
-  await page.fill("input[name=location__district]", "Kaloum");
-  await page.fill("#price_gnf", "1000000");
-  await page.getByRole("button", { name: "Créer" }).click();
-  await expect(page.getByText(`Logement test admin ${run}`)).toBeVisible();
-  await page.goto("/admin/jobs/nouveau");
-  await page.fill("#title", `Job test admin ${run}`);
-  await page.fill("#company_name", "Entreprise test");
-  await page.selectOption("#type", "job");
-  await page.getByRole("button", { name: "Créer" }).click();
-  await expect(page.getByText(`Job test admin ${run}`)).toBeVisible();
-
-  // Nettoyage : suppression des contenus de test
-  for (const [entity, label] of [
-    ["logements", `Logement test admin ${run}`],
-    ["jobs", `Job test admin ${run}`],
-  ]) {
-    await page.goto(`/admin/${entity}?q=${run}`);
-    await page.locator("li", { hasText: label }).getByRole("link", { name: "Modifier" }).click();
-    page.once("dialog", (d) => d.accept());
-    await page.getByRole("button", { name: "Supprimer" }).click();
-    await expect(page).toHaveURL(/supprime=1/);
-  }
-
   // Modération marketplace
   await page.goto("/admin/marketplace?q=Vélo");
   const item = page.locator("li", { hasText: "Vélo de ville" });

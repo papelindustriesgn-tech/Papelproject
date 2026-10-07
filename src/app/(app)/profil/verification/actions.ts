@@ -65,15 +65,15 @@ const bacSchema = z.object({
   candidate_number: z
     .string()
     .trim()
-    .min(4, "Numéro de candidat requis")
+    .min(4, "Numéro de PV requis")
     .max(30)
-    .regex(/^[0-9A-Za-z /-]+$/, "Numéro invalide"),
-  document_path: z.string().min(10, "Ajoute ton relevé ou attestation de réussite"),
+    .regex(/^[0-9A-Za-z /-]+$/, "Numéro de PV invalide"),
 });
 
 /**
- * Vérification du BAC. Aucune source officielle n'étant raccordée, la demande est examinée par Uny
- * à partir du relevé (supprimé après décision). Seule une preuve minimale est conservée.
+ * Vérification du BAC par le numéro de PV du candidat (aucun document). L'équipe Uny contrôle le numéro
+ * dans les résultats officiels publiés ; le numéro complet est effacé dès la décision, seule la preuve
+ * (année, numéro masqué, empreinte, méthode, date) est conservée.
  */
 export async function submitBac(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = bacSchema.safeParse(Object.fromEntries(formData));
@@ -88,30 +88,43 @@ export async function submitBac(_prev: FormState, formData: FormData): Promise<F
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return { error: "Session expirée." };
   const d = parsed.data;
-  if (!d.document_path.startsWith(`${auth.user.id}/bac-`)) return { error: "Document invalide." };
 
   const number = normalizeNumber(d.candidate_number);
+  const hash = matchHash("bac_candidate", `${d.exam_year}:${number}`);
   const admin = createAdminClient();
-  const { data: existing } = await admin
-    .from("bac_verifications")
-    .select("status, document_path")
-    .eq("user_id", auth.user.id)
-    .eq("exam_year", d.exam_year)
-    .maybeSingle();
+  const [{ data: existing }, { data: taken }] = await Promise.all([
+    admin
+      .from("bac_verifications")
+      .select("status, document_path")
+      .eq("user_id", auth.user.id)
+      .eq("exam_year", d.exam_year)
+      .maybeSingle(),
+    admin
+      .from("bac_verifications")
+      .select("id")
+      .eq("exam_year", d.exam_year)
+      .eq("candidate_hash", hash)
+      .eq("status", "verified")
+      .neq("user_id", auth.user.id)
+      .limit(1),
+  ]);
   if (existing && ["verified", "manual_review", "pending"].includes(existing.status))
     return { error: existing.status === "verified" ? "Ton BAC est déjà vérifié." : "Une demande est déjà en cours d'examen." };
+  if (taken?.length)
+    return { error: "Ce numéro de PV est déjà rattaché à un autre compte Uny. Contacte le support si c'est une erreur." };
   if (existing?.document_path) await admin.storage.from("verification-docs").remove([existing.document_path]);
 
   const { error } = await admin.from("bac_verifications").upsert(
     {
       user_id: auth.user.id,
       exam_year: d.exam_year,
+      candidate_number: d.candidate_number.toUpperCase(),
       candidate_ref: maskCandidate(number),
-      candidate_hash: matchHash("bac_candidate", `${d.exam_year}:${number}`),
+      candidate_hash: hash,
       provider: officialBacProvider.isConnected() ? "official_api" : "manual",
       method: "document",
       status: "manual_review",
-      document_path: d.document_path,
+      document_path: null,
       rejection_reason: null,
       reviewed_by: null,
       reviewed_at: null,
@@ -124,11 +137,8 @@ export async function submitBac(_prev: FormState, formData: FormData): Promise<F
     actor_id: auth.user.id,
     subject_id: auth.user.id,
     action: "bac.submitted",
-    details: { exam_year: d.exam_year, provider: "manual" },
+    details: { exam_year: d.exam_year, provider: "manual", method: "pv" },
   });
   revalidatePath("/profil/verification");
-  return {
-    ok: true,
-    message: "Relevé envoyé ✅ L'équipe Uny le vérifie puis le supprime ; seule la preuve de vérification est gardée.",
-  };
+  return { ok: true, message: "Numéro de PV envoyé ✅ L'équipe Uny le vérifie dans les résultats officiels." };
 }

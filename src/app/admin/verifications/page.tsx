@@ -164,10 +164,10 @@ async function BacTab({ sp }: { sp: SearchParams }) {
   return (
     <div className="space-y-4">
       <div className="bg-brand-50 text-brand-800 rounded-2xl p-4 text-sm">
-        <strong>Source officielle : {officialBacProvider.isConnected() ? "connectée" : "non connectée"}.</strong> Aucun accès
-        officiel aux résultats du BAC n&apos;est raccordé : contrôle le relevé (nom, date de naissance, numéro de candidat,
-        mention « admis »), éventuellement auprès de l&apos;office des examens. À la décision, le document est supprimé ; seule la
-        preuve (année, numéro masqué, méthode, date) est gardée.
+        <strong>Source officielle : {officialBacProvider.isConnected() ? "connectée" : "non connectée"}.</strong> Recherche le
+        numéro de PV dans les résultats officiels du BAC de l&apos;année indiquée et vérifie que le nom correspond et que le
+        candidat est admis. À la décision, le numéro complet est effacé ; seule la preuve (année, numéro masqué, méthode, date)
+        est gardée.
       </div>
       <FilterChips
         pathname="/admin/verifications"
@@ -193,7 +193,10 @@ async function BacTab({ sp }: { sp: SearchParams }) {
                       Né(e) le {formatDate(r.profile?.birth_date)} · <span className="font-mono">{r.profile?.uny_id}</span>
                     </p>
                     <p className="text-sm">
-                      BAC {r.exam_year} · candidat <span className="font-mono">{r.candidate_ref}</span>
+                      BAC {r.exam_year} · PV{" "}
+                      <span className="bg-canvas rounded px-1.5 py-0.5 font-mono font-bold">
+                        {r.candidate_number ?? r.candidate_ref}
+                      </span>
                     </p>
                   </div>
                   <Badge tone={ENROLLMENT_STATUS[r.status].tone}>{ENROLLMENT_STATUS[r.status].label}</Badge>
@@ -205,7 +208,7 @@ async function BacTab({ sp }: { sp: SearchParams }) {
                     rel="noopener noreferrer"
                     className="text-brand-600 inline-flex items-center gap-1 text-sm font-semibold"
                   >
-                    <FileText className="size-4" /> Ouvrir le relevé (lien valable 5 min)
+                    <FileText className="size-4" /> Ancien relevé envoyé (lien valable 5 min)
                   </a>
                 )}
                 {done ? (

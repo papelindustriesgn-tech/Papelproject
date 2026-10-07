@@ -118,7 +118,7 @@ export function partnerAccessEmail(a: { firstName: string; business: string; ema
     subject: "Ton espace partenaire Uny est prêt 🎉",
     html: layout({
       heading: `Bienvenue ${escape(a.firstName)} !`,
-      body: `L'espace partenaire de <strong>${escape(a.business)}</strong> est activé : publie tes offres, ta boutique, tes logements et tes jobs, et scanne les cartes étudiantes.<br><br>${creds}`,
+      body: `L'espace partenaire de <strong>${escape(a.business)}</strong> est activé : publie tes offres et ta boutique, et scanne les cartes étudiantes.<br><br>${creds}`,
       cta: "Ouvrir mon espace partenaire",
       href: `${SITE_URL}/connexion?next=/partenaire`,
     }),

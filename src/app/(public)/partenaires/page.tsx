@@ -7,14 +7,14 @@ import { ApplicationForm } from "./application-form";
 export const metadata: Metadata = {
   title: "Devenir partenaire",
   description:
-    "Commerçants, bailleurs, entreprises : touchez les étudiants de toute la Guinée avec Uny. Offres, boutique, logements, jobs et vérification des cartes étudiantes.",
+    "Commerçants et entreprises : touchez les étudiants de toute la Guinée avec Uny. Offres, boutique et vérification des cartes étudiantes.",
 };
 
 const POINTS = [
   {
     icon: Megaphone,
     t: "Fais-toi connaître",
-    d: "Tes offres, produits, logements et jobs apparaissent dans l'app de milliers d'étudiants.",
+    d: "Tes offres et produits apparaissent dans l'app de milliers d'étudiants.",
   },
   {
     icon: ScanLine,
@@ -40,7 +40,7 @@ export default async function PartnersLanding() {
             Les étudiants de toute la Guinée, <span className="text-mango-400">à ta porte</span>.
           </h1>
           <p className="text-brand-100 mt-4 max-w-2xl text-lg">
-            Restaurants, boutiques, salles de sport, bailleurs, entreprises : rejoins Uny gratuitement pendant le lancement.
+            Restaurants, boutiques, salles de sport, entreprises : rejoins Uny gratuitement pendant le lancement.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a

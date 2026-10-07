@@ -113,9 +113,11 @@ export default async function EstablishmentPage() {
         ) : (
           <ul className="divide-line divide-y text-sm">
             {logs.map((l) => (
-              <li key={l.id} className="flex justify-between gap-3 py-2">
-                <span>{ACTIONS[l.action] ?? l.action}</span>
-                <span className="text-muted shrink-0">{formatDate(l.created_at, { hour: "2-digit", minute: "2-digit" })}</span>
+              <li key={l.id} className="flex flex-wrap justify-between gap-x-3 py-2">
+                <span className="min-w-0">{ACTIONS[l.action] ?? l.action}</span>
+                <span className="text-muted text-xs">
+                  {formatDate(l.created_at, { month: "short", hour: "2-digit", minute: "2-digit" })}
+                </span>
               </li>
             ))}
           </ul>
