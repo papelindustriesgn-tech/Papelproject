@@ -91,7 +91,7 @@ Chaque nuit à 3 h 15, une tâche planifiée (pg_cron) expire les inscriptions a
   - obligatoires : **Matricule** et **Nom** ;
   - facultatives : Prénom(s), Date de naissance, Faculté, Département, Filière, Niveau.
 - **Contenu stocké** : uniquement des empreintes HMAC-SHA256 du matricule, du nom, du prénom et de la date de naissance. Faculté, filière et niveau sont gardés en clair pour la carte.
-- **Clé des empreintes** : `UNY_MATCH_SECRET`, côté serveur. Sans elle, les empreintes sont inexploitables. **Ne jamais la changer** : les listes déjà importées deviendraient inutilisables.
+- **Clé des empreintes** : `UNY_MATCH_SECRET` côté serveur si elle est définie, sinon une clé dérivée de `SUPABASE_SERVICE_ROLE_KEY`. Sans elle, les empreintes sont inexploitables. **Ne jamais la changer** (ni faire tourner la clé Supabase si aucune clé dédiée n'est définie) : les listes déjà importées devraient être réimportées.
 - **Remplacement** : une nouvelle liste remplace la précédente pour la même année. Les demandes en attente sont aussitôt rapprochées.
 - **Purge** : les listes sont supprimées automatiquement le 31 octobre qui suit la fin de l'année universitaire.
 
