@@ -23,3 +23,18 @@ export async function compressImage(file: File, maxSize = 1280, quality = 0.8): 
 export function randomName(ext = "jpg") {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
 }
+
+/** Logo : redimensionné (512 px max) en PNG pour conserver la transparence. */
+export async function resizeLogo(file: File, maxSize = 512): Promise<Blob> {
+  if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) throw new Error("Format non supporté");
+  const bitmap = await createImageBitmap(file).catch(() => null);
+  if (!bitmap) return file;
+  const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+  return blob ?? file;
+}

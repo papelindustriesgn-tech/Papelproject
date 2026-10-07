@@ -10,7 +10,7 @@
 | --- | --- |
 | **Inscription / connexion** | Inscription en 2 étapes (< 3 min), confirmation par email, connexion par **email ou téléphone**, mot de passe oublié, changement d'email / mot de passe, déconnexion de tous les appareils |
 | **Vérification étudiante** | Envoi d'un justificatif (photo ou PDF, stockage **privé**), 3 statuts (Non vérifié / Vérification en cours / Étudiant vérifié), validation ou refus motivé par l'admin, notification + email |
-| **Uny Card** | Carte premium avec photo, établissement, filière, **Uny ID `GN-2026-000145`**, année universitaire, statut et **QR code** ; mode « Présenter » plein écran (horloge en direct anti-capture, écran maintenu allumé) ; page publique `/v/<jeton>` de vérification pour les partenaires |
+| **Uny Card** | Carte premium avec photo, établissement, filière, **Uny ID `UNY-GN-2026-7K3QXN`**, année universitaire, statut et **QR code** ; mode « Présenter » plein écran (horloge en direct anti-capture, écran maintenu allumé) ; page publique `/v/<jeton>` de vérification pour les partenaires |
 | **Dashboard** | « Bonjour Prénom 👋 », aperçu de la carte, raccourcis, meilleures réductions, nouvelles offres, jobs, logements, nouveautés marketplace |
 | **Avantages** | Catalogue partenaires, filtres par catégorie et par quartier, recherche, favoris, détail avec conditions et validité |
 | **Jobs & opportunités** | 8 types (job, stage, alternance, freelance, bénévolat, concours, bourse, formation), recherche, favoris, **candidature intégrée** |
@@ -18,6 +18,8 @@
 | **Marketplace** | Publier avec photos (compressées sur le téléphone), modifier, masquer, marquer vendu, supprimer, « Mes annonces », contact vendeur |
 | **Profil** | Photo, informations, statut, numéro Uny, paramètres de notifications, sécurité, déconnexion |
 | **Espace partenaire** | Commerçants, bailleurs, entreprises : offres étudiantes, boutique (marketplace), logements, jobs avec candidatures, **scan du QR code de la carte** (caméra ou numéro) avec historique et statistiques. Demande en ligne `/partenaires`, validation par l'admin. Guide : [`docs/GUIDE-PARTENAIRES.md`](docs/GUIDE-PARTENAIRES.md) |
+| **Universités partenaires** | Portail `/universite` : confirmation des inscriptions (portail, import CSV/Excel en empreintes HMAC, connecteur API), cartes émises (expiration, révocation), statistiques limitées à l'établissement, **carte Uny aux couleurs de l'université** (moteur de templates versionné). Demande en ligne `/universites`. Guide : [`docs/UNIVERSITES.md`](docs/UNIVERSITES.md) |
+| **Identité étudiante** | Identifiant Uny non séquentiel `UNY-GN-2026-7K3QXN`, statuts `pending / verified / rejected / expired / manual_review`, vérification du BAC (preuve minimale, document supprimé après contrôle), emails étudiants `prenom.nom@etu…` gérés chez un fournisseur professionnel ([`docs/EMAILS-ETUDIANTS.md`](docs/EMAILS-ETUDIANTS.md)) |
 | **Toute la Guinée** | 18 villes ; chaque étudiant voit sa ville par défaut, ou « Toute la Guinée » |
 | **Administration** | Vue d'ensemble (inscrits, vérifiés, inscriptions jour/semaine, actifs), vérifications, utilisateurs (rôle, statut), CRUD partenaires / avantages / jobs / logements, modération marketplace, statistiques (consultations, tops, établissements), suppression des données démo |
 | **Applications mobiles** | Android (Google Play) et iOS (App Store) via Capacitor, suppression du compte dans l'app |

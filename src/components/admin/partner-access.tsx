@@ -6,14 +6,20 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import type { FormState } from "@/lib/actions/types";
 
 /** Bouton « Accepter » d'une demande : affiche les identifiants créés (une seule fois). */
-export function ApproveButton({ action }: { action: () => Promise<FormState> }) {
+export function ApproveButton({
+  action,
+  label = "Accepter et créer l'accès",
+}: {
+  action: () => Promise<FormState>;
+  label?: string;
+}) {
   const [state, run] = useActionState<FormState>(() => action(), {});
   return (
     <form action={run} className="space-y-2">
       <FormMessage type={state.ok ? "success" : "error"}>{state.message ?? state.error}</FormMessage>
       {!state.ok && (
         <SubmitButton size="sm" pendingLabel="Création…">
-          Accepter et créer l&apos;accès
+          {label}
         </SubmitButton>
       )}
     </form>
@@ -21,7 +27,13 @@ export function ApproveButton({ action }: { action: () => Promise<FormState> }) 
 }
 
 /** Ajout d'un membre (compte d'accès) à un partenaire existant. */
-export function GrantAccessForm({ action }: { action: (prev: FormState, fd: FormData) => Promise<FormState> }) {
+export function GrantAccessForm({
+  action,
+  submitLabel = "Donner l'accès à l'espace partenaire",
+}: {
+  action: (prev: FormState, fd: FormData) => Promise<FormState>;
+  submitLabel?: string;
+}) {
   const [state, run] = useActionState(action, {});
   const fe = state.fieldErrors ?? {};
   return (
@@ -39,7 +51,7 @@ export function GrantAccessForm({ action }: { action: (prev: FormState, fd: Form
         <Input id="member_email" name="email" type="email" required />
       </Field>
       <SubmitButton className="w-full" pendingLabel="Création…">
-        Donner l&apos;accès à l&apos;espace partenaire
+        {submitLabel}
       </SubmitButton>
     </form>
   );

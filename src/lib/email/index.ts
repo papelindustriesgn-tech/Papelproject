@@ -125,3 +125,28 @@ export function partnerAccessEmail(a: { firstName: string; business: string; ema
     text: `L'espace partenaire de ${a.business} est activé. ${a.password ? `Identifiant : ${a.email} — mot de passe provisoire : ${a.password}. ` : ""}${SITE_URL}/connexion?next=/partenaire`,
   };
 }
+
+export function universityAccessEmail(a: { firstName: string; university: string; email: string; password: string | null }) {
+  const creds = a.password
+    ? `Identifiant : <strong>${escape(a.email)}</strong><br>Mot de passe provisoire : <strong>${escape(a.password)}</strong><br>Change-le dès ta première connexion.`
+    : "Connecte-toi avec ton compte Uny habituel.";
+  return {
+    subject: "Le portail université Uny est ouvert 🎓",
+    html: layout({
+      heading: `Bienvenue ${escape(a.firstName)} !`,
+      body: `Le portail de <strong>${escape(a.university)}</strong> est activé : confirmez les inscriptions de vos étudiants, importez vos listes, personnalisez la carte Uny de l'établissement et suivez les cartes émises.<br><br>${creds}`,
+      cta: "Ouvrir le portail université",
+      href: `${SITE_URL}/connexion?next=/universite`,
+    }),
+    text: `Le portail université de ${a.university} est activé. ${a.password ? `Identifiant : ${a.email} — mot de passe provisoire : ${a.password}. ` : ""}${SITE_URL}/connexion?next=/universite`,
+  };
+}
+
+/** Message interne à l'équipe Uny (texte brut repris en HTML). */
+export function internalEmail(subject: string, lines: string[]) {
+  return {
+    subject,
+    text: lines.join("\n"),
+    html: `<div style="font-family:system-ui,sans-serif;font-size:14px;line-height:1.6">${lines.map(escape).join("<br>")}</div>`,
+  };
+}

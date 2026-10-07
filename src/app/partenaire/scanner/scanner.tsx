@@ -210,7 +210,7 @@ export function Scanner({ deals }: { deals: Deal[] }) {
           <Input
             ref={codeInput}
             name="code"
-            placeholder="GN-2026-000145"
+            placeholder="UNY-GN-2026-7K3QXN"
             autoCapitalize="characters"
             autoComplete="off"
             aria-label="Numéro de carte Uny"

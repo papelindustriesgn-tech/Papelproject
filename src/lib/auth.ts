@@ -33,7 +33,7 @@ export const getProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("*, university:universities(name, short_name), city:cities(name)")
+    .select("*, university:universities!profiles_university_id_fkey(name, short_name), city:cities(name)")
     .eq("id", userId)
     .single();
   return (data as Profile | null) ?? null;

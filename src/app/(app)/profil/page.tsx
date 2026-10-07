@@ -5,6 +5,7 @@ import {
   ChevronRight,
   CreditCard,
   Heart,
+  Landmark,
   LogOut,
   MessageSquareHeart,
   Pencil,
@@ -19,19 +20,37 @@ import { Avatar } from "@/components/ui/avatar";
 import { VerificationBadge } from "@/components/ui/badge";
 import { requireProfile, universityLabel } from "@/lib/auth";
 import { getMyPartners } from "@/lib/partner";
+import { getMyUniversities } from "@/lib/university";
+import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/format";
 import { AvatarUpload } from "./avatar-upload";
 
 export const metadata: Metadata = { title: "Profil" };
 
 export default async function ProfilePage() {
-  const [p, myPartners] = await Promise.all([requireProfile(), getMyPartners()]);
+  const [p, myPartners, myUniversities] = await Promise.all([requireProfile(), getMyPartners(), getMyUniversities()]);
+  const supabase = await createClient();
+  const { data: studentEmail } = await supabase
+    .from("student_email_accounts")
+    .select("address, status")
+    .eq("user_id", p.id)
+    .in("status", ["active", "alumni"])
+    .maybeSingle();
   const rows = [
     { label: "Établissement", value: universityLabel(p) },
     { label: "Filière", value: p.field_of_study ?? "—" },
     { label: "Niveau", value: p.study_level ?? "—" },
     { label: "Ville", value: p.city?.name ?? "—" },
-    { label: "Numéro Uny", value: p.uny_id, mono: true },
+    { label: "Identifiant Uny", value: p.uny_id, mono: true },
+    ...(studentEmail
+      ? [
+          {
+            label: studentEmail.status === "alumni" ? "Email Uny (alumni)" : "Email étudiant Uny",
+            value: studentEmail.address,
+            mono: true,
+          },
+        ]
+      : []),
     { label: "Membre depuis", value: formatDate(p.created_at, { day: undefined }) },
   ];
   const menu = [
@@ -45,6 +64,7 @@ export default async function ProfilePage() {
     { href: "/profil/parametres", label: "Paramètres", icon: Settings },
     { href: "/profil/securite", label: "Sécurité", icon: ShieldHalf },
     ...(myPartners.length ? [{ href: "/partenaire", label: "Espace partenaire", icon: Store }] : []),
+    ...(myUniversities.length ? [{ href: "/universite", label: "Portail université", icon: Landmark }] : []),
     ...(p.role === "admin" ? [{ href: "/admin", label: "Administration", icon: ShieldCheck }] : []),
   ];
 

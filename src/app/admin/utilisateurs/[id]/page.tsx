@@ -17,7 +17,11 @@ export default async function UserAdmin({ params }: { params: Promise<{ id: stri
   const me = await requireAdmin();
   const supabase = await createClient();
   const [{ data: u }, { data: card }, { data: verifs }, { count: items }, { count: apps }] = await Promise.all([
-    supabase.from("profiles").select("*, university:universities(name), city:cities(name)").eq("id", id).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("*, university:universities!profiles_university_id_fkey(name), city:cities(name)")
+      .eq("id", id)
+      .maybeSingle(),
     supabase.from("student_cards").select("*").eq("user_id", id).maybeSingle(),
     supabase.from("student_verifications").select("*").eq("user_id", id).order("created_at", { ascending: false }),
     supabase.from("marketplace_items").select("id", { count: "exact", head: true }).eq("seller_id", id),

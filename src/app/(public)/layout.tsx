@@ -65,6 +65,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   Devenir partenaire
                 </Link>
               </li>
+              <li>
+                <Link href="/universites" className="hover:text-ink">
+                  Universités partenaires
+                </Link>
+              </li>
             </ul>
           </div>
           <div className="text-sm">

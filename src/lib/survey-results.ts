@@ -7,7 +7,7 @@ export async function getSurveyResponses() {
   const { data } = await supabase
     .from("survey_responses")
     .select(
-      "*, profile:profiles!inner(first_name, last_name, email, phone, uny_id, is_test_account, university_other, university:universities(short_name, name))",
+      "*, profile:profiles!inner(first_name, last_name, email, phone, uny_id, is_test_account, university_other, university:universities!profiles_university_id_fkey(short_name, name))",
     )
     .eq("profile.is_test_account", false)
     .order("updated_at", { ascending: false })

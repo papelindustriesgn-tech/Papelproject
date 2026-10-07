@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ADMIN, adminAsPartnerMember, expectNoHorizontalOverflow, login, signUp } from "./helpers";
+import { ADMIN, adminAsPartnerMember, adminAsUniversityMember, expectNoHorizontalOverflow, login, signUp } from "./helpers";
 
 const VIEWPORTS = [
   { name: "Android 360", width: 360, height: 780 },
@@ -9,7 +9,16 @@ const VIEWPORTS = [
   { name: "Desktop 1280", width: 1280, height: 800 },
 ];
 
-const PUBLIC = ["/", "/connexion", "/inscription", "/mot-de-passe-oublie", "/conditions", "/confidentialite", "/partenaires"];
+const PUBLIC = [
+  "/",
+  "/connexion",
+  "/inscription",
+  "/mot-de-passe-oublie",
+  "/conditions",
+  "/confidentialite",
+  "/partenaires",
+  "/universites",
+];
 const APP = [
   "/accueil",
   "/carte",
@@ -40,6 +49,19 @@ const ADMIN_PAGES = [
   "/admin/avis",
   "/admin/contacts",
   "/admin/demandes-partenaires",
+  "/admin/universites",
+  "/admin/verifications?type=universites",
+  "/admin/verifications?type=bac",
+  "/admin/verifications?type=registre",
+  "/admin/emails",
+];
+const UNIVERSITY_PAGES = [
+  "/universite",
+  "/universite/demandes",
+  "/universite/etudiants",
+  "/universite/imports",
+  "/universite/carte",
+  "/universite/etablissement",
 ];
 const PARTNER_PAGES = [
   "/partenaire",
@@ -58,6 +80,7 @@ const PARTNER_PAGES = [
 
 test.beforeAll(async () => {
   await adminAsPartnerMember();
+  await adminAsUniversityMember();
 });
 
 for (const vp of VIEWPORTS) {
@@ -105,6 +128,16 @@ for (const vp of VIEWPORTS) {
     if (vp.width < 1024) {
       const nav = page.getByRole("navigation", { name: "Navigation partenaire" });
       for (const l of ["Accueil", "Offres", "Scanner", "Publier", "Fiche"])
+        await expect(nav.getByRole("link", { name: l })).toBeVisible();
+    }
+    for (const url of UNIVERSITY_PAGES) {
+      await page.goto(url);
+      await expect(page).toHaveURL(new RegExp(`${url}$`));
+      await expectNoHorizontalOverflow(page);
+    }
+    if (vp.width < 1024) {
+      const nav = page.getByRole("navigation", { name: "Navigation université" });
+      for (const l of ["Accueil", "Demandes", "Étudiants", "Listes", "Carte"])
         await expect(nav.getByRole("link", { name: l })).toBeVisible();
     }
   });

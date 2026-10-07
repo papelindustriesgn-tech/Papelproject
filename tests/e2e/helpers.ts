@@ -94,3 +94,21 @@ export async function adminAsPartnerMember() {
   });
   return partner.id as string;
 }
+
+/** Rend l'admin local membre d'une université partenaire (pour parcourir le portail université). */
+export async function adminAsUniversityMember() {
+  const [admin] = await (await serviceRest(`profiles?email=eq.${ADMIN.email}&select=id`)).json();
+  const [uni] = await (await serviceRest("universities?select=id&partner_status=eq.partner&order=id&limit=1")).json();
+  let id = uni?.id as number | undefined;
+  if (!id) {
+    const [any] = await (await serviceRest("universities?select=id&order=id&limit=1")).json();
+    await serviceRest(`universities?id=eq.${any.id}`, { method: "PATCH", body: JSON.stringify({ partner_status: "partner" }) });
+    id = any.id;
+  }
+  await serviceRest("university_members", {
+    method: "POST",
+    headers: { Prefer: "resolution=ignore-duplicates" },
+    body: JSON.stringify({ university_id: id, user_id: admin.id }),
+  });
+  return id;
+}

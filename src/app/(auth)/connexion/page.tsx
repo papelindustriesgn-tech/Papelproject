@@ -44,7 +44,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <Link href="/partenaires" className="text-brand-600 font-semibold hover:underline">
           deviens partenaire
         </Link>
-        .
+        . Université ? Connectez-vous avec l&apos;accès du portail université.
       </p>
     </>
   );

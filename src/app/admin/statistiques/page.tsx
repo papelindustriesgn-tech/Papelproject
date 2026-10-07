@@ -20,7 +20,7 @@ export default async function StatsPage() {
     supabase.from("jobs").select("id, title, company_name, view_count").order("view_count", { ascending: false }).limit(5),
     supabase
       .from("profiles")
-      .select("university:universities(short_name, name)")
+      .select("university:universities!profiles_university_id_fkey(short_name, name)")
       .eq("is_test_account", false)
       .not("university_id", "is", null)
       .limit(5000),

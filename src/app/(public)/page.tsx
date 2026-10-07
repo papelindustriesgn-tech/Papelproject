@@ -106,7 +106,7 @@ export default async function LandingPage() {
                   photoUrl: "https://images.unsplash.com/photo-1531384441138-2736e62e0919?w=300&q=70&auto=format&fit=crop",
                   university: "Université de Conakry",
                   fieldOfStudy: "Licence 3 — Économie",
-                  unyId: "GN-2026-000145",
+                  unyId: "UNY-GN-2026-7K3QXN",
                   academicYear: "2025-2026",
                   status: "verified",
                   countryCode: "GN",
@@ -184,7 +184,7 @@ export default async function LandingPage() {
                   photoUrl: null,
                   university: "Institut Supérieur d'exemple",
                   fieldOfStudy: "Master 1 — Marketing",
-                  unyId: "GN-2026-000321",
+                  unyId: "UNY-GN-2026-4M8PRT",
                   academicYear: "2025-2026",
                   status: "verified",
                   countryCode: "GN",
@@ -299,6 +299,12 @@ export default async function LandingPage() {
             </LinkButton>
           </div>
         </div>
+        <p className="text-muted mt-4 text-center text-sm">
+          Vous représentez une université ou un institut ?{" "}
+          <Link href="/universites" className="text-brand-600 font-semibold hover:underline">
+            Offrez à vos étudiants une carte Uny à vos couleurs
+          </Link>
+        </p>
       </section>
 
       {/* CTA */}

@@ -8,7 +8,9 @@ import {
   Building2,
   Handshake,
   House,
+  Landmark,
   LayoutDashboard,
+  Mail,
   MessageSquareHeart,
   Send,
   ShoppingBag,
@@ -22,6 +24,8 @@ export const ADMIN_NAV = [
   { href: "/admin", label: "Vue d'ensemble", icon: LayoutDashboard },
   { href: "/admin/verifications", label: "Vérifications", icon: UserCheck },
   { href: "/admin/utilisateurs", label: "Utilisateurs", icon: Users },
+  { href: "/admin/universites", label: "Universités", icon: Landmark },
+  { href: "/admin/emails", label: "Emails étudiants", icon: Mail },
   { href: "/admin/partenaires", label: "Partenaires", icon: Building2 },
   { href: "/admin/demandes-partenaires", label: "Demandes partenaires", icon: Handshake },
   { href: "/admin/avantages", label: "Avantages", icon: Tag },
@@ -33,7 +37,15 @@ export const ADMIN_NAV = [
   { href: "/admin/contacts", label: "Contacter les inscrits", icon: Send },
 ];
 
-export function AdminNav({ pending, applications = 0 }: { pending: number; applications?: number }) {
+export function AdminNav({
+  pending,
+  applications = 0,
+  universities = 0,
+}: {
+  pending: number;
+  applications?: number;
+  universities?: number;
+}) {
   const pathname = usePathname();
   return (
     <nav aria-label="Administration" className="-mx-4 scrollbar-none overflow-x-auto px-4 lg:mx-0 lg:overflow-visible lg:px-0">
@@ -56,6 +68,9 @@ export function AdminNav({ pending, applications = 0 }: { pending: number; appli
                 <span className="flex-1">{label}</span>
                 {href === "/admin/verifications" && pending > 0 && (
                   <span className="bg-coral-500 rounded-full px-1.5 text-xs font-bold text-white">{pending}</span>
+                )}
+                {href === "/admin/universites" && universities > 0 && (
+                  <span className="bg-coral-500 rounded-full px-1.5 text-xs font-bold text-white">{universities}</span>
                 )}
                 {href === "/admin/demandes-partenaires" && applications > 0 && (
                   <span className="bg-coral-500 rounded-full px-1.5 text-xs font-bold text-white">{applications}</span>

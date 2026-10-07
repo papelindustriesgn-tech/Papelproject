@@ -10,6 +10,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const profile = await requireProfile();
   // Les comptes « partenaire » (commerçants, bailleurs, recruteurs) ont leur propre espace.
   if (profile.role === "partner") redirect("/partenaire");
+  // Les comptes « université » ont leur portail.
+  if (profile.role === "university") redirect("/universite");
   const supabase = await createClient();
   const { count } = await supabase
     .from("notifications")

@@ -18,7 +18,7 @@ export default async function VerifyCardPage({ params }: { params: Promise<{ tok
   const { data } = valid ? await supabase.rpc("verify_card", { p_token: token }) : { data: null };
   const card = data?.[0];
 
-  const expired = card ? new Date(`${card.expires_at}T23:59:59`) < new Date() : false;
+  const expired = card ? card.card_status === "expired" || new Date(`${card.expires_at}T23:59:59`) < new Date() : false;
   const ok = card && card.card_status === "active" && card.verification_status === "verified" && !expired;
   const now = new Date().toLocaleString("fr-FR", { timeZone: "Africa/Conakry", dateStyle: "long", timeStyle: "short" });
 
@@ -82,7 +82,13 @@ export default async function VerifyCardPage({ params }: { params: Promise<{ tok
                   <p className="text-lg leading-tight font-extrabold">
                     {card.first_name} {card.last_name}
                   </p>
-                  <p className="text-muted text-sm">{card.university ?? "—"}</p>
+                  <p className="text-muted flex items-center gap-1.5 text-sm">
+                    {safeImage(card.university_logo) && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={card.university_logo!} alt="" className="size-5 shrink-0 object-contain" />
+                    )}
+                    {card.university ?? "—"}
+                  </p>
                   {card.field_of_study && <p className="text-muted text-sm">{card.field_of_study}</p>}
                 </div>
               </div>

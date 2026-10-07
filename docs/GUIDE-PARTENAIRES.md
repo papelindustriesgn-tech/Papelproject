@@ -20,7 +20,7 @@ Si l'email appartient déjà à un compte Uny (par exemple un étudiant qui tien
 | Rubrique | Contenu |
 | --- | --- |
 | **Tableau de bord** | Cartes validées aujourd'hui, étudiants servis sur 30 jours, vues des offres, derniers passages |
-| **Scanner** | Scan du QR code de la carte Uny avec la caméra, ou saisie du numéro (GN-2026-000145). Le partenaire choisit l'offre utilisée. |
+| **Scanner** | Scan du QR code de la carte Uny avec la caméra, ou saisie du numéro (UNY-GN-2026-7K3QXN, ou l’ancien format GN-2026-000145). Le partenaire choisit l'offre utilisée. |
 | **Offres étudiantes** | Réductions affichées dans « Avantages » |
 | **Boutique** | Produits vendus dans la marketplace, avec le badge « Partenaire Uny » |
 | **Logements** | Annonces affichées dans « Logement » |

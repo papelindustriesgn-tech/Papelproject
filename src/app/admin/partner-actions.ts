@@ -1,20 +1,12 @@
 "use server";
 
-import { randomInt } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ensureProAccount } from "@/lib/accounts";
 import { partnerAccessEmail, sendEmail } from "@/lib/email";
 import { zodFieldErrors, type FormState } from "@/lib/actions/types";
-
-/** Mot de passe provisoire lisible (lettres + chiffres, sans caractères ambigus). */
-function tempPassword() {
-  const letters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
-  const digits = "23456789";
-  const pick = (set: string, n: number) => Array.from({ length: n }, () => set[randomInt(set.length)]).join("");
-  return `${pick(letters, 4)}-${pick(digits, 4)}-${pick(letters, 2)}`;
-}
 
 const memberSchema = z.object({
   email: z.email("Email invalide").max(200),
@@ -32,32 +24,16 @@ async function grantAccess(partnerId: string, m: z.infer<typeof memberSchema>, c
   const { data: partner } = await admin.from("partners").select("name").eq("id", partnerId).single();
   if (!partner) return { error: "Partenaire introuvable." };
 
-  const { data: existing } = await admin.from("profiles").select("id, first_name").eq("email", email).maybeSingle();
-  let userId = existing?.id;
-  let password: string | null = null;
-
-  if (!userId) {
-    password = tempPassword();
-    const { data, error } = await admin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { first_name: m.first_name, last_name: m.last_name, city_id: cityId ? String(cityId) : "" },
-    });
-    if (error || !data.user) return { error: `Création du compte impossible : ${error?.message ?? "erreur inconnue"}` };
-    userId = data.user.id;
-    // Compte professionnel : pas de carte étudiante, pas de notifications « étudiant »
-    await admin.from("profiles").update({ role: "partner" }).eq("id", userId);
-    await admin.from("student_cards").delete().eq("user_id", userId);
-    await admin.from("notifications").delete().eq("user_id", userId);
-  }
+  const account = await ensureProAccount(m, "partner", cityId);
+  if ("error" in account) return { error: account.error };
+  const { userId, password } = account;
 
   const { error } = await admin.from("partner_members").upsert({ partner_id: partnerId, user_id: userId });
   if (error) return { error: "Impossible de relier le compte au partenaire." };
 
   await sendEmail({
     to: email,
-    ...partnerAccessEmail({ firstName: existing?.first_name ?? m.first_name, business: partner.name, email, password }),
+    ...partnerAccessEmail({ firstName: account.firstName, business: partner.name, email, password }),
   });
 
   return {

@@ -12,6 +12,7 @@ import { formValues, type FormState } from "@/lib/actions/types";
 import { PARTNER_COOKIE, requirePartner } from "@/lib/partner";
 import { isPartnerKind, PARTNER_ENTITIES, type PartnerKind } from "@/lib/partner-entities";
 import { ENTITIES } from "@/lib/admin-entities";
+import { normalizeUnyId, UNY_ID_EXAMPLE } from "@/lib/uny-id";
 
 function refresh(kind?: PartnerKind) {
   updateTag(CONTENT_TAG);
@@ -136,15 +137,14 @@ export type ValidationResult = {
 };
 export type ValidateState = { result?: ValidationResult; error?: string; at?: number };
 
-/** Extrait le jeton du QR code (lien …/v/<jeton>) ou le numéro Uny (GN-2026-000145). */
+/** Extrait le jeton du QR code (lien …/v/<jeton>) ou le numéro Uny (UNY-GN-2026-7K3QXN ou GN-2026-000145). */
 function parseCode(raw: string): { token?: string; unyId?: string } | null {
   const s = raw.trim();
   const fromUrl = s.match(/\/v\/([0-9a-f]{20,64})(?:[/?#]|$)/i);
   if (fromUrl) return { token: fromUrl[1].toLowerCase() };
   if (/^[0-9a-f]{20,64}$/i.test(s)) return { token: s.toLowerCase() };
-  const id = s.toUpperCase().replace(/\s+/g, "");
-  if (/^[A-Z]{2}-\d{4}-\d{4,8}$/.test(id)) return { unyId: id };
-  return null;
+  const unyId = normalizeUnyId(s);
+  return unyId ? { unyId } : null;
 }
 
 export async function validateCard(_prev: ValidateState, formData: FormData): Promise<ValidateState> {
@@ -152,7 +152,7 @@ export async function validateCard(_prev: ValidateState, formData: FormData): Pr
   const code = parseCode(String(formData.get("code") ?? ""));
   if (!code)
     return {
-      error: "Code non reconnu. Scanne le QR code de la carte Uny ou tape le numéro (ex. GN-2026-000145).",
+      error: `Code non reconnu. Scanne le QR code de la carte Uny ou tape le numéro (ex. ${UNY_ID_EXAMPLE}).`,
       at: Date.now(),
     };
   const deal = String(formData.get("deal_id") ?? "");

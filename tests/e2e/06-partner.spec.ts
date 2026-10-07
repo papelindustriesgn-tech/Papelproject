@@ -40,7 +40,7 @@ test("partenaire : demande → validation admin → publication → scan d'une c
   // 3. Étudiant inscrit (non vérifié pour l'instant)
   const student = await signUp(page);
   await page.goto("/carte");
-  const unyId = (await page.locator("body").textContent())!.match(/GN-\d{4}-\d{6}/)![0];
+  const unyId = (await page.locator("body").textContent())!.match(/UNY-GN-\d{4}-[0-9A-Z]{6}/)![0];
   await logout(page);
 
   // 4. Le partenaire se connecte : il arrive dans son espace, pas dans l'espace étudiant

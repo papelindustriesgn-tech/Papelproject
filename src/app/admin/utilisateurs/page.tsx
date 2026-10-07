@@ -19,7 +19,7 @@ export default async function UsersAdmin({ searchParams }: { searchParams: Promi
   let query = supabase
     .from("profiles")
     .select(
-      "id, first_name, last_name, email, phone, uny_id, avatar_url, verification_status, role, created_at, last_seen_at, is_test_account, university:universities(short_name, name)",
+      "id, first_name, last_name, email, phone, uny_id, avatar_url, verification_status, role, created_at, last_seen_at, is_test_account, university:universities!profiles_university_id_fkey(short_name, name)",
       { count: "exact" },
     )
     .eq("is_test_account", showTest);
