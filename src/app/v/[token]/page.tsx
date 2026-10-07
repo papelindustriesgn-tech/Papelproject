@@ -15,7 +15,7 @@ export default async function VerifyCardPage({ params }: { params: Promise<{ tok
   const { token } = await params;
   const valid = /^[a-f0-9]{36}$/.test(token);
   const supabase = createPublicClient();
-  const { data } = valid ? await supabase.rpc("verify_card", { p_token: token }) : { data: null };
+  const { data } = valid ? await supabase.rpc("verify_card_details", { p_token: token }) : { data: null };
   const card = data?.[0];
 
   const expired = card ? card.card_status === "expired" || new Date(`${card.expires_at}T23:59:59`) < new Date() : false;

@@ -2208,6 +2208,21 @@ export type Database = {
           first_name: string;
           last_name: string;
           university: string;
+          uny_id: string;
+          verification_status: Database["public"]["Enums"]["verification_status"];
+        }[];
+      };
+      verify_card_details: {
+        Args: { p_token: string };
+        Returns: {
+          academic_year: string;
+          avatar_url: string;
+          card_status: Database["public"]["Enums"]["card_status"];
+          expires_at: string;
+          field_of_study: string;
+          first_name: string;
+          last_name: string;
+          university: string;
           university_color: string;
           university_logo: string;
           uny_id: string;

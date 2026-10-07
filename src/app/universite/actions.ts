@@ -194,6 +194,8 @@ export async function importRoster(_prev: ImportState, formData: FormData): Prom
       return { error: "Import interrompu (données invalides). Aucune ligne n'a été conservée." };
     }
   }
+  // Purge des listes dont l'année universitaire est terminée (toutes universités)
+  await admin.from("university_imports").delete().lt("purge_after", new Date().toISOString().slice(0, 10));
   // La liste précédente de la même année est remplacée
   await admin.from("university_imports").delete().eq("university_id", university.id).eq("academic_year", year).neq("id", imp.id);
   await admin.from("audit_log").insert({

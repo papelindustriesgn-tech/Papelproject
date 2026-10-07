@@ -933,7 +933,6 @@ begin
     perform public.set_enrollment_status(v_id, 'expired', null, 'Fin de l''année universitaire');
     v_count := v_count + 1;
   end loop;
-  delete from public.university_imports where purge_after < current_date;
   perform public.apply_student_email_policy();
   return v_count;
 end;
@@ -1139,9 +1138,8 @@ begin
 end;
 $$;
 
--- Page publique de vérification (QR) : établissement officiel + carte expirée
-drop function if exists public.verify_card(text);
-create or replace function public.verify_card(p_token text)
+-- Page publique de vérification (QR) : établissement officiel + logo (verify_card reste disponible)
+create or replace function public.verify_card_details(p_token text)
 returns table (
   uny_id text,
   first_name text,
@@ -1174,7 +1172,7 @@ as $$
    where c.qr_token = p_token
    limit 1;
 $$;
-grant execute on function public.verify_card(text) to anon, authenticated;
+grant execute on function public.verify_card_details(text) to anon, authenticated;
 
 -- -----------------------------------------------------------------------------
 -- Statistiques admin : comptes partenaires et universités exclus des « étudiants »
