@@ -10,7 +10,7 @@ Une seule application sert aux **étudiants** et aux **partenaires** : selon le 
 | --- | --- |
 | Nom | Uny |
 | Identifiant (Android `applicationId` / iOS Bundle ID) | `com.unyafrica.app` (définitif après la première publication) |
-| Adresse chargée | `mobile/www/app-url.json` → actuellement `https://uny-sepia.vercel.app` |
+| Adresse chargée | `mobile/www/app-url.json` → actuellement `https://www.unyafrica.com` |
 | Appareils | Android 7+ ; iPhone (iOS 15+), portrait |
 
 ## Ce que tu dois créer (à ton nom — je ne peux pas le faire à ta place)

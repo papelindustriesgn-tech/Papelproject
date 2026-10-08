@@ -10,7 +10,7 @@
 - statuts et groupes WhatsApp ;
 - LinkedIn pour les universités et les entreprises.
 
-**Lien** : https://unyafrica.com une fois le domaine acheté, sinon https://uny-sepia.vercel.app.
+**Lien** : https://unyafrica.com
 
 **Visuels** : dans `docs/visuels/` (captures prêtes à poster, format carré et vertical).
 
