@@ -1,27 +1,31 @@
 import { expect, test } from "@playwright/test";
 import { expectNoHorizontalOverflow } from "./helpers";
 
-test("landing publique : message clair, carte d'exemple, sections et CTA", async ({ page }) => {
+test("landing publique : promesse, problème, solution, avantages, commerçants", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Prouve que tu es étudiant");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Paie moins cher");
-  // Le héros et son histoire en 3 temps
-  await expect(page.getByText("L'histoire d'Aïssatou")).toBeVisible();
-  for (const step of ["1 · Le problème", "2 · La solution : Uny", "3 · Le résultat"])
-    await expect(page.getByText(step)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Ton statut étudiant");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("vaut de l'argent");
   await expect(page.getByText("Disponible dans toute la Guinée", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: /Obtenir ma carte gratuite/ })).toBeVisible();
-  // Seule une carte d'EXEMPLE est affichée
+  // Avant / après avec le statut étudiant (exemples)
+  await expect(page.getByText("Avec ton statut étudiant", { exact: true })).toBeVisible();
+  await expect(page.getByText("Exemples illustratifs de réductions étudiantes")).toBeVisible();
+  // Le pourquoi, la solution, les commerçants
+  await expect(page.getByText("Le problème", { exact: true })).toBeVisible();
+  await expect(page.getByText("La solution : Uny")).toBeVisible();
+  await expect(page.getByText("Restaurants & fast-foods")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Devenir partenaire gratuitement/ })).toBeVisible();
   await expect(page.getByText("Exemple").first()).toBeVisible();
-  for (const id of ["histoire", "avantages", "carte"]) await expect(page.locator(`#${id}`)).toBeAttached();
+  for (const id of ["pourquoi", "avantages", "histoire", "commercants", "carte"])
+    await expect(page.locator(`#${id}`)).toBeAttached();
   await expect(page.getByText("Ton statut étudiant devient un avantage.")).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });
 
-test("« Voir comment ça marche » fait défiler vers l'histoire", async ({ page }) => {
+test("« Pourquoi Uny ? » fait défiler vers le problème", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Voir comment ça marche" }).click();
-  await expect(page).toHaveURL(/#histoire/);
+  await page.getByRole("link", { name: "Pourquoi Uny ?" }).click();
+  await expect(page).toHaveURL(/#pourquoi/);
 });
 
 test("les pages protégées redirigent vers la connexion", async ({ page }) => {

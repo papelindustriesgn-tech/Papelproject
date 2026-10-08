@@ -12,8 +12,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <Logo />
           </Link>
           <nav className="text-ink/75 hidden items-center gap-6 text-sm font-semibold md:flex" aria-label="Sections">
-            <Link href="/#histoire" className="hover:text-ink">
-              Comment ça marche
+            <Link href="/#pourquoi" className="hover:text-ink">
+              Pourquoi Uny
             </Link>
             <Link href="/#avantages" className="hover:text-ink">
               Avantages
