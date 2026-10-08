@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CalendarCheck, QrCode, ScanLine, Store } from "lucide-react";
+import { ArrowRight, CalendarCheck, Paintbrush, QrCode, ScanLine, Store } from "lucide-react";
 import { CardViewer } from "@/components/card/card-viewer";
 import { PageTitle } from "@/components/ui/section-header";
 import { VerificationBadge } from "@/components/ui/badge";
@@ -20,6 +20,12 @@ export default async function CardPage() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,28rem)_1fr]">
         <div>
           <CardViewer data={data} bigQrSvg={svg ?? ""} />
+          <Link
+            href="/carte/personnaliser"
+            className="border-line text-ink hover:border-brand-300 mt-3 flex w-full max-w-md items-center justify-center gap-2 rounded-2xl border bg-white px-4 py-3 text-sm font-semibold"
+          >
+            <Paintbrush className="text-brand-600 size-4" aria-hidden /> Personnaliser ma carte
+          </Link>
         </div>
         <div className="space-y-4">
           <div className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">

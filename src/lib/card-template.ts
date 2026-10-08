@@ -91,3 +91,53 @@ export function isLightColor(hex: string) {
 }
 
 export const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+/** Thèmes proposés aux étudiants pour personnaliser leur carte (quand l'université n'impose pas les siens). */
+export const CARD_THEMES = {
+  uny: { label: "Uny", primary: "#3b1fd1", secondary: "#6a4cff", accent: "#ffb020" },
+  ocean: { label: "Océan", primary: "#0b4f6c", secondary: "#01baef", accent: "#fbfbff" },
+  forest: { label: "Forêt", primary: "#14532d", secondary: "#22c55e", accent: "#fde047" },
+  sunset: { label: "Coucher de soleil", primary: "#b4232c", secondary: "#f97316", accent: "#fde68a" },
+  night: { label: "Nuit", primary: "#0f172a", secondary: "#334155", accent: "#38bdf8" },
+  gold: { label: "Or", primary: "#f5c542", secondary: "#e7a020", accent: "#111827" },
+  rose: { label: "Rose", primary: "#be185d", secondary: "#f472b6", accent: "#fff1f2" },
+  sky: { label: "Ciel", primary: "#bae6fd", secondary: "#e0f2fe", accent: "#0369a1" },
+} as const;
+export type CardTheme = keyof typeof CARD_THEMES;
+export const isCardTheme = (v: unknown): v is CardTheme => typeof v === "string" && v in CARD_THEMES;
+
+/** « uny » = carte Uny standard ; les autres reprennent les modèles proposés aux universités. */
+export type StudentCardLayout = "uny" | CardLayout;
+export const STUDENT_CARD_LAYOUTS: Record<StudentCardLayout, { label: string; hint: string }> = {
+  uny: { label: "Uny", hint: "La carte Uny d'origine" },
+  ...CARD_LAYOUTS,
+};
+export const isStudentCardLayout = (v: unknown): v is StudentCardLayout => typeof v === "string" && v in STUDENT_CARD_LAYOUTS;
+
+/** Champs affichés sur une carte personnalisée par l'étudiant (sans template d'université). */
+export const STUDENT_CARD_FIELDS: CardField[] = ["program", "study_level", "academic_year", "expires_at"];
+
+/**
+ * Style final de la carte d'un étudiant.
+ * - Carte publiée par l'université : couleurs et logo officiels, l'étudiant choisit seulement le modèle.
+ * - Sinon : thème et modèle choisis par l'étudiant (rien choisi = carte Uny standard).
+ */
+export function resolveStudentCardStyle(opts: {
+  university: { branding: CardBranding; template: CardTemplate } | null;
+  universityName: string;
+  layout: string | null | undefined;
+  theme: string | null | undefined;
+}): { branding: CardBranding | null; template: CardTemplate | null } {
+  const layout = isStudentCardLayout(opts.layout) ? opts.layout : null;
+  const theme = isCardTheme(opts.theme) ? opts.theme : null;
+  if (opts.university) {
+    const { branding, template } = opts.university;
+    return { branding, template: layout && layout !== "uny" ? { ...template, layout } : template };
+  }
+  if ((!layout || layout === "uny") && (!theme || theme === "uny")) return { branding: null, template: null };
+  const t = CARD_THEMES[theme ?? "uny"];
+  return {
+    branding: { name: opts.universityName, logoUrl: null, primary: t.primary, secondary: t.secondary, accent: t.accent },
+    template: { layout: !layout || layout === "uny" ? "classic" : layout, fields: STUDENT_CARD_FIELDS, labels: {} },
+  };
+}

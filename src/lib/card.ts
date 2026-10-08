@@ -4,6 +4,7 @@ import { cardVerificationUrl, qrSvg } from "@/lib/qr";
 import { universityLabel, type Profile } from "@/lib/auth";
 import { getUniversityCardConfig } from "@/lib/university";
 import { formatDate } from "@/lib/format";
+import { resolveStudentCardStyle } from "@/lib/card-template";
 import type { CardDisplayStatus, UnyCardData } from "@/components/card/uny-card";
 
 export async function getCardData(profile: Profile) {
@@ -21,8 +22,7 @@ export async function getCardData(profile: Profile) {
 
   // Carte aux couleurs de l'université pour un étudiant vérifié (inscription confirmée ou justificatif validé)
   const enrollment = card?.enrollment?.status === "verified" ? card.enrollment : null;
-  const universityId =
-    enrollment?.university_id ?? (profile.verification_status === "verified" ? profile.university_id : null);
+  const universityId = enrollment?.university_id ?? (profile.verification_status === "verified" ? profile.university_id : null);
   const config = await getUniversityCardConfig(universityId);
 
   const status: CardDisplayStatus =
@@ -43,8 +43,12 @@ export async function getCardData(profile: Profile) {
     status,
     countryCode: profile.country_code,
     qrSvg: svg,
-    branding: config?.branding ?? null,
-    template: config?.template ?? null,
+    ...resolveStudentCardStyle({
+      university: config,
+      universityName: universityLabel(profile),
+      layout: profile.card_layout,
+      theme: profile.card_theme,
+    }),
     details: {
       faculty: enrollment?.faculty ?? null,
       department: enrollment?.department ?? null,
@@ -55,5 +59,5 @@ export async function getCardData(profile: Profile) {
       expires_at: card ? formatDate(card.expires_at) : null,
     },
   };
-  return { data, card, url, svg };
+  return { data, card, url, svg, university: config };
 }

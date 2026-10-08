@@ -1055,6 +1055,8 @@ export type Database = {
         Row: {
           avatar_url: string | null;
           birth_date: string | null;
+          card_layout: string | null;
+          card_theme: string | null;
           city_id: number | null;
           country_code: string;
           created_at: string;
@@ -1082,6 +1084,8 @@ export type Database = {
         Insert: {
           avatar_url?: string | null;
           birth_date?: string | null;
+          card_layout?: string | null;
+          card_theme?: string | null;
           city_id?: number | null;
           country_code?: string;
           created_at?: string;
@@ -1109,6 +1113,8 @@ export type Database = {
         Update: {
           avatar_url?: string | null;
           birth_date?: string | null;
+          card_layout?: string | null;
+          card_theme?: string | null;
           city_id?: number | null;
           country_code?: string;
           created_at?: string;

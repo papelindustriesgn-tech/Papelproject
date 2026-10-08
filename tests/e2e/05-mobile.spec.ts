@@ -22,6 +22,7 @@ const PUBLIC = [
 const APP = [
   "/accueil",
   "/carte",
+  "/carte/personnaliser",
   "/avantages",
   "/marketplace",
   "/marketplace/nouveau",

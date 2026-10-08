@@ -1,6 +1,6 @@
 import path from "node:path";
 import { expect, test } from "@playwright/test";
-import { ADMIN, expectNoHorizontalOverflow, login, logout, signUp } from "./helpers";
+import { ADMIN, expectNoHorizontalOverflow, login, logout, serviceRest, signUp } from "./helpers";
 
 const fixture = (f: string) => path.join(__dirname, "..", "fixtures", f);
 
@@ -129,4 +129,21 @@ test("profil : modification, paramètres et sécurité", async ({ page }) => {
   await expect(page.getByText("Préférences enregistrées ✅")).toBeVisible();
   await page.goto("/profil/securite");
   await expect(page.getByText("Changer de mot de passe")).toBeVisible();
+});
+
+test("carte : l'étudiant personnalise le modèle et les couleurs de sa carte", async ({ page }) => {
+  const s = await signUp(page);
+  await page.goto("/carte");
+  await page.getByRole("link", { name: "Personnaliser ma carte" }).click();
+  await expect(page).toHaveURL(/\/carte\/personnaliser/);
+  await page.getByRole("radio", { name: /Bandeau/ }).click();
+  await page.getByRole("radio", { name: "Forêt" }).click();
+  await page.getByRole("button", { name: "Enregistrer ma carte" }).click();
+  await expect(page.getByText("Ta carte est personnalisée ✅")).toBeVisible();
+  const [p] = await (await serviceRest(`profiles?email=eq.${s.email}&select=card_layout,card_theme`)).json();
+  expect(p).toEqual({ card_layout: "band", card_theme: "forest" });
+  // Les repères Uny restent présents sur la carte personnalisée
+  await page.goto("/carte");
+  await expect(page.getByRole("img", { name: /Carte Uny de/ }).first()).toBeVisible();
+  await expect(page.getByText(/UNY-GN-\d{4}-/).first()).toBeVisible();
 });
