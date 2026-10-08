@@ -1,4 +1,4 @@
-import type { FieldSpec } from "@/lib/admin-entities";
+import { DEAL_PRICE_FIELDS, type FieldSpec } from "@/lib/admin-entities";
 import { DEAL_CATEGORIES, ITEM_CONDITIONS, MARKET_CATEGORIES } from "@/lib/constants";
 
 export type PartnerKind = "offres" | "boutique";
@@ -28,7 +28,8 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
     singular: "offre",
     plural: "Offres étudiantes",
     emoji: "🏷️",
-    intro: "Réductions et avantages réservés aux étudiants Uny. Ils les présentent avec leur carte, que tu scannes.",
+    intro:
+      "Réductions réservées aux étudiants Uny. Chaque étudiant obtient un code promo personnel dans l'app : tu le valides dans « Scanner », il paie sur ton code marchand Orange Money.",
     fields: [
       {
         name: "title",
@@ -55,6 +56,7 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
         type: "location",
         hint: "Laisse « Toute la Guinée » si l'offre est valable partout.",
       },
+      ...DEAL_PRICE_FIELDS,
       { name: "valid_from", label: "Valable à partir du", type: "date", required: true },
       { name: "valid_until", label: "Valable jusqu'au", type: "date" },
       {
@@ -70,14 +72,31 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
   boutique: {
     table: "marketplace_items",
     singular: "article",
-    plural: "Boutique (marketplace)",
+    plural: "Promos boutique (marketplace)",
     emoji: "🛍️",
-    intro: "Vends tes produits aux étudiants : ils apparaissent dans la marketplace avec le badge « Partenaire Uny ».",
+    intro:
+      "Mets tes produits en promotion pour les étudiants : indique le prix avant promo, ils apparaissent en tête de la marketplace avec le pourcentage de réduction.",
     fields: [
       { name: "images", label: "Photos", type: "images", max: 6 },
       { name: "title", label: "Nom du produit", type: "text", required: true, max: 100 },
       { name: "category", label: "Catégorie", type: "select", required: true, options: opts(MARKET_CATEGORIES) },
-      { name: "price_gnf", label: "Prix (GNF)", type: "number", required: true, min: 0, max: 1000000000, step: 500 },
+      {
+        name: "original_price_gnf",
+        label: "Prix avant promo (GNF)",
+        type: "number",
+        min: 500,
+        max: 1000000000,
+        step: 500,
+      },
+      {
+        name: "price_gnf",
+        label: "Prix promo étudiant (GNF)",
+        type: "number",
+        required: true,
+        min: 0,
+        max: 1000000000,
+        step: 500,
+      },
       { name: "is_negotiable", label: "Prix négociable", type: "checkbox" },
       {
         name: "condition",

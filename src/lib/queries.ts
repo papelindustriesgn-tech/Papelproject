@@ -27,7 +27,7 @@ export const JOB_COLUMNS =
 export const HOUSING_COLUMNS =
   "id, title, type, district, price_gnf, rooms, images, is_available, available_from, is_demo, city:cities(name)";
 export const ITEM_COLUMNS =
-  "id, title, category, price_gnf, condition, district, created_at, is_demo, status, seller_id, partner:partners(name), city:cities(name), images:marketplace_images(url, position)";
+  "id, title, category, price_gnf, original_price_gnf, condition, district, created_at, is_demo, status, seller_id, partner:partners(name), city:cities(name), images:marketplace_images(url, position)";
 
 /** Contenus d'une ville + contenus nationaux (sans ville). */
 const inCity = (cityId: number) => `city_id.eq.${cityId},city_id.is.null`;
@@ -114,6 +114,7 @@ type RawItem = {
   title: string;
   category: MarketCategory;
   price_gnf: number;
+  original_price_gnf?: number | null;
   condition: ItemCardData["condition"];
   district: string | null;
   created_at: string;
@@ -132,6 +133,7 @@ export function toItemCard(i: RawItem, verifiedSellers?: Set<string>): ItemCardD
     title: i.title,
     category: i.category,
     price_gnf: i.price_gnf,
+    original_price_gnf: i.original_price_gnf ?? null,
     condition: i.condition,
     district: i.district ?? i.city?.name ?? null,
     created_at: i.created_at,
@@ -152,9 +154,26 @@ export async function verifiedSellerSet(supabase: AnyClient, ids: (string | null
 
 async function _listMarket(
   supabase: AnyClient,
-  { category, q, max, page = 1, cityId }: { category?: string; q?: string; max?: number; page?: number; cityId?: number },
+  {
+    category,
+    q,
+    max,
+    page = 1,
+    cityId,
+    view,
+  }: {
+    category?: string;
+    q?: string;
+    max?: number;
+    page?: number;
+    cityId?: number;
+    /** promos : articles en promotion ; etudiants : annonces entre étudiants. */
+    view?: "promos" | "etudiants";
+  },
 ) {
   let query = supabase.from("marketplace_items").select(ITEM_COLUMNS).eq("status", "active");
+  if (view === "promos") query = query.not("original_price_gnf", "is", null);
+  if (view === "etudiants") query = query.is("partner_id", null);
   if (cityId) query = query.or(inCity(cityId));
   if (category) query = query.eq("category", category as MarketCategory);
   if (max) query = query.lte("price_gnf", max);

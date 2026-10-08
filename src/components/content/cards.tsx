@@ -1,3 +1,4 @@
+import { discountPercent } from "@/lib/orange-money";
 import Image from "@/components/ui/safe-image";
 import Link from "next/link";
 import { BadgeCheck, CalendarClock, MapPin, Wallet } from "lucide-react";
@@ -247,6 +248,7 @@ export type ItemCardData = {
   title: string;
   category: MarketCategory;
   price_gnf: number;
+  original_price_gnf?: number | null;
   condition: ItemCondition;
   district: string | null;
   created_at: string;
@@ -259,6 +261,7 @@ export type ItemCardData = {
 
 export function ItemCard({ item, href, compact = false }: { item: ItemCardData; href?: string; compact?: boolean }) {
   const c = MARKET_CATEGORIES[item.category];
+  const pct = discountPercent(item.original_price_gnf, item.price_gnf);
   return (
     <Link href={href ?? `/marketplace/${item.id}`} className={cn(cardBase, compact && "w-44 shrink-0 snap-start")}>
       <div className="bg-canvas relative aspect-square">
@@ -279,9 +282,17 @@ export function ItemCard({ item, href, compact = false }: { item: ItemCardData; 
           {item.is_demo && <DemoBadge />}
           {item.status === "sold" && <Badge tone="dark">Vendu</Badge>}
         </div>
+        {pct && (
+          <span className="bg-coral-500 absolute right-2 bottom-2 rounded-lg px-2 py-1 text-sm font-extrabold text-white shadow">
+            -{pct} %
+          </span>
+        )}
       </div>
       <div className="p-3">
-        <p className="text-ink truncate text-base font-extrabold">{formatGNF(item.price_gnf)}</p>
+        <p className="flex items-baseline gap-1.5 truncate">
+          <span className={cn("text-base font-extrabold", pct ? "text-coral-600" : "text-ink")}>{formatGNF(item.price_gnf)}</span>
+          {pct && <span className="text-muted truncate text-xs line-through">{formatGNF(item.original_price_gnf)}</span>}
+        </p>
         <h3 className="text-ink/90 line-clamp-1 text-sm font-semibold">{item.title}</h3>
         <p className="text-muted mt-1 flex items-center gap-1 truncate text-xs">
           {(item.verifiedSeller || item.partnerName) && (

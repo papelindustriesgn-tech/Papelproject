@@ -357,6 +357,8 @@ export type Database = {
           is_demo: boolean;
           is_featured: boolean;
           partner_id: string;
+          price_gnf: number | null;
+          promo_price_gnf: number | null;
           requires_verification: boolean;
           title: string;
           updated_at: string;
@@ -378,6 +380,8 @@ export type Database = {
           is_demo?: boolean;
           is_featured?: boolean;
           partner_id: string;
+          price_gnf?: number | null;
+          promo_price_gnf?: number | null;
           requires_verification?: boolean;
           title: string;
           updated_at?: string;
@@ -399,6 +403,8 @@ export type Database = {
           is_demo?: boolean;
           is_featured?: boolean;
           partner_id?: string;
+          price_gnf?: number | null;
+          promo_price_gnf?: number | null;
           requires_verification?: boolean;
           title?: string;
           updated_at?: string;
@@ -754,6 +760,7 @@ export type Database = {
           is_demo: boolean;
           is_negotiable: boolean;
           moderation_note: string | null;
+          original_price_gnf: number | null;
           partner_id: string | null;
           price_gnf: number;
           seller_id: string | null;
@@ -774,6 +781,7 @@ export type Database = {
           is_demo?: boolean;
           is_negotiable?: boolean;
           moderation_note?: string | null;
+          original_price_gnf?: number | null;
           partner_id?: string | null;
           price_gnf: number;
           seller_id?: string | null;
@@ -794,6 +802,7 @@ export type Database = {
           is_demo?: boolean;
           is_negotiable?: boolean;
           moderation_note?: string | null;
+          original_price_gnf?: number | null;
           partner_id?: string | null;
           price_gnf?: number;
           seller_id?: string | null;
@@ -976,6 +985,7 @@ export type Database = {
           is_demo: boolean;
           logo_url: string | null;
           name: string;
+          orange_money_merchant_code: string | null;
           phone: string | null;
           updated_at: string;
           website: string | null;
@@ -992,6 +1002,7 @@ export type Database = {
           is_demo?: boolean;
           logo_url?: string | null;
           name: string;
+          orange_money_merchant_code?: string | null;
           phone?: string | null;
           updated_at?: string;
           website?: string | null;
@@ -1008,6 +1019,7 @@ export type Database = {
           is_demo?: boolean;
           logo_url?: string | null;
           name?: string;
+          orange_money_merchant_code?: string | null;
           phone?: string | null;
           updated_at?: string;
           website?: string | null;
@@ -1159,6 +1171,83 @@ export type Database = {
             columns: ["university_id"];
             isOneToOne: false;
             referencedRelation: "universities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      promo_codes: {
+        Row: {
+          amount_gnf: number | null;
+          code: string;
+          created_at: string;
+          deal_id: string;
+          expires_at: string;
+          id: string;
+          partner_id: string;
+          payment_method: string | null;
+          payment_reference: string | null;
+          status: string;
+          student_id: string;
+          used_at: string | null;
+          used_by: string | null;
+        };
+        Insert: {
+          amount_gnf?: number | null;
+          code: string;
+          created_at?: string;
+          deal_id: string;
+          expires_at: string;
+          id?: string;
+          partner_id: string;
+          payment_method?: string | null;
+          payment_reference?: string | null;
+          status?: string;
+          student_id: string;
+          used_at?: string | null;
+          used_by?: string | null;
+        };
+        Update: {
+          amount_gnf?: number | null;
+          code?: string;
+          created_at?: string;
+          deal_id?: string;
+          expires_at?: string;
+          id?: string;
+          partner_id?: string;
+          payment_method?: string | null;
+          payment_reference?: string | null;
+          status?: string;
+          student_id?: string;
+          used_at?: string | null;
+          used_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "promo_codes_deal_id_fkey";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "promo_codes_partner_id_fkey";
+            columns: ["partner_id"];
+            isOneToOne: false;
+            referencedRelation: "partners";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "promo_codes_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "promo_codes_used_by_fkey";
+            columns: ["used_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -2013,11 +2102,14 @@ export type Database = {
       };
       apply_student_email_policy: { Args: Record<PropertyKey, never>; Returns: number };
       card_template_fields: { Args: Record<PropertyKey, never>; Returns: string[] };
+      claim_promo_code: { Args: { p_deal: string }; Returns: Json };
       current_academic_year: { Args: Record<PropertyKey, never>; Returns: string };
+      declare_promo_payment: { Args: { p_code: string; p_reference: string }; Returns: undefined };
       expire_enrollments: { Args: Record<PropertyKey, never>; Returns: number };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_partner_member: { Args: { p_partner: string }; Returns: boolean };
       is_university_member: { Args: { p_university: number }; Returns: boolean };
+      new_promo_code: { Args: Record<PropertyKey, never>; Returns: string };
       next_uny_id: { Args: { p_country: string }; Returns: string };
       partner_job_applications: {
         Args: { p_job: string };
@@ -2034,6 +2126,17 @@ export type Database = {
           university: string;
           verification_status: Database["public"]["Enums"]["verification_status"];
         }[];
+      };
+      partner_redeem_promo_code: {
+        Args: {
+          p_amount?: number;
+          p_code: string;
+          p_partner: string;
+          p_payment_method?: string;
+          p_redeem?: boolean;
+          p_reference?: string;
+        };
+        Returns: Json;
       };
       partner_validate_card: { Args: { p_deal?: string; p_partner: string; p_token?: string; p_uny_id?: string }; Returns: Json };
       publish_card_template: {

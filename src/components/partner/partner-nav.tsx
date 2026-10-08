@@ -7,7 +7,7 @@ import { cn } from "@/lib/cn";
 
 const ALL = [
   { href: "/partenaire", label: "Tableau de bord", short: "Accueil", icon: LayoutDashboard },
-  { href: "/partenaire/scanner", label: "Scanner une carte", short: "Scanner", icon: ScanLine },
+  { href: "/partenaire/scanner", label: "Scanner carte / code promo", short: "Scanner", icon: ScanLine },
   { href: "/partenaire/offres", label: "Offres étudiantes", short: "Offres", icon: Tag },
   { href: "/partenaire/boutique", label: "Boutique", short: "Boutique", icon: ShoppingBag },
   { href: "/partenaire/profil", label: "Ma fiche partenaire", short: "Fiche", icon: Building2 },

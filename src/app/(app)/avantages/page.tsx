@@ -35,7 +35,15 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="animate-fade-up">
-      <PageTitle title="Avantages" subtitle="Réductions et tarifs étudiants chez les partenaires Uny." />
+      <PageTitle
+        title="Avantages"
+        subtitle="Obtiens ton code promo, paie avec Orange Money chez les partenaires Uny."
+        action={
+          <LinkButton href="/avantages/mes-codes" variant="outline" size="sm">
+            Mes codes
+          </LinkButton>
+        }
+      />
       <div className="space-y-3">
         <SearchBar
           pathname="/avantages"

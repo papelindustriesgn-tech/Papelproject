@@ -27,7 +27,7 @@ export default async function PartnerHome() {
   const count = (table: "marketplace_items") =>
     supabase.from(table).select("id", { count: "exact", head: true }).eq("partner_id", partner.id);
 
-  const [today, month, recent, deals, items] = await Promise.all([
+  const [today, month, recent, deals, items, promos, fiche] = await Promise.all([
     supabase
       .from("card_validations")
       .select("id", { count: "exact", head: true })
@@ -49,7 +49,16 @@ export default async function PartnerHome() {
       .limit(8),
     supabase.from("deals").select("id, title, view_count, is_active, valid_until").eq("partner_id", partner.id),
     count("marketplace_items"),
+    supabase
+      .from("promo_codes")
+      .select("amount_gnf")
+      .eq("partner_id", partner.id)
+      .eq("status", "used")
+      .gte("used_at", monthAgo)
+      .limit(5000),
+    supabase.from("partners").select("orange_money_merchant_code").eq("id", partner.id).single(),
   ]);
+  const promoRevenue = (promos.data ?? []).reduce((s, p) => s + (p.amount_gnf ?? 0), 0);
 
   const uniqueStudents = new Set((month.data ?? []).map((r) => r.student_id)).size;
   const dealViews = (deals.data ?? []).reduce((s, d) => s + d.view_count, 0);
@@ -80,13 +89,29 @@ export default async function PartnerHome() {
           <ScanLine className="size-8" aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-lg font-extrabold">Scanner une carte étudiante</span>
+          <span className="block text-lg font-extrabold">Valider un code promo ou une carte</span>
           <span className="text-brand-100 block text-sm">Vérifie en 2 secondes qu&apos;un client est bien étudiant.</span>
         </span>
         <ArrowRight className="size-6 shrink-0" aria-hidden />
       </Link>
 
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {!fiche.data?.orange_money_merchant_code && (
+        <FormMessage type="info">
+          Ajoute ton code marchand Orange Money dans{" "}
+          <Link href="/partenaire/profil" className="font-bold underline">
+            ta fiche
+          </Link>{" "}
+          : les étudiants pourront payer tes promos directement depuis l&apos;app Uny.
+        </FormMessage>
+      )}
+
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <StatCard
+          label="Codes promo utilisés (30 j)"
+          value={promos.data?.length ?? 0}
+          hint={promoRevenue ? `${promoRevenue.toLocaleString("fr-FR")} GNF encaissés` : undefined}
+          tone="brand"
+        />
         <StatCard label="Cartes validées aujourd'hui" value={today.count ?? 0} tone="brand" />
         <StatCard label="Étudiants servis (30 j)" value={uniqueStudents} hint={`${month.data?.length ?? 0} passages`} />
         <StatCard label="Vues de tes offres" value={dealViews} tone="mint" />

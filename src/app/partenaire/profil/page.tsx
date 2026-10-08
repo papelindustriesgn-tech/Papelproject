@@ -46,7 +46,7 @@ export default async function PartnerProfile() {
         </p>
         <p className="mt-2">
           <Link href="/conditions" className="text-brand-600 font-semibold">
-            Conditions d&apos;utilisation
+            Conditions générales
           </Link>
           {" · "}
           <Link href="/confidentialite" className="text-brand-600 font-semibold">

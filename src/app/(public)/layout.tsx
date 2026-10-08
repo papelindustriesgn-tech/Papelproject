@@ -71,7 +71,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <ul className="text-muted mt-3 space-y-2">
               <li>
                 <Link href="/conditions" className="hover:text-ink">
-                  Conditions d&apos;utilisation
+                  Conditions générales
                 </Link>
               </li>
               <li>

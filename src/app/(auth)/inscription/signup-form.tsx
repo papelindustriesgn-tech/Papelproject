@@ -256,7 +256,7 @@ export function SignUpForm({ universities, cities }: { universities: University[
           <span>
             J&apos;accepte les{" "}
             <Link href="/conditions" className="text-brand-600 font-semibold underline" target="_blank">
-              conditions d&apos;utilisation
+              conditions générales d&apos;utilisation
             </Link>{" "}
             et la{" "}
             <Link href="/confidentialite" className="text-brand-600 font-semibold underline" target="_blank">

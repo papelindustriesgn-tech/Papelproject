@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "@/components/ui/safe-image";
 import { notFound } from "next/navigation";
-import { CalendarDays, CreditCard, MapPin, Phone, ShieldCheck } from "lucide-react";
+import { CalendarDays, MapPin, Phone, ShieldCheck, Ticket } from "lucide-react";
 import { BackLink } from "@/components/ui/back-link";
 import { Badge, DemoBadge } from "@/components/ui/badge";
 import { DemoBanner } from "@/components/ui/demo-banner";
@@ -11,7 +11,10 @@ import { ViewTracker } from "@/components/content/view-tracker";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { DEAL_CATEGORIES } from "@/lib/constants";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatGNF } from "@/lib/format";
+import { discountPercent } from "@/lib/orange-money";
+import { PromoPanel } from "./promo-panel";
+import Link from "next/link";
 import { z } from "zod";
 
 type Props = { params: Promise<{ id: string }> };
@@ -21,7 +24,9 @@ async function load(id: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("deals")
-    .select("*, partner:partners(id, name, logo_url, description, district, address, phone, website, is_demo)")
+    .select(
+      "*, partner:partners(id, name, logo_url, description, district, address, phone, website, is_demo, orange_money_merchant_code)",
+    )
     .eq("id", id)
     .maybeSingle();
   return data;
@@ -37,12 +42,20 @@ export default async function DealPage({ params }: Props) {
   const [deal, profile] = await Promise.all([load(id), requireProfile()]);
   if (!deal) notFound();
   const supabase = await createClient();
-  const { data: fav } = await supabase
-    .from("deal_favorites")
-    .select("deal_id")
-    .eq("deal_id", id)
-    .eq("user_id", profile.id)
-    .maybeSingle();
+  const [{ data: fav }, { data: promo }] = await Promise.all([
+    supabase.from("deal_favorites").select("deal_id").eq("deal_id", id).eq("user_id", profile.id).maybeSingle(),
+    supabase
+      .from("promo_codes")
+      .select("code, expires_at, payment_reference")
+      .eq("deal_id", id)
+      .eq("student_id", profile.id)
+      .eq("status", "active")
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  const pct = discountPercent(deal.price_gnf, deal.promo_price_gnf);
   const cat = DEAL_CATEGORIES[deal.category];
   const verified = profile.verification_status === "verified";
   const expired = deal.valid_until ? new Date(`${deal.valid_until}T23:59:59`) < new Date() : false;
@@ -97,6 +110,15 @@ export default async function DealPage({ params }: Props) {
         </div>
       </div>
 
+      {deal.promo_price_gnf != null && (
+        <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-2xl bg-white p-4 shadow-[var(--shadow-card)]">
+          <span className="text-muted text-sm font-semibold">Prix étudiant</span>
+          <span className="text-brand-700 text-2xl font-extrabold">{formatGNF(deal.promo_price_gnf)}</span>
+          {deal.price_gnf != null && <span className="text-muted text-sm line-through">{formatGNF(deal.price_gnf)}</span>}
+          {pct && <span className="bg-coral-500 rounded-lg px-2 py-0.5 text-xs font-extrabold text-white">-{pct} %</span>}
+        </div>
+      )}
+
       <section className="mt-6 space-y-5 rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <div>
           <h2 className="font-bold">L&apos;offre</h2>
@@ -121,20 +143,32 @@ export default async function DealPage({ params }: Props) {
         )}
       </section>
 
-      <div className="sticky bottom-20 z-20 mt-6 lg:bottom-4">
+      <div className="mt-6">
         {expired ? (
           <p className="bg-canvas text-muted ring-line rounded-2xl p-4 text-center text-sm font-semibold ring-1">
             Cette offre a expiré.
           </p>
         ) : verified || !deal.requires_verification ? (
-          <LinkButton href="/carte" size="lg" className="w-full">
-            <CreditCard className="size-5" /> Présenter ma carte
-          </LinkButton>
+          <PromoPanel
+            dealId={deal.id}
+            initial={
+              promo ? { code: promo.code, expiresAt: promo.expires_at, reference: promo.payment_reference ?? undefined } : {}
+            }
+            partnerName={deal.partner?.name ?? "le partenaire"}
+            merchantCode={deal.partner?.orange_money_merchant_code ?? null}
+            amount={deal.promo_price_gnf}
+          />
         ) : (
           <LinkButton href="/profil/verification" size="lg" variant="mango" className="w-full">
             <ShieldCheck className="size-5" /> Vérifier mon statut pour en profiter
           </LinkButton>
         )}
+        <Link
+          href="/avantages/mes-codes"
+          className="text-brand-600 mt-3 flex items-center justify-center gap-1 text-sm font-semibold"
+        >
+          <Ticket className="size-4" aria-hidden /> Mes codes promo
+        </Link>
       </div>
     </article>
   );

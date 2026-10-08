@@ -24,7 +24,7 @@ export default async function SettingsPage() {
         <h2 className="mb-2 font-bold">Informations</h2>
         <p>
           <Link href="/conditions" className="text-brand-600 font-semibold">
-            Conditions d&apos;utilisation
+            Conditions générales
           </Link>
         </p>
         <p>

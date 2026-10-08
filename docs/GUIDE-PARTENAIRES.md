@@ -19,13 +19,21 @@ Si l'email appartient déjà à un compte Uny (par exemple un étudiant qui tien
 
 | Rubrique | Contenu |
 | --- | --- |
-| **Tableau de bord** | Cartes validées aujourd'hui, étudiants servis sur 30 jours, vues des offres, derniers passages |
-| **Scanner** | Scan du QR code de la carte Uny avec la caméra, ou saisie du numéro (UNY-GN-2026-7K3QXN, ou l’ancien format GN-2026-000145). Le partenaire choisit l'offre utilisée. |
-| **Offres étudiantes** | Réductions affichées dans « Avantages » |
-| **Boutique** | Produits vendus dans la marketplace, avec le badge « Partenaire Uny » |
-| **Ma fiche** | Nom, logo, description, ville, quartier, adresse, téléphone ; changement de mot de passe ; suppression du compte |
+| **Tableau de bord** | Codes promo utilisés et montants encaissés sur 30 jours, cartes validées aujourd'hui, étudiants servis, vues des offres, derniers passages |
+| **Scanner** | Validation des **codes promo** (UNY-XXXX-XX). Scan du QR code de la carte Uny avec la caméra, ou saisie du numéro (UNY-GN-2026-7K3QXN, ou l’ancien format GN-2026-000145). Le partenaire choisit l'offre utilisée. |
+| **Offres étudiantes** | Réductions affichées dans « Avantages », avec prix normal et prix étudiant facultatifs |
+| **Boutique** | Produits en promotion : prix avant promo et prix étudiant. Ils apparaissent en premier dans la marketplace avec le pourcentage de réduction. |
+| **Ma fiche** | Nom, logo, description, ville, quartier, adresse, téléphone, **code marchand Orange Money** ; changement de mot de passe ; suppression du compte |
 
-## 3. Ce qui s'affiche au scan
+## 3. Codes promo et paiement Orange Money
+
+1. L'étudiant ouvre une offre et appuie sur **« Obtenir mon code promo »**. Le code est personnel, valable 7 jours (sans dépasser la fin de l'offre) et utilisable une seule fois.
+2. Si le partenaire a renseigné son **code marchand Orange Money** (Ma fiche), l'application affiche ce code et le montant (prix étudiant). L'étudiant paie directement depuis son téléphone (#144# ou application Orange Money), puis peut saisir la référence de la transaction reçue par SMS.
+3. Au comptoir, le partenaire saisit le code dans **Scanner → Valider un code promo**. Il voit le nom de l'étudiant, l'offre, le prix et la référence déclarée. Il **vérifie le paiement sur son relevé Orange Money**, puis valide : le code passe à « utilisé » et l'étudiant reçoit une notification.
+
+**Uny n'encaisse rien et ne prend aucune commission** : l'argent va directement de l'étudiant au partenaire. Aucune API Orange Money n'est raccordée pour l'instant, donc aucun paiement n'est confirmé automatiquement. Le raccordement (confirmation automatique) se fera seulement après un accord signé avec Orange Money.
+
+## 4. Ce qui s'affiche au scan
 
 | Résultat | Signification |
 | --- | --- |

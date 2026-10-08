@@ -9,6 +9,8 @@ export type FieldSpec =
       max?: number;
       placeholder?: string;
       hint?: string;
+      /** Chiffres uniquement (espaces ignorés), entre min et max chiffres. */
+      digits?: { min: number; max: number };
     }
   | { name: string; label: string; type: "number"; required?: boolean; min?: number; max?: number; step?: number }
   | { name: string; label: string; type: "date"; required?: boolean }
@@ -59,6 +61,22 @@ const flags: FieldSpec[] = [
   },
 ];
 
+export const ORANGE_MONEY_FIELD: FieldSpec = {
+  name: "orange_money_merchant_code",
+  label: "Code marchand Orange Money",
+  type: "text",
+  max: 16,
+  digits: { min: 4, max: 12 },
+  placeholder: "123456",
+  hint: "Les étudiants paient directement sur ce code marchand. Uny ne touche jamais à l'argent.",
+};
+
+/** Prix facultatifs d'une offre : affichés aux étudiants et proposés pour le paiement Orange Money. */
+export const DEAL_PRICE_FIELDS: FieldSpec[] = [
+  { name: "price_gnf", label: "Prix normal (GNF)", type: "number", min: 500, max: 1000000000, step: 500 },
+  { name: "promo_price_gnf", label: "Prix étudiant (GNF)", type: "number", min: 0, max: 1000000000, step: 500 },
+];
+
 export const ENTITIES: Record<EntityKey, EntityConfig> = {
   partenaires: {
     table: "partners",
@@ -75,6 +93,7 @@ export const ENTITIES: Record<EntityKey, EntityConfig> = {
       { name: "address", label: "Adresse", type: "text", max: 200 },
       { name: "phone", label: "Téléphone", type: "tel", max: 30 },
       { name: "website", label: "Site web", type: "url", max: 200 },
+      ORANGE_MONEY_FIELD,
       ...flags,
     ],
   },
@@ -101,6 +120,7 @@ export const ENTITIES: Record<EntityKey, EntityConfig> = {
       { name: "description", label: "Description", type: "textarea", max: 2000 },
       { name: "conditions", label: "Conditions", type: "textarea", max: 2000 },
       { name: "location", label: "Ville et quartier", type: "location", hint: "Sans ville : offre valable partout en Guinée." },
+      ...DEAL_PRICE_FIELDS,
       { name: "valid_from", label: "Valable à partir du", type: "date", required: true },
       { name: "valid_until", label: "Valable jusqu'au", type: "date" },
       { name: "is_featured", label: "Mettre en avant (« Meilleures réductions »)", type: "checkbox" },

@@ -13,6 +13,7 @@ import { PARTNER_COOKIE, requirePartner } from "@/lib/partner";
 import { isPartnerKind, PARTNER_ENTITIES, type PartnerKind } from "@/lib/partner-entities";
 import { ENTITIES } from "@/lib/admin-entities";
 import { normalizeUnyId, UNY_ID_EXAMPLE } from "@/lib/uny-id";
+import { isPaymentMethod } from "@/lib/orange-money";
 
 function refresh(kind?: PartnerKind) {
   updateTag(CONTENT_TAG);
@@ -193,4 +194,56 @@ export async function switchPartner(id: string) {
   if (!z.uuid().safeParse(id).success) return;
   (await cookies()).set(PARTNER_COOKIE, id, { path: "/", httpOnly: true, sameSite: "lax", maxAge: 60 * 60 * 24 * 365 });
   revalidatePath("/partenaire", "layout");
+}
+
+// -----------------------------------------------------------------------------
+// Codes promo : consultation puis validation (avec le paiement reçu)
+// -----------------------------------------------------------------------------
+export type PromoCheck = {
+  found: boolean;
+  state?: "active" | "used" | "expired" | "cancelled" | "redeemed";
+  code?: string;
+  deal_title?: string;
+  discount_label?: string;
+  price_gnf?: number | null;
+  promo_price_gnf?: number | null;
+  first_name?: string;
+  last_name?: string;
+  avatar_url?: string | null;
+  uny_id?: string;
+  expires_at?: string;
+  used_at?: string | null;
+  payment_reference?: string | null;
+};
+export type PromoRedeemState = { result?: PromoCheck; error?: string; at?: number };
+
+const PROMO_CODE = /^UNY-[2-9A-HJKMNP-TV-Z]{4}-[2-9A-HJKMNP-TV-Z]{2}$/;
+
+export async function redeemPromo(_prev: PromoRedeemState, formData: FormData): Promise<PromoRedeemState> {
+  const { partner } = await requirePartner();
+  const raw = String(formData.get("promo_code") ?? "")
+    .toUpperCase()
+    .replace(/[^0-9A-Z]/g, "");
+  const code = raw.length === 9 && raw.startsWith("UNY") ? `UNY-${raw.slice(3, 7)}-${raw.slice(7)}` : "";
+  if (!PROMO_CODE.test(code)) return { error: "Code non reconnu (format UNY-XXXX-XX).", at: Date.now() };
+
+  const redeem = formData.get("redeem") === "1";
+  const method = String(formData.get("payment_method") ?? "");
+  const amountRaw = String(formData.get("amount") ?? "").replace(/\s/g, "");
+  const amount = amountRaw ? Number(amountRaw) : null;
+  if (amount !== null && (!Number.isInteger(amount) || amount < 0 || amount > 1_000_000_000))
+    return { error: "Montant invalide.", at: Date.now() };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("partner_redeem_promo_code", {
+    p_partner: partner.id,
+    p_code: code,
+    p_redeem: redeem,
+    p_payment_method: redeem && isPaymentMethod(method) ? method : undefined,
+    p_reference: redeem ? String(formData.get("reference") ?? "").slice(0, 60) || undefined : undefined,
+    p_amount: redeem && amount !== null ? amount : undefined,
+  });
+  if (error) return { error: error.code === "P0001" ? error.message : "Vérification impossible. Réessaie.", at: Date.now() };
+  if (redeem) revalidatePath("/partenaire");
+  return { result: data as PromoCheck, at: Date.now() };
 }

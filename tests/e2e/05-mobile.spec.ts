@@ -27,6 +27,7 @@ const APP = [
   "/marketplace",
   "/marketplace/nouveau",
   "/marketplace/mes-annonces",
+  "/avantages/mes-codes",
   "/profil",
   "/profil/modifier",
   "/profil/verification",

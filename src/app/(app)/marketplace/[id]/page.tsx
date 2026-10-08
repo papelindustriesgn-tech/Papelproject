@@ -16,6 +16,8 @@ import { createClient } from "@/lib/supabase/server";
 import { ITEM_CONDITIONS, MARKET_CATEGORIES } from "@/lib/constants";
 import { formatGNF, timeAgo, whatsappLink } from "@/lib/format";
 import { param, type SearchParams } from "@/lib/url";
+import { discountPercent } from "@/lib/orange-money";
+import { OrangeMoneyPay } from "@/components/payment/orange-money-pay";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<SearchParams> };
 
@@ -24,7 +26,7 @@ async function load(id: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("marketplace_items")
-    .select("*, images:marketplace_images(url, position), partner:partners(name, logo_url, category)")
+    .select("*, images:marketplace_images(url, position), partner:partners(name, logo_url, category, orange_money_merchant_code)")
     .eq("id", id)
     .maybeSingle();
   return data;
@@ -48,6 +50,7 @@ export default async function ItemPage({ params, searchParams }: Props) {
   const mine = item.seller_id === profile.id && !item.partner_id;
   const images = [...(item.images ?? [])].sort((a, b) => a.position - b.position).map((i) => i.url);
   const c = MARKET_CATEGORIES[item.category];
+  const pct = discountPercent(item.original_price_gnf, item.price_gnf);
 
   return (
     <article className="animate-fade-up mx-auto max-w-3xl">
@@ -79,9 +82,17 @@ export default async function ItemPage({ params, searchParams }: Props) {
           {item.is_demo && <DemoBadge />}
         </div>
         <h1 className="mt-2 text-2xl font-extrabold tracking-tight">{item.title}</h1>
-        <p className="text-brand-700 mt-1 text-2xl font-extrabold">
-          {formatGNF(item.price_gnf)}
-          {item.is_negotiable && <span className="text-muted ml-2 text-sm font-semibold">négociable</span>}
+        <p className="mt-1 flex flex-wrap items-baseline gap-x-2">
+          <span className={pct ? "text-coral-600 text-2xl font-extrabold" : "text-brand-700 text-2xl font-extrabold"}>
+            {formatGNF(item.price_gnf)}
+          </span>
+          {pct && (
+            <>
+              <span className="text-muted text-base line-through">{formatGNF(item.original_price_gnf)}</span>
+              <span className="bg-coral-500 rounded-lg px-2 py-0.5 text-sm font-extrabold text-white">-{pct} %</span>
+            </>
+          )}
+          {item.is_negotiable && <span className="text-muted text-sm font-semibold">négociable</span>}
         </p>
         <p className="text-muted mt-2 flex items-center gap-1.5 text-sm">
           <MapPin className="size-4" aria-hidden /> {item.district ?? "Guinée"} · {timeAgo(item.created_at)}
@@ -151,6 +162,15 @@ export default async function ItemPage({ params, searchParams }: Props) {
                 >
                   <MessageCircle className="size-5" /> WhatsApp
                 </a>
+              </div>
+            )}
+            {item.partner?.orange_money_merchant_code && item.status === "active" && !item.is_demo && (
+              <div className="border-line mt-4 border-t pt-4">
+                <OrangeMoneyPay
+                  merchantCode={item.partner.orange_money_merchant_code}
+                  merchantName={item.partner.name}
+                  amount={item.price_gnf}
+                />
               </div>
             )}
             <p className="text-muted mt-3 text-xs">

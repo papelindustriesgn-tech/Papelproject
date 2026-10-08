@@ -81,6 +81,12 @@ export function parseField(f: FieldSpec, formData: FormData, cities: City[]): Pa
     default: {
       if (!s) return required ? { error: "Champ requis" } : one(null);
       if ("max" in f && f.max && s.length > f.max) return { error: `${f.max} caractères maximum` };
+      if ("digits" in f && f.digits) {
+        const d = s.replace(/\s/g, "");
+        if (!/^\d+$/.test(d) || d.length < f.digits.min || d.length > f.digits.max)
+          return { error: `Chiffres uniquement (${f.digits.min} à ${f.digits.max})` };
+        return one(d);
+      }
       if (f.type === "url" && !z.url().safeParse(s).success) return { error: "URL invalide (https://…)" };
       if (f.type === "email" && !z.email().safeParse(s).success) return { error: "Email invalide" };
       return one(s);
@@ -97,6 +103,13 @@ export function parseFields(fields: FieldSpec[], formData: FormData, cities: Cit
     if (r.error) fieldErrors[f.name] = r.error;
     else Object.assign(row, r.values);
   }
+  // Prix promo : toujours inférieur au prix de référence
+  const lower = (low: string, high: string) => {
+    if (typeof row[low] === "number" && typeof row[high] === "number" && (row[low] as number) >= (row[high] as number))
+      fieldErrors[low === "promo_price_gnf" ? low : high] = "Le prix promo doit être inférieur au prix normal";
+  };
+  lower("promo_price_gnf", "price_gnf");
+  lower("price_gnf", "original_price_gnf");
   // Champs texte non nulls en base
   for (const k of ["description", "conditions"]) if (k in row && row[k] === null) row[k] = "";
   return { row, fieldErrors };
