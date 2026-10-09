@@ -972,6 +972,63 @@ export type Database = {
           },
         ];
       };
+      partner_survey_responses: {
+        Row: {
+          answered_by: string | null;
+          comments: string | null;
+          created_at: string;
+          discount_range: string;
+          expectations: string[];
+          expected_students: string;
+          offer_types: string[];
+          partner_id: string;
+          payment_methods: string[];
+          updated_at: string;
+          would_pay: string;
+        };
+        Insert: {
+          answered_by?: string | null;
+          comments?: string | null;
+          created_at?: string;
+          discount_range: string;
+          expectations?: string[];
+          expected_students: string;
+          offer_types?: string[];
+          partner_id: string;
+          payment_methods?: string[];
+          updated_at?: string;
+          would_pay: string;
+        };
+        Update: {
+          answered_by?: string | null;
+          comments?: string | null;
+          created_at?: string;
+          discount_range?: string;
+          expectations?: string[];
+          expected_students?: string;
+          offer_types?: string[];
+          partner_id?: string;
+          payment_methods?: string[];
+          updated_at?: string;
+          would_pay?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "partner_survey_responses_answered_by_fkey";
+            columns: ["answered_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "partner_survey_responses_partner_id_fkey";
+            columns: ["partner_id"];
+            isOneToOne: true;
+            referencedRelation: "partners";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       partners: {
         Row: {
           address: string | null;
@@ -1535,43 +1592,61 @@ export type Database = {
       };
       survey_responses: {
         Row: {
+          benefit_types: string[];
+          categories: string[];
           contact_ok: boolean;
           created_at: string;
+          min_discount: string | null;
           missing: string | null;
           modules: string[];
-          nps: number;
+          monthly_budget: string | null;
+          nps: number | null;
           partners: string | null;
-          rating: number;
-          source: string;
+          payment_pref: string | null;
+          rating: number | null;
+          source: string | null;
           updated_at: string;
           user_id: string;
-          would_pay: string;
+          version: number;
+          would_pay: string | null;
         };
         Insert: {
+          benefit_types?: string[];
+          categories?: string[];
           contact_ok?: boolean;
           created_at?: string;
+          min_discount?: string | null;
           missing?: string | null;
           modules?: string[];
-          nps: number;
+          monthly_budget?: string | null;
+          nps?: number | null;
           partners?: string | null;
-          rating: number;
-          source: string;
+          payment_pref?: string | null;
+          rating?: number | null;
+          source?: string | null;
           updated_at?: string;
           user_id: string;
-          would_pay?: string;
+          version?: number;
+          would_pay?: string | null;
         };
         Update: {
+          benefit_types?: string[];
+          categories?: string[];
           contact_ok?: boolean;
           created_at?: string;
+          min_discount?: string | null;
           missing?: string | null;
           modules?: string[];
-          nps?: number;
+          monthly_budget?: string | null;
+          nps?: number | null;
           partners?: string | null;
-          rating?: number;
-          source?: string;
+          payment_pref?: string | null;
+          rating?: number | null;
+          source?: string | null;
           updated_at?: string;
           user_id?: string;
-          would_pay?: string;
+          version?: number;
+          would_pay?: string | null;
         };
         Relationships: [
           {

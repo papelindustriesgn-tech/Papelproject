@@ -69,13 +69,17 @@ test("enquête d'avis : invitation, réponse, résultats admin et export", async
   await page.getByRole("button", { name: "Envoyer mon avis" }).click();
   await expect(page.getByText("Il manque quelques réponses.")).toBeVisible();
 
-  await page.locator("label", { hasText: "WhatsApp" }).click();
-  await page.getByLabel("4 sur 5").check({ force: true });
-  await page.locator("label", { hasText: "Jobs & stages" }).click();
-  await page.locator("label", { hasText: "Logement" }).click();
-  await page.locator("label").filter({ hasText: /^9$/ }).click();
-  await page.locator("label", { hasText: "Peut-être" }).click();
-  await page.fill("textarea[name=missing]", `Plus de stages ${run}`);
+  await page.locator("label", { hasText: "Restauration" }).click();
+  await page.locator("label", { hasText: "Tech" }).click();
+  await page.locator("label", { hasText: "Réduction en %" }).click();
+  await page.locator("label", { hasText: "Livraison offerte" }).click();
+  await page
+    .locator("label")
+    .filter({ hasText: /^30 %$/ })
+    .click();
+  await page.locator("label", { hasText: "100 000 à 300 000 GNF" }).click();
+  await page.locator("label", { hasText: "Orange Money" }).click();
+  await page.fill("textarea[name=missing]", `-30 % sur internet ${run}`);
   await page.getByText("J'accepte d'être contacté(e)").click();
   await page.getByRole("button", { name: "Envoyer mon avis" }).click();
   await expect(page.getByText("Merci pour ton avis !")).toBeVisible();
@@ -89,11 +93,14 @@ test("enquête d'avis : invitation, réponse, résultats admin et export", async
   await login(page, ADMIN.email, ADMIN.password);
   await page.goto("/admin/avis");
   await expect(page.getByRole("heading", { name: "Avis des inscrits" })).toBeVisible();
-  await expect(page.getByText(`Plus de stages ${run}`)).toBeVisible();
+  await expect(page.getByText(`-30 % sur internet ${run}`)).toBeVisible();
   await expect(page.getByText(s.email)).toBeVisible();
+  await expect(page.getByText("Domaines où ils veulent des réductions")).toBeVisible();
   const res = await page.request.get("/admin/avis/export");
   expect(res.headers()["content-type"]).toContain("text/csv");
-  expect(await res.text()).toContain(`Plus de stages ${run}`);
+  const csv = await res.text();
+  expect(csv).toContain(`-30 % sur internet ${run}`);
+  expect(csv).toContain("Restauration, Tech");
 });
 
 test("admin : contacter les inscrits par WhatsApp ou SMS", async ({ page }) => {

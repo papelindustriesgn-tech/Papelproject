@@ -71,6 +71,7 @@ const PARTNER_PAGES = [
   "/partenaire/boutique",
   "/partenaire/boutique/nouveau",
   "/partenaire/publier",
+  "/partenaire/avis",
   "/partenaire/profil",
 ];
 

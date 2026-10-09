@@ -4,17 +4,25 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { zodFieldErrors, type FormState } from "@/lib/actions/types";
-import { SURVEY_MODULES, SURVEY_SOURCES, SURVEY_WOULD_PAY } from "@/lib/survey";
+import {
+  BENEFIT_TYPES,
+  SURVEY_BUDGET,
+  SURVEY_CATEGORIES,
+  SURVEY_MIN_DISCOUNT,
+  SURVEY_PAYMENT,
+  SURVEY_VERSION,
+  type Option,
+} from "@/lib/survey";
 
-const values = <T extends readonly { value: string }[]>(list: T) =>
-  list.map((o) => o.value) as [T[number]["value"], ...T[number]["value"][]];
+const values = (list: readonly Option[]) => list.map((o) => o.value) as [string, ...string[]];
+const one = (list: readonly Option[]) => z.enum(values(list), { error: "Choisis une réponse" });
 
 const schema = z.object({
-  source: z.enum(values(SURVEY_SOURCES), { error: "Choisis une réponse" }),
-  rating: z.coerce.number({ error: "Donne une note" }).int().min(1, "Donne une note").max(5),
-  modules: z.array(z.enum(values(SURVEY_MODULES))).min(1, "Choisis au moins un service"),
-  nps: z.coerce.number({ error: "Choisis une note" }).int().min(0).max(10),
-  would_pay: z.enum(values(SURVEY_WOULD_PAY), { error: "Choisis une réponse" }),
+  categories: z.array(z.enum(values(SURVEY_CATEGORIES))).min(1, "Choisis au moins un domaine"),
+  benefit_types: z.array(z.enum(values(BENEFIT_TYPES))).min(1, "Choisis au moins un type d'avantage"),
+  min_discount: one(SURVEY_MIN_DISCOUNT),
+  monthly_budget: one(SURVEY_BUDGET),
+  payment_pref: one(SURVEY_PAYMENT),
   missing: z.string().trim().max(1000, "1 000 caractères maximum"),
   partners: z.string().trim().max(500, "500 caractères maximum"),
 });
@@ -25,11 +33,11 @@ export async function submitSurvey(_prev: FormState, formData: FormData): Promis
     return typeof v === "string" && v !== "" ? v : undefined;
   };
   const parsed = schema.safeParse({
-    source: str("source"),
-    rating: str("rating"),
-    modules: formData.getAll("modules"),
-    nps: str("nps"),
-    would_pay: str("would_pay"),
+    categories: formData.getAll("categories"),
+    benefit_types: formData.getAll("benefit_types"),
+    min_discount: str("min_discount"),
+    monthly_budget: str("monthly_budget"),
+    payment_pref: str("payment_pref"),
     missing: formData.get("missing") ?? "",
     partners: formData.get("partners") ?? "",
   });
@@ -42,11 +50,12 @@ export async function submitSurvey(_prev: FormState, formData: FormData): Promis
   const d = parsed.data;
   const { error } = await supabase.from("survey_responses").upsert({
     user_id: auth.user.id,
-    source: d.source,
-    rating: d.rating,
-    modules: d.modules,
-    nps: d.nps,
-    would_pay: d.would_pay,
+    version: SURVEY_VERSION,
+    categories: d.categories,
+    benefit_types: d.benefit_types,
+    min_discount: d.min_discount,
+    monthly_budget: d.monthly_budget,
+    payment_pref: d.payment_pref,
     missing: d.missing || null,
     partners: d.partners || null,
     contact_ok: formData.get("contact_ok") === "on",

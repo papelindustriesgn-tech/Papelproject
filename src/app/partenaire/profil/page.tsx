@@ -45,6 +45,10 @@ export default async function PartnerProfile() {
           .
         </p>
         <p className="mt-2">
+          <Link href="/partenaire/avis" className="text-brand-600 font-semibold">
+            Vos attentes (questionnaire)
+          </Link>
+          {" · "}
           <Link href="/conditions" className="text-brand-600 font-semibold">
             Conditions générales
           </Link>

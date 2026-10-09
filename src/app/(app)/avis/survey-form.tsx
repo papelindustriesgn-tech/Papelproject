@@ -1,56 +1,22 @@
 "use client";
 
-import { useActionState, useState, type ReactNode } from "react";
-import Link from "next/link";
-import { Star } from "lucide-react";
+import { useActionState, useState } from "react";
 import { FormMessage, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { cn } from "@/lib/cn";
-import { SURVEY_MODULES, SURVEY_SOURCES, SURVEY_SUBSCRIPTION_PRICE, SURVEY_WOULD_PAY } from "@/lib/survey";
+import { MultiChoice, Question, SingleChoice, ThankYou } from "@/components/survey/questions";
+import { BENEFIT_TYPES, SURVEY_BUDGET, SURVEY_CATEGORIES, SURVEY_MIN_DISCOUNT, SURVEY_PAYMENT } from "@/lib/survey";
 import { submitSurvey } from "./actions";
 
 export type SurveyValues = {
-  source: string;
-  rating: number;
-  modules: string[];
-  nps: number | null;
-  would_pay: string;
+  categories: string[];
+  benefit_types: string[];
+  min_discount: string;
+  monthly_budget: string;
+  payment_pref: string;
   missing: string;
   partners: string;
   contact_ok: boolean;
 };
-
-const chip = (on: boolean) =>
-  cn(
-    "cursor-pointer rounded-2xl px-3.5 py-2.5 text-sm font-semibold ring-1 transition select-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500",
-    on ? "bg-brand-600 text-white ring-brand-600" : "bg-white text-ink ring-line hover:ring-brand-300",
-  );
-
-function Question({
-  n,
-  title,
-  hint,
-  error,
-  children,
-}: {
-  n: number;
-  title: string;
-  hint?: string;
-  error?: string;
-  children: ReactNode;
-}) {
-  return (
-    <fieldset className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
-      <legend className="sr-only">{title}</legend>
-      <p className="font-bold" aria-hidden>
-        <span className="text-brand-600">{n}.</span> {title}
-      </p>
-      {hint && <p className="text-muted mt-0.5 text-sm">{hint}</p>}
-      <div className="mt-3">{children}</div>
-      {error && <p className="text-coral-600 mt-2 text-sm font-medium">{error}</p>}
-    </fieldset>
-  );
-}
 
 export function SurveyForm({ initial }: { initial: SurveyValues }) {
   const [state, action] = useActionState(submitSurvey, {});
@@ -60,154 +26,66 @@ export function SurveyForm({ initial }: { initial: SurveyValues }) {
 
   if (state.ok)
     return (
-      <div className="rounded-[var(--radius-card)] bg-white p-8 text-center shadow-[var(--shadow-card)]">
-        <p className="text-5xl" aria-hidden>
-          💜
-        </p>
-        <h2 className="mt-3 text-xl font-extrabold">Merci pour ton avis !</h2>
-        <p className="text-muted mt-1">Chaque réponse nous aide à améliorer Uny pour tous les étudiants.</p>
-        <Link
-          href="/accueil"
-          className="bg-brand-600 mt-5 inline-flex h-12 items-center rounded-2xl px-6 font-semibold text-white"
-        >
-          Retour à l&apos;accueil
-        </Link>
-      </div>
+      <ThankYou
+        text="Tes réponses nous disent quels commerçants démarcher et quels avantages négocier pour toi."
+        href="/accueil"
+        cta="Retour à l'accueil"
+      />
     );
 
   return (
     <form action={action} className="space-y-4" noValidate>
       {state.error && <FormMessage>{state.error}</FormMessage>}
 
-      <Question n={1} title="Comment as-tu connu Uny ?" error={err.source}>
-        <div className="flex flex-wrap gap-2">
-          {SURVEY_SOURCES.map((o) => (
-            <label key={o.value} className={chip(v.source === o.value)}>
-              <input
-                type="radio"
-                name="source"
-                value={o.value}
-                checked={v.source === o.value}
-                onChange={() => set("source", o.value)}
-                className="sr-only"
-              />
-              {o.label}
-            </label>
-          ))}
-        </div>
+      <Question n={1} title="Où veux-tu des réductions en priorité ?" hint="Plusieurs choix possibles." error={err.categories}>
+        <MultiChoice name="categories" options={SURVEY_CATEGORIES} value={v.categories} onChange={(x) => set("categories", x)} />
       </Question>
 
-      <Question n={2} title="Quelle note donnes-tu à Uny aujourd'hui ?" error={err.rating}>
-        <div className="flex gap-1" role="radiogroup" aria-label="Note de 1 à 5">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <label
-              key={n}
-              className="has-[:focus-visible]:ring-brand-500 cursor-pointer rounded-xl p-1 has-[:focus-visible]:ring-2"
-            >
-              <input
-                type="radio"
-                name="rating"
-                value={n}
-                checked={v.rating === n}
-                onChange={() => set("rating", n)}
-                className="sr-only"
-                aria-label={`${n} sur 5`}
-              />
-              <Star
-                className={cn("size-9 transition", n <= v.rating ? "fill-mango-400 text-mango-400" : "text-line")}
-                aria-hidden
-              />
-            </label>
-          ))}
-        </div>
+      <Question n={2} title="Quels types d'avantages préfères-tu ?" hint="Plusieurs choix possibles." error={err.benefit_types}>
+        <MultiChoice
+          name="benefit_types"
+          options={BENEFIT_TYPES}
+          value={v.benefit_types}
+          onChange={(x) => set("benefit_types", x)}
+        />
       </Question>
 
-      <Question n={3} title="Quels services t'intéressent le plus ?" hint="Plusieurs choix possibles." error={err.modules}>
-        <div className="flex flex-wrap gap-2">
-          {SURVEY_MODULES.map((o) => {
-            const on = v.modules.includes(o.value);
-            return (
-              <label key={o.value} className={chip(on)}>
-                <input
-                  type="checkbox"
-                  name="modules"
-                  value={o.value}
-                  checked={on}
-                  onChange={() => set("modules", on ? v.modules.filter((m) => m !== o.value) : [...v.modules, o.value])}
-                  className="sr-only"
-                />
-                {o.label}
-              </label>
-            );
-          })}
-        </div>
-      </Question>
-
-      <Question
-        n={4}
-        title="Recommanderais-tu Uny à un ami étudiant ?"
-        hint="0 = pas du tout · 10 = sans hésiter"
-        error={err.nps}
-      >
-        <div className="grid grid-cols-11 gap-1" role="radiogroup" aria-label="Note de 0 à 10">
-          {Array.from({ length: 11 }, (_, n) => (
-            <label
-              key={n}
-              className={cn(
-                "has-[:focus-visible]:ring-brand-500 flex h-10 cursor-pointer items-center justify-center rounded-xl text-sm font-bold ring-1 transition has-[:focus-visible]:ring-2",
-                v.nps === n ? "bg-brand-600 ring-brand-600 text-white" : "ring-line hover:ring-brand-300 bg-white",
-              )}
-            >
-              <input type="radio" name="nps" value={n} checked={v.nps === n} onChange={() => set("nps", n)} className="sr-only" />
-              {n}
-            </label>
-          ))}
-        </div>
-      </Question>
-
-      <Question
-        n={5}
-        title={`Paierais-tu un abonnement Uny de ${SURVEY_SUBSCRIPTION_PRICE} ?`}
-        hint="Pour des réductions exclusives chez les partenaires et des avantages en plus."
-        error={err.would_pay}
-      >
-        <div className="flex flex-wrap gap-2">
-          {SURVEY_WOULD_PAY.map((o) => (
-            <label key={o.value} className={chip(v.would_pay === o.value)}>
-              <input
-                type="radio"
-                name="would_pay"
-                value={o.value}
-                checked={v.would_pay === o.value}
-                onChange={() => set("would_pay", o.value)}
-                className="sr-only"
-              />
-              {o.label}
-            </label>
-          ))}
-        </div>
-      </Question>
-
-      <Question
-        n={6}
-        title="Qu'est-ce qui te manque dans Uny ?"
-        hint="Facultatif : une idée, un problème, une envie…"
-        error={err.missing}
-      >
-        <Textarea
-          name="missing"
-          rows={3}
-          maxLength={1000}
-          value={v.missing}
-          onChange={(e) => set("missing", e.target.value)}
-          placeholder="Ex. : plus d'offres de stages en informatique"
+      <Question n={3} title="À partir de quelle réduction changerais-tu de commerce ?" error={err.min_discount}>
+        <SingleChoice
+          name="min_discount"
+          options={SURVEY_MIN_DISCOUNT}
+          value={v.min_discount}
+          onChange={(x) => set("min_discount", x)}
         />
       </Question>
 
       <Question
-        n={7}
+        n={4}
+        title="Combien dépenses-tu par mois en repas, sorties, transport et internet ?"
+        hint="Une estimation suffit : ça nous aide à négocier les bonnes offres."
+        error={err.monthly_budget}
+      >
+        <SingleChoice
+          name="monthly_budget"
+          options={SURVEY_BUDGET}
+          value={v.monthly_budget}
+          onChange={(x) => set("monthly_budget", x)}
+        />
+      </Question>
+
+      <Question n={5} title="Comment préfères-tu payer chez les partenaires ?" error={err.payment_pref}>
+        <SingleChoice
+          name="payment_pref"
+          options={SURVEY_PAYMENT}
+          value={v.payment_pref}
+          onChange={(x) => set("payment_pref", x)}
+        />
+      </Question>
+
+      <Question
+        n={6}
         title="Quelles enseignes aimerais-tu voir sur Uny ?"
-        hint="Facultatif : restaurants, boutiques, salles de sport, transport…"
+        hint="Facultatif : restaurants, boutiques, salles de sport, opérateurs…"
         error={err.partners}
       >
         <Textarea
@@ -217,6 +95,22 @@ export function SurveyForm({ initial }: { initial: SurveyValues }) {
           value={v.partners}
           onChange={(e) => set("partners", e.target.value)}
           placeholder="Ex. : un fast-food près de l'université, une salle de sport à Kipé"
+        />
+      </Question>
+
+      <Question
+        n={7}
+        title="Un avantage que tu aimerais vraiment avoir ?"
+        hint="Facultatif : une idée, une envie…"
+        error={err.missing}
+      >
+        <Textarea
+          name="missing"
+          rows={3}
+          maxLength={1000}
+          value={v.missing}
+          onChange={(e) => set("missing", e.target.value)}
+          placeholder="Ex. : -30 % sur les forfaits internet"
         />
       </Question>
 

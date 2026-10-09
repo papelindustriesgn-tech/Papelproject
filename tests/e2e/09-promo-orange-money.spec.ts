@@ -124,3 +124,40 @@ test("marketplace : les promos des partenaires s'affichent en premier avec le po
   await expect(page.getByText("100 000 GNF")).toBeVisible();
   await expect(page.getByRole("link", { name: /Ouvrir Orange Money/ })).toBeVisible();
 });
+
+test("questionnaire partenaire : attentes et avantages proposés, visibles par l'admin", async ({ page }) => {
+  const partnerId = await adminAsPartnerMember();
+  await serviceRest(`partner_survey_responses?partner_id=eq.${partnerId}`, { method: "DELETE" });
+  const run = `${Date.now()}`.slice(-7);
+  await login(page, ADMIN.email, ADMIN.password);
+  await page.goto("/partenaire");
+  await page.getByRole("link", { name: /Quelles sont vos attentes/ }).click();
+  await page.waitForLoadState("networkidle");
+  await page.getByRole("button", { name: "Envoyer mes réponses" }).click();
+  await expect(page.getByText("Il manque quelques réponses.")).toBeVisible();
+
+  await page.locator("label", { hasText: "Prix étudiant fixe" }).click();
+  await page.locator("label", { hasText: "10 à 20 %" }).click();
+  await page.locator("label", { hasText: "Remplir les heures creuses" }).click();
+  await page.locator("label", { hasText: "Être sûr que le client est étudiant" }).click();
+  await page.locator("label", { hasText: "20 à 50" }).click();
+  await page.locator("label").filter({ hasText: /^🟠 Orange Money$/ }).click();
+  await page
+    .locator("label")
+    .filter({ hasText: /^Peut-être$/ })
+    .click();
+  await page.fill("textarea[name=comments]", `Midi en semaine ${run}`);
+  await page.getByRole("button", { name: "Envoyer mes réponses" }).click();
+  await expect(page.getByText("Merci pour ton avis !")).toBeVisible();
+
+  await page.goto("/partenaire");
+  await expect(page.getByRole("link", { name: /Quelles sont vos attentes/ })).toHaveCount(0);
+
+  await page.goto("/admin/avis?type=partenaires");
+  await expect(page.getByText(`Midi en semaine ${run}`)).toBeVisible();
+  await expect(page.getByText("Ce qu'ils attendent d'Uny")).toBeVisible();
+  const res = await page.request.get("/admin/avis/export?type=partenaires");
+  const csv = await res.text();
+  expect(csv).toContain(`Midi en semaine ${run}`);
+  expect(csv).toContain("Remplir les heures creuses, Être sûr que le client est étudiant");
+});

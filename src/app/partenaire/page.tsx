@@ -27,7 +27,7 @@ export default async function PartnerHome() {
   const count = (table: "marketplace_items") =>
     supabase.from(table).select("id", { count: "exact", head: true }).eq("partner_id", partner.id);
 
-  const [today, month, recent, deals, items, promos, fiche] = await Promise.all([
+  const [today, month, recent, deals, items, promos, fiche, survey] = await Promise.all([
     supabase
       .from("card_validations")
       .select("id", { count: "exact", head: true })
@@ -57,6 +57,7 @@ export default async function PartnerHome() {
       .gte("used_at", monthAgo)
       .limit(5000),
     supabase.from("partners").select("orange_money_merchant_code").eq("id", partner.id).single(),
+    supabase.from("partner_survey_responses").select("partner_id").eq("partner_id", partner.id).maybeSingle(),
   ]);
   const promoRevenue = (promos.data ?? []).reduce((s, p) => s + (p.amount_gnf ?? 0), 0);
 
@@ -94,6 +95,24 @@ export default async function PartnerHome() {
         </span>
         <ArrowRight className="size-6 shrink-0" aria-hidden />
       </Link>
+
+      {!survey.data && !survey.error && (
+        <Link
+          href="/partenaire/avis"
+          className="bg-brand-50 ring-brand-100 hover:bg-brand-100 flex items-center gap-3 rounded-[var(--radius-card)] p-4 ring-1 transition"
+        >
+          <span className="text-2xl" aria-hidden>
+            🤝
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="text-ink block font-bold">Quelles sont vos attentes ?</span>
+            <span className="text-muted block text-sm">
+              2 minutes : les avantages que vous pouvez offrir et ce que vous attendez d&apos;Uny.
+            </span>
+          </span>
+          <ArrowRight className="text-brand-600 size-5 shrink-0" aria-hidden />
+        </Link>
+      )}
 
       {!fiche.data?.orange_money_merchant_code && (
         <FormMessage type="info">
