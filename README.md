@@ -20,6 +20,8 @@ achat des matières premières → stock → production → distribution → ven
 | Phase 2 – étape 2 | Logistique : véhicules, chauffeurs, tournées (capacité, feuille de route imprimable), preuve de livraison (signature, photo, GPS), retours en stock, dépenses et coût par colis | ✅ Livrée |
 | Phase 2 – étape 3 | Qualité : critères de contrôle paramétrables, contrôles à réception et en production, blocage des bobines, non-conformités et actions correctives, réclamations clients, traçabilité bobine ↔ lot de produits finis ↔ clients | ✅ Livrée |
 | Phase 2 – étape 4 | Maintenance : équipements, pannes signalées par la production, ordres de travail, pièces de rechange sorties du stock, préventif, MTBF / MTTR / disponibilité, pièces critiques | ✅ Livrée |
+| Phase 3 – étape 1 | Finance : comptes de trésorerie (caisse, banques, mobile money) alimentés automatiquement, factures et règlements fournisseurs, charges fixes mensuelles, balance âgée, compte de résultat mensuel, seuil de rentabilité, BFR, trésorerie prévisionnelle sur 13 semaines | ✅ Livrée |
+| Phase 3 – étape 2 | Exports comptables SYSCOHADA (journaux ventes, achats, trésorerie équilibrés) et rapport hebdomadaire envoyé automatiquement par e-mail | ✅ Livrée |
 
 ## Installation en local
 
@@ -91,6 +93,11 @@ npm run test:e2e:complet
 6. **Vercel** : importer le dépôt GitHub et renseigner les variables
    `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` (voir `.env.example`),
    et `NEXT_PUBLIC_TUILES_URL` (fournisseur de fonds de carte, ex. MapTiler ; OpenStreetMap n'est pas fait pour un usage intensif).
+7. **Rapport hebdomadaire par e-mail** (lundi 07:00, `vercel.json`) : renseigner `CRON_SECRET` (chaîne aléatoire longue),
+   `RESEND_API_KEY` et `RAPPORT_EXPEDITEUR` (compte [Resend](https://resend.com) avec domaine vérifié), `NEXT_PUBLIC_SITE_URL`,
+   puis les adresses dans **Administration → Paramètres → Destinataires du rapport hebdomadaire**.
+8. **Finance** : avant la mise en service, saisir le solde d'ouverture et sa date sur chaque compte de trésorerie
+   (Finance → Comptes et listes), les charges fixes mensuelles, et faire valider les numéros de comptes SYSCOHADA par le comptable.
 
 ### Installer l'application sur un téléphone Android
 

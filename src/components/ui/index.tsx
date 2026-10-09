@@ -96,6 +96,9 @@ export function Selection({
         {libelle}
       </label>
       <select
+        // Liste non contrôlée : React ne réapplique pas `defaultValue` après le rechargement du formulaire
+        // (erreur de validation) ; la clé la recrée avec la valeur saisie.
+        key={props.value === undefined ? String(props.defaultValue ?? "") : undefined}
         id={id}
         aria-invalid={erreur ? true : undefined}
         className={cx("min-h-11 w-full min-w-0 rounded-lg border bg-white px-3 py-2 text-base", erreur ? "border-red-600" : "border-gray-300")}

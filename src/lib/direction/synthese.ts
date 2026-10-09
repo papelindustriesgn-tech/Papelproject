@@ -1,6 +1,7 @@
 import "server-only";
 import { chargerIndicateursCommerciaux, type IndicateursCommerciaux } from "@/lib/commercial/indicateurs";
 import type { Periode } from "@/lib/formulaires/periode";
+import { chargerSituation, coutDesVentes, type SituationFinanciere } from "@/lib/finance/indicateurs";
 import { margeBrute } from "@/lib/metier/ventes";
 import { libelleAlerte } from "@/lib/production/affichage";
 import { agreger, chargerFiches } from "@/lib/production/indicateurs";
@@ -28,20 +29,13 @@ export interface SyntheseDirection {
   distribution: IndicateursCommerciaux & { grossistes: number; semiGrossistes: number };
   distributionPrec: IndicateursCommerciaux;
   alertes: Alerte[];
+  finance: SituationFinanciere;
   rendementParJour: Map<string, number | null>;
-}
-
-/** Coût de revient des produits sortis pour la vente ou offerts (dotation), moins les retours, sur une période. */
-async function coutDesVentes(du: string, au: string): Promise<number> {
-  const supabase = await clientServeur();
-  const { data } = await supabase.from("mouvements_stock").select("type, valeur_gnf").in("type", ["vente", "dotation", "retour"]).gte("date_operation", du).lte("date_operation", au).limit(50000);
-  // Ventes et dotations : valeur négative (sortie) ; retours : valeur positive (entrée).
-  return Math.max(0, -(data ?? []).reduce((s, m) => s + Number(m.valeur_gnf ?? 0), 0));
 }
 
 export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
   const supabase = await clientServeur();
-  const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, alertesStock, factures, distribution, distributionPrec, pva, transit, enRetard, ncCritiques, piecesCritiques] = await Promise.all([
+  const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, alertesStock, factures, distribution, distributionPrec, pva, transit, enRetard, ncCritiques, piecesCritiques, finance] = await Promise.all([
     chargerIndicateursVentes(p.du, p.au, p.nbJours),
     chargerIndicateursVentes(p.precedente.du, p.precedente.au, p.nbJours),
     chargerFiches({ du: p.du, au: p.au }),
@@ -59,6 +53,7 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
     supabase.from("livraisons").select("id", { count: "exact", head: true }).eq("statut", "validee").eq("statut_remise", "a_livrer").lt("date_livraison", hier(hier(p.au))),
     supabase.from("non_conformites").select("id, numero, description").eq("gravite", "critique").neq("statut", "cloturee"),
     supabase.from("pieces_critiques_alerte").select("article_id, libelle, equipements"),
+    chargerSituation(),
   ]);
 
   // Production : colis produits par produit et rendement par jour.
@@ -126,6 +121,7 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
     },
     distributionPrec,
     alertes,
+    finance,
     rendementParJour: new Map([...parJour.entries()].map(([d, fs]) => [d, agreger(fs).ratioRendement])),
   };
 }

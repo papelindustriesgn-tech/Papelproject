@@ -29,6 +29,8 @@ export async function proxy(requete: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
   const chemin = requete.nextUrl.pathname;
+  // Les tâches planifiées (/api/taches/…) s'authentifient elles-mêmes par CRON_SECRET.
+  if (chemin.startsWith("/api/taches/")) return reponse;
   const pagePublique = chemin === "/connexion" || chemin === "/hors-ligne";
 
   const rediriger = (vers: string) => {

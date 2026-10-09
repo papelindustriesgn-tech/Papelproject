@@ -4,7 +4,7 @@ ERP de **Papel Industries**, fabricant guinéen de mouchoirs en papier (usine de
 Chaîne couverte : achat MP → stock → production → stock produits finis → distribution → vente → encaissement → pilotage.
 
 > Ce fichier est la référence des règles métier et des conventions de code. Le tenir à jour à chaque phase.
-> État : **Phases 1 et 2 livrées** (bilans : `docs/bilan-phase-1.md`, `docs/bilan-phase-2.md`). En cours : **phase 3** (finance). Plan : `docs/architecture.md`.
+> État : **Phases 1, 2 et 3 livrées** (bilans : `docs/bilan-phase-1.md`, `docs/bilan-phase-2.md`, `docs/bilan-phase-3.md`). Plan : `docs/architecture.md`.
 
 @AGENTS.md
 
@@ -252,6 +252,30 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 - Fiabilité (`src/lib/metier/maintenance.ts`, testé) : temps requis = jours × `maintenance_heures_ouverture_jour` (16 h) ;
   panne = curative avec arrêt machine ; MTBF = (requis − arrêts) ÷ pannes ; MTTR = arrêts ÷ pannes ; disponibilité = (requis − arrêts) ÷ requis.
 - Saisie date + heure : champs `datetime-local` en heure de Conakry (= UTC) → `lireDateHeure` / `versDateHeureLocale`.
+
+## 6 undecies. Finance (phase 3)
+
+- Listes modifiables : **comptes de trésorerie** (caisse / banque / mobile, devise, compte classe 5, solde et date d'ouverture),
+  **catégories de charges** (nature `stock` / `variable` / `fixe` + compte SYSCOHADA), **charges fixes mensuelles** (`charges_recurrentes`).
+  Mode de paiement → compte de trésorerie (`modes_paiement.compte_id`). Comptes des journaux : paramètres `compta_compte_*`.
+- **Journal de trésorerie** `mouvements_tresorerie` : inaltérable (contre-passation), montant dans la devise du compte + contre-valeur GNF.
+  Alimenté automatiquement : encaissement client (trigger sur `paiements`), règlement fournisseur (`regler_facture_fournisseur`),
+  virement (`virement_interne`, deux mouvements) ; mouvements divers saisis (origine « autre »). Une caisse / un compte mobile
+  ne devient jamais négatif (trigger) ; une banque peut l'être (découvert).
+- **Factures fournisseurs** (`FF-AAAA-NNNNN`) : bénéficiaire avec ou sans fiche, catégorie, GNF ou USD (taux de la date de facture,
+  montants GNF calculés par la base), TVA ; figées dès le premier règlement. `generer_charges_mois` crée les factures des charges
+  fixes (idempotent : une par charge et par mois).
+- **Résultat de gestion** (`src/lib/metier/finance.ts`, testé) = CA HT − coût matière au CMP (`coutDesVentes`) − charges variables −
+  charges fixes ; les achats **stockés** n'y entrent pas (ils passent par le coût des ventes). Seuil de rentabilité = charges fixes ÷
+  taux de marge sur coûts variables. BFR = stocks + créances − dettes.
+- **Trésorerie prévisionnelle** (13 semaines) : soldes actuels + factures clients et fournisseurs à leur échéance (les retards tombent
+  en 1re semaine) + charges fixes non encore générées + commandes d'achat envoyées non facturées.
+- **Exports comptables** (`/finance/exports/<ventes|achats|tresorerie>?du=&au=`, route `GET`) : écritures `src/lib/metier/comptabilite.ts`
+  (testées), pièce déséquilibrée → export refusé. CSV « ; » : Journal ; Date ; N° pièce ; Compte ; Compte tiers ; Libellé ; Débit ; Crédit.
+- **Rapport hebdomadaire** : fonction SQL `rapport_hebdomadaire(du, au)` exécutable par le **seul rôle service** ; route
+  `/api/taches/rapport-hebdo` (Vercel Cron lundi 07:00, protégée par `CRON_SECRET`, exemptée par le proxy), envoi Resend.
+  Mise en forme pure et testée : `src/lib/rapports/hebdo.ts`. La clé secrète n'appelle que des fonctions dédiées, jamais les tables.
+- Interface : `Selection` se recrée quand `defaultValue` change (sinon une liste déroulante revenait à vide après une erreur de validation).
 
 ## 7. Seuils d'alerte (paramétrables)
 

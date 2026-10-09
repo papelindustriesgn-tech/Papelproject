@@ -4,6 +4,7 @@ import { Badge, Carte } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import type { Alerte, SyntheseDirection } from "@/lib/direction/synthese";
 import { formaterPoids, formaterStockProduitFini, kg, type Paquets } from "@/lib/metier/unites";
+import { bfrGnf } from "@/lib/metier/finance";
 import { variationRelative } from "@/lib/metier/ventes";
 import { minutes, pct } from "@/lib/production/affichage";
 import { gnf, nombre } from "@/lib/stocks/libelles";
@@ -96,11 +97,13 @@ export function BlocsIndicateurs({ s }: { s: SyntheseDirection }) {
         />
       </Section>
 
-      <Section titre="Finance">
+      <Section titre="Finance" lien="/finance">
         <Indicateur libelle="Marge brute" valeur={gnf(s.marge.margeGnf)} detail={comparaison(s.marge.margeGnf, s.margePrec.margeGnf)} />
         <Indicateur libelle="Taux de marge brute" valeur={pct(s.marge.taux)} detail={`Coût matière des produits vendus : ${gnf(s.marge.coutVentesGnf)}`} />
-        <Indicateur libelle="Créances clients" valeur={gnf(v.creancesGnf)} />
-        <Indicateur libelle="Valeur du stock" valeur={gnf(s.stock.valeurGnf)} detail="Charges, résultat, trésorerie, BFR et dettes : phase 3" />
+        <Indicateur libelle="Trésorerie" valeur={gnf(s.finance.tresorerieGnf)} ton={s.finance.tresorerieGnf < 0 ? "danger" : "normal"} />
+        <Indicateur libelle="Créances clients" valeur={gnf(v.creancesGnf)} detail={`dont échu : ${gnf(s.finance.creancesEchuesGnf)}`} />
+        <Indicateur libelle="Dettes fournisseurs" valeur={gnf(s.finance.dettesGnf)} detail={`dont échu : ${gnf(s.finance.dettesEchuesGnf)}`} />
+        <Indicateur libelle="BFR" valeur={gnf(bfrGnf(s.stock.valeurGnf, s.finance.creancesGnf, s.finance.dettesGnf))} detail={`Stock ${gnf(s.stock.valeurGnf)} + créances − dettes`} />
       </Section>
 
       <Section titre="Distribution" lien="/commercial">

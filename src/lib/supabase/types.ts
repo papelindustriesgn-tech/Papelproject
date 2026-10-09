@@ -3249,6 +3249,9 @@ isOneToOne: false
 "prochain_numero":
 { Args: { "p_prefixe": string }; Returns: string
                            },
+"rapport_hebdomadaire":
+{ Args: { "p_au": string,"p_du": string }; Returns: Json
+                           },
 "receptionner_bobine":
 { Args: { "p_article": string,"p_cout_kg_gnf": number,"p_date"?: string,"p_diametre_mm"?: number,"p_fournisseur"?: string,"p_grammage"?: number,"p_largeur_mm"?: number,"p_notes"?: string,"p_numero_lot": string,"p_plis"?: number,"p_poids_kg": number }; Returns: string
                            },
