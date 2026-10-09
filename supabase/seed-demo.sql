@@ -541,3 +541,56 @@ begin
   insert into public.interventions (equipement_id, type_intervention, priorite, description, signale_par, arret_machine)
   values ('80000000-0000-0000-0000-000000000006', 'curative', 'normale', 'Fuite d''air au niveau du raccord principal', '20000000-0000-0000-0000-000000000005', false);
 end $$;
+
+-- -----------------------------------------------------------------------------
+-- Finance : soldes d'ouverture, charges récurrentes générées sur 3 mois, factures fournisseurs (conteneurs,
+-- énergie, transport) en partie réglées, frais bancaires. Les encaissements clients sont déjà au journal (trigger).
+-- -----------------------------------------------------------------------------
+update public.comptes_tresorerie set date_solde_initial = public.aujourdhui_conakry() - 90,
+       solde_initial = case libelle when 'Caisse principale' then 25000000 when 'Banque (GNF)' then 450000000 when 'Banque (USD)' then 4000000 else 0 end;
+
+do $$
+declare
+  v_mois date;
+  v_f record;
+begin
+  perform set_config('request.jwt.claims', json_build_object('sub', '20000000-0000-0000-0000-000000000013', 'role', 'authenticated')::text, true);
+  insert into public.charges_recurrentes (libelle, categorie_id, tiers, montant_gnf, jour_echeance, date_debut) values
+    ('Salaires du personnel', (select id from public.categories_charges where libelle = 'Salaires'), 'Personnel', 68000000, 28, date_trunc('month', public.aujourdhui_conakry() - 90)::date),
+    ('Charges sociales (CNSS)', (select id from public.categories_charges where libelle = 'Charges sociales'), 'CNSS', 12000000, 15, date_trunc('month', public.aujourdhui_conakry() - 90)::date),
+    ('Loyer du terrain de Coyah', (select id from public.categories_charges where libelle = 'Loyer'), 'Propriétaire', 15000000, 5, date_trunc('month', public.aujourdhui_conakry() - 90)::date),
+    ('Internet et téléphones', (select id from public.categories_charges where libelle = 'Télécommunications et internet'), 'Opérateur télécom', 2500000, 10, date_trunc('month', public.aujourdhui_conakry() - 90)::date);
+  for v_mois in select generate_series(date_trunc('month', public.aujourdhui_conakry() - 60), date_trunc('month', public.aujourdhui_conakry()), interval '1 month')::date loop
+    perform public.generer_charges_mois(v_mois);
+  end loop;
+
+  -- Variables : énergie (gasoil du groupe) et transport, chaque semaine.
+  for v_mois in select generate_series(public.aujourdhui_conakry() - 56, public.aujourdhui_conakry() - 7, interval '7 days')::date loop
+    insert into public.factures_fournisseurs (tiers, libelle, categorie_id, date_facture, date_echeance, montant_ht)
+    values ('Station Total Coyah', 'Gasoil groupe électrogène', (select id from public.categories_charges where libelle = 'Énergie : électricité, carburant du groupe'), v_mois, v_mois + 7, 9500000),
+           ('Transporteur local', 'Livraisons clients', (select id from public.categories_charges where libelle = 'Transport et livraison'), v_mois, v_mois + 15, 4200000);
+  end loop;
+
+  -- Bobines : factures des conteneurs livrés (en USD, stockées).
+  insert into public.factures_fournisseurs (fournisseur_id, reference_fournisseur, libelle, categorie_id, date_facture, date_echeance, devise, montant_ht, bc_id)
+  select b.fournisseur_id, 'INV-' || b.numero, 'Bobines – ' || b.numero, (select id from public.categories_charges where libelle like 'Matières premières%'),
+         b.date_commande, b.date_commande + 60, 'USD', (select sum(l.montant_devise) from public.lignes_bc l where l.bc_id = b.id), b.id
+  from public.bons_commande b where b.statut <> 'brouillon' and b.devise = 'USD';
+
+  -- Règlements : tout ce qui est échu depuis plus de 10 jours est payé (banque), sauf les bobines (moitié payée).
+  for v_f in select * from public.factures_fournisseurs_etat where date_echeance < public.aujourdhui_conakry() - 10 and solde_gnf > 0 order by date_echeance loop
+    perform public.regler_facture_fournisseur(v_f.id, (select id from public.comptes_tresorerie where libelle = 'Banque (GNF)'),
+      case when v_f.nature = 'stock' then v_f.solde_gnf / 2 else v_f.solde_gnf end, v_f.date_echeance, 'VIR-' || v_f.numero);
+  end loop;
+
+  -- Dépôt hebdomadaire des espèces à la banque, frais bancaires mensuels.
+  for v_mois in select generate_series(public.aujourdhui_conakry() - 84, public.aujourdhui_conakry() - 7, interval '7 days')::date loop
+    continue when (select solde from public.soldes_tresorerie where libelle = 'Caisse principale') <= 5000000;
+    perform public.virement_interne((select id from public.comptes_tresorerie where libelle = 'Caisse principale'), (select id from public.comptes_tresorerie where libelle = 'Banque (GNF)'),
+      least(60000000, (select solde from public.soldes_tresorerie where libelle = 'Caisse principale') - 5000000)::bigint, v_mois, 'Dépôt des espèces à la banque');
+  end loop;
+  insert into public.mouvements_tresorerie (compte_id, date_operation, sens, montant, montant_gnf, origine, categorie_id, libelle)
+  select (select id from public.comptes_tresorerie where libelle = 'Banque (GNF)'), d, 'sortie', 350000, 350000, 'autre',
+         (select id from public.categories_charges where libelle = 'Frais bancaires'), 'Frais de tenue de compte'
+  from generate_series(date_trunc('month', public.aujourdhui_conakry() - 60), date_trunc('month', public.aujourdhui_conakry()), interval '1 month') d;
+end $$;

@@ -190,3 +190,50 @@ on conflict (cle) do nothing;
 insert into public.parametres (cle, valeur, libelle, description, categorie, type_valeur, unite) values
   ('maintenance_heures_ouverture_jour', '16', 'Heures d''ouverture par jour', 'Temps requis des équipements (2 postes de 8 h) pour le MTBF et la disponibilité', 'maintenance', 'nombre', 'h')
 on conflict (cle) do nothing;
+
+-- -----------------------------------------------------------------------------
+-- Finance : comptes de trésorerie, catégories de charges (comptes SYSCOHADA indicatifs, à valider par le comptable),
+-- comptes comptables des journaux exportés.
+-- Avant la mise en service : saisir le solde d'ouverture et sa date sur chaque compte (Finance → Listes).
+-- -----------------------------------------------------------------------------
+insert into public.comptes_tresorerie (libelle, type_compte, devise, compte_comptable, ordre) values
+  ('Caisse principale', 'caisse', 'GNF', '5711', 1),
+  ('Banque (GNF)', 'banque', 'GNF', '5211', 2),
+  ('Banque (USD)', 'banque', 'USD', '5212', 3),
+  ('Orange Money', 'mobile', 'GNF', '5851', 4),
+  ('MTN Mobile Money', 'mobile', 'GNF', '5852', 5)
+on conflict (libelle) do nothing;
+
+update public.modes_paiement m set compte_id = c.id
+from public.comptes_tresorerie c
+where (m.libelle, c.libelle) in (('Espèces', 'Caisse principale'), ('Orange Money', 'Orange Money'), ('MTN Mobile Money', 'MTN Mobile Money'),
+                                 ('Virement bancaire', 'Banque (GNF)'), ('Chèque', 'Banque (GNF)'));
+
+insert into public.categories_charges (libelle, nature, compte_comptable, ordre) values
+  ('Matières premières et frais d''approche (stockés)', 'stock', '6021', 1),
+  ('Emballages (stockés)', 'stock', '6081', 2),
+  ('Pièces détachées (stockées)', 'stock', '6041', 3),
+  ('Énergie : électricité, carburant du groupe', 'variable', '6052', 10),
+  ('Transport et livraison', 'variable', '6181', 11),
+  ('Entretien et réparations', 'variable', '6241', 12),
+  ('Commissions et frais commerciaux', 'variable', '6324', 13),
+  ('Salaires', 'fixe', '6611', 20),
+  ('Charges sociales', 'fixe', '6641', 21),
+  ('Loyer', 'fixe', '6222', 22),
+  ('Assurances', 'fixe', '6251', 23),
+  ('Télécommunications et internet', 'fixe', '6281', 24),
+  ('Honoraires (comptable, juriste)', 'fixe', '6324', 25),
+  ('Impôts et taxes', 'fixe', '6411', 26),
+  ('Frais bancaires', 'fixe', '6311', 27),
+  ('Autres charges', 'variable', '6588', 30)
+on conflict (libelle) do nothing;
+
+insert into public.parametres (cle, valeur, libelle, description, categorie, type_valeur, unite) values
+  ('compta_compte_clients', '"4111"', 'Compte clients', 'Compte collectif des clients (journal des ventes)', 'comptabilite', 'texte', null),
+  ('compta_compte_ventes', '"7021"', 'Compte de ventes', 'Ventes de produits finis', 'comptabilite', 'texte', null),
+  ('compta_compte_tva_collectee', '"4431"', 'TVA collectée', 'TVA facturée aux clients', 'comptabilite', 'texte', null),
+  ('compta_compte_fournisseurs', '"4011"', 'Compte fournisseurs', 'Compte collectif des fournisseurs (journal des achats)', 'comptabilite', 'texte', null),
+  ('compta_compte_tva_deductible', '"4452"', 'TVA déductible', 'TVA récupérable sur achats', 'comptabilite', 'texte', null),
+  ('compta_compte_virements', '"585"', 'Virements internes', 'Compte de liaison des virements de fonds', 'comptabilite', 'texte', null),
+  ('compta_compte_divers', '"4711"', 'Compte d''attente', 'Contrepartie des mouvements de trésorerie divers non classés', 'comptabilite', 'texte', null)
+on conflict (cle) do nothing;

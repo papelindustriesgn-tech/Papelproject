@@ -179,6 +179,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"categories_charges": {
+                  Row: {
+                    "actif": boolean,"compte_comptable": string,"id": string,"libelle": string,"nature": string,"ordre": number
+                  }
+                  Insert: {
+                    "actif"?: boolean,"compte_comptable"?: string,"id"?: string,"libelle": string,"nature": string,"ordre"?: number
+                  }
+                  Update: {
+                    "actif"?: boolean,"compte_comptable"?: string,"id"?: string,"libelle"?: string,"nature"?: string,"ordre"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"causes_arret": {
                   Row: {
                     "actif": boolean,"created_at": string,"id": string,"libelle": string,"type_arret": string
@@ -191,6 +204,31 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"charges_recurrentes": {
+                  Row: {
+                    "actif": boolean,"categorie_id": string,"date_debut": string,"date_fin": string | null,"fournisseur_id": string | null,"id": string,"jour_echeance": number,"libelle": string,"montant_gnf": number,"tiers": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"categorie_id": string,"date_debut"?: string,"date_fin"?: string | null,"fournisseur_id"?: string | null,"id"?: string,"jour_echeance"?: number,"libelle": string,"montant_gnf": number,"tiers"?: string
+                  }
+                  Update: {
+                    "actif"?: boolean,"categorie_id"?: string,"date_debut"?: string,"date_fin"?: string | null,"fournisseur_id"?: string | null,"id"?: string,"jour_echeance"?: number,"libelle"?: string,"montant_gnf"?: number,"tiers"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "charges_recurrentes_categorie_id_fkey"
+      columns: ["categorie_id"]
+isOneToOne: false
+      referencedRelation: "categories_charges"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "charges_recurrentes_fournisseur_id_fkey"
+      columns: ["fournisseur_id"]
+isOneToOne: false
+      referencedRelation: "fournisseurs"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"chauffeurs": {
                   Row: {
@@ -266,6 +304,19 @@ isOneToOne: false
       referencedRelation: "villes"
       referencedColumns: ["id"]
     }
+                  ]
+                },"comptes_tresorerie": {
+                  Row: {
+                    "actif": boolean,"compte_comptable": string,"date_solde_initial": string,"devise": string,"id": string,"libelle": string,"ordre": number,"solde_initial": number,"type_compte": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"compte_comptable"?: string,"date_solde_initial"?: string,"devise"?: string,"id"?: string,"libelle": string,"ordre"?: number,"solde_initial"?: number,"type_compte": string
+                  }
+                  Update: {
+                    "actif"?: boolean,"compte_comptable"?: string,"date_solde_initial"?: string,"devise"?: string,"id"?: string,"libelle"?: string,"ordre"?: number,"solde_initial"?: number,"type_compte"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"compteurs": {
                   Row: {
@@ -620,6 +671,61 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"factures_fournisseurs": {
+                  Row: {
+                    "bc_id": string | null,"categorie_id": string,"conteneur_id": string | null,"created_at": string,"created_by": string | null,"date_echeance": string,"date_facture": string,"devise": string,"fournisseur_id": string | null,"id": string,"libelle": string,"mois_recurrence": string | null,"montant_ht": number,"montant_ht_gnf": number | null,"montant_tva": number,"montant_tva_gnf": number | null,"numero": string | null,"recurrente_id": string | null,"reference_fournisseur": string,"statut": string,"taux_change": number | null,"tiers": string,"total_gnf": number | null
+                  }
+                  Insert: {
+                    "bc_id"?: string | null,"categorie_id": string,"conteneur_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_echeance"?: string,"date_facture"?: string,"devise"?: string,"fournisseur_id"?: string | null,"id"?: string,"libelle": string,"mois_recurrence"?: string | null,"montant_ht": number,"montant_ht_gnf"?: number | null,"montant_tva"?: number,"montant_tva_gnf"?: number | null,"numero"?: string | null,"recurrente_id"?: string | null,"reference_fournisseur"?: string,"statut"?: string,"taux_change"?: number | null,"tiers"?: string,"total_gnf"?: number | null
+                  }
+                  Update: {
+                    "bc_id"?: string | null,"categorie_id"?: string,"conteneur_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_echeance"?: string,"date_facture"?: string,"devise"?: string,"fournisseur_id"?: string | null,"id"?: string,"libelle"?: string,"mois_recurrence"?: string | null,"montant_ht"?: number,"montant_ht_gnf"?: number | null,"montant_tva"?: number,"montant_tva_gnf"?: number | null,"numero"?: string | null,"recurrente_id"?: string | null,"reference_fournisseur"?: string,"statut"?: string,"taux_change"?: number | null,"tiers"?: string,"total_gnf"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "factures_fournisseurs_bc_id_fkey"
+      columns: ["bc_id"]
+isOneToOne: false
+      referencedRelation: "bons_commande"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_fournisseurs_categorie_id_fkey"
+      columns: ["categorie_id"]
+isOneToOne: false
+      referencedRelation: "categories_charges"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_fournisseurs_conteneur_id_fkey"
+      columns: ["conteneur_id"]
+isOneToOne: false
+      referencedRelation: "conteneurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_fournisseurs_conteneur_id_fkey"
+      columns: ["conteneur_id"]
+isOneToOne: false
+      referencedRelation: "couts_conteneurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_fournisseurs_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_fournisseurs_fournisseur_id_fkey"
+      columns: ["fournisseur_id"]
+isOneToOne: false
+      referencedRelation: "fournisseurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_recurrente_fk"
+      columns: ["recurrente_id"]
+isOneToOne: false
+      referencedRelation: "charges_recurrentes"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"fiche_arrets": {
                   Row: {
@@ -1412,16 +1518,28 @@ isOneToOne: false
                   ]
                 },"modes_paiement": {
                   Row: {
-                    "actif": boolean,"created_at": string,"id": string,"libelle": string,"ordre": number
+                    "actif": boolean,"compte_id": string | null,"created_at": string,"id": string,"libelle": string,"ordre": number
                   }
                   Insert: {
-                    "actif"?: boolean,"created_at"?: string,"id"?: string,"libelle": string,"ordre"?: number
+                    "actif"?: boolean,"compte_id"?: string | null,"created_at"?: string,"id"?: string,"libelle": string,"ordre"?: number
                   }
                   Update: {
-                    "actif"?: boolean,"created_at"?: string,"id"?: string,"libelle"?: string,"ordre"?: number
+                    "actif"?: boolean,"compte_id"?: string | null,"created_at"?: string,"id"?: string,"libelle"?: string,"ordre"?: number
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "modes_paiement_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
+      referencedRelation: "comptes_tresorerie"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "modes_paiement_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
+      referencedRelation: "soldes_tresorerie"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"mouvements_stock": {
                   Row: {
@@ -1475,6 +1593,55 @@ isOneToOne: false
       columns: ["lot_id"]
 isOneToOne: false
       referencedRelation: "lots"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"mouvements_tresorerie": {
+                  Row: {
+                    "categorie_id": string | null,"compte_id": string,"created_at": string,"date_operation": string,"id": string,"libelle": string,"montant": number,"montant_gnf": number,"origine": string,"paiement_id": string | null,"reference": string,"reglement_id": string | null,"saisi_par": string | null,"sens": string,"taux_change": number,"virement_id": string | null
+                  }
+                  Insert: {
+                    "categorie_id"?: string | null,"compte_id": string,"created_at"?: string,"date_operation"?: string,"id"?: string,"libelle": string,"montant": number,"montant_gnf": number,"origine": string,"paiement_id"?: string | null,"reference"?: string,"reglement_id"?: string | null,"saisi_par"?: string | null,"sens": string,"taux_change"?: number,"virement_id"?: string | null
+                  }
+                  Update: {
+                    "categorie_id"?: string | null,"compte_id"?: string,"created_at"?: string,"date_operation"?: string,"id"?: string,"libelle"?: string,"montant"?: number,"montant_gnf"?: number,"origine"?: string,"paiement_id"?: string | null,"reference"?: string,"reglement_id"?: string | null,"saisi_par"?: string | null,"sens"?: string,"taux_change"?: number,"virement_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "mouvements_tresorerie_categorie_id_fkey"
+      columns: ["categorie_id"]
+isOneToOne: false
+      referencedRelation: "categories_charges"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mouvements_tresorerie_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
+      referencedRelation: "comptes_tresorerie"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mouvements_tresorerie_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
+      referencedRelation: "soldes_tresorerie"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mouvements_tresorerie_paiement_id_fkey"
+      columns: ["paiement_id"]
+isOneToOne: true
+      referencedRelation: "paiements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mouvements_tresorerie_reglement_id_fkey"
+      columns: ["reglement_id"]
+isOneToOne: true
+      referencedRelation: "reglements_fournisseurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mouvements_tresorerie_saisi_par_fkey"
+      columns: ["saisi_par"]
+isOneToOne: false
+      referencedRelation: "profils"
       referencedColumns: ["id"]
     }
                   ]
@@ -1922,6 +2089,49 @@ isOneToOne: false
       columns: ["commune_id"]
 isOneToOne: false
       referencedRelation: "communes"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"reglements_fournisseurs": {
+                  Row: {
+                    "compte_id": string,"created_at": string,"date_reglement": string,"facture_id": string,"id": string,"montant_gnf": number,"reference": string,"saisi_par": string | null
+                  }
+                  Insert: {
+                    "compte_id": string,"created_at"?: string,"date_reglement"?: string,"facture_id": string,"id"?: string,"montant_gnf": number,"reference"?: string,"saisi_par"?: string | null
+                  }
+                  Update: {
+                    "compte_id"?: string,"created_at"?: string,"date_reglement"?: string,"facture_id"?: string,"id"?: string,"montant_gnf"?: number,"reference"?: string,"saisi_par"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "reglements_fournisseurs_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
+      referencedRelation: "comptes_tresorerie"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reglements_fournisseurs_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
+      referencedRelation: "soldes_tresorerie"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reglements_fournisseurs_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "factures_fournisseurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reglements_fournisseurs_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "factures_fournisseurs_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reglements_fournisseurs_saisi_par_fkey"
+      columns: ["saisi_par"]
+isOneToOne: false
+      referencedRelation: "profils"
       referencedColumns: ["id"]
     }
                   ]
@@ -2584,6 +2794,55 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"factures_fournisseurs_etat": {
+                  Row: {
+                    "bc_id": string | null,"beneficiaire": string | null,"categorie_id": string | null,"categorie_libelle": string | null,"compte_charge": string | null,"conteneur_id": string | null,"created_at": string | null,"created_by": string | null,"date_echeance": string | null,"date_facture": string | null,"devise": string | null,"fournisseur_id": string | null,"id": string | null,"jours_retard": number | null,"libelle": string | null,"mois_recurrence": string | null,"montant_ht": number | null,"montant_ht_gnf": number | null,"montant_tva": number | null,"montant_tva_gnf": number | null,"nature": string | null,"numero": string | null,"paye_gnf": number | null,"recurrente_id": string | null,"reference_fournisseur": string | null,"solde_gnf": number | null,"statut": string | null,"taux_change": number | null,"tiers": string | null,"total_gnf": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "factures_fournisseurs_bc_id_fkey"
+      columns: ["bc_id"]
+isOneToOne: false
+      referencedRelation: "bons_commande"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_fournisseurs_categorie_id_fkey"
+      columns: ["categorie_id"]
+isOneToOne: false
+      referencedRelation: "categories_charges"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_fournisseurs_conteneur_id_fkey"
+      columns: ["conteneur_id"]
+isOneToOne: false
+      referencedRelation: "conteneurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_fournisseurs_conteneur_id_fkey"
+      columns: ["conteneur_id"]
+isOneToOne: false
+      referencedRelation: "couts_conteneurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_fournisseurs_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_fournisseurs_fournisseur_id_fkey"
+      columns: ["fournisseur_id"]
+isOneToOne: false
+      referencedRelation: "fournisseurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "factures_recurrente_fk"
+      columns: ["recurrente_id"]
+isOneToOne: false
+      referencedRelation: "charges_recurrentes"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"fiches_resume": {
                   Row: {
                     "arret_max_min": number | null,"arrets_non_planifies_min": number | null,"arrets_planifies_min": number | null,"cout_matiere_gnf": number | null,"date_production": string | null,"duree_poste_min": number | null,"equipe_id": string | null,"equipe_libelle": string | null,"id": string | null,"ligne_id": string | null,"ligne_libelle": string | null,"nb_operateurs": number | null,"notes": string | null,"of_id": string | null,"of_numero": string | null,"papier_kg": number | null,"paquets": number | null,"poste_id": string | null,"poste_libelle": string | null,"poste_ordre": number | null,"rebuts_kg": number | null,"statut": Database["public"]['Enums']["statut_fiche"] | null
@@ -2796,6 +3055,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"soldes_tresorerie": {
+                  Row: {
+                    "actif": boolean | null,"compte_comptable": string | null,"date_solde_initial": string | null,"devise": string | null,"id": string | null,"libelle": string | null,"ordre": number | null,"solde": number | null,"solde_initial": number | null,"taux_actuel": number | null,"type_compte": string | null
+                  }
+                  Insert: {
+                           "actif"?: boolean | null,"compte_comptable"?: string | null,"date_solde_initial"?: string | null,"devise"?: string | null,"id"?: string | null,"libelle"?: string | null,"ordre"?: number | null,"solde"?: never,"solde_initial"?: number | null,"taux_actuel"?: never,"type_compte"?: string | null
+                         }
+                        Update: {
+                           "actif"?: boolean | null,"compte_comptable"?: string | null,"date_solde_initial"?: string | null,"devise"?: string | null,"id"?: string | null,"libelle"?: string | null,"ordre"?: number | null,"solde"?: never,"solde_initial"?: number | null,"taux_actuel"?: never,"type_compte"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
                 },"tournees_livraison_etat": {
                   Row: {
                     "capacite_colis": number | null,"chauffeur_id": string | null,"chauffeur_nom": string | null,"chauffeur_profil_id": string | null,"colis_charges": number | null,"colis_livres": number | null,"created_at": string | null,"created_by": string | null,"date_tournee": string | null,"depart_le": string | null,"depenses_gnf": number | null,"id": string | null,"immatriculation": string | null,"km_depart": number | null,"km_parcourus": number | null,"km_retour": number | null,"nb_livraisons": number | null,"nb_livrees": number | null,"nb_partielles": number | null,"nb_refusees": number | null,"nb_remises": number | null,"notes": string | null,"numero": string | null,"paquets_charges": number | null,"paquets_livres": number | null,"retour_le": string | null,"statut": string | null,"vehicule_id": string | null
@@ -2905,6 +3177,12 @@ isOneToOne: false
 "cloturer_nc":
 { Args: { "p_nc": string }; Returns: undefined
                            },
+"controler_solde_compte":
+{ Args: { "p_compte": string }; Returns: undefined
+                           },
+"convertir_pour_compte":
+{ Args: { "p_compte": string,"p_date": string,"p_montant_gnf": number }; Returns: Record<string, unknown>
+                           },
 "creer_produit":
 { Args: { "p_code": string,"p_date_prix"?: string,"p_grammage": number,"p_largeur_mm": number,"p_libelle": string,"p_longueur_mm": number,"p_nb_mouchoirs": number,"p_paquets_par_colis": number,"p_plis": number,"p_prix_paquet_gnf"?: number,"p_taux_perte": number }; Returns: string
                            },
@@ -2937,6 +3215,9 @@ isOneToOne: false
                            },
 "exiger_logistique":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"generer_charges_mois":
+{ Args: { "p_mois": string }; Returns: number
                            },
 "generer_preventifs":
 { Args: { "p_horizon_jours"?: number }; Returns: number
@@ -2973,6 +3254,9 @@ isOneToOne: false
                            },
 "receptionner_bobine_conteneur":
 { Args: { "p_article": string,"p_conteneur": string,"p_diametre_mm"?: number,"p_grammage"?: number,"p_largeur_mm"?: number,"p_numero_lot": string,"p_plis"?: number,"p_poids_kg": number }; Returns: string
+                           },
+"regler_facture_fournisseur":
+{ Args: { "p_compte": string,"p_date"?: string,"p_facture": string,"p_montant_gnf": number,"p_reference"?: string }; Returns: string
                            },
 "remettre_dotation":
 { Args: { "p_conditionnement": string,"p_dotation": string,"p_paquets": number }; Returns: undefined
@@ -3020,6 +3304,9 @@ isOneToOne: false
                            },
 "valider_piece":
 { Args: { "p_piece": string }; Returns: string
+                           },
+"virement_interne":
+{ Args: { "p_date"?: string,"p_de": string,"p_libelle"?: string,"p_montant_gnf": number,"p_vers": string }; Returns: string
                            }
           }
           Enums: {
