@@ -116,3 +116,22 @@ export function ThankYou({ text, href, cta }: { text: string; href: string; cta:
     </div>
   );
 }
+
+/** Rappel du projet en 3 étapes, affiché avant les questions. */
+export function ProjectIntro({ title, steps }: { title: string; steps: { emoji: string; text: ReactNode }[] }) {
+  return (
+    <section className="bg-brand-600 uny-pattern rounded-[var(--radius-card)] p-5 text-white shadow-[var(--shadow-float)]">
+      <h2 className="font-extrabold">{title}</h2>
+      <ol className="mt-3 space-y-2.5">
+        {steps.map((s, i) => (
+          <li key={i} className="flex items-start gap-3 text-sm">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-white/15 text-base" aria-hidden>
+              {s.emoji}
+            </span>
+            <span className="pt-1.5 leading-snug">{s.text}</span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}

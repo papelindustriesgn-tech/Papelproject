@@ -8,15 +8,12 @@ import { param, type SearchParams } from "@/lib/url";
 import {
   BENEFIT_TYPES,
   PARTNER_DISCOUNT,
-  PARTNER_EXPECTATIONS,
-  PARTNER_EXPECTED_STUDENTS,
-  PARTNER_PAYMENT_METHODS,
-  SURVEY_BUDGET,
+  PARTNER_EXPECTATION_LABELS,
   SURVEY_CATEGORIES,
-  SURVEY_MIN_DISCOUNT,
+  SURVEY_MIN_VERSION,
   SURVEY_PAYMENT,
-  SURVEY_VERSION,
-  SURVEY_WOULD_PAY,
+  SURVEY_UNDERSTOOD,
+  SURVEY_WOULD_USE,
   type Option,
 } from "@/lib/survey";
 import { getPartnerSurveyResponses, getSurveyResponses, universityOf } from "@/lib/survey-results";
@@ -61,6 +58,9 @@ function tally<T>(list: readonly Option[], rows: T[], get: (r: T) => string[] | 
   return sort ? out.sort((a, b) => b.count - a.count) : out;
 }
 
+const share = <T,>(rows: T[], pred: (r: T) => boolean) =>
+  rows.length ? `${Math.round((rows.filter(pred).length / rows.length) * 100)} %` : "—";
+
 function Empty({ text }: { text: React.ReactNode }) {
   return <p className="text-muted rounded-[var(--radius-card)] bg-white p-8 text-center shadow-[var(--shadow-card)]">{text}</p>;
 }
@@ -87,7 +87,7 @@ async function StudentResults() {
       .eq("is_test_account", false)
       .in("role", ["student", "admin"]),
   ]);
-  const responses = all.filter((r) => r.version >= SURVEY_VERSION);
+  const responses = all.filter((r) => r.version >= SURVEY_MIN_VERSION);
   const n = responses.length;
   const old = all.length - n;
   const rate = users ? Math.round((n / users) * 100) : 0;
@@ -97,18 +97,8 @@ async function StudentResults() {
     <>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Réponses" value={n} hint={`${rate} % des ${users ?? 0} inscrits`} tone="brand" />
-        <StatCard
-          label="Payer avec Orange Money"
-          value={n ? `${Math.round((responses.filter((r) => r.payment_pref === "orange_money").length / n) * 100)} %` : "—"}
-          tone="mango"
-        />
-        <StatCard
-          label="Veulent 30 % ou plus"
-          value={
-            n ? `${Math.round((responses.filter((r) => ["30", "50"].includes(r.min_discount ?? "")).length / n) * 100)} %` : "—"
-          }
-          tone="mint"
-        />
+        <StatCard label="Ont compris le projet" value={share(responses, (r) => r.understood === "oui")} tone="mint" />
+        <StatCard label="Utiliseraient Uny" value={share(responses, (r) => r.would_use === "oui")} tone="mango" />
         <StatCard label="Acceptent d'être contactés" value={responses.filter((r) => r.contact_ok).length} />
       </div>
       {old > 0 && (
@@ -131,26 +121,25 @@ async function StudentResults() {
         <>
           <div className="grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
             <Bars
+              title="Ont compris à quoi sert Uny"
+              rows={tally(SURVEY_UNDERSTOOD, responses, (r) => r.understood, false)}
+              total={n}
+            />
+            <Bars
               title="Domaines où ils veulent des réductions"
               rows={tally(SURVEY_CATEGORIES, responses, (r) => r.categories)}
               total={n}
             />
-            <Bars title="Types d'avantages préférés" rows={tally(BENEFIT_TYPES, responses, (r) => r.benefit_types)} total={n} />
             <Bars
-              title="Réduction qui les fait changer de commerce"
-              rows={tally(SURVEY_MIN_DISCOUNT, responses, (r) => r.min_discount, false)}
-              total={n}
-            />
-            <Bars
-              title="Budget mensuel (repas, sorties, transport, internet)"
-              rows={tally(SURVEY_BUDGET, responses, (r) => r.monthly_budget, false)}
+              title="Utiliseraient Uny pour leurs réductions"
+              rows={tally(SURVEY_WOULD_USE, responses, (r) => r.would_use, false)}
               total={n}
             />
             <Bars title="Moyen de paiement préféré" rows={tally(SURVEY_PAYMENT, responses, (r) => r.payment_pref)} total={n} />
           </div>
 
           <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
-            <h2 className="font-bold">Avantages et enseignes demandés ({comments.length})</h2>
+            <h2 className="font-bold">Idées pour améliorer Uny ({comments.length})</h2>
             <ul className="divide-line mt-3 divide-y">
               {comments.map((r) => (
                 <li key={r.user_id} className="py-3 text-sm">
@@ -176,7 +165,7 @@ async function StudentResults() {
                   </div>
                   {r.missing && (
                     <p className="mt-1 break-words whitespace-pre-line">
-                      <span className="text-muted">Avantage souhaité : </span>
+                      <span className="text-muted">Idée : </span>
                       {r.missing}
                     </p>
                   )}
@@ -209,23 +198,13 @@ async function PartnerResults() {
     <>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Réponses" value={n} hint={`sur ${partners ?? 0} partenaires actifs`} tone="brand" />
-        <StatCard
-          label="Acceptent Orange Money"
-          value={
-            n ? `${Math.round((responses.filter((r) => r.payment_methods.includes("orange_money")).length / n) * 100)} %` : "—"
-          }
-          tone="mango"
-        />
+        <StatCard label="Ont compris le projet" value={share(responses, (r) => r.understood === "oui")} tone="mint" />
         <StatCard
           label="Offrent 20 % ou plus"
-          value={
-            n
-              ? `${Math.round((responses.filter((r) => ["20_30", "plus_30"].includes(r.discount_range)).length / n) * 100)} %`
-              : "—"
-          }
-          tone="mint"
+          value={share(responses, (r) => ["20_30", "plus_30"].includes(r.discount_range))}
+          tone="mango"
         />
-        <StatCard label="Prêts à payer la mise en avant" value={responses.filter((r) => r.would_pay === "oui").length} />
+        <StatCard label="Idées envoyées" value={comments.length} />
       </div>
 
       {n === 0 ? (
@@ -241,6 +220,11 @@ async function PartnerResults() {
         <>
           <div className="grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
             <Bars
+              title="Ont compris comment Uny leur amène des clients"
+              rows={tally(SURVEY_UNDERSTOOD, responses, (r) => r.understood, false)}
+              total={n}
+            />
+            <Bars
               title="Avantages qu'ils peuvent offrir"
               rows={tally(BENEFIT_TYPES, responses, (r) => r.offer_types)}
               total={n}
@@ -252,28 +236,13 @@ async function PartnerResults() {
             />
             <Bars
               title="Ce qu'ils attendent d'Uny"
-              rows={tally(PARTNER_EXPECTATIONS, responses, (r) => r.expectations)}
-              total={n}
-            />
-            <Bars
-              title="Nouveaux clients étudiants espérés par mois"
-              rows={tally(PARTNER_EXPECTED_STUDENTS, responses, (r) => r.expected_students, false)}
-              total={n}
-            />
-            <Bars
-              title="Moyens de paiement acceptés"
-              rows={tally(PARTNER_PAYMENT_METHODS, responses, (r) => r.payment_methods)}
-              total={n}
-            />
-            <Bars
-              title="Paieraient une mise en avant"
-              rows={tally(SURVEY_WOULD_PAY, responses, (r) => r.would_pay, false)}
+              rows={tally(PARTNER_EXPECTATION_LABELS, responses, (r) => r.expectations)}
               total={n}
             />
           </div>
 
           <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
-            <h2 className="font-bold">Remarques des partenaires ({comments.length})</h2>
+            <h2 className="font-bold">Idées des partenaires ({comments.length})</h2>
             <ul className="divide-line mt-3 divide-y">
               {comments.map((r) => (
                 <li key={r.partner_id} className="py-3 text-sm">

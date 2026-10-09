@@ -979,12 +979,13 @@ export type Database = {
           created_at: string;
           discount_range: string;
           expectations: string[];
-          expected_students: string;
+          expected_students: string | null;
           offer_types: string[];
           partner_id: string;
           payment_methods: string[];
+          understood: string | null;
           updated_at: string;
-          would_pay: string;
+          would_pay: string | null;
         };
         Insert: {
           answered_by?: string | null;
@@ -992,12 +993,13 @@ export type Database = {
           created_at?: string;
           discount_range: string;
           expectations?: string[];
-          expected_students: string;
+          expected_students?: string | null;
           offer_types?: string[];
           partner_id: string;
           payment_methods?: string[];
+          understood?: string | null;
           updated_at?: string;
-          would_pay: string;
+          would_pay?: string | null;
         };
         Update: {
           answered_by?: string | null;
@@ -1005,12 +1007,13 @@ export type Database = {
           created_at?: string;
           discount_range?: string;
           expectations?: string[];
-          expected_students?: string;
+          expected_students?: string | null;
           offer_types?: string[];
           partner_id?: string;
           payment_methods?: string[];
+          understood?: string | null;
           updated_at?: string;
-          would_pay?: string;
+          would_pay?: string | null;
         };
         Relationships: [
           {
@@ -1605,10 +1608,12 @@ export type Database = {
           payment_pref: string | null;
           rating: number | null;
           source: string | null;
+          understood: string | null;
           updated_at: string;
           user_id: string;
           version: number;
           would_pay: string | null;
+          would_use: string | null;
         };
         Insert: {
           benefit_types?: string[];
@@ -1624,10 +1629,12 @@ export type Database = {
           payment_pref?: string | null;
           rating?: number | null;
           source?: string | null;
+          understood?: string | null;
           updated_at?: string;
           user_id: string;
           version?: number;
           would_pay?: string | null;
+          would_use?: string | null;
         };
         Update: {
           benefit_types?: string[];
@@ -1643,10 +1650,12 @@ export type Database = {
           payment_pref?: string | null;
           rating?: number | null;
           source?: string | null;
+          understood?: string | null;
           updated_at?: string;
           user_id?: string;
           version?: number;
           would_pay?: string | null;
+          would_use?: string | null;
         };
         Relationships: [
           {

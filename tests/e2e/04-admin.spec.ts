@@ -69,15 +69,11 @@ test("enquête d'avis : invitation, réponse, résultats admin et export", async
   await page.getByRole("button", { name: "Envoyer mon avis" }).click();
   await expect(page.getByText("Il manque quelques réponses.")).toBeVisible();
 
+  await expect(page.getByText("Uny en 3 points")).toBeVisible();
+  await page.locator("label", { hasText: "Oui, c'est clair" }).click();
   await page.locator("label", { hasText: "Restauration" }).click();
   await page.locator("label", { hasText: "Tech" }).click();
-  await page.locator("label", { hasText: "Réduction en %" }).click();
-  await page.locator("label", { hasText: "Livraison offerte" }).click();
-  await page
-    .locator("label")
-    .filter({ hasText: /^30 %$/ })
-    .click();
-  await page.locator("label", { hasText: "100 000 à 300 000 GNF" }).click();
+  await page.locator("label", { hasText: "Oui, sûrement" }).click();
   await page.locator("label", { hasText: "Orange Money" }).click();
   await page.fill("textarea[name=missing]", `-30 % sur internet ${run}`);
   await page.getByText("J'accepte d'être contacté(e)").click();

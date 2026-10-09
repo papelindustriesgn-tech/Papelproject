@@ -1,4 +1,4 @@
-import { SURVEY_VERSION } from "@/lib/survey";
+import { SURVEY_MIN_VERSION } from "@/lib/survey";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, MessageSquareHeart, ShieldCheck } from "lucide-react";
@@ -82,7 +82,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </Link>
       )}
 
-      {!survey.error && (!survey.data || survey.data.version < SURVEY_VERSION) && (
+      {!survey.error && (!survey.data || survey.data.version < SURVEY_MIN_VERSION) && (
         <Link
           href="/avis"
           className="bg-brand-50 ring-brand-100 hover:bg-brand-100 flex items-center gap-3 rounded-[var(--radius-card)] p-4 ring-1 transition"
@@ -96,8 +96,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             </span>
             <span className="text-muted block text-sm">
               {survey.data
-                ? "Nouveau questionnaire : 2 minutes pour choisir les réductions qu'on négocie pour toi."
-                : "2 minutes pour nous aider à construire l'app dont tu as besoin."}
+                ? "5 questions rapides pour choisir les réductions qu'on négocie pour toi."
+                : "1 minute pour nous aider à améliorer Uny."}
             </span>
           </span>
           <ArrowRight className="text-brand-600 size-5 shrink-0" aria-hidden />

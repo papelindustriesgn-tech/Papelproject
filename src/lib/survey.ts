@@ -6,8 +6,22 @@ import { DEAL_CATEGORIES } from "@/lib/constants";
  */
 export type Option = { value: string; label: string };
 
-/** Version du questionnaire étudiant : ceux qui ont répondu à une version plus ancienne sont réinvités. */
-export const SURVEY_VERSION = 2;
+/** Version du questionnaire étudiant enregistrée avec chaque réponse. */
+export const SURVEY_VERSION = 3;
+/** Les inscrits qui ont répondu avant cette version sont réinvités (v2 et v3 portent sur les avantages). */
+export const SURVEY_MIN_VERSION = 2;
+
+export const SURVEY_UNDERSTOOD: Option[] = [
+  { value: "oui", label: "Oui, c'est clair" },
+  { value: "un_peu", label: "Un peu" },
+  { value: "non", label: "Pas vraiment" },
+];
+
+export const SURVEY_WOULD_USE: Option[] = [
+  { value: "oui", label: "Oui, sûrement" },
+  { value: "peut-etre", label: "Peut-être" },
+  { value: "non", label: "Non" },
+];
 
 // -----------------------------------------------------------------------------
 // Étudiants
@@ -62,8 +76,12 @@ export const PARTNER_EXPECTATIONS: Option[] = [
   { value: "heures_creuses", label: "⏰ Remplir les heures creuses" },
   { value: "visibilite", label: "📣 Être visible dans l'app" },
   { value: "fidelisation", label: "🔁 Fidéliser les étudiants" },
-  { value: "zero_fraude", label: "✅ Être sûr que le client est étudiant" },
   { value: "paiement", label: "🟠 Être payé facilement (Orange Money)" },
+];
+/** Attentes proposées dans les versions précédentes (affichées dans les résultats). */
+export const PARTNER_EXPECTATION_LABELS: Option[] = [
+  ...PARTNER_EXPECTATIONS,
+  { value: "zero_fraude", label: "✅ Être sûr que le client est étudiant" },
   { value: "statistiques", label: "📊 Suivre mes résultats" },
 ];
 

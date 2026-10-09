@@ -3,18 +3,16 @@
 import { useActionState, useState } from "react";
 import { FormMessage, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { MultiChoice, Question, SingleChoice, ThankYou } from "@/components/survey/questions";
-import { BENEFIT_TYPES, SURVEY_BUDGET, SURVEY_CATEGORIES, SURVEY_MIN_DISCOUNT, SURVEY_PAYMENT } from "@/lib/survey";
+import { MultiChoice, ProjectIntro, Question, SingleChoice, ThankYou } from "@/components/survey/questions";
+import { SURVEY_CATEGORIES, SURVEY_PAYMENT, SURVEY_UNDERSTOOD, SURVEY_WOULD_USE } from "@/lib/survey";
 import { submitSurvey } from "./actions";
 
 export type SurveyValues = {
+  understood: string;
   categories: string[];
-  benefit_types: string[];
-  min_discount: string;
-  monthly_budget: string;
+  would_use: string;
   payment_pref: string;
   missing: string;
-  partners: string;
   contact_ok: boolean;
 };
 
@@ -27,7 +25,7 @@ export function SurveyForm({ initial }: { initial: SurveyValues }) {
   if (state.ok)
     return (
       <ThankYou
-        text="Tes réponses nous disent quels commerçants démarcher et quels avantages négocier pour toi."
+        text="Grâce à toi, on sait quels commerçants démarcher et quoi améliorer."
         href="/accueil"
         cta="Retour à l'accueil"
       />
@@ -35,45 +33,29 @@ export function SurveyForm({ initial }: { initial: SurveyValues }) {
 
   return (
     <form action={action} className="space-y-4" noValidate>
+      <ProjectIntro
+        title="Uny en 3 points"
+        steps={[
+          { emoji: "🪪", text: "Ta carte étudiante dans ton téléphone, vérifiée par ton université." },
+          { emoji: "🎟️", text: "Des codes promo chez les commerçants partenaires : restos, internet, sport…" },
+          { emoji: "🟠", text: "Tu paies directement le commerçant avec Orange Money. C'est gratuit pour toi." },
+        ]}
+      />
       {state.error && <FormMessage>{state.error}</FormMessage>}
 
-      <Question n={1} title="Où veux-tu des réductions en priorité ?" hint="Plusieurs choix possibles." error={err.categories}>
+      <Question n={1} title="C'est clair pour toi, à quoi sert Uny ?" error={err.understood}>
+        <SingleChoice name="understood" options={SURVEY_UNDERSTOOD} value={v.understood} onChange={(x) => set("understood", x)} />
+      </Question>
+
+      <Question n={2} title="Où veux-tu des réductions en priorité ?" hint="Plusieurs choix possibles." error={err.categories}>
         <MultiChoice name="categories" options={SURVEY_CATEGORIES} value={v.categories} onChange={(x) => set("categories", x)} />
       </Question>
 
-      <Question n={2} title="Quels types d'avantages préfères-tu ?" hint="Plusieurs choix possibles." error={err.benefit_types}>
-        <MultiChoice
-          name="benefit_types"
-          options={BENEFIT_TYPES}
-          value={v.benefit_types}
-          onChange={(x) => set("benefit_types", x)}
-        />
+      <Question n={3} title="Utiliserais-tu Uny pour avoir tes réductions ?" error={err.would_use}>
+        <SingleChoice name="would_use" options={SURVEY_WOULD_USE} value={v.would_use} onChange={(x) => set("would_use", x)} />
       </Question>
 
-      <Question n={3} title="À partir de quelle réduction changerais-tu de commerce ?" error={err.min_discount}>
-        <SingleChoice
-          name="min_discount"
-          options={SURVEY_MIN_DISCOUNT}
-          value={v.min_discount}
-          onChange={(x) => set("min_discount", x)}
-        />
-      </Question>
-
-      <Question
-        n={4}
-        title="Combien dépenses-tu par mois en repas, sorties, transport et internet ?"
-        hint="Une estimation suffit : ça nous aide à négocier les bonnes offres."
-        error={err.monthly_budget}
-      >
-        <SingleChoice
-          name="monthly_budget"
-          options={SURVEY_BUDGET}
-          value={v.monthly_budget}
-          onChange={(x) => set("monthly_budget", x)}
-        />
-      </Question>
-
-      <Question n={5} title="Comment préfères-tu payer chez les partenaires ?" error={err.payment_pref}>
+      <Question n={4} title="Comment préfères-tu payer ?" error={err.payment_pref}>
         <SingleChoice
           name="payment_pref"
           options={SURVEY_PAYMENT}
@@ -83,25 +65,9 @@ export function SurveyForm({ initial }: { initial: SurveyValues }) {
       </Question>
 
       <Question
-        n={6}
-        title="Quelles enseignes aimerais-tu voir sur Uny ?"
-        hint="Facultatif : restaurants, boutiques, salles de sport, opérateurs…"
-        error={err.partners}
-      >
-        <Textarea
-          name="partners"
-          rows={2}
-          maxLength={500}
-          value={v.partners}
-          onChange={(e) => set("partners", e.target.value)}
-          placeholder="Ex. : un fast-food près de l'université, une salle de sport à Kipé"
-        />
-      </Question>
-
-      <Question
-        n={7}
-        title="Un avantage que tu aimerais vraiment avoir ?"
-        hint="Facultatif : une idée, une envie…"
+        n={5}
+        title="Une idée pour améliorer Uny ?"
+        hint="Facultatif : un avantage, une enseigne que tu aimerais voir, un problème…"
         error={err.missing}
       >
         <Textarea
@@ -110,7 +76,7 @@ export function SurveyForm({ initial }: { initial: SurveyValues }) {
           maxLength={1000}
           value={v.missing}
           onChange={(e) => set("missing", e.target.value)}
-          placeholder="Ex. : -30 % sur les forfaits internet"
+          placeholder="Ex. : des réductions sur les forfaits internet"
         />
       </Question>
 

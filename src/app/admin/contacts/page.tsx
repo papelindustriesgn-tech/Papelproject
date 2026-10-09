@@ -1,4 +1,4 @@
-import { SURVEY_VERSION } from "@/lib/survey";
+import { SURVEY_MIN_VERSION } from "@/lib/survey";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/constants";
@@ -19,7 +19,7 @@ export default async function ContactsPage() {
       .order("created_at", { ascending: false })
       .limit(5000),
     // Seules les réponses au questionnaire actuel comptent : les autres sont réinvités
-    supabase.from("survey_responses").select("user_id").gte("version", SURVEY_VERSION).limit(5000),
+    supabase.from("survey_responses").select("user_id").gte("version", SURVEY_MIN_VERSION).limit(5000),
   ]);
   const done = new Set((answered ?? []).map((r) => r.user_id));
   const contacts: Contact[] = (profiles ?? [])

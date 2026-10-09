@@ -3,24 +3,15 @@
 import { useActionState, useState } from "react";
 import { FormMessage, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { MultiChoice, Question, SingleChoice, ThankYou } from "@/components/survey/questions";
-import {
-  BENEFIT_TYPES,
-  PARTNER_DISCOUNT,
-  PARTNER_EXPECTATIONS,
-  PARTNER_EXPECTED_STUDENTS,
-  PARTNER_PAYMENT_METHODS,
-  SURVEY_WOULD_PAY,
-} from "@/lib/survey";
+import { MultiChoice, ProjectIntro, Question, SingleChoice, ThankYou } from "@/components/survey/questions";
+import { BENEFIT_TYPES, PARTNER_DISCOUNT, PARTNER_EXPECTATIONS, SURVEY_UNDERSTOOD } from "@/lib/survey";
 import { submitPartnerSurvey } from "./actions";
 
 export type PartnerSurveyValues = {
+  understood: string;
   offer_types: string[];
   discount_range: string;
   expectations: string[];
-  expected_students: string;
-  payment_methods: string[];
-  would_pay: string;
   comments: string;
 };
 
@@ -41,18 +32,30 @@ export function PartnerSurveyForm({ initial }: { initial: PartnerSurveyValues })
 
   return (
     <form action={action} className="space-y-4" noValidate>
+      <ProjectIntro
+        title="Uny en 3 points"
+        steps={[
+          { emoji: "🎓", text: "Les étudiants vérifiés trouvent votre offre dans l'app Uny." },
+          { emoji: "🎟️", text: "Ils viennent avec un code promo : vous le validez en 2 secondes dans « Scanner »." },
+          { emoji: "🟠", text: "Ils vous paient directement sur votre code marchand Orange Money. Gratuit pour vous." },
+        ]}
+      />
       {state.error && <FormMessage>{state.error}</FormMessage>}
 
+      <Question n={1} title="C'est clair pour vous, comment Uny vous amène des clients ?" error={err.understood}>
+        <SingleChoice name="understood" options={SURVEY_UNDERSTOOD} value={v.understood} onChange={(x) => set("understood", x)} />
+      </Question>
+
       <Question
-        n={1}
-        title="Quels avantages êtes-vous prêt à offrir aux étudiants ?"
+        n={2}
+        title="Quel avantage pouvez-vous offrir aux étudiants ?"
         hint="Plusieurs choix possibles."
         error={err.offer_types}
       >
         <MultiChoice name="offer_types" options={BENEFIT_TYPES} value={v.offer_types} onChange={(x) => set("offer_types", x)} />
       </Question>
 
-      <Question n={2} title="Quelle réduction pouvez-vous accorder aux étudiants ?" error={err.discount_range}>
+      <Question n={3} title="Quelle réduction pouvez-vous accorder ?" error={err.discount_range}>
         <SingleChoice
           name="discount_range"
           options={PARTNER_DISCOUNT}
@@ -61,7 +64,7 @@ export function PartnerSurveyForm({ initial }: { initial: PartnerSurveyValues })
         />
       </Question>
 
-      <Question n={3} title="Qu'attendez-vous d'Uny en priorité ?" hint="Plusieurs choix possibles." error={err.expectations}>
+      <Question n={4} title="Qu'attendez-vous d'Uny en priorité ?" hint="Plusieurs choix possibles." error={err.expectations}>
         <MultiChoice
           name="expectations"
           options={PARTNER_EXPECTATIONS}
@@ -70,42 +73,10 @@ export function PartnerSurveyForm({ initial }: { initial: PartnerSurveyValues })
         />
       </Question>
 
-      <Question n={4} title="Combien de nouveaux clients étudiants espérez-vous par mois ?" error={err.expected_students}>
-        <SingleChoice
-          name="expected_students"
-          options={PARTNER_EXPECTED_STUDENTS}
-          value={v.expected_students}
-          onChange={(x) => set("expected_students", x)}
-        />
-      </Question>
-
       <Question
         n={5}
-        title="Quels moyens de paiement acceptez-vous ?"
-        hint="Plusieurs choix possibles."
-        error={err.payment_methods}
-      >
-        <MultiChoice
-          name="payment_methods"
-          options={PARTNER_PAYMENT_METHODS}
-          value={v.payment_methods}
-          onChange={(x) => set("payment_methods", x)}
-        />
-      </Question>
-
-      <Question
-        n={6}
-        title="Seriez-vous prêt à payer pour être mis en avant auprès des étudiants ?"
-        hint="Uny est gratuit pendant le lancement. La mise en avant serait une option."
-        error={err.would_pay}
-      >
-        <SingleChoice name="would_pay" options={SURVEY_WOULD_PAY} value={v.would_pay} onChange={(x) => set("would_pay", x)} />
-      </Question>
-
-      <Question
-        n={7}
-        title="Autre chose que vous attendez d'Uny ?"
-        hint="Facultatif : une idée, un besoin, une remarque…"
+        title="Une idée pour améliorer Uny ?"
+        hint="Facultatif : un besoin, une question, une remarque…"
         error={err.comments}
       >
         <Textarea

@@ -136,16 +136,12 @@ test("questionnaire partenaire : attentes et avantages proposés, visibles par l
   await page.getByRole("button", { name: "Envoyer mes réponses" }).click();
   await expect(page.getByText("Il manque quelques réponses.")).toBeVisible();
 
+  await expect(page.getByText("Uny en 3 points")).toBeVisible();
+  await page.locator("label", { hasText: "Un peu" }).click();
   await page.locator("label", { hasText: "Prix étudiant fixe" }).click();
   await page.locator("label", { hasText: "10 à 20 %" }).click();
   await page.locator("label", { hasText: "Remplir les heures creuses" }).click();
-  await page.locator("label", { hasText: "Être sûr que le client est étudiant" }).click();
-  await page.locator("label", { hasText: "20 à 50" }).click();
-  await page.locator("label").filter({ hasText: /^🟠 Orange Money$/ }).click();
-  await page
-    .locator("label")
-    .filter({ hasText: /^Peut-être$/ })
-    .click();
+  await page.locator("label", { hasText: "Être payé facilement" }).click();
   await page.fill("textarea[name=comments]", `Midi en semaine ${run}`);
   await page.getByRole("button", { name: "Envoyer mes réponses" }).click();
   await expect(page.getByText("Merci pour ton avis !")).toBeVisible();
@@ -159,5 +155,5 @@ test("questionnaire partenaire : attentes et avantages proposés, visibles par l
   const res = await page.request.get("/admin/avis/export?type=partenaires");
   const csv = await res.text();
   expect(csv).toContain(`Midi en semaine ${run}`);
-  expect(csv).toContain("Remplir les heures creuses, Être sûr que le client est étudiant");
+  expect(csv).toContain("Remplir les heures creuses, Être payé facilement (Orange Money)");
 });

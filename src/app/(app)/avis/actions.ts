@@ -5,12 +5,11 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { zodFieldErrors, type FormState } from "@/lib/actions/types";
 import {
-  BENEFIT_TYPES,
-  SURVEY_BUDGET,
   SURVEY_CATEGORIES,
-  SURVEY_MIN_DISCOUNT,
   SURVEY_PAYMENT,
+  SURVEY_UNDERSTOOD,
   SURVEY_VERSION,
+  SURVEY_WOULD_USE,
   type Option,
 } from "@/lib/survey";
 
@@ -18,13 +17,11 @@ const values = (list: readonly Option[]) => list.map((o) => o.value) as [string,
 const one = (list: readonly Option[]) => z.enum(values(list), { error: "Choisis une réponse" });
 
 const schema = z.object({
+  understood: one(SURVEY_UNDERSTOOD),
   categories: z.array(z.enum(values(SURVEY_CATEGORIES))).min(1, "Choisis au moins un domaine"),
-  benefit_types: z.array(z.enum(values(BENEFIT_TYPES))).min(1, "Choisis au moins un type d'avantage"),
-  min_discount: one(SURVEY_MIN_DISCOUNT),
-  monthly_budget: one(SURVEY_BUDGET),
+  would_use: one(SURVEY_WOULD_USE),
   payment_pref: one(SURVEY_PAYMENT),
   missing: z.string().trim().max(1000, "1 000 caractères maximum"),
-  partners: z.string().trim().max(500, "500 caractères maximum"),
 });
 
 export async function submitSurvey(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -33,13 +30,11 @@ export async function submitSurvey(_prev: FormState, formData: FormData): Promis
     return typeof v === "string" && v !== "" ? v : undefined;
   };
   const parsed = schema.safeParse({
+    understood: str("understood"),
     categories: formData.getAll("categories"),
-    benefit_types: formData.getAll("benefit_types"),
-    min_discount: str("min_discount"),
-    monthly_budget: str("monthly_budget"),
+    would_use: str("would_use"),
     payment_pref: str("payment_pref"),
     missing: formData.get("missing") ?? "",
-    partners: formData.get("partners") ?? "",
   });
   if (!parsed.success) return { error: "Il manque quelques réponses.", fieldErrors: zodFieldErrors(parsed.error.issues) };
 
@@ -51,13 +46,11 @@ export async function submitSurvey(_prev: FormState, formData: FormData): Promis
   const { error } = await supabase.from("survey_responses").upsert({
     user_id: auth.user.id,
     version: SURVEY_VERSION,
+    understood: d.understood,
     categories: d.categories,
-    benefit_types: d.benefit_types,
-    min_discount: d.min_discount,
-    monthly_budget: d.monthly_budget,
+    would_use: d.would_use,
     payment_pref: d.payment_pref,
     missing: d.missing || null,
-    partners: d.partners || null,
     contact_ok: formData.get("contact_ok") === "on",
     updated_at: new Date().toISOString(),
   });

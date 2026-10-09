@@ -107,7 +107,7 @@ export default async function PartnerHome() {
           <span className="min-w-0 flex-1">
             <span className="text-ink block font-bold">Quelles sont vos attentes ?</span>
             <span className="text-muted block text-sm">
-              2 minutes : les avantages que vous pouvez offrir et ce que vous attendez d&apos;Uny.
+              1 minute : l&apos;avantage que vous pouvez offrir et ce que vous attendez d&apos;Uny.
             </span>
           </span>
           <ArrowRight className="text-brand-600 size-5 shrink-0" aria-hidden />
