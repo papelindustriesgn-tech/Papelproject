@@ -121,6 +121,8 @@ test("marketplace : les promos des partenaires s'affichent en premier avec le po
   // Les annonces entre étudiants (sans prix barré) ne sont pas dans l'onglet Promos
   await expect(page.getByText("iPhone 11 64 Go")).toHaveCount(0);
   await card.click();
+  await expect(page).toHaveURL(/\/marketplace\/[0-9a-f-]{36}$/);
+  await expect(page.getByRole("heading", { name: `Casque promo ${run}` })).toBeVisible();
   await expect(page.getByText("100 000 GNF")).toBeVisible();
   await expect(page.getByRole("link", { name: /Ouvrir Orange Money/ })).toBeVisible();
 });

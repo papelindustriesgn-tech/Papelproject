@@ -12,11 +12,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const admin = await requireAdmin();
   const supabase = await createClient();
   // Les demandes d'inscription sont traitées par les universités elles-mêmes : pas dans le badge admin
-  const [{ count }, { count: bac }, { count: applications }, { count: universities }] = await Promise.all([
+  const [{ count }, { count: bac }, { count: applications }, { count: universities }, { count: signups }] = await Promise.all([
     supabase.from("student_verifications").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("bac_verifications").select("id", { count: "exact", head: true }).in("status", ["pending", "manual_review"]),
     supabase.from("partner_applications").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("university_applications").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    supabase
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "student")
+      .eq("account_status", "pending"),
   ]);
 
   return (
@@ -37,7 +42,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </header>
       <div className="mx-auto max-w-7xl px-4 py-4 lg:grid lg:grid-cols-[14rem_1fr] lg:gap-8 lg:py-8">
         <aside className="lg:sticky lg:top-22 lg:self-start">
-          <AdminNav pending={(count ?? 0) + (bac ?? 0)} applications={applications ?? 0} universities={universities ?? 0} />
+          <AdminNav pending={(count ?? 0) + (bac ?? 0)} applications={applications ?? 0} universities={universities ?? 0}
+            signups={signups ?? 0}
+          />
         </aside>
         <main className="mt-4 min-w-0 lg:mt-0">{children}</main>
       </div>

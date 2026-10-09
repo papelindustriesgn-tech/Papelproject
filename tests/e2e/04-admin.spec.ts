@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ADMIN, latestMailLink, login, logout, serviceRest, signUp } from "./helpers";
+import { ADMIN, createAuthUser, latestMailLink, login, logout, serviceRest, signUp } from "./helpers";
 
 test("un étudiant n'accède pas à l'administration", async ({ page }) => {
   await signUp(page);
@@ -147,4 +147,49 @@ test("questionnaire : relances automatiques (notification + email) tant que l'é
   // La relance apparaît dans les notifications de l'étudiant
   await page.goto("/notifications");
   await expect(page.getByText("Ton avis compte").first()).toBeVisible();
+});
+
+test("inscriptions : chaque compte attend la validation de l'admin, les comptes suspects sont signalés", async ({ page }) => {
+  // Inscription : le compte est en attente, sans accès à la carte
+  const s = await signUp(page, undefined, { pending: true });
+  await expect(page.getByText(/ton inscription est bien reçue/)).toBeVisible();
+  await page.goto("/carte");
+  await expect(page.getByText(/ton inscription est bien reçue/)).toBeVisible();
+  await logout(page);
+
+  // Un compte « fictif » (example.com, créé par l'API) est signalé
+  const run = `${Date.now()}`.slice(-7);
+  const fake = await createAuthUser({
+    email: `robot.${run}@example.org`,
+    password: "Robot2026x",
+    email_confirm: true,
+    user_metadata: { first_name: "Robot", last_name: `Test${run}`, phone: `61${run}`, field_of_study: "X" },
+  });
+  expect(fake.ok).toBeTruthy();
+
+  // L'admin voit les deux, valide le vrai et refuse le faux
+  await login(page, ADMIN.email, ADMIN.password);
+  await page.goto("/admin/inscriptions");
+  await expect(page.getByRole("link", { name: /Inscriptions à valider/ })).toBeVisible();
+  await page.getByPlaceholder("Nom, email, téléphone…").fill(s.last);
+  await page.keyboard.press("Enter");
+  await page.getByLabel(`Sélectionner ${s.first} ${s.last}`).check();
+  await page.getByRole("button", { name: "Valider" }).click();
+  await expect(page.getByText("1 compte validé ✅")).toBeVisible();
+
+  await page.goto("/admin/inscriptions?filtre=suspects");
+  const row = page.locator("li", { hasText: `Robot Test${run}` });
+  await expect(row.getByText("⚠ Email fictif")).toBeVisible();
+  await row.getByRole("checkbox").check();
+  await page.fill("input[name=note]", "Compte non vérifiable");
+  await page.getByRole("button", { name: "Refuser" }).click();
+  await expect(page.getByText("1 compte refusé ✅")).toBeVisible();
+  await logout(page);
+
+  // L'étudiant validé accède à l'app et reçoit la notification
+  await login(page, s.email, s.password);
+  await page.goto("/notifications");
+  await expect(page.getByText("Ton inscription est validée 🎉")).toBeVisible();
+  await page.goto("/carte");
+  await expect(page.getByText(/ton inscription est bien reçue/)).toHaveCount(0);
 });

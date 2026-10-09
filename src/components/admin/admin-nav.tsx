@@ -15,12 +15,14 @@ import {
   ShoppingBag,
   Tag,
   UserCheck,
+  UserPlus,
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export const ADMIN_NAV = [
   { href: "/admin", label: "Vue d'ensemble", icon: LayoutDashboard },
+  { href: "/admin/inscriptions", label: "Inscriptions à valider", icon: UserPlus },
   { href: "/admin/verifications", label: "Vérifications", icon: UserCheck },
   { href: "/admin/utilisateurs", label: "Utilisateurs", icon: Users },
   { href: "/admin/universites", label: "Universités", icon: Landmark },
@@ -39,10 +41,12 @@ export function AdminNav({
   pending,
   applications = 0,
   universities = 0,
+  signups = 0,
 }: {
   pending: number;
   applications?: number;
   universities?: number;
+  signups?: number;
 }) {
   const pathname = usePathname();
   return (
@@ -64,6 +68,9 @@ export function AdminNav({
               >
                 <Icon className="size-4" aria-hidden />
                 <span className="flex-1">{label}</span>
+                {href === "/admin/inscriptions" && signups > 0 && (
+                  <span className="bg-coral-500 rounded-full px-1.5 text-xs font-bold text-white">{signups}</span>
+                )}
                 {href === "/admin/verifications" && pending > 0 && (
                   <span className="bg-coral-500 rounded-full px-1.5 text-xs font-bold text-white">{pending}</span>
                 )}

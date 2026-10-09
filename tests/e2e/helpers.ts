@@ -29,7 +29,8 @@ export async function latestMailLink(to: string, pattern = /href="([^"]*auth\/co
   throw new Error(`Aucun email trouvé pour ${to}`);
 }
 
-export async function signUp(page: Page, s = uniqueStudent()) {
+/** Inscription complète ; le compte est ensuite validé (comme le ferait l'admin), sauf `pending: true`. */
+export async function signUp(page: Page, s = uniqueStudent(), { pending = false } = {}) {
   await page.goto("/inscription");
   await page.fill("#first_name", s.first);
   await page.fill("#last_name", s.last);
@@ -47,6 +48,14 @@ export async function signUp(page: Page, s = uniqueStudent()) {
   const link = await latestMailLink(s.email);
   await page.goto(link);
   await page.waitForURL(/\/accueil/);
+  if (!pending) {
+    const res = await serviceRest(`profiles?email=eq.${encodeURIComponent(s.email)}`, {
+      method: "PATCH",
+      body: JSON.stringify({ account_status: "approved" }),
+    });
+    expect(res.ok).toBeTruthy();
+    await page.reload();
+  }
   return s;
 }
 
@@ -65,6 +74,11 @@ export async function logout(page: Page) {
 export async function expectNoHorizontalOverflow(page: Page) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(overflow, `débordement horizontal sur ${page.url()}`).toBeLessThanOrEqual(0);
+}
+
+/** Crée un compte directement via l'API d'administration (comme un script ou un robot). */
+export async function createAuthUser(body: Record<string, unknown>) {
+  return serviceRest("../../auth/v1/admin/users", { method: "POST", body: JSON.stringify(body) });
 }
 
 /** Appel REST au Supabase local avec la clé de service (préparation de données de test). */

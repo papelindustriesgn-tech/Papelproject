@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Sidebar } from "@/components/layout/sidebar";
+import { PendingAccount } from "@/components/layout/pending-account";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,6 +13,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (profile.role === "partner") redirect("/partenaire");
   // Les comptes « université » ont leur portail.
   if (profile.role === "university") redirect("/universite");
+  // Chaque inscription étudiante est validée par l'équipe avant l'accès à la carte et aux avantages.
+  if (profile.role === "student" && profile.account_status !== "approved")
+    return (
+      <PendingAccount
+        firstName={profile.first_name}
+        status={profile.account_status === "rejected" ? "rejected" : "pending"}
+        note={profile.review_note}
+      />
+    );
   const supabase = await createClient();
   const { count } = await supabase
     .from("notifications")

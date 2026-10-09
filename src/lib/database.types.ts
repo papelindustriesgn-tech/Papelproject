@@ -1128,6 +1128,7 @@ export type Database = {
       };
       profiles: {
         Row: {
+          account_status: string;
           avatar_url: string | null;
           birth_date: string | null;
           card_layout: string | null;
@@ -1147,7 +1148,11 @@ export type Database = {
           notify_email: boolean;
           notify_jobs: boolean;
           phone: string | null;
+          review_note: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
           role: Database["public"]["Enums"]["user_role"];
+          signup_flags: string[];
           study_level: string | null;
           university_id: number | null;
           university_other: string | null;
@@ -1157,6 +1162,7 @@ export type Database = {
           verified_at: string | null;
         };
         Insert: {
+          account_status?: string;
           avatar_url?: string | null;
           birth_date?: string | null;
           card_layout?: string | null;
@@ -1176,7 +1182,11 @@ export type Database = {
           notify_email?: boolean;
           notify_jobs?: boolean;
           phone?: string | null;
+          review_note?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
           role?: Database["public"]["Enums"]["user_role"];
+          signup_flags?: string[];
           study_level?: string | null;
           university_id?: number | null;
           university_other?: string | null;
@@ -1186,6 +1196,7 @@ export type Database = {
           verified_at?: string | null;
         };
         Update: {
+          account_status?: string;
           avatar_url?: string | null;
           birth_date?: string | null;
           card_layout?: string | null;
@@ -1205,7 +1216,11 @@ export type Database = {
           notify_email?: boolean;
           notify_jobs?: boolean;
           phone?: string | null;
+          review_note?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
           role?: Database["public"]["Enums"]["user_role"];
+          signup_flags?: string[];
           study_level?: string | null;
           university_id?: number | null;
           university_other?: string | null;
@@ -1228,6 +1243,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "countries";
             referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "profiles_reviewed_by_fkey";
+            columns: ["reviewed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "profiles_university_id_fkey";
@@ -2191,9 +2213,11 @@ export type Database = {
       card_template_fields: { Args: Record<PropertyKey, never>; Returns: string[] };
       claim_promo_code: { Args: { p_deal: string }; Returns: Json };
       current_academic_year: { Args: Record<PropertyKey, never>; Returns: string };
+      data_watch_digest: { Args: Record<PropertyKey, never>; Returns: undefined };
       declare_promo_payment: { Args: { p_code: string; p_reference: string }; Returns: undefined };
       expire_enrollments: { Args: Record<PropertyKey, never>; Returns: number };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      is_approved: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_partner_member: { Args: { p_partner: string }; Returns: boolean };
       is_university_member: { Args: { p_university: number }; Returns: boolean };
       new_promo_code: { Args: Record<PropertyKey, never>; Returns: string };
@@ -2246,6 +2270,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      review_signups: { Args: { p_decision: string; p_ids: string[]; p_note?: string }; Returns: number };
       review_verification: {
         Args: { p_approve: boolean; p_reason?: string; p_verification_id: string };
         Returns: {
