@@ -46,6 +46,14 @@ export async function submitPartnerSurvey(_prev: FormState, formData: FormData):
     updated_at: new Date().toISOString(),
   });
   if (error) return { error: "Envoi impossible pour le moment. Réessayez." };
+
+  // L'invitation n'a plus lieu d'être : on la marque comme lue.
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("user_id", profile.id)
+    .eq("type", "partner_survey")
+    .is("read_at", null);
   revalidatePath("/partenaire", "layout");
   revalidatePath("/admin/avis");
   return { ok: true };

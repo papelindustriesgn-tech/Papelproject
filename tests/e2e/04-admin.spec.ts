@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ADMIN, login, signUp, logout } from "./helpers";
+import { ADMIN, latestMailLink, login, logout, serviceRest, signUp } from "./helpers";
 
 test("un étudiant n'accède pas à l'administration", async ({ page }) => {
   await signUp(page);
@@ -112,4 +112,39 @@ test("admin : contacter les inscrits par WhatsApp ou SMS", async ({ page }) => {
   expect(href).toContain(`Bonjour ${s.first}`);
   expect(href).toContain("/avis");
   await expect(row.getByRole("link", { name: "SMS" })).toHaveAttribute("href", /^sms:\+224/);
+});
+
+test("questionnaire : relances automatiques (notification + email) tant que l'étudiant n'a pas répondu", async ({
+  page,
+  request,
+}) => {
+  const s = await signUp(page);
+  const [profile] = await (await serviceRest(`profiles?email=eq.${encodeURIComponent(s.email)}&select=id`)).json();
+  // Inscrit depuis 3 jours, invitation initiale reçue il y a 5 jours
+  const old = (days: number) => new Date(Date.now() - days * 86400_000).toISOString();
+  await serviceRest(`profiles?id=eq.${profile.id}`, { method: "PATCH", body: JSON.stringify({ created_at: old(3) }) });
+  await serviceRest(`notifications?user_id=eq.${profile.id}&type=eq.survey`, {
+    method: "PATCH",
+    body: JSON.stringify({ created_at: old(5), emailed_at: old(5) }),
+  });
+  const count = async () =>
+    (await (await serviceRest(`notifications?user_id=eq.${profile.id}&type=eq.survey&select=id`)).json()).length;
+  expect(await count()).toBe(1);
+
+  expect((await request.get("/api/cron/questionnaires")).status()).toBe(401);
+  const run = () => request.get("/api/cron/questionnaires", { headers: { "user-agent": "vercel-cron/1.0" } });
+  const res = await run();
+  expect(res.ok()).toBeTruthy();
+  expect((await res.json()).reminders).toBeGreaterThanOrEqual(1);
+  expect(await count()).toBe(2);
+  const mail = await latestMailLink(s.email, /href="([^"]*\/avis)"/);
+  expect(mail).toContain("/avis");
+
+  // Pas de nouvelle relance avant 4 jours
+  await run();
+  expect(await count()).toBe(2);
+
+  // La relance apparaît dans les notifications de l'étudiant
+  await page.goto("/notifications");
+  await expect(page.getByText("Ton avis compte").first()).toBeVisible();
 });

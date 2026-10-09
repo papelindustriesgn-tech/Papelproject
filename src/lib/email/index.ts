@@ -150,3 +150,29 @@ export function internalEmail(subject: string, lines: string[]) {
     html: `<div style="font-family:system-ui,sans-serif;font-size:14px;line-height:1.6">${lines.map(escape).join("<br>")}</div>`,
   };
 }
+
+/** Invitation / relance au questionnaire (étudiant ou partenaire). */
+export function surveyEmail(firstName: string, audience: "student" | "partner") {
+  const name = escape(firstName);
+  if (audience === "partner")
+    return {
+      subject: "Quelles sont vos attentes ? 1 minute pour nous aider 🤝",
+      html: layout({
+        heading: `Bonjour ${name},`,
+        body: "Uny vous amène des étudiants vérifiés, avec un code promo, qui vous paient directement par Orange Money. Dites-nous en 1 minute l'avantage que vous pouvez leur offrir et ce que vous attendez d'Uny.",
+        cta: "Répondre (1 minute)",
+        href: `${SITE_URL}/partenaire/avis`,
+      }),
+      text: `Bonjour ${firstName}, dites-nous en 1 minute ce que vous attendez d'Uny : ${SITE_URL}/partenaire/avis`,
+    };
+  return {
+    subject: "Ton avis compte : 5 questions rapides 🙏",
+    html: layout({
+      heading: `${name}, on a besoin de toi !`,
+      body: "Uny, c'est ta carte étudiante dans ton téléphone et des codes promo chez les commerçants, payables avec Orange Money. Dis-nous en 1 minute où tu veux des réductions : on démarche les commerçants en fonction de tes réponses.",
+      cta: "Répondre (1 minute)",
+      href: `${SITE_URL}/avis`,
+    }),
+    text: `${firstName}, 5 questions rapides pour choisir les réductions qu'on négocie pour toi : ${SITE_URL}/avis`,
+  };
+}

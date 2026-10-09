@@ -839,6 +839,7 @@ export type Database = {
         Row: {
           body: string | null;
           created_at: string;
+          emailed_at: string | null;
           id: string;
           link: string | null;
           read_at: string | null;
@@ -849,6 +850,7 @@ export type Database = {
         Insert: {
           body?: string | null;
           created_at?: string;
+          emailed_at?: string | null;
           id?: string;
           link?: string | null;
           read_at?: string | null;
@@ -859,6 +861,7 @@ export type Database = {
         Update: {
           body?: string | null;
           created_at?: string;
+          emailed_at?: string | null;
           id?: string;
           link?: string | null;
           read_at?: string | null;
@@ -2274,6 +2277,7 @@ export type Database = {
           verification_status: Database["public"]["Enums"]["verification_status"];
         }[];
       };
+      send_survey_reminders: { Args: Record<PropertyKey, never>; Returns: number };
       set_enrollment_status: {
         Args: {
           p_details?: Json;
