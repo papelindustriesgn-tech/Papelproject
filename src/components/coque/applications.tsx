@@ -14,20 +14,20 @@ import {
   Wrench,
 } from "lucide-react";
 
-/** Icône et couleur de chaque application (écran d'accueil et barre de navigation). Ordre de couleur fixe. */
+/** Icône et couleur de chaque application (écran d'accueil, barre de navigation et couleur d'interface du service). */
 export const APPARENCE_APPLI: Record<string, { Icone: LucideIcon; couleur: string }> = {
   direction: { Icone: LayoutDashboard, couleur: "#07524d" },
-  magasin: { Icone: Boxes, couleur: "#d9731c" },
-  production: { Icone: Factory, couleur: "#4f5fb8" },
-  ventes: { Icone: Receipt, couleur: "#1f8a5b" },
-  terrain: { Icone: MapPinned, couleur: "#0b84a5" },
-  commercial: { Icone: Users, couleur: "#8a4baf" },
-  achats: { Icone: Ship, couleur: "#b8433a" },
-  logistique: { Icone: Truck, couleur: "#b7791f" },
-  qualite: { Icone: ClipboardCheck, couleur: "#13867a" },
-  maintenance: { Icone: Wrench, couleur: "#52677a" },
-  finance: { Icone: Landmark, couleur: "#2f6db3" },
-  admin: { Icone: Settings, couleur: "#3d4a56" },
+  magasin: { Icone: Boxes, couleur: "#c2410c" },
+  production: { Icone: Factory, couleur: "#4338ca" },
+  ventes: { Icone: Receipt, couleur: "#15803d" },
+  terrain: { Icone: MapPinned, couleur: "#0e7490" },
+  commercial: { Icone: Users, couleur: "#7e22ce" },
+  achats: { Icone: Ship, couleur: "#b91c1c" },
+  logistique: { Icone: Truck, couleur: "#a16207" },
+  qualite: { Icone: ClipboardCheck, couleur: "#0f766e" },
+  maintenance: { Icone: Wrench, couleur: "#475569" },
+  finance: { Icone: Landmark, couleur: "#1d4ed8" },
+  admin: { Icone: Settings, couleur: "#374151" },
 };
 
 export function IconeAppli({ code, taille = 56, contour = false }: { code: string; taille?: number; contour?: boolean }) {

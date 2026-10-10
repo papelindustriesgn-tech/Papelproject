@@ -54,3 +54,53 @@ body {
     -webkit-print-color-adjust: exact;
   }
 }
+
+/* Documents remis aux clients (factures, bons de livraison) : toujours aux couleurs de Papel, quel que soit le service. */
+.imprimer-couleurs {
+  --color-papel-700: #07524d;
+  --color-papel-100: #d1ebe7;
+}
+
+/* Listes sur téléphone : une fiche par ligne, « Colonne : valeur » (voir Tableau). */
+@media (max-width: 767px) {
+  .tableau-liste,
+  .tableau-liste > tbody,
+  .tableau-liste > tbody > tr,
+  .tableau-liste > tbody > tr > td {
+    display: block;
+  }
+  .tableau-liste > tbody > tr {
+    margin: 0 0.75rem 0.6rem;
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid var(--color-papel-600);
+    border-radius: 0.375rem;
+    background: #fff;
+    padding: 0.35rem 0;
+  }
+  .tableau-liste > tbody > tr > td {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.3rem 0.75rem !important;
+    text-align: right;
+  }
+  .tableau-liste > tbody > tr > td:empty {
+    display: none;
+  }
+  .tableau-liste > tbody > tr > td[data-label]:not([data-label=""])::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    color: #6b7280;
+    font-size: 0.85rem;
+    text-align: left;
+  }
+  /* Première colonne (numéro, nom) : titre de la fiche. */
+  .tableau-liste > tbody > tr > td:first-child {
+    font-size: 1.02rem;
+    text-align: left;
+  }
+  .tableau-liste > tbody > tr > td:first-child::before {
+    display: none;
+  }
+}

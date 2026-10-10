@@ -29,8 +29,8 @@ export async function proxy(requete: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
   const chemin = requete.nextUrl.pathname;
-  // Les tâches planifiées (/api/taches/…) s'authentifient elles-mêmes par CRON_SECRET.
-  if (chemin.startsWith("/api/taches/")) return reponse;
+  // Les tâches planifiées (/api/taches/…, CRON_SECRET) et la connexion Excel (/api/excel/…, clé) s'authentifient elles-mêmes.
+  if (chemin.startsWith("/api/taches/") || chemin.startsWith("/api/excel/")) return reponse;
   const pagePublique = chemin === "/connexion" || chemin === "/hors-ligne";
 
   const rediriger = (vers: string) => {
@@ -44,18 +44,17 @@ export async function proxy(requete: NextRequest) {
 
   if (!claims) return pagePublique ? reponse : rediriger("/connexion");
 
-  // Repli si le hook Auth n'est pas activé sur le projet (claim absent) : lecture des rôles en base.
-  let roles: string[];
-  if (Array.isArray(claims.papel_roles)) {
-    roles = claims.papel_roles as string[];
-  } else {
-    const { data: lus } = await supabase.rpc("mes_roles");
-    roles = (lus as string[] | null) ?? [];
+  // Rôles du jeton (hook Auth). Sans hook, on ne relit la base que pour la redirection d'accueil :
+  // pour les autres pages, le layout de chaque espace revérifie déjà les droits en base (exigerEspace).
+  const rolesJeton = Array.isArray(claims.papel_roles) ? (claims.papel_roles as string[]) : null;
+  if (chemin === "/" || chemin === "/connexion") {
+    const roles = rolesJeton ?? (((await supabase.rpc("mes_roles")).data as string[] | null) ?? []);
+    return rediriger(accueilPour(roles));
   }
-  if (chemin === "/" || chemin === "/connexion") return rediriger(accueilPour(roles));
-
-  const espace = espaceDuChemin(chemin);
-  if (espace && !peutAcceder(espace, roles)) return rediriger("/acces-refuse");
+  if (rolesJeton) {
+    const espace = espaceDuChemin(chemin);
+    if (espace && !peutAcceder(espace, rolesJeton)) return rediriger("/acces-refuse");
+  }
 
   return reponse;
 }

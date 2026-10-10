@@ -3,7 +3,9 @@
  * zones tactiles confortables (≥ 44 px) sur téléphone.
  */
 import Link from "next/link";
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
+import { ActionsRapides } from "@/components/coque/actions-rapides";
+import { Children, cloneElement, isValidElement } from "react";
+import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactElement, ReactNode, SelectHTMLAttributes } from "react";
 
 export function cx(...classes: (string | false | null | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -52,6 +54,9 @@ export function Carte({ titre, action, children, className }: { titre?: ReactNod
 
 const CLASSES_SAISIE = "min-h-11 w-full min-w-0 rounded border bg-white px-2.5 py-1.5 text-base md:min-h-9 md:text-[0.95rem]";
 
+/** Champs de nombres (montants, quantités, poids…) : clavier numérique sur téléphone, sans changer la saisie à la française. */
+const NOMS_NUMERIQUES = /(montant|quantite|prix|colis|paquets|_kg|_mm|_gnf|_pct|^km_|^taux|plis|mouchoirs|seuil|valeur|duree|visites|nouveaux_pva|cout)/;
+
 export function Champ({
   libelle,
   erreur,
@@ -60,6 +65,7 @@ export function Champ({
   ...props
 }: InputHTMLAttributes<HTMLInputElement> & { libelle: string; erreur?: string; aide?: string }) {
   const id = props.id ?? props.name;
+  const numerique = !props.inputMode && (props.type ?? "text") === "text" && NOMS_NUMERIQUES.test(props.name ?? "");
   return (
     <div className={cx("flex min-w-0 flex-col gap-1", className)}>
       <label htmlFor={id} className="text-sm font-semibold text-gray-700">
@@ -71,6 +77,7 @@ export function Champ({
         aria-invalid={erreur ? true : undefined}
         aria-describedby={erreur ? `${id}-erreur` : undefined}
         className={cx(CLASSES_SAISIE, erreur ? "border-red-600" : "border-gray-300 hover:border-gray-400 focus:border-papel-600")}
+        inputMode={numerique ? "decimal" : undefined}
         {...props}
       />
       {aide && !erreur && <p className="text-sm text-gray-500">{aide}</p>}
@@ -141,12 +148,28 @@ export function Badge({ children, ton = "info" }: { children: ReactNode; ton?: T
   return <span className={cx("inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[0.8rem] font-medium", STYLES_BADGE[ton])}>{children}</span>;
 }
 
-/** Vue liste : en-têtes collants, lignes compactes avec survol ; défile horizontalement sur téléphone. */
+/** Texte simple d'un en-tête (pour l'étiquette affichée devant chaque valeur sur téléphone). */
+function texteEntete(e: ReactNode): string {
+  return typeof e === "string" || typeof e === "number" ? String(e) : "";
+}
+
+/**
+ * Vue liste. Sur ordinateur : tableau dense (en-têtes, survol). Sur téléphone : chaque ligne devient une fiche
+ * empilée, chaque valeur précédée du nom de sa colonne — plus de défilement horizontal.
+ */
 export function Tableau({ entetes, children }: { entetes: ReactNode[]; children: ReactNode }) {
+  const libelles = entetes.map(texteEntete);
+  const lignes = Children.map(children, (ligne) => {
+    if (!isValidElement<{ children?: ReactNode }>(ligne) || ligne.type !== "tr") return ligne;
+    const cellules = Children.toArray(ligne.props.children).map((c, i) =>
+      isValidElement(c) ? cloneElement(c as ReactElement<{ "data-label"?: string }>, { "data-label": libelles[i] ?? "" }) : c,
+    );
+    return cloneElement(ligne, undefined, ...cellules);
+  });
   return (
-    <div className="-mx-4 overflow-x-auto">
-      <table className="w-full min-w-max border-collapse text-left text-[0.95rem]">
-        <thead>
+    <div className="-mx-4 md:overflow-x-auto">
+      <table className="tableau-liste w-full border-collapse text-left text-[0.95rem] md:min-w-max">
+        <thead className="max-md:sr-only">
           <tr className="border-y border-gray-200 bg-gray-50 text-gray-800">
             {entetes.map((e, i) => (
               <th key={i} scope="col" className="whitespace-nowrap px-3 py-2 font-semibold first:pl-4 last:pr-4">
@@ -155,14 +178,18 @@ export function Tableau({ entetes, children }: { entetes: ReactNode[]; children:
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 [&>tr:hover]:bg-[#f2f7f6]">{children}</tbody>
+        <tbody className="md:divide-y md:divide-gray-100 md:[&>tr:hover]:bg-papel-50">{lignes}</tbody>
       </table>
     </div>
   );
 }
 
-export function Cellule({ children, className }: { children: ReactNode; className?: string }) {
-  return <td className={cx("px-3 py-2 align-top first:pl-4 last:pr-4", className)}>{children}</td>;
+export function Cellule({ children, className, ...props }: { children: ReactNode; className?: string; "data-label"?: string }) {
+  return (
+    <td className={cx("px-3 py-2 align-top first:pl-4 last:pr-4", className)} {...props}>
+      {children}
+    </td>
+  );
 }
 
 export interface ElementFil {
@@ -176,27 +203,31 @@ export interface ElementFil {
  */
 export function TitrePage({ titre, sousTitre, action, fil }: { titre: string; sousTitre?: string; action?: ReactNode; fil?: ElementFil[] }) {
   return (
-    <div className="-mx-3 -mt-3 mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-gray-200 bg-white px-3 py-2.5 md:-mx-5 md:px-5 print:hidden">
-      <div className="min-w-0">
-        <h1 className="flex flex-wrap items-baseline gap-x-1.5 text-[1.2rem] leading-snug">
-          {fil?.map((f) => (
-            <span key={f.libelle} className="flex items-baseline gap-1.5">
-              {f.href ? (
-                <Link href={f.href} className="text-papel-700 hover:underline">
-                  {f.libelle}
-                </Link>
-              ) : (
-                <span className="text-gray-600">{f.libelle}</span>
-              )}
-              <span className="text-gray-400">/</span>
-            </span>
-          ))}
-          <span className="font-semibold text-gray-900">{titre}</span>
-        </h1>
-        {sousTitre && <p className="text-sm text-gray-600">{sousTitre}</p>}
+    <>
+      <div className="-mx-3 -mt-3 mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-gray-200 bg-white px-3 py-2.5 md:-mx-5 md:px-5 print:hidden">
+        <div className="min-w-0">
+          <h1 className="flex flex-wrap items-baseline gap-x-1.5 text-[1.2rem] leading-snug">
+            {fil?.map((f) => (
+              <span key={f.libelle} className="flex items-baseline gap-1.5">
+                {f.href ? (
+                  <Link href={f.href} className="text-papel-700 hover:underline">
+                    {f.libelle}
+                  </Link>
+                ) : (
+                  <span className="text-gray-600">{f.libelle}</span>
+                )}
+                <span className="text-gray-400">/</span>
+              </span>
+            ))}
+            <span className="font-semibold text-gray-900">{titre}</span>
+          </h1>
+          {sousTitre && <p className="text-sm text-gray-600">{sousTitre}</p>}
+        </div>
+        {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
       </div>
-      {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
-    </div>
+      {/* À l'entrée d'une application seulement : gros boutons des gestes courants. */}
+      <ActionsRapides />
+      </>
   );
 }
 

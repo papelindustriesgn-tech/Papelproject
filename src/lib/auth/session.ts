@@ -18,17 +18,19 @@ export interface UtilisateurConnecte {
  */
 export const utilisateurConnecte = cache(async (): Promise<UtilisateurConnecte | null> => {
   const supabase = await clientServeur();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return null;
+  // getClaims vérifie la signature du jeton localement (clés asymétriques) : pas d'aller-retour vers le serveur Auth.
+  const { data: auth } = await supabase.auth.getClaims();
+  const id = auth?.claims?.sub;
+  if (!id) return null;
 
   const [{ data: profil }, { data: roles }] = await Promise.all([
-    supabase.from("profils").select("identifiant, nom, prenom, actif").eq("id", auth.user.id).maybeSingle(),
+    supabase.from("profils").select("identifiant, nom, prenom, actif").eq("id", id).maybeSingle(),
     supabase.rpc("mes_roles"),
   ]);
   if (!profil || !profil.actif) return null;
 
   return {
-    id: auth.user.id,
+    id,
     identifiant: profil.identifiant,
     nom: profil.nom,
     prenom: profil.prenom,

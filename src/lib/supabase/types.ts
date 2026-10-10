@@ -230,6 +230,17 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"cles_export": {
+                  Row: {
+                    "actif": boolean,"cle_hash": string,"created_at": string,"cree_par": string | null,"debut_cle": string,"derniere_utilisation": string | null,"id": string,"libelle": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"cle_hash": string,"created_at"?: string,"cree_par"?: string | null,"debut_cle": string,"derniere_utilisation"?: string | null,"id"?: string,"libelle": string
+                  }
+                  Update: {
+                    "actif"?: boolean,"cle_hash"?: string,"created_at"?: string,"cree_par"?: string | null,"debut_cle"?: string,"derniere_utilisation"?: string | null,"id"?: string,"libelle"?: string
+                  }
+                  Relationships: []
                 },"chauffeurs": {
                   Row: {
                     "actif": boolean,"created_at": string,"id": string,"nom": string,"permis": string,"profil_id": string | null,"telephone": string
@@ -3233,6 +3244,12 @@ isOneToOne: false
                            },
 "creer_compte":
 { Args: { "p_identifiant": string,"p_mot_de_passe": string,"p_nom": string,"p_prenom": string,"p_roles": (Database["public"]['Enums']["role_code"])[],"p_telephone": string }; Returns: string
+                           },
+"creer_cle_export":
+{ Args: { "p_libelle": string }; Returns: string
+                           },
+"exporter_donnees":
+{ Args: { "p_au": string,"p_cle": string,"p_du": string,"p_jeu": string }; Returns: Json
                            },
 "mes_roles":
 { Args: Record<PropertyKey, never>; Returns: (Database["public"]['Enums']["role_code"])[]

@@ -321,7 +321,14 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
   `BarreNavigation` avec les menus de l'application courante, déclarés dans **`src/lib/navigation/menus.ts`** (un lien ou un groupe déroulant
   « Opérations », « Configuration »…) — un nouvel écran s'ajoute là, pas dans le layout de l'espace.
   Pages : `TitrePage` = barre de contrôle (fil d'Ariane `fil`, titre, boutons) ; document = `BarreEtapes` (+ `etapesStatut`) ;
-  listes = `BarreFiltres` + `Tableau` ; liens-boutons avec `classesBouton()`.
+  listes = `BarreFiltres` + `Tableau` (fiches empilées « Colonne : valeur » sur téléphone, automatiquement) ; liens-boutons avec `classesBouton()`.
+- **Couleur par service** : `APPARENCE_APPLI` (applications.tsx) ; `ThemeAppli` redéfinit la gamme `papel-*` selon l'application courante
+  (toujours utiliser les classes `papel-*` pour la couleur d'accent). Les documents clients (`.imprimer-couleurs`) restent aux couleurs Papel.
+- **Pensé pour des débutants** : à l'entrée de chaque application, gros boutons « Que voulez-vous faire ? » (`ACTIONS_RAPIDES` dans `menus.ts`,
+  affichés par `TitrePage` sur la page racine). Champs de nombres → clavier numérique (`Champ`, d'après le nom du champ).
+- **Connexion Excel** (`/finance/excel`) : clés personnelles en lecture seule (`cles_export`, hachées SHA-256, révocables) ;
+  `/api/excel/<jeu>?cle=…&du=&au=` → CSV via `exporter_donnees` (jeux : `src/lib/excel/jeux.ts`). Exemptée par le proxy.
+- Performance : fonctions Vercel à **Paris (`cdg1`, vercel.json)**, comme la base ; session lue par `getClaims` (pas d'appel au serveur Auth).
 - Composants `src/components/ui`, zones tactiles ≥ 44 px sur téléphone (36 px sur ordinateur), police système (aucune police téléchargée),
   couleur marque `papel-700` = #07524D, icônes `lucide-react`.
 - Comptabilité : le comptable suivra très probablement le **SYSCOHADA** ; prévoir des exports **Excel/CSV** compatibles (phase 3).
