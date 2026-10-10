@@ -92,3 +92,17 @@ grant execute on function public.creer_compte(text, text, text, text, text, publ
 grant execute on function public.changer_mot_de_passe_compte(uuid, text) to authenticated;
 grant execute on function public.activer_compte(uuid, boolean) to authenticated;
 grant execute on function public.peut_gerer_comptes(public.role_code[]) to authenticated;
+
+-- Inscription publique interdite : le service Auth (rôle supabase_auth_admin) ne crée plus de compte lui-même.
+-- Les comptes naissent uniquement par creer_compte (exécutée en tant que propriétaire) ou par les scripts d'initialisation.
+create or replace function public.refuser_inscription_publique()
+returns trigger language plpgsql set search_path = '' as $$
+begin
+  if current_user = 'supabase_auth_admin' then
+    raise exception 'Inscription publique désactivée : les comptes sont créés par l''administrateur.' using errcode = '42501';
+  end if;
+  return new;
+end $$;
+create trigger auth_inscription_publique before insert on auth.users
+  for each row execute function public.refuser_inscription_publique();
+revoke execute on function public.refuser_inscription_publique() from public, anon, authenticated;
