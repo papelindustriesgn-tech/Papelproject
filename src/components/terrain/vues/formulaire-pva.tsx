@@ -8,7 +8,7 @@ import { compresserPhoto } from "@/lib/terrain/image";
 import { EnTeteVue } from "../communs";
 import { useTerrain } from "../contexte";
 
-const champ = "min-h-11 w-full rounded-lg border border-gray-300 bg-white px-3";
+const champ = "min-h-12 w-full rounded-xl border border-gray-300 bg-white px-3";
 
 /** Création ou modification d'un PVA, entièrement hors ligne. */
 export function VueFormulairePva({ id }: { id?: string }) {
@@ -134,10 +134,10 @@ export function VueFormulairePva({ id }: { id?: string }) {
         <textarea id="notes" name="notes" defaultValue={pva?.notes} rows={2} className={`${champ} py-2`} />
       </div>
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => void capturerPosition()} className="min-h-12 flex-1 rounded-lg border border-papel-300 bg-white font-semibold text-papel-800">
+        <button type="button" onClick={() => void capturerPosition()} className="min-h-12 flex-1 rounded-xl border border-papel-300 bg-white font-semibold text-papel-800">
           {position || pva?.latitude ? "Mettre à jour la position GPS" : "Enregistrer la position GPS"}
         </button>
-        <label className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-lg border border-papel-300 bg-white font-semibold text-papel-800">
+        <label className="flex min-h-12 flex-1 cursor-pointer items-center justify-center rounded-xl border border-papel-300 bg-white font-semibold text-papel-800">
           {photo ? "Photo prête ✓" : "Photo de la boutique"}
           <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => void choisirPhoto(e.target.files?.[0])} />
         </label>

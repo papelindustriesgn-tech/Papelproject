@@ -44,6 +44,9 @@ export function BarreNavigation({
     return () => document.removeEventListener("mousedown", fermer);
   }, []);
 
+  // L'application terrain a sa propre interface plein écran (en-tête et onglets en bas).
+  if (code === "terrain") return null;
+
   const actif = (e: EntreeMenu) => (e.href ? lienActif(e.href, chemin, recherche) : (e.enfants ?? []).some((l) => lienActif(l.href, chemin, recherche)));
 
   return (

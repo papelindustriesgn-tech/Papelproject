@@ -20,7 +20,7 @@ test("commercial hors ligne : PVA, check-in, facture numérotée, puis synchroni
   await expect(page.getByText("● Hors ligne — vous pouvez continuer à travailler")).toBeVisible();
 
   const nom = `Boutique hors ligne ${Date.now() % 100000}`;
-  await page.getByRole("button", { name: /Nouveau PVA/ }).click();
+  await page.getByRole("button", { name: /Nouveau PVA/ }).first().click();
   await page.getByLabel("Nom du point de vente *").fill(nom);
   await page.getByLabel("Type *").selectOption({ label: "Détaillant" });
   await page.getByLabel("Repère (pour retrouver la boutique)").fill("À côté de la pharmacie");
@@ -31,9 +31,9 @@ test("commercial hors ligne : PVA, check-in, facture numérotée, puis synchroni
   await page.getByRole("button", { name: "Commencer la visite (check-in GPS)" }).click();
   await page.getByRole("button", { name: "Je suis sur place : check-in" }).click();
   await expect(page.getByText(/Check-in enregistré : cette position devient celle du point de vente/)).toBeVisible();
-  await page.getByLabel("Stock Papel constaté (colis)").fill("0");
+  await page.getByLabel("Stock Papel constaté (colis)", { exact: true }).fill("0");
   await page.getByRole("button", { name: "Oui", exact: true }).click();
-  await page.getByLabel("Petit 100").fill("5000");
+  await page.getByLabel("Petit 100", { exact: true }).fill("5000");
   await page.getByRole("button", { name: "Terminer la visite" }).click();
   // Retour sur la fiche du PVA, avec la visite enregistrée (en attente d'envoi).
   await expect(page.getByRole("heading", { name: nom, exact: true })).toBeVisible();
@@ -48,9 +48,10 @@ test("commercial hors ligne : PVA, check-in, facture numérotée, puis synchroni
   await page.getByRole("button", { name: "Créer comme client" }).click();
   await expect(page.getByText(/maintenant client/)).toBeVisible();
   await page.getByRole("button", { name: "Facture / devis" }).click();
-  await page.getByLabel("Produit et colis").selectOption({ label: "Petit 100 – Colis de 50" });
-  await page.getByLabel("Colis", { exact: true }).fill("2");
-  await page.getByRole("button", { name: "Ajouter", exact: true }).click();
+  // Quantité au compteur : 2 × « + » sur le Petit 100 en colis de 50.
+  await page.getByRole("button", { name: "Plus (Colis — Petit 100 – Colis de 50)" }).click();
+  await page.getByRole("button", { name: "Plus (Colis — Petit 100 – Colis de 50)" }).click();
+  await expect(page.getByLabel("Colis — Petit 100 – Colis de 50", { exact: true })).toHaveValue("2");
   await expect(page.getByText("401 200 GNF")).toBeVisible(); // 100 paquets × 3 400 + 18 %
   await page.getByRole("button", { name: "Valider la facture" }).click();
   await expect(page.getByText(/Document FA-\d{4}-C01-\d{5} validé/)).toBeVisible();
@@ -58,7 +59,7 @@ test("commercial hors ligne : PVA, check-in, facture numérotée, puis synchroni
   await expect(page.getByText("Deux-cent-mille").or(page.getByText(/Quatre-cent-un-mille-deux-cents francs guinéens/))).toBeVisible();
 
   await page.getByRole("button", { name: "Retour" }).click();
-  await page.getByRole("button", { name: "Retour" }).click();
+  await page.getByRole("navigation", { name: "Onglets" }).getByRole("button", { name: "Accueil" }).click();
   await expect(page.getByText(/saisie\(s\) en attente d'envoi/)).toBeVisible();
 
   // --- Retour du réseau : synchronisation automatique ----------------------
@@ -81,12 +82,16 @@ test("commercial hors ligne : PVA, check-in, facture numérotée, puis synchroni
   await fin.close();
 });
 
-test("commercial : tableau de bord terrain et tournée du jour", async ({ page }) => {
+test("commercial : ma journée, points de vente, onglets", async ({ page }) => {
   await connecter(page, "commercial1");
   await expect(page.getByRole("heading", { name: "Tournée du jour" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Mes objectifs du mois" })).toBeVisible({ timeout: 30_000 });
   await page.getByRole("button", { name: /Mes points de vente/ }).click();
   await expect(page.getByRole("button", { name: /Ets Diallo & Frères/ })).toBeVisible();
+  // Filtre « En rupture » puis onglet « Moi ».
+  await page.getByRole("button", { name: "En rupture" }).click();
+  await page.getByRole("navigation", { name: "Onglets" }).getByRole("button", { name: "Moi" }).click();
+  await expect(page.getByRole("heading", { name: "Mes objectifs" })).toBeVisible();
 });
 
 test("responsable commercial : carte, indicateurs, planification", async ({ page }) => {
