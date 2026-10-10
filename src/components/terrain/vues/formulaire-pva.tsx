@@ -2,7 +2,8 @@
 
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState, type FormEvent } from "react";
-import { mettreEnFile } from "@/lib/terrain/base-locale";
+import { lireMeta, mettreEnFile } from "@/lib/terrain/base-locale";
+import { trouverDoublon, type PvaCollegue } from "@/lib/terrain/doublons";
 import { lirePosition } from "@/lib/terrain/geo";
 import { compresserPhoto } from "@/lib/terrain/image";
 import { EnTeteVue } from "../communs";
@@ -17,6 +18,8 @@ export function VueFormulairePva({ id }: { id?: string }) {
     pva: id ? await base.pva.get(id) : undefined,
     types: await base.typesClients.toArray(),
     quartiers: (await base.quartiers.toArray()).sort((a, b) => a.libelle.localeCompare(b.libelle)),
+    collegues: await lireMeta<PvaCollegue[]>(base, "pvaCollegues", []),
+    rayonDoublonM: await lireMeta<number>(base, "rayonDoublonM", 30),
   }), [base, id]);
   const [position, setPosition] = useState<{ latitude: number; longitude: number; precisionM: number } | null>(null);
   const [photo, setPhoto] = useState<Blob | null>(null);
@@ -47,6 +50,13 @@ export function VueFormulairePva({ id }: { id?: string }) {
     if (!v("type_client_id")) err.type_client_id = "Choisissez le type de point de vente.";
     const potentiel = v("potentiel") ? Number(v("potentiel").replace(/\s/g, "")) : null;
     if (potentiel !== null && (!Number.isInteger(potentiel) || potentiel < 0)) err.potentiel = "Nombre de colis par mois (entier).";
+    // Un point de vente n'a qu'un seul commercial : on bloque tout de suite une boutique déjà suivie par un collègue.
+    const doublon = trouverDoublon(
+      { nom: v("nom"), telephone: v("telephone"), latitude: position?.latitude ?? pva?.latitude ?? null, longitude: position?.longitude ?? pva?.longitude ?? null },
+      donnees.collegues,
+      donnees.rayonDoublonM,
+    );
+    if (doublon) err.nom = `Cette boutique est déjà suivie par ${doublon.commercial} (« ${doublon.nom} »). Un point de vente n'a qu'un seul commercial : voyez votre responsable.`;
     setErreurs(err);
     if (Object.keys(err).length) return;
 

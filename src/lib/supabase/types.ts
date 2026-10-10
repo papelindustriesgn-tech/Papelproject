@@ -3251,6 +3251,12 @@ isOneToOne: false
 "exporter_donnees":
 { Args: { "p_au": string,"p_cle": string,"p_du": string,"p_jeu": string }; Returns: Json
                            },
+"pva_des_collegues":
+{ Args: Record<PropertyKey, never>; Returns: { "commercial": string,"latitude": number,"longitude": number,"nom": string,"telephone": string }[]
+                           },
+"reattribuer_pva":
+{ Args: { "p_commercial": string,"p_pva": string }; Returns: undefined
+                           },
 "mes_roles":
 { Args: Record<PropertyKey, never>; Returns: (Database["public"]['Enums']["role_code"])[]
                            },

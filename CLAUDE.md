@@ -168,6 +168,10 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 - Saisies hors ligne → file `operations` (UUID générés sur le téléphone) → RPC **`synchroniser_terrain`** (lots de 50, chaque opération
   isolée dans un sous-bloc : une erreur n'arrête pas le lot ; renvoi idempotent « deja »). Types : `pva`, `visite`, `photo`, `client`, `piece`.
   Synchro au démarrage, au retour du réseau (`online`), toutes les 5 min et après chaque saisie (`src/lib/terrain/synchronisation.ts`).
+- **Un point de vente = un seul commercial** (pas deux commerciaux chez le même client) : trigger `controler_doublon_pva` (même téléphone,
+  ou même nom à moins de `gps_rayon_doublon_m` = 30 m chez un autre commercial → refus) ; le téléphone reçoit `pva_des_collegues()` et
+  prévient dès la saisie, même hors ligne (`src/lib/terrain/doublons.ts`, même règle) ; un refus à l'envoi retire la fiche locale et
+  s'affiche sur l'accueil. Le responsable répartit les portefeuilles (`/commercial/portefeuilles`, `reattribuer_pva` : PVA + client).
 - **Check-in GPS** : distance au PVA par PostGIS (`controler_checkin`) ; `dans_zone` = distance ≤ `gps_rayon_checkin_m` ET précision ≤
   `gps_precision_max_m` ; visite hors zone enregistrée mais signalée ; un PVA sans position prend celle de sa 1re visite précise.
   Même règle côté téléphone pour l'information immédiate (`src/lib/terrain/geo.ts`). Visites inaltérables.

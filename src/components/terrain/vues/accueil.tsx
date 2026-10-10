@@ -2,7 +2,7 @@
 
 import { useLiveQuery } from "dexie-react-hooks";
 import { FilePlus2, MapPin, Navigation, PlusCircle, Receipt, RefreshCw, Store } from "lucide-react";
-import { lireMeta } from "@/lib/terrain/base-locale";
+import { ecrireMeta, lireMeta } from "@/lib/terrain/base-locale";
 import { aujourdhuiConakry, Chiffre, dateHeure, gnfCourt, Progression, Tuile } from "../communs";
 import { useTerrain } from "../contexte";
 
@@ -20,6 +20,7 @@ export function VueAccueil() {
   const mois = jour.slice(0, 7);
 
   const donnees = useLiveQuery(async () => {
+    const refusPva = await lireMeta<{ nom: string; message: string; date: string }[]>(base, "pvaRefuses", []);
     const [operations, photos, tournee, pva, visites, pieces, objectifs, derniere, profil] = await Promise.all([
       base.operations.toArray(),
       base.photos.filter((p) => !p.envoyee).count(),
@@ -57,6 +58,7 @@ export function VueAccueil() {
       nbPva: pva.length,
       derniere,
       profil,
+      refusPva,
     };
   }, [base, jour, mois]);
 
@@ -102,6 +104,20 @@ export function VueAccueil() {
           </button>
         </div>
       </section>
+
+      {donnees.refusPva.length > 0 && (
+        <section role="alert" className="rounded-2xl border border-red-300 bg-red-50 p-3 text-red-900">
+          <div className="font-bold">Point(s) de vente refusé(s)</div>
+          <ul className="mt-1 list-disc pl-5 text-sm">
+            {donnees.refusPva.map((r) => (
+              <li key={r.date}>{r.message}</li>
+            ))}
+          </ul>
+          <button type="button" onClick={() => void ecrireMeta(base, "pvaRefuses", [])} className="mt-2 min-h-10 font-semibold underline">
+            J&apos;ai compris
+          </button>
+        </section>
+      )}
 
       {!donnees.profil.codeSerie && donnees.derniere && (
         <p className="rounded-2xl border border-red-300 bg-red-50 p-3 text-red-900">Votre série de numérotation n&apos;est pas définie : vous ne pouvez pas encore faire de factures. Contactez l&apos;administrateur.</p>

@@ -57,3 +57,18 @@ describe("compression des photos", () => {
     expect(dimensionsCible(800, 600)).toEqual({ largeur: 800, hauteur: 600 });
   });
 });
+
+describe("doublons de points de vente entre commerciaux", async () => {
+  const { trouverDoublon } = await import("./doublons");
+  const collegues = [{ nom: "Ets Diallo & Frères", latitude: 9.5372, longitude: -13.6771, telephone: "621101001", commercial: "Ousmane D." }];
+  it("même téléphone, écrit autrement → doublon", () => {
+    expect(trouverDoublon({ nom: "Autre nom", telephone: "+224 621 10 10 01", latitude: null, longitude: null }, collegues, 30)?.commercial).toBe("Ousmane D.");
+  });
+  it("même nom (sans accents) à 10 m → doublon ; à 200 m → non", () => {
+    expect(trouverDoublon({ nom: "diallo et freres", telephone: "", latitude: 9.53725, longitude: -13.67705 }, [{ ...collegues[0], nom: "Diallo et Frères" }], 30)).not.toBeNull();
+    expect(trouverDoublon({ nom: "Diallo et Frères", telephone: "", latitude: 9.5390, longitude: -13.6771 }, [{ ...collegues[0], nom: "Diallo et Frères" }], 30)).toBeNull();
+  });
+  it("boutique voisine d'un autre nom → pas un doublon", () => {
+    expect(trouverDoublon({ nom: "Kiosque Fatou", telephone: "", latitude: 9.5372, longitude: -13.6771 }, collegues, 30)).toBeNull();
+  });
+});

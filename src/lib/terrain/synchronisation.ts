@@ -60,6 +60,12 @@ async function envoyerOperations(base: BaseTerrain, supabase: Client): Promise<{
         if (op.type === "piece") {
           await base.pieces.update(String(op.donnees.id), { etat: "rejetee", erreur: message });
           await base.operations.delete(op.id);
+        } else if (op.type === "pva" && /déjà suivi/.test(message)) {
+          // Boutique déjà suivie par un collègue : la fiche locale est retirée et le commercial est prévenu sur l'accueil.
+          const refus = await lireMeta<{ nom: string; message: string; date: string }[]>(base, "pvaRefuses", []);
+          await ecrireMeta(base, "pvaRefuses", [...refus, { nom: String(op.donnees.nom ?? ""), message, date: new Date().toISOString() }].slice(-10));
+          await base.pva.delete(String(op.donnees.id));
+          await base.operations.delete(op.id);
         } else {
           await base.operations.update(op.id, { essais: op.essais + 1, erreur: message });
         }
@@ -80,7 +86,7 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
     supabase.from("types_clients").select("id, libelle, niveau_prix").eq("actif", true).order("ordre"),
     supabase.from("quartiers").select("id, nom, communes(nom)").order("nom"),
     supabase.from("marques_concurrentes").select("id, libelle").eq("actif", true).order("libelle"),
-    supabase.from("parametres").select("cle, valeur").in("cle", ["gps_rayon_checkin_m", "gps_precision_max_m", "tva_applicable", "tva_taux", "entreprise_nom", "entreprise_adresse", "entreprise_telephone", "entreprise_nif"]),
+    supabase.from("parametres").select("cle, valeur").in("cle", ["gps_rayon_checkin_m", "gps_precision_max_m", "gps_rayon_doublon_m", "tva_applicable", "tva_taux", "entreprise_nom", "entreprise_adresse", "entreprise_telephone", "entreprise_nif"]),
     supabase.from("profils").select("nom, prenom, code_serie").eq("id", utilisateurId).single(),
     supabase.from("pva_carte").select("*").eq("commercial_id", utilisateurId),
     supabase.from("clients").select("id, code, nom, type_client_id, condition_paiement, plafond_credit_gnf, responsable, telephone, adresse, quartier_id").eq("commercial_id", utilisateurId).eq("actif", true),
@@ -90,6 +96,8 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
     supabase.from("tournees").select("date_tournee, tournee_etapes(pva_id, ordre)").eq("commercial_id", utilisateurId).eq("date_tournee", jour).maybeSingle(),
     supabase.from("objectifs_commerciaux").select("visites, nouveaux_pva, ca_ht_gnf, colis").eq("commercial_id", utilisateurId).eq("mois", `${jour.slice(0, 7)}-01`).maybeSingle(),
   ]);
+  // Points de vente des collègues (pour prévenir un doublon dès la saisie, même hors ligne).
+  const collegues = await supabase.rpc("pva_des_collegues");
   const erreur = [produits, conditionnements, grille, types, pva, clients, visites, pieces].find((r) => r.error);
   if (erreur?.error) throw new Error(erreur.error.message);
 
@@ -120,6 +128,8 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
     await base.marques.bulkPut(marques.data ?? []);
     const p = new Map((params.data ?? []).map((x) => [x.cle, x.valeur]));
     await ecrireMeta(base, "regles", { rayonM: Number(p.get("gps_rayon_checkin_m") ?? 100), precisionMaxM: Number(p.get("gps_precision_max_m") ?? 50) });
+    await ecrireMeta(base, "rayonDoublonM", Number(p.get("gps_rayon_doublon_m") ?? 30));
+    if (!collegues.error) await ecrireMeta(base, "pvaCollegues", collegues.data ?? []);
     await ecrireMeta(base, "tva", { applicable: p.get("tva_applicable") === true, taux: Number(p.get("tva_taux") ?? 0.18) });
     await ecrireMeta(base, "entreprise", { nom: String(p.get("entreprise_nom") ?? "Papel Industries"), adresse: String(p.get("entreprise_adresse") ?? ""), telephone: String(p.get("entreprise_telephone") ?? ""), nif: String(p.get("entreprise_nif") ?? "") });
     await ecrireMeta(base, "profil", { nom: profil.data?.nom ?? "", prenom: profil.data?.prenom ?? "", codeSerie: profil.data?.code_serie ?? null });

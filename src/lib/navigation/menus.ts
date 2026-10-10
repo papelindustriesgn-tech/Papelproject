@@ -85,6 +85,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   ],
   commercial: [
     { libelle: "Carte et indicateurs", href: "/commercial" },
+    { libelle: "Portefeuilles", href: "/commercial/portefeuilles" },
     { libelle: "Visites", href: "/commercial/visites" },
     { libelle: "Tournées et objectifs", href: "/commercial/planification" },
     { libelle: "Réclamations", href: "/commercial/reclamations" },
@@ -207,6 +208,7 @@ export const ACTIONS_RAPIDES: Record<string, ActionRapide[]> = {
   commercial: [
     { libelle: "Carte des points de vente", description: "Où sont les commerciaux", href: "/commercial", icone: "carte" },
     { libelle: "Planifier une tournée", description: "Tournées et objectifs", href: "/commercial/planification", icone: "calendrier" },
+    { libelle: "Répartir les clients", description: "Un client = un commercial", href: "/commercial/portefeuilles", icone: "client" },
     { libelle: "Visites", description: "Ce qui a été fait", href: "/commercial/visites", icone: "visite" },
     { libelle: "Réclamation client", description: "Enregistrer un problème", href: "/commercial/reclamations", icone: "alerte" },
   ],
