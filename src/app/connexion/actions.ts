@@ -13,7 +13,9 @@ const schema = z.object({
 });
 
 export async function seConnecter(_etat: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
-  const lecture = schema.safeParse({ identifiant: fd.get("identifiant"), motDePasse: fd.get("motDePasse") });
+  // Tolérance : « pdg@papel.local » ou « Pdg » sont acceptés comme « pdg ».
+  const saisi = String(fd.get("identifiant") ?? "").trim().split("@")[0];
+  const lecture = schema.safeParse({ identifiant: saisi, motDePasse: fd.get("motDePasse") });
   const identifiant = String(fd.get("identifiant") ?? "");
   if (!lecture.success) {
     return { erreurs: erreursZod(lecture.error), valeurs: { identifiant } };
@@ -27,7 +29,9 @@ export async function seConnecter(_etat: EtatFormulaire, fd: FormData): Promise<
     const message =
       error.code === "invalid_credentials"
         ? "Identifiant ou mot de passe incorrect."
-        : "Connexion impossible pour le moment. Vérifiez le réseau et réessayez.";
+        : error.code === "user_banned"
+          ? "Ce compte est désactivé. Contactez l'administrateur."
+          : "Connexion impossible pour le moment. Vérifiez le réseau et réessayez.";
     return { message, valeurs: { identifiant } };
   }
   // Redirection directe vers l'espace correspondant aux rôles (lus en base).

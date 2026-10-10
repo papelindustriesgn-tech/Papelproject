@@ -3,10 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ROLES, type Role } from "@/lib/auth/espaces";
-import { emailTechnique, schemaIdentifiant, schemaMotDePasse } from "@/lib/auth/identifiant";
+import { schemaIdentifiant, schemaMotDePasse } from "@/lib/auth/identifiant";
 import { exigerEspace } from "@/lib/auth/session";
 import { erreursZod, messageErreurBase, valeursFormulaire, type EtatFormulaire } from "@/lib/formulaires/etat";
-import { clientAdminAuth } from "@/lib/supabase/admin";
 import { clientServeur } from "@/lib/supabase/serveur";
 
 const schemaRoles = z.array(z.enum(ROLES)).min(1, "Choisissez au moins un rôle.");
@@ -39,27 +38,17 @@ export async function creerUtilisateur(_e: EtatFormulaire, fd: FormData): Promis
   const { erreur } = await verifierGestionnaire(d.roles);
   if (erreur) return { message: erreur, valeurs };
 
-  const admin = clientAdminAuth();
-  const { data: cree, error } = await admin.auth.admin.createUser({
-    email: emailTechnique(d.identifiant),
-    password: d.motDePasse,
-    email_confirm: true,
-    user_metadata: { identifiant: d.identifiant, nom: d.nom, prenom: d.prenom, telephone: d.telephone || null },
-  });
-  if (error || !cree.user) {
-    const doublon = error?.code === "email_exists" || error?.message?.includes("already");
-    return { message: doublon ? "Cet identifiant est déjà utilisé." : "Création du compte impossible.", valeurs };
-  }
-
-  // Attribution des rôles avec le jeton de l'appelant : la RLS contrôle à nouveau les droits.
+  // Fonction SQL réservée à l'admin et à la Direction : crée le compte Auth, le profil et les rôles en une transaction.
   const supabase = await clientServeur();
-  const { error: errRoles } = await supabase
-    .from("utilisateur_roles")
-    .insert(d.roles.map((role) => ({ utilisateur_id: cree.user.id, role })));
-  if (errRoles) {
-    await admin.auth.admin.deleteUser(cree.user.id); // annulation : pas de compte sans rôle
-    return { message: messageErreurBase(errRoles), valeurs };
-  }
+  const { error } = await supabase.rpc("creer_compte", {
+    p_identifiant: d.identifiant,
+    p_nom: d.nom,
+    p_prenom: d.prenom,
+    p_telephone: d.telephone,
+    p_mot_de_passe: d.motDePasse,
+    p_roles: d.roles,
+  });
+  if (error) return { message: messageErreurBase(error), valeurs };
 
   revalidatePath("/admin/utilisateurs");
   return { ok: true, message: `Compte « ${d.identifiant} » créé.` };
@@ -95,11 +84,10 @@ export async function modifierRoles(utilisateurId: string, _e: EtatFormulaire, f
 export async function changerActivation(utilisateurId: string, actif: boolean): Promise<void> {
   const { u } = await verifierGestionnaire();
   if (utilisateurId === u.id && !actif) throw new Error("Vous ne pouvez pas désactiver votre propre compte.");
+  // Profil inactif (plus aucun droit) et connexion bloquée côté Auth, en une seule fonction SQL.
   const supabase = await clientServeur();
-  const { error } = await supabase.from("profils").update({ actif }).eq("id", utilisateurId);
+  const { error } = await supabase.rpc("activer_compte", { p_utilisateur: utilisateurId, p_actif: actif });
   if (error) throw new Error(messageErreurBase(error));
-  // Bloque aussi la connexion côté Auth (et la débloque à la réactivation).
-  await clientAdminAuth().auth.admin.updateUserById(utilisateurId, { ban_duration: actif ? "none" : "876000h" });
   revalidatePath("/admin/utilisateurs");
 }
 
@@ -112,8 +100,8 @@ export async function reinitialiserMotDePasse(utilisateurId: string, _e: EtatFor
   const { erreur } = await verifierGestionnaire((rolesCible ?? []).map((r) => r.role as Role));
   if (erreur) return { message: "Seule la Direction peut changer le mot de passe d'un membre de la Direction." };
 
-  const { error } = await clientAdminAuth().auth.admin.updateUserById(utilisateurId, { password: lecture.data });
-  if (error) return { message: "Changement du mot de passe impossible." };
+  const { error } = await supabase.rpc("changer_mot_de_passe_compte", { p_utilisateur: utilisateurId, p_mot_de_passe: lecture.data });
+  if (error) return { message: messageErreurBase(error) };
   return { ok: true, message: "Mot de passe modifié. Communiquez-le à l'utilisateur en main propre." };
 }
 

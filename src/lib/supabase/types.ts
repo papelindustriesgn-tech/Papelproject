@@ -3159,6 +3159,9 @@ isOneToOne: false
 "a_un_role":
 { Args: { "roles": (Database["public"]['Enums']["role_code"])[] }; Returns: boolean
                            },
+"activer_compte":
+{ Args: { "p_actif": boolean,"p_utilisateur": string }; Returns: undefined
+                           },
 "activer_audit":
 { Args: { "p_cle"?: string,"p_table": unknown }; Returns: undefined
                            },
@@ -3225,6 +3228,12 @@ isOneToOne: false
 "hook_jeton_acces":
 { Args: { "event": Json }; Returns: Json
                            },
+"changer_mot_de_passe_compte":
+{ Args: { "p_mot_de_passe": string,"p_utilisateur": string }; Returns: undefined
+                           },
+"creer_compte":
+{ Args: { "p_identifiant": string,"p_mot_de_passe": string,"p_nom": string,"p_prenom": string,"p_roles": (Database["public"]['Enums']["role_code"])[],"p_telephone": string }; Returns: string
+                           },
 "mes_roles":
 { Args: Record<PropertyKey, never>; Returns: (Database["public"]['Enums']["role_code"])[]
                            },
@@ -3236,6 +3245,9 @@ isOneToOne: false
                            },
 "parametre_num":
 { Args: { "p_cle": string,"p_defaut": number }; Returns: number
+                           },
+"peut_gerer_comptes":
+{ Args: { "p_roles"?: (Database["public"]['Enums']["role_code"])[] }; Returns: boolean
                            },
 "peut_ecrire_piece":
 { Args: { "p_piece": string }; Returns: boolean

@@ -286,7 +286,8 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 ## 8. Rôles (chaque rôle ne voit QUE son interface)
 
 Connexion par **identifiant + mot de passe** (e-mail technique `identifiant@papel.local`, pas de SMS). Comptes créés uniquement par l'admin
-ou la Direction (inscription publique désactivée). Un téléphone par commercial.
+ou la Direction (inscription publique désactivée), via les fonctions SQL `creer_compte`, `changer_mot_de_passe_compte`, `activer_compte`
+(pas de clé secrète nécessaire). Un téléphone par commercial.
 
 1. Direction (PDG, DG) — accès total + tableau de bord global
 2. Achats et approvisionnement
