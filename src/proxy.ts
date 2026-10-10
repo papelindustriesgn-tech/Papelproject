@@ -44,7 +44,14 @@ export async function proxy(requete: NextRequest) {
 
   if (!claims) return pagePublique ? reponse : rediriger("/connexion");
 
-  const roles = Array.isArray(claims.papel_roles) ? (claims.papel_roles as string[]) : [];
+  // Repli si le hook Auth n'est pas activé sur le projet (claim absent) : lecture des rôles en base.
+  let roles: string[];
+  if (Array.isArray(claims.papel_roles)) {
+    roles = claims.papel_roles as string[];
+  } else {
+    const { data: lus } = await supabase.rpc("mes_roles");
+    roles = (lus as string[] | null) ?? [];
+  }
   if (chemin === "/" || chemin === "/connexion") return rediriger(accueilPour(roles));
 
   const espace = espaceDuChemin(chemin);
