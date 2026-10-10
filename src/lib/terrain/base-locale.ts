@@ -73,6 +73,12 @@ export interface ClientLocal {
   plafondCreditGnf: number;
   encoursGnf: number;
   enAttente: boolean;
+  /** Coordonnées (facultatives : absentes pour un client créé sur le téléphone avant synchronisation). */
+  code?: string;
+  responsable?: string;
+  telephone?: string;
+  adresse?: string;
+  quartierId?: string | null;
 }
 
 export interface VisiteLocale {

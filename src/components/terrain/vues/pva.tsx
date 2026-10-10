@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { lireMeta } from "@/lib/terrain/base-locale";
 import { distanceMetres, lirePosition, type PointGps } from "@/lib/terrain/geo";
 import { EnTeteVue, joursDepuis, numeroInternational, Vide } from "../communs";
+import { ListeClients } from "./clients";
 import { useTerrain } from "../contexte";
 
 const Carte = dynamic(() => import("@/components/carte/carte").then((m) => m.Carte), { ssr: false, loading: () => <p>Chargement de la carte…</p> });
@@ -21,20 +22,22 @@ const FILTRES: { code: Filtre; libelle: string }[] = [
 /** Un point de vente non visité depuis ce nombre de jours est « à visiter ». */
 const JOURS_A_VISITER = 7;
 
-/** Mes points de vente : recherche, filtres rapides, « autour de moi », carte, actions en un geste. */
+/** Prospects et clients : recherche, filtres rapides, « autour de moi », carte, actions en un geste. */
 export function VueListePva() {
-  const { base, aller } = useTerrain();
+  const { base, aller, route } = useTerrain();
+  const [segment, setSegment] = useState<"tous" | "prospects" | "clients">((route.params.get("vue") as "prospects" | "clients" | null) ?? "tous");
   const [recherche, setRecherche] = useState("");
   const [filtre, setFiltre] = useState<Filtre>("tous");
   const [position, setPosition] = useState<PointGps | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [afficherCarte, setAfficherCarte] = useState(false);
-  const donnees = useLiveQuery(async () => ({ pva: await base.pva.orderBy("nom").toArray(), tournee: await lireMeta<string[]>(base, "tournee", []) }), [base]);
+  const donnees = useLiveQuery(async () => ({ pva: await base.pva.orderBy("nom").toArray(), tournee: await lireMeta<string[]>(base, "tournee", []), nbClients: await base.clients.count() }), [base]);
 
   const liste = useMemo(() => {
     const q = recherche.trim().toLowerCase();
     const tournee = new Set(donnees?.tournee ?? []);
     const filtres = (donnees?.pva ?? [])
+      .filter((p) => segment !== "prospects" || !p.clientId)
       .filter((p) => !q || p.nom.toLowerCase().includes(q) || p.repere.toLowerCase().includes(q) || p.telephone.includes(q))
       .filter((p) => {
         const jours = joursDepuis(p.derniereVisite);
@@ -45,7 +48,7 @@ export function VueListePva() {
       });
     const avecDistance = filtres.map((p) => ({ ...p, distance: position && p.latitude !== null && p.longitude !== null ? distanceMetres(position, { latitude: p.latitude, longitude: p.longitude! }) : null }));
     return position ? avecDistance.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity)) : avecDistance;
-  }, [donnees, recherche, filtre, position]);
+  }, [donnees, recherche, filtre, position, segment]);
 
   const autourDeMoi = async () => {
     setMessage("Recherche de votre position…");
@@ -60,28 +63,49 @@ export function VueListePva() {
   return (
     <div>
       <EnTeteVue
-        titre="Mes points de vente"
+        titre="Prospects et clients"
         retour={null}
-        sousTitre={donnees ? `${donnees.pva.length} PVA` : undefined}
+        sousTitre={donnees ? `${donnees.pva.filter((p) => !p.clientId).length} prospects · ${donnees.nbClients} clients` : undefined}
         action={
           <button type="button" onClick={() => aller("pva-nouveau")} className="flex size-11 items-center justify-center rounded-full bg-white/15 active:bg-white/30" aria-label="Nouveau PVA">
             <Plus size={24} />
           </button>
         }
       />
+      <div className="mb-2 grid grid-cols-3 gap-1 rounded-2xl bg-gray-200 p-1" role="group" aria-label="Prospects ou clients">
+        {(
+          [
+            ["tous", "Tous"],
+            ["prospects", "Prospects"],
+            ["clients", "Clients"],
+          ] as const
+        ).map(([code, libelle]) => (
+          <button key={code} type="button" aria-pressed={segment === code} onClick={() => setSegment(code)} className={`min-h-11 rounded-xl font-bold ${segment === code ? "bg-white text-papel-800 shadow" : "text-gray-600"}`}>
+            {libelle}
+          </button>
+        ))}
+      </div>
       <div className="mb-2 flex gap-2">
         <label className="relative min-w-0 flex-1">
           <span className="sr-only">Rechercher</span>
           <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="search" value={recherche} onChange={(e) => setRecherche(e.target.value)} placeholder="Nom, repère, téléphone" className="min-h-12 w-full rounded-xl border border-gray-300 bg-white pl-10 pr-3" />
+          <input type="search" value={recherche} onChange={(e) => setRecherche(e.target.value)} placeholder={segment === "clients" ? "Nom, code, téléphone" : "Nom, repère, téléphone"} className="min-h-12 w-full rounded-xl border border-gray-300 bg-white pl-10 pr-3" />
         </label>
+        {segment !== "clients" && (
+          <>
         <button type="button" onClick={() => void autourDeMoi()} className={`flex size-12 shrink-0 items-center justify-center rounded-xl border ${position ? "border-papel-700 bg-papel-700 text-white" : "border-gray-300 bg-white text-papel-800"}`} aria-label="Autour de moi" title="Autour de moi">
           <Crosshair size={22} />
         </button>
         <button type="button" onClick={() => setAfficherCarte((v) => !v)} className="flex size-12 shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white text-papel-800" aria-label={afficherCarte ? "Liste" : "Carte"} title={afficherCarte ? "Liste" : "Carte"}>
           {afficherCarte ? <List size={22} /> : <IconeCarte size={22} />}
         </button>
+          </>
+        )}
       </div>
+      {segment === "clients" ? (
+        <ListeClients recherche={recherche} />
+      ) : (
+        <>
       <div className="-mx-3 mb-3 flex gap-2 overflow-x-auto px-3 pb-1" role="group" aria-label="Filtres">
         {FILTRES.map((f) => (
           <button
@@ -162,6 +186,8 @@ export function VueListePva() {
       </ul>
       {donnees && !donnees.pva.length && <Vide texte="Aucun point de vente : créez le premier avec le bouton +." />}
       {donnees && donnees.pva.length > 0 && !liste.length && <Vide texte="Aucun point de vente ne correspond." />}
+        </>
+      )}
     </div>
   );
 }

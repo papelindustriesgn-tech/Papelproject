@@ -86,9 +86,16 @@ test("commercial : ma journée, points de vente, onglets", async ({ page }) => {
   await connecter(page, "commercial1");
   await expect(page.getByRole("heading", { name: "Tournée du jour" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Mes objectifs du mois" })).toBeVisible({ timeout: 30_000 });
-  await page.getByRole("button", { name: /Mes points de vente/ }).click();
-  await expect(page.getByRole("button", { name: /Ets Diallo & Frères/ })).toBeVisible();
-  // Filtre « En rupture » puis onglet « Moi ».
+  await page.getByRole("button", { name: /Prospects et clients/ }).click();
+  await expect(page.getByRole("button", { name: /Ets Diallo & Frères/ }).first()).toBeVisible();
+  // Liste des clients (encours, vendre) puis fiche client.
+  await page.getByRole("group", { name: "Prospects ou clients" }).getByRole("button", { name: "Clients" }).click();
+  await page.getByRole("button", { name: /Ets Diallo & Frères \(démo\)/ }).click();
+  await expect(page.getByRole("button", { name: /Nouvelle facture \/ devis/ })).toBeVisible();
+  await expect(page.getByText("Reste à payer")).toBeVisible();
+  // Prospects, filtre « En rupture », puis onglet « Moi ».
+  await page.getByRole("navigation", { name: "Onglets" }).getByRole("button", { name: "Clients" }).click();
+  await page.getByRole("button", { name: "Prospects", exact: true }).click();
   await page.getByRole("button", { name: "En rupture" }).click();
   await page.getByRole("navigation", { name: "Onglets" }).getByRole("button", { name: "Moi" }).click();
   await expect(page.getByRole("heading", { name: "Mes objectifs" })).toBeVisible();

@@ -146,7 +146,7 @@ export function VueAccueil() {
 
       {/* Raccourcis */}
       <div className="grid grid-cols-2 gap-2">
-        <Tuile libelle="Mes points de vente" detail={`${donnees.nbPva} PVA`} onClick={() => aller("pva")} icone={<Store size={22} />} />
+        <Tuile libelle="Prospects et clients" detail={`${donnees.nbPva} points de vente`} onClick={() => aller("pva")} icone={<Store size={22} />} />
         <Tuile libelle="Nouveau PVA" detail="Avec position GPS" onClick={() => aller("pva-nouveau")} icone={<PlusCircle size={22} />} />
         <Tuile libelle="Facture / devis" detail="Même sans réseau" onClick={() => aller("document-nouveau")} icone={<FilePlus2 size={22} />} />
         <Tuile libelle="Mes ventes" detail="Devis et factures" onClick={() => aller("documents")} icone={<Receipt size={22} />} />

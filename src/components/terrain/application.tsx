@@ -7,6 +7,7 @@ import { VueDocument, VueDocuments, VueNouveauDocument } from "./vues/document";
 import { VueFichePva } from "./vues/fiche-pva";
 import { VueFormulairePva } from "./vues/formulaire-pva";
 import { VueListePva } from "./vues/pva";
+import { VueFicheClient } from "./vues/clients";
 import { VueMoi } from "./vues/moi";
 import { VueVisite } from "./vues/visite";
 
@@ -29,6 +30,8 @@ function Routeur() {
       return <VueDocuments />;
     case "moi":
       return <VueMoi />;
+    case "client":
+      return route.id ? <VueFicheClient id={route.id} /> : <VueListePva />;
     default:
       return <VueAccueil />;
   }

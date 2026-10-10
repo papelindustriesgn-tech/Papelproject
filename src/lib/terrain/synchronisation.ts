@@ -83,7 +83,7 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
     supabase.from("parametres").select("cle, valeur").in("cle", ["gps_rayon_checkin_m", "gps_precision_max_m", "tva_applicable", "tva_taux", "entreprise_nom", "entreprise_adresse", "entreprise_telephone", "entreprise_nif"]),
     supabase.from("profils").select("nom, prenom, code_serie").eq("id", utilisateurId).single(),
     supabase.from("pva_carte").select("*").eq("commercial_id", utilisateurId),
-    supabase.from("clients").select("id, nom, type_client_id, condition_paiement, plafond_credit_gnf").eq("commercial_id", utilisateurId).eq("actif", true),
+    supabase.from("clients").select("id, code, nom, type_client_id, condition_paiement, plafond_credit_gnf, responsable, telephone, adresse, quartier_id").eq("commercial_id", utilisateurId).eq("actif", true),
     supabase.from("soldes_clients").select("client_id, encours_gnf"),
     supabase.from("visites_carte").select("*").eq("commercial_id", utilisateurId).gte("checkin_at", il_y_a_45j),
     supabase.from("pieces_vente").select("id, type_piece, numero, client_id, date_piece, statut, total_ht_gnf, total_tva_gnf, total_ttc_gnf, tva_taux, notes, lignes_piece(conditionnement_id, quantite_colis, paquets_vrac, paquets, prix_paquet_gnf, montant_ht_gnf)").eq("commercial_id", utilisateurId).in("type_piece", ["devis", "facture"]).eq("statut", "valide").gte("date_piece", il_y_a_90j),
@@ -143,7 +143,10 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
     const encours = new Map((soldes.data ?? []).map((s) => [s.client_id, Number(s.encours_gnf ?? 0)]));
     await base.clients.filter((c) => !c.enAttente).delete();
     await base.clients.bulkPut(
-      (clients.data ?? []).filter((c) => !enAttente.has(c.id)).map((c) => ({ id: c.id, nom: c.nom, typeClientId: c.type_client_id, conditionPaiement: c.condition_paiement, plafondCreditGnf: c.plafond_credit_gnf, encoursGnf: encours.get(c.id) ?? 0, enAttente: false })),
+      (clients.data ?? []).filter((c) => !enAttente.has(c.id)).map((c) => ({
+        id: c.id, nom: c.nom, typeClientId: c.type_client_id, conditionPaiement: c.condition_paiement, plafondCreditGnf: c.plafond_credit_gnf, encoursGnf: encours.get(c.id) ?? 0, enAttente: false,
+        code: c.code, responsable: c.responsable, telephone: c.telephone, adresse: c.adresse, quartierId: c.quartier_id,
+      })),
     );
     for (const c of clients.data ?? []) await base.clients.update(c.id, { enAttente: false });
 

@@ -31,7 +31,7 @@ export function EnTeteVue({ titre, retour = "accueil", action, sousTitre }: { ti
 
 const ONGLETS = [
   { vue: "accueil", libelle: "Accueil", Icone: Home },
-  { vue: "pva", libelle: "Points de vente", Icone: Store },
+  { vue: "pva", libelle: "Clients", Icone: Store },
   { vue: "document-nouveau", libelle: "Vendre", Icone: Plus, central: true },
   { vue: "documents", libelle: "Ventes", Icone: Receipt },
   { vue: "moi", libelle: "Moi", Icone: UserRound },
@@ -40,7 +40,7 @@ const ONGLETS = [
 /** Onglets du bas (comme une application) : toujours visibles, à portée du pouce. */
 export function BarreOnglets() {
   const { route, aller } = useTerrain();
-  const actif = (vue: string) => (vue === "accueil" ? route.vue === "accueil" : vue === "pva" ? route.vue.startsWith("pva") || route.vue === "visite" : vue === "documents" ? route.vue === "documents" || route.vue === "document" : route.vue === vue);
+  const actif = (vue: string) => (vue === "accueil" ? route.vue === "accueil" : vue === "pva" ? route.vue.startsWith("pva") || route.vue === "visite" || route.vue === "client" : vue === "documents" ? route.vue === "documents" || route.vue === "document" : route.vue === vue);
   return (
     <nav aria-label="Onglets" className="fixed inset-x-0 bottom-0 z-[1000] border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_8px_rgba(0,0,0,0.06)] print:hidden">
       <ul className="mx-auto grid max-w-xl grid-cols-5">

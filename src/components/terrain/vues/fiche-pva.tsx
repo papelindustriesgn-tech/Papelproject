@@ -53,7 +53,7 @@ export function VueFichePva({ id, visiteOk }: { id: string; visiteOk?: boolean }
   const devenirClient = async () => {
     const clientId = crypto.randomUUID();
     await base.transaction("rw", [base.clients, base.pva, base.operations], async () => {
-      await base.clients.put({ id: clientId, nom: pva.nom, typeClientId: pva.typeClientId, conditionPaiement: "comptant", plafondCreditGnf: 0, encoursGnf: 0, enAttente: true });
+      await base.clients.put({ id: clientId, nom: pva.nom, typeClientId: pva.typeClientId, conditionPaiement: "comptant", plafondCreditGnf: 0, encoursGnf: 0, enAttente: true, responsable: pva.responsable, telephone: pva.telephone, quartierId: pva.quartierId });
       await base.pva.update(pva.id, { clientId });
       await mettreEnFile(base, "client", { id: clientId, pva_id: pva.id, nom: pva.nom, type_client_id: pva.typeClientId, responsable: pva.responsable, telephone: pva.telephone, quartier_id: pva.quartierId });
     });
@@ -99,6 +99,12 @@ export function VueFichePva({ id, visiteOk }: { id: string; visiteOk?: boolean }
           <Pencil size={16} /> Modifier
         </button>
       </div>
+
+      {pva.clientId && (
+        <button type="button" onClick={() => aller(`client/${pva.clientId}`)} className="min-h-11 rounded-2xl border border-gray-200 bg-white font-semibold text-papel-800">
+          Voir la fiche client (crédit, factures)
+        </button>
+      )}
 
       {derniere && (
         <section className="grid grid-cols-2 gap-2">

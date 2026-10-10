@@ -159,7 +159,8 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 
 - Application `/terrain` = **application de téléphone plein écran** (pas de barre de l'ERP) : en-tête coloré, **onglets en bas** (Accueil « Ma journée »,
   Points de vente, ➕ Vendre, Ventes, Moi — `BarreOnglets`), saisies au **compteur − / +** (`Compteur`), total et validation fixés en bas.
-  PVA en cartes (Appeler / Y aller / Visiter, filtres À visiter · En rupture · Tournée). C'est **une seule page client** (navigation interne par `#`, bouton retour Android) qui lit tout dans
+  Onglet **Clients** : bascule Tous / **Prospects** (PVA sans fiche client) / **Clients** (encours, crédit disponible, dernier achat,
+  Appeler / Vendre ; fiche client `#client/<id>` avec factures et devis). PVA en cartes (Appeler / Y aller / Visiter, filtres À visiter · En rupture · Tournée). C'est **une seule page client** (navigation interne par `#`, bouton retour Android) qui lit tout dans
   **IndexedDB** (`src/lib/terrain/base-locale.ts`, Dexie, une base par utilisateur). Aucune requête serveur n'est nécessaire hors ligne.
   IndexedDB n'indexe pas les booléens : filtrer en JS (`enAttente`, `envoyee`).
 - **Service worker** `public/sw.js` (enregistré en production) : `/terrain` réseau d'abord puis cache ; `/_next/static` cache d'abord ;
