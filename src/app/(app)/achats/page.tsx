@@ -49,7 +49,7 @@ export default async function TableauDeBordAchats() {
           {(conteneurs ?? []).map((c) => (
             <li key={c.id} className="py-3">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <Link href={`/achats/conteneurs/${c.id}`} className="font-mono font-semibold text-papel-800 underline">
+                <Link href={`/achats/conteneurs/${c.id}`} className="font-mono font-semibold text-papel-700 hover:underline">
                   {c.reference}
                 </Link>
                 <span className="text-sm text-gray-700">

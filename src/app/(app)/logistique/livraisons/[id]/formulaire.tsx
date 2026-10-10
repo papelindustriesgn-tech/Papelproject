@@ -92,7 +92,7 @@ export function FormulaireRemise({ livraisonId, lignes }: { livraisonId: string;
               ["refusee", "Refusé par le client"],
             ] as const
           ).map(([v, l]) => (
-            <label key={v} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 ${statut === v ? "border-papel-700 bg-papel-50 font-semibold" : "border-gray-300 bg-white"}`}>
+            <label key={v} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded border px-3 ${statut === v ? "border-papel-700 bg-papel-50 font-semibold" : "border-gray-300 bg-white"}`}>
               <input type="radio" name="statut" value={v} checked={statut === v} onChange={() => setStatut(v)} className="size-5 accent-papel-700" />
               {l}
             </label>
@@ -126,7 +126,7 @@ export function FormulaireRemise({ livraisonId, lignes }: { livraisonId: string;
       <Champ libelle={statut === "refusee" ? "Motif du refus" : "Commentaire"} name="commentaire" erreur={erreurs.commentaire} />
 
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex min-h-11 cursor-pointer items-center rounded-lg border border-papel-700 px-4 font-semibold text-papel-700">
+        <label className="flex min-h-11 cursor-pointer items-center rounded border border-papel-700 px-4 font-semibold text-papel-700">
           {photo ? "Photo prise ✓" : "Photo (facultatif)"}
           <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
         </label>

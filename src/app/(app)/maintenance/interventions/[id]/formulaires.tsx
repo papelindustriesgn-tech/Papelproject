@@ -31,7 +31,7 @@ export function FormulaireSuivi({ id, valeurs, curative }: { id: string; valeurs
         {curative && <Champ libelle="Cause de la panne" name="cause" defaultValue={val("cause")} erreur={e.cause} />}
         <label className="flex flex-col sm:col-span-2">
           <span className="text-sm font-medium text-gray-700">Travaux réalisés</span>
-          <textarea name="travaux" rows={3} defaultValue={val("travaux")} className="rounded-lg border border-gray-300 p-3" />
+          <textarea name="travaux" rows={3} defaultValue={val("travaux")} className="rounded border border-gray-300 p-3" />
         </label>
         <Champ libelle="Main-d'œuvre (GNF)" name="cout_main_oeuvre_gnf" inputMode="numeric" defaultValue={val("cout_main_oeuvre_gnf")} erreur={e.cout_main_oeuvre_gnf} />
         <Champ libelle="Prestataire externe (GNF)" name="cout_externe_gnf" inputMode="numeric" defaultValue={val("cout_externe_gnf")} erreur={e.cout_externe_gnf} />

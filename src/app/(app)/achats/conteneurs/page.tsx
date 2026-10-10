@@ -29,7 +29,7 @@ export default async function PageConteneurs() {
           {(data ?? []).map((c) => (
             <li key={c.id} className="py-3">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <Link href={`/achats/conteneurs/${c.id}`} className="font-mono font-semibold text-papel-800 underline">{c.reference}</Link>
+                <Link href={`/achats/conteneurs/${c.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{c.reference}</Link>
                 <span className="text-sm text-gray-700">{c.bons_commande?.numero} · {c.bons_commande?.fournisseurs?.nom} · {formaterPoids(kg(Number(c.poids_net_prevu_kg)))}</span>
               </div>
               <EtapesConteneur conteneur={c} aujourdhui={jour} />

@@ -33,7 +33,7 @@ export default async function ImprimerPiece({ params }: PageProps<"/ventes/piece
         </Link>
         <BoutonImprimer />
       </div>
-      <header className="imprimer-couleurs flex items-start justify-between gap-4 rounded-lg bg-papel-700 p-4 text-white">
+      <header className="imprimer-couleurs flex items-start justify-between gap-4 rounded bg-papel-700 p-4 text-white">
         <div>
           <Image src="/logo-papel.png" alt="Papel" width={120} height={68} />
           <div className="mt-2 text-sm">
@@ -52,7 +52,7 @@ export default async function ImprimerPiece({ params }: PageProps<"/ventes/piece
         </div>
       </header>
 
-      <section className="my-4 ml-auto w-72 rounded-lg border border-gray-300 p-3">
+      <section className="my-4 ml-auto w-72 rounded border border-gray-300 p-3">
         <div className="text-sm text-gray-600">Client</div>
         <div className="font-bold">{p.clients?.nom}</div>
         <div className="text-sm">Code : {p.clients?.code}</div>

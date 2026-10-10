@@ -13,7 +13,7 @@ export function FormulaireAnalyse({ ncId, cause, statut, gravite }: { ncId: stri
       {etat.message && <Message ton={etat.ok ? "succes" : "erreur"}>{etat.message}</Message>}
       <label className="flex flex-col">
         <span className="text-sm font-medium text-gray-700">Cause racine (analyse des 5 pourquoi, 5M…)</span>
-        <textarea name="cause_racine" defaultValue={cause} rows={3} className="rounded-lg border border-gray-300 p-3" />
+        <textarea name="cause_racine" defaultValue={cause} rows={3} className="rounded border border-gray-300 p-3" />
       </label>
       <div className="grid gap-3 sm:grid-cols-2">
         <Selection libelle="Gravité" name="gravite" defaultValue={gravite} erreur={etat.erreurs?.gravite}>

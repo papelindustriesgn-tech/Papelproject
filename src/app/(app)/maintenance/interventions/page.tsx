@@ -50,7 +50,7 @@ export default async function PageInterventions({ searchParams }: PageProps<"/ma
         <Tableau entetes={["OT", "Signalé", "Équipement", "Type", "Description", "Arrêt", "Coût", "Statut"]}>
           {lignes.map((o) => (
             <tr key={o.id}>
-              <Cellule><Link href={`/maintenance/interventions/${o.id}`} className="font-mono font-semibold text-papel-800 underline">{o.numero}</Link></Cellule>
+              <Cellule><Link href={`/maintenance/interventions/${o.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{o.numero}</Link></Cellule>
               <Cellule className="whitespace-nowrap">{formaterDateHeure(o.signale_le!)}</Cellule>
               <Cellule>{o.equipement_code}</Cellule>
               <Cellule>{TYPES_INTERVENTION[o.type_intervention!]}</Cellule>

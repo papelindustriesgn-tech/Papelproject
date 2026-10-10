@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Carte, TitrePage } from "@/components/ui";
 import { aujourdhui } from "@/lib/formulaires/dates";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -13,10 +12,8 @@ export default async function NouveauMouvement({ searchParams }: PageProps<"/mag
   ]);
   return (
     <>
-      <Link href="/magasin/mouvements" className="text-papel-700 underline">
-        ← Mouvements
-      </Link>
-      <TitrePage titre="Nouveau mouvement" sousTitre="Pour réceptionner une bobine jumbo, utilisez l'écran Bobines (n° de lot, poids, grammage)." />
+      <TitrePage
+        fil={[{ libelle: "Mouvements", href: "/magasin/mouvements" }]} titre="Nouveau mouvement" sousTitre="Pour réceptionner une bobine jumbo, utilisez l'écran Bobines (n° de lot, poids, grammage)." />
       <Carte>
         <FormulaireMouvement
           articleInitial={typeof sp.article === "string" ? sp.article : undefined}

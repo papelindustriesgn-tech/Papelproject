@@ -16,7 +16,7 @@ export default async function PageEquipements() {
         <Tableau entetes={["Code", "Équipement", "Ligne", "Catégorie", "Criticité", "Mise en service"]}>
           {(data ?? []).map((e) => (
             <tr key={e.id}>
-              <Cellule><Link href={`/maintenance/equipements/${e.id}`} className="font-mono font-semibold text-papel-800 underline">{e.code}</Link></Cellule>
+              <Cellule><Link href={`/maintenance/equipements/${e.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{e.code}</Link></Cellule>
               <Cellule>{e.libelle}{e.marque_modele && <span className="block text-sm text-gray-600">{e.marque_modele}</span>}</Cellule>
               <Cellule>{e.lignes_production?.libelle ?? "—"}</Cellule>
               <Cellule>{e.categorie || "—"}</Cellule>

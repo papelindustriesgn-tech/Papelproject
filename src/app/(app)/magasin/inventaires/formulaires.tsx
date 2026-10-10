@@ -76,7 +76,7 @@ export function FeuilleComptage({ inventaireId, lignes, modifiable }: { inventai
                     defaultValue={etat.valeurs?.[`compte_${l.id}`] ?? (l.comptee === null ? "" : String(l.comptee).replace(".", ","))}
                     aria-invalid={etat.erreurs?.[`compte_${l.id}`] ? true : undefined}
                     placeholder="Compté"
-                    className="min-h-11 w-32 rounded-lg border border-gray-300 px-3 disabled:bg-gray-100"
+                    className="min-h-11 w-32 rounded border border-gray-300 px-3 disabled:bg-gray-100 md:min-h-9"
                   />
                   <span className="text-gray-700">{l.unite}</span>
                 </label>
@@ -91,7 +91,7 @@ export function FeuilleComptage({ inventaireId, lignes, modifiable }: { inventai
         )}
       </form>
       {modifiable && (
-        <form action={valider} className="flex flex-col gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3">
+        <form action={valider} className="flex flex-col gap-2 rounded border border-amber-300 bg-amber-50 p-3">
           {etatValidation.message && <Message ton={etatValidation.ok ? "succes" : "erreur"}>{etatValidation.message}</Message>}
           <p>{restantes > 0 ? `Encore ${restantes} ligne(s) à compter avant de pouvoir valider.` : "Toutes les lignes sont comptées. La validation passe les écarts en stock (action définitive)."}</p>
           <Bouton type="submit" disabled={validationEnCours || restantes > 0} className="self-start">

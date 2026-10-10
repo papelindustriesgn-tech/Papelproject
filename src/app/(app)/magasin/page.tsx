@@ -51,7 +51,7 @@ export default async function TableauDeBordMagasin() {
             <ul className="divide-y divide-gray-100">
               {alertes.map((a) => (
                 <li key={a.article_id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                  <Link href={`/magasin/articles/${a.article_id}`} className="font-semibold text-papel-800 underline">
+                  <Link href={`/magasin/articles/${a.article_id}`} className="font-medium text-papel-700 hover:underline">
                     {a.libelle}
                   </Link>
                   <span className="flex items-center gap-2">

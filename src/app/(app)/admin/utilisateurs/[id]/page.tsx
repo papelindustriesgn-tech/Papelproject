@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, Bouton, Carte, TitrePage } from "@/components/ui";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -17,10 +16,8 @@ export default async function PageUtilisateur({ params }: PageProps<"/admin/util
 
   return (
     <>
-      <Link href="/admin/utilisateurs" className="text-papel-700 underline">
-        ← Retour aux utilisateurs
-      </Link>
       <TitrePage
+        fil={[{ libelle: "Utilisateurs", href: "/admin/utilisateurs" }]}
         titre={`${p.prenom} ${p.nom}`}
         sousTitre={`Identifiant : ${p.identifiant}${p.telephone ? ` · ${p.telephone}` : ""}`}
         action={p.actif ? <Badge ton="succes">Actif</Badge> : <Badge ton="erreur">Désactivé</Badge>}

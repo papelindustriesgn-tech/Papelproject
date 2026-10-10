@@ -37,7 +37,7 @@ export default async function PagePieces({ searchParams }: PageProps<"/ventes/pi
         titre={def.pluriel}
         action={
           type !== "avoir" && (
-            <Link href={`/ventes/pieces/nouvelle?type=${type}`} className="min-h-11 content-center rounded-lg bg-papel-700 px-4 font-semibold text-white">
+            <Link href={`/ventes/pieces/nouvelle?type=${type}`} className="min-h-11 inline-flex items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">
               + {def.singulier}
             </Link>
           )
@@ -66,7 +66,7 @@ export default async function PagePieces({ searchParams }: PageProps<"/ventes/pi
             return (
               <tr key={p.id}>
                 <Cellule>
-                  <Link href={`/ventes/pieces/${p.id}`} className="font-mono font-semibold text-papel-800 underline">
+                  <Link href={`/ventes/pieces/${p.id}`} className="font-mono font-semibold text-papel-700 hover:underline">
                     {p.numero ?? "Brouillon"}
                   </Link>
                 </Cellule>

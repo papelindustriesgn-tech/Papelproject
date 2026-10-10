@@ -32,7 +32,7 @@ export default async function PageLivraison({ params }: PageProps<"/ventes/livra
         </Link>
         {!brouillon && <BoutonImprimer />}
       </div>
-      <div className="imprimer-couleurs mt-2 hidden items-center justify-between rounded-lg bg-papel-700 p-3 text-white print:flex">
+      <div className="imprimer-couleurs mt-2 hidden items-center justify-between rounded bg-papel-700 p-3 text-white print:flex">
         <Image src="/logo-papel.png" alt="Papel" width={110} height={62} />
         <div className="text-right text-xl font-bold">BON DE LIVRAISON {l.numero}</div>
       </div>

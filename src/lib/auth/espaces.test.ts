@@ -18,7 +18,8 @@ describe("accès aux espaces", () => {
   });
   it("page d'accueil selon le rôle", () => {
     expect(accueilPour(["commercial_terrain"])).toBe("/terrain");
-    expect(accueilPour(["direction"])).toBe("/direction");
+    expect(accueilPour(["direction"])).toBe("/applications");
+    expect(accueilPour(["magasin"])).toBe("/magasin");
     expect(accueilPour([])).toBe("/acces-refuse");
   });
   it("espace d'un chemin", () => {

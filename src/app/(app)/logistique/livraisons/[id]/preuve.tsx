@@ -14,5 +14,5 @@ export function ImagePreuve({ chemin, alt }: { chemin: string; alt: string }) {
     };
   }, [chemin]);
   // eslint-disable-next-line @next/next/no-img-element -- lien signé temporaire, pas d'optimisation d'image
-  return url ? <img src={url} alt={alt} className="max-h-48 rounded-lg border border-gray-200 bg-white" /> : <span className="text-sm text-gray-600">Chargement…</span>;
+  return url ? <img src={url} alt={alt} className="max-h-48 rounded border border-gray-200 bg-white" /> : <span className="text-sm text-gray-600">Chargement…</span>;
 }

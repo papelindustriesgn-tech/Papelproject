@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
+import { Badge, BarreEtapes, Carte, Cellule, etapesStatut, Tableau, TitrePage } from "@/components/ui";
 import { aujourdhui, formaterDate, formaterDateHeure } from "@/lib/formulaires/dates";
 import { GRAVITES_NC, ORIGINES_NC, STATUTS_NC } from "@/lib/qualite/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -22,14 +22,14 @@ export default async function PageNc({ params }: PageProps<"/qualite/non-conform
 
   return (
     <>
-      <Link href="/qualite/non-conformites" className="text-papel-700 underline">← Non-conformités</Link>
       <TitrePage
+        fil={[{ libelle: "Non-conformités", href: "/qualite/non-conformites" }]}
         titre={`Non-conformité ${n.numero}`}
         sousTitre={`${formaterDate(n.date_constat)} · ${ORIGINES_NC[n.origine]}${n.types_non_conformite ? ` · ${n.types_non_conformite.libelle}` : ""}`}
         action={
           <span className="flex gap-2">
             <Badge ton={GRAVITES_NC[n.gravite].ton}>{GRAVITES_NC[n.gravite].libelle}</Badge>
-            <Badge ton={STATUTS_NC[n.statut].ton}>{STATUTS_NC[n.statut].libelle}</Badge>
+            <BarreEtapes etapes={etapesStatut(STATUTS_NC, ["ouverte", "en_traitement", "cloturee"], n.statut)} courante={n.statut} />
           </span>
         }
       />
@@ -37,8 +37,8 @@ export default async function PageNc({ params }: PageProps<"/qualite/non-conform
         <Carte titre="Constat">
           <p className="mb-2">{n.description}</p>
           <ul className="text-gray-700">
-            {n.lots && <li>Bobine : <Link className="font-mono text-papel-700 underline" href={`/qualite/tracabilite?q=${encodeURIComponent(n.lots.numero_lot)}`}>{n.lots.numero_lot}</Link></li>}
-            {n.fiches_production?.code_lot && <li>Lot de produits finis : <Link className="font-mono text-papel-700 underline" href={`/qualite/tracabilite?q=${encodeURIComponent(n.fiches_production.code_lot)}`}>{n.fiches_production.code_lot}</Link></li>}
+            {n.lots && <li>Bobine : <Link className="font-mono text-papel-700 hover:underline" href={`/qualite/tracabilite?q=${encodeURIComponent(n.lots.numero_lot)}`}>{n.lots.numero_lot}</Link></li>}
+            {n.fiches_production?.code_lot && <li>Lot de produits finis : <Link className="font-mono text-papel-700 hover:underline" href={`/qualite/tracabilite?q=${encodeURIComponent(n.fiches_production.code_lot)}`}>{n.fiches_production.code_lot}</Link></li>}
             {n.clients && <li>Client : {n.clients.nom}</li>}
             {n.controles_qualite && <li><Link className="text-papel-700 underline" href={`/qualite/controles/${n.controles_qualite.id}`}>Contrôle d&apos;origine</Link></li>}
           </ul>

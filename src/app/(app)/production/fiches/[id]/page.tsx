@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge, Bouton, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
+import { Badge, BarreEtapes, Bouton, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { formaterDate, formaterDateHeure } from "@/lib/formulaires/dates";
 import { formaterStockProduitFini, type Paquets } from "@/lib/metier/unites";
@@ -57,13 +56,11 @@ export default async function PageFiche({ params }: PageProps<"/production/fiche
 
   return (
     <>
-      <Link href="/production/fiches" className="text-papel-700 underline">
-        ← Fiches de poste
-      </Link>
       <TitrePage
+        fil={[{ libelle: "Fiches de poste", href: "/production/fiches" }]}
         titre={`${f.postes?.libelle} du ${formaterDate(f.date_production)}`}
         sousTitre={`Lot ${f.code_lot ?? "—"} · ${f.lignes_production?.libelle} · ${f.postes?.heure_debut.slice(0, 5)} – ${f.postes?.heure_fin.slice(0, 5)} · durée ${minutes(f.duree_poste_min)}`}
-        action={modifiable ? <Badge ton="alerte">Brouillon</Badge> : <Badge ton="succes">Validée {f.validee_le ? `le ${formaterDateHeure(f.validee_le)}` : ""}</Badge>}
+        action={<BarreEtapes etapes={[{ code: "brouillon", libelle: "Brouillon" }, { code: "validee", libelle: f.validee_le ? `Validée le ${formaterDateHeure(f.validee_le)}` : "Validée" }]} courante={modifiable ? "brouillon" : "validee"} />}
       />
 
       {calcul && calcul.alertes.length > 0 && (

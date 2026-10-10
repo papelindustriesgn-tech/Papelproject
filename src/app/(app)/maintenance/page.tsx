@@ -44,7 +44,7 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
           <Tableau entetes={["OT", "Équipement", "Description", "Priorité", "Signalé", "Statut"]}>
             {(ouverts ?? []).map((o) => (
               <tr key={o.id}>
-                <Cellule><Link href={`/maintenance/interventions/${o.id}`} className="font-mono font-semibold text-papel-800 underline">{o.numero}</Link></Cellule>
+                <Cellule><Link href={`/maintenance/interventions/${o.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{o.numero}</Link></Cellule>
                 <Cellule>{o.equipement_code}</Cellule>
                 <Cellule className="text-sm">{o.description}</Cellule>
                 <Cellule><Badge ton={PRIORITES[o.priorite!].ton}>{PRIORITES[o.priorite!].libelle}</Badge></Cellule>
@@ -87,7 +87,7 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
           <Tableau entetes={["Équipement", "Criticité", "Pannes", "MTBF", "MTTR", "Disponibilité", "Coût"]}>
             {ind.parEquipement.map((e) => (
               <tr key={e.id}>
-                <Cellule><Link href={`/maintenance/equipements/${e.id}`} className="font-semibold text-papel-800 underline">{e.code}</Link> {e.libelle}</Cellule>
+                <Cellule><Link href={`/maintenance/equipements/${e.id}`} className="font-medium text-papel-700 hover:underline">{e.code}</Link> {e.libelle}</Cellule>
                 <Cellule>{e.criticite}</Cellule>
                 <Cellule>{e.fiabilite.nbPannes}</Cellule>
                 <Cellule>{e.fiabilite.mtbfHeures === null ? "—" : `${nombre(e.fiabilite.mtbfHeures, 0)} h`}</Cellule>

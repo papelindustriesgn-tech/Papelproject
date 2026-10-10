@@ -41,7 +41,7 @@ export default async function PageTournees({ searchParams }: PageProps<"/logisti
           {lignes.map((t) => (
             <tr key={t.id}>
               <Cellule>
-                <Link href={`/logistique/tournees/${t.id}`} className="font-mono font-semibold text-papel-800 underline">{t.numero}</Link>
+                <Link href={`/logistique/tournees/${t.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{t.numero}</Link>
               </Cellule>
               <Cellule className="whitespace-nowrap">{formaterDate(t.date_tournee)}</Cellule>
               <Cellule>{t.immatriculation}</Cellule>

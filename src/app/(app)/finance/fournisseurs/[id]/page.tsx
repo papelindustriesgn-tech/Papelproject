@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
@@ -21,8 +20,8 @@ export default async function PageFactureFournisseur({ params }: PageProps<"/fin
   const reste = Number(f.solde_gnf);
   return (
     <>
-      <Link href="/finance/fournisseurs" className="text-papel-700 underline">← Fournisseurs et charges</Link>
       <TitrePage
+        fil={[{ libelle: "Fournisseurs et charges", href: "/finance/fournisseurs" }]}
         titre={`Facture ${f.numero}`}
         sousTitre={`${f.beneficiaire} · ${f.libelle}`}
         action={f.statut === "annulee" ? <Badge ton="neutre">Annulée</Badge> : reste === 0 ? <Badge ton="succes">Soldée</Badge> : Number(f.jours_retard) > 0 ? <Badge ton="erreur">{f.jours_retard} j de retard</Badge> : <Badge ton="alerte">À payer</Badge>}

@@ -46,7 +46,7 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
             {(ouvertes ?? []).map((n) => (
               <tr key={n.id}>
                 <Cellule>
-                  <Link href={`/qualite/non-conformites/${n.id}`} className="font-mono font-semibold text-papel-800 underline">{n.numero}</Link>
+                  <Link href={`/qualite/non-conformites/${n.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{n.numero}</Link>
                 </Cellule>
                 <Cellule>{formaterDate(n.date_constat)}</Cellule>
                 <Cellule>{ORIGINES_NC[n.origine]}</Cellule>
@@ -62,7 +62,7 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
             <Tableau entetes={["NC", "Action", "Responsable", "Échéance"]}>
               {retard.map((a) => (
                 <tr key={a.id}>
-                  <Cellule><Link href={`/qualite/non-conformites/${a.nc_id}`} className="font-mono text-papel-800 underline">{a.non_conformites?.numero}</Link></Cellule>
+                  <Cellule><Link href={`/qualite/non-conformites/${a.nc_id}`} className="font-mono text-papel-700 hover:underline">{a.non_conformites?.numero}</Link></Cellule>
                   <Cellule>{a.description}</Cellule>
                   <Cellule>{a.responsable || "—"}</Cellule>
                   <Cellule className="font-semibold text-red-700">{formaterDate(a.echeance)}</Cellule>

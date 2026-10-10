@@ -3,6 +3,8 @@ import { connecter } from "./aide";
 
 test("tableau de bord Direction : cinq domaines, alertes, comparaison, période", async ({ page }) => {
   await connecter(page, "pdg");
+  await expect(page).toHaveURL(/\/applications$/);
+  await page.getByRole("link", { name: "Tableau de bord" }).first().click();
   await expect(page).toHaveURL(/\/direction$/);
   for (const titre of ["Commercial", "Production", "Stock", "Finance", "Distribution"]) {
     await expect(page.getByRole("heading", { name: titre, exact: true })).toBeVisible();
@@ -20,7 +22,7 @@ test("tableau de bord Direction : cinq domaines, alertes, comparaison, période"
 test("rapport hebdomadaire imprimable", async ({ page }) => {
   await connecter(page, "pdg");
   await page.goto("/direction/rapport");
-  await expect(page.locator("header").getByText("Rapport hebdomadaire", { exact: true })).toBeVisible();
+  await expect(page.getByRole("main").locator("header").getByText("Rapport hebdomadaire", { exact: true })).toBeVisible();
   await expect(page.getByText("Comparé à la semaine précédente")).toBeVisible();
   await expect(page.getByRole("button", { name: "Imprimer / enregistrer en PDF" })).toBeVisible();
 });

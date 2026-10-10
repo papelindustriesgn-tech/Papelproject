@@ -43,7 +43,7 @@ export function LigneParametre({ p }: { p: Parametre }) {
             defaultValue={valeurAffichee(p)}
             inputMode={["nombre", "pourcentage", "entier"].includes(p.type_valeur) ? "decimal" : undefined}
             aria-invalid={etat.erreurs?.valeur ? true : undefined}
-            className="min-h-11 w-40 flex-1 rounded-lg border border-gray-300 px-3 sm:max-w-xs"
+            className="min-h-11 w-40 flex-1 rounded border border-gray-300 px-3 sm:max-w-xs md:min-h-9"
           />
         )}
         <span className="text-gray-600">{p.type_valeur === "pourcentage" ? "%" : p.unite}</span>

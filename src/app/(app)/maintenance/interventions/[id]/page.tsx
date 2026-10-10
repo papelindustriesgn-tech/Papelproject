@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
+import { Badge, BarreEtapes, Carte, Cellule, etapesStatut, Tableau, TitrePage } from "@/components/ui";
 import { formaterDateHeure } from "@/lib/formulaires/dates";
 import { PRIORITES, STATUTS_INTERVENTION, TYPES_INTERVENTION, versDateHeureLocale } from "@/lib/maintenance/libelles";
 import { minutes } from "@/lib/production/affichage";
@@ -28,14 +27,14 @@ export default async function PageIntervention({ params }: PageProps<"/maintenan
 
   return (
     <>
-      <Link href="/maintenance/interventions" className="text-papel-700 underline">← Ordres de travail</Link>
       <TitrePage
+        fil={[{ libelle: "Ordres de travail", href: "/maintenance/interventions" }]}
         titre={`Ordre de travail ${o.numero}`}
         sousTitre={`${o.equipement_code} – ${o.equipement_libelle} · ${TYPES_INTERVENTION[o.type_intervention!]} · signalé le ${formaterDateHeure(o.signale_le!)}`}
         action={
           <span className="flex gap-2">
             <Badge ton={PRIORITES[o.priorite!].ton}>{PRIORITES[o.priorite!].libelle}</Badge>
-            <Badge ton={STATUTS_INTERVENTION[o.statut!].ton}>{STATUTS_INTERVENTION[o.statut!].libelle}</Badge>
+            <BarreEtapes etapes={etapesStatut(STATUTS_INTERVENTION, ["demandee", "en_cours", "terminee"], o.statut!)} courante={o.statut!} />
           </span>
         }
       />

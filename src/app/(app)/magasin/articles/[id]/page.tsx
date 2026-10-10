@@ -23,16 +23,14 @@ export default async function FicheArticle({ params }: PageProps<"/magasin/artic
 
   return (
     <>
-      <Link href="/magasin/articles" className="text-papel-700 underline">
-        ← Articles
-      </Link>
       <TitrePage
+        fil={[{ libelle: "Articles", href: "/magasin/articles" }]}
         titre={a.libelle}
         sousTitre={`${a.code} · ${LIBELLES_FAMILLES[a.famille]} · unité : ${a.unite}${a.suivi_par_lot ? " · suivi par lot" : ""}`}
         action={
           <div className="flex items-center gap-2">
             {!a.actif && <Badge ton="neutre">Archivé</Badge>}
-            <Link href={`/magasin/mouvements/nouveau?article=${a.id}`} className="min-h-11 content-center rounded-lg bg-papel-700 px-4 font-semibold text-white">
+            <Link href={`/magasin/mouvements/nouveau?article=${a.id}`} className="min-h-11 inline-flex items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">
               + Mouvement
             </Link>
           </div>

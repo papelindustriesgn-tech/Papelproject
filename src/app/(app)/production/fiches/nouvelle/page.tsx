@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Carte, TitrePage } from "@/components/ui";
 import { aujourdhui } from "@/lib/formulaires/dates";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -14,10 +13,8 @@ export default async function NouvelleFiche() {
   ]);
   return (
     <>
-      <Link href="/production/fiches" className="text-papel-700 underline">
-        ← Fiches de poste
-      </Link>
-      <TitrePage titre="Nouvelle fiche de poste" />
+      <TitrePage
+        fil={[{ libelle: "Fiches de poste", href: "/production/fiches" }]} titre="Nouvelle fiche de poste" />
       <Carte>
         <FormulaireNouvelleFiche
           dateDuJour={aujourdhui()}

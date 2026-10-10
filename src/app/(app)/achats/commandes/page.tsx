@@ -18,7 +18,7 @@ export default async function PageCommandes() {
       <TitrePage
         titre="Bons de commande"
         action={
-          <Link href="/achats/commandes/nouveau" className="min-h-11 content-center rounded-lg bg-papel-700 px-4 font-semibold text-white">
+          <Link href="/achats/commandes/nouveau" className="min-h-11 inline-flex items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">
             + Bon de commande
           </Link>
         }
@@ -35,7 +35,7 @@ export default async function PageCommandes() {
           {bcs.map((b) => (
             <tr key={b.id}>
               <Cellule>
-                <Link href={`/achats/commandes/${b.id}`} className="font-mono font-semibold text-papel-800 underline">
+                <Link href={`/achats/commandes/${b.id}`} className="font-mono font-semibold text-papel-700 hover:underline">
                   {b.numero ?? "Brouillon"}
                 </Link>
               </Cellule>

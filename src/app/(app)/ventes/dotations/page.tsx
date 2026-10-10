@@ -32,7 +32,7 @@ export default async function PageDotations() {
           {lignes.map((d) => (
             <tr key={d.id}>
               <Cellule>
-                <Link href={`/ventes/pieces/${d.pieces_vente?.id}`} className="font-mono font-semibold text-papel-800 underline">
+                <Link href={`/ventes/pieces/${d.pieces_vente?.id}`} className="font-mono font-semibold text-papel-700 hover:underline">
                   {d.pieces_vente?.numero}
                 </Link>
               </Cellule>

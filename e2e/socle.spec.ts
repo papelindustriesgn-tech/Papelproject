@@ -21,8 +21,8 @@ test("champs vides : erreurs de validation en français", async ({ page }) => {
 test("chaque rôle arrive dans son espace et ne voit que lui", async ({ page }) => {
   await connecter(page, "magasin");
   await expect(page).toHaveURL(/\/magasin$/);
-  const menu = page.getByRole("navigation", { name: "Espaces" });
-  await expect(menu.getByRole("link")).toHaveText(["Stocks"]);
+  await page.goto("/applications");
+  await expect(page.getByRole("main").getByRole("link")).toHaveText(["Stocks"]);
   // Accès direct à une autre page : refusé.
   await page.goto("/admin/utilisateurs");
   await expect(page).toHaveURL(/\/acces-refuse$/);
@@ -35,8 +35,8 @@ test("le commercial terrain arrive sur l'application terrain", async ({ page }) 
 
 test("la direction voit tous les espaces", async ({ page }) => {
   await connecter(page, "pdg");
-  await expect(page).toHaveURL(/\/direction$/);
-  await expect(page.getByRole("navigation", { name: "Espaces" }).getByRole("link")).toHaveCount(12);
+  await expect(page).toHaveURL(/\/applications$/);
+  await expect(page.getByRole("main").getByRole("link")).toHaveCount(12);
 });
 
 test("l'admin crée un compte, qui peut ensuite se connecter", async ({ page }) => {
@@ -51,7 +51,8 @@ test("l'admin crée un compte, qui peut ensuite se connecter", async ({ page }) 
   await page.getByRole("button", { name: "Créer le compte" }).click();
   await expect(page.getByText(`Compte « ${identifiant} » créé.`)).toBeVisible();
 
-  await page.getByRole("button", { name: "Déconnexion" }).click();
+  await page.getByTitle(/Ibrahima Sylla/).click();
+  await page.getByRole("button", { name: "Se déconnecter" }).click();
   await connecter(page, identifiant, "Provisoire123");
   await expect(page).toHaveURL(/\/production$/);
 });

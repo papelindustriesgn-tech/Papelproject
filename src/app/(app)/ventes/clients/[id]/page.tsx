@@ -24,19 +24,17 @@ export default async function FicheClient({ params }: PageProps<"/ventes/clients
 
   return (
     <>
-      <Link href="/ventes/clients" className="text-papel-700 underline">
-        ← Clients
-      </Link>
       <TitrePage
+        fil={[{ libelle: "Clients", href: "/ventes/clients" }]}
         titre={c.nom}
         sousTitre={`${c.code} · ${c.types_clients?.libelle}${c.types_clients?.dotation ? " · reçoit la dotation" : ""}`}
         action={
           <div className="flex flex-wrap gap-2">
             {!c.actif && <Badge ton="neutre">Archivé</Badge>}
-            <Link href={`/ventes/pieces/nouvelle?client=${c.id}&type=devis`} className="min-h-11 content-center rounded-lg border border-papel-300 bg-white px-3 font-semibold text-papel-800">
+            <Link href={`/ventes/pieces/nouvelle?client=${c.id}&type=devis`} className="min-h-11 inline-flex items-center rounded bg-[#e7e9ed] hover:bg-[#d8dadd] px-3 font-medium text-gray-900 md:min-h-9">
               + Devis
             </Link>
-            <Link href={`/ventes/pieces/nouvelle?client=${c.id}&type=commande`} className="min-h-11 content-center rounded-lg bg-papel-700 px-3 font-semibold text-white">
+            <Link href={`/ventes/pieces/nouvelle?client=${c.id}&type=commande`} className="min-h-11 inline-flex items-center rounded bg-papel-700 px-3 font-medium text-white hover:bg-papel-800 md:min-h-9">
               + Commande
             </Link>
           </div>
@@ -78,7 +76,7 @@ export default async function FicheClient({ params }: PageProps<"/ventes/clients
             {(pieces ?? []).map((p) => (
               <tr key={p.id}>
                 <Cellule>
-                  <Link href={`/ventes/pieces/${p.id}`} className="font-semibold text-papel-800 underline">
+                  <Link href={`/ventes/pieces/${p.id}`} className="font-medium text-papel-700 hover:underline">
                     {TYPES_PIECE[p.type_piece].singulier} {p.numero ?? "(brouillon)"}
                   </Link>
                 </Cellule>

@@ -48,9 +48,9 @@ export function FormulaireQuantite({ ligneId, pieceId, colis, vrac }: { ligneId:
   return (
     <form action={action} className="flex flex-wrap items-center gap-1">
       <label className="sr-only" htmlFor={`c-${ligneId}`}>Colis</label>
-      <input id={`c-${ligneId}`} name="quantite_colis" defaultValue={colis} inputMode="numeric" className="min-h-11 w-20 rounded-lg border border-gray-300 px-2" aria-label="Colis" />
+      <input id={`c-${ligneId}`} name="quantite_colis" defaultValue={colis} inputMode="numeric" className="min-h-11 w-20 rounded border border-gray-300 px-2 md:min-h-9" aria-label="Colis" />
       <span className="text-sm">colis +</span>
-      <input name="paquets_vrac" defaultValue={vrac} inputMode="numeric" className="min-h-11 w-16 rounded-lg border border-gray-300 px-2" aria-label="Paquets en plus" />
+      <input name="paquets_vrac" defaultValue={vrac} inputMode="numeric" className="min-h-11 w-16 rounded border border-gray-300 px-2 md:min-h-9" aria-label="Paquets en plus" />
       <span className="text-sm">paq.</span>
       <Bouton type="submit" variante="discret" disabled={enCours}>
         OK

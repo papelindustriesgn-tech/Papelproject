@@ -44,9 +44,9 @@ export default async function PageJournal({ searchParams }: PageProps<"/admin/jo
         <form className="mb-3 flex flex-wrap items-end gap-2">
           <label className="flex flex-col">
             <span className="font-medium">Filtrer par table</span>
-            <input name="table" defaultValue={table} placeholder="ex. parametres" className="min-h-11 rounded-lg border border-gray-300 px-3" />
+            <input name="table" defaultValue={table} placeholder="ex. parametres" className="min-h-11 rounded border border-gray-300 px-3 md:min-h-9" />
           </label>
-          <button className="min-h-11 rounded-lg bg-papel-700 px-4 font-semibold text-white">Filtrer</button>
+          <button className="min-h-11 rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">Filtrer</button>
         </form>
         <Tableau entetes={["Date", "Utilisateur", "Opération", "Table", "Élément", "Détail"]}>
           {(lignes ?? []).map((l) => (

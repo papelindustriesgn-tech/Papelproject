@@ -25,7 +25,7 @@ export default async function PageFiches({ searchParams }: PageProps<"/productio
         titre="Fiches de poste"
         sousTitre="Une fiche par jour, par poste et par ligne. La validation met à jour les stocks."
         action={
-          <Link href="/production/fiches/nouvelle" className="min-h-11 content-center rounded-lg bg-papel-700 px-4 font-semibold text-white">
+          <Link href="/production/fiches/nouvelle" className="min-h-11 inline-flex items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">
             + Nouvelle fiche
           </Link>
         }
@@ -34,21 +34,21 @@ export default async function PageFiches({ searchParams }: PageProps<"/productio
         <form className="mb-3 flex flex-wrap items-end gap-2">
           <label className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">Du</span>
-            <input type="date" name="du" defaultValue={p.du} className="min-h-11 rounded-lg border border-gray-300 bg-white px-3" />
+            <input type="date" name="du" defaultValue={p.du} className="min-h-11 rounded border border-gray-300 bg-white px-3 md:min-h-9" />
           </label>
           <label className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">Au</span>
-            <input type="date" name="au" defaultValue={p.au} className="min-h-11 rounded-lg border border-gray-300 bg-white px-3" />
+            <input type="date" name="au" defaultValue={p.au} className="min-h-11 rounded border border-gray-300 bg-white px-3 md:min-h-9" />
           </label>
           <label className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">Statut</span>
-            <select name="statut" defaultValue={statut ?? ""} className="min-h-11 rounded-lg border border-gray-300 bg-white px-3">
+            <select name="statut" defaultValue={statut ?? ""} className="min-h-11 rounded border border-gray-300 bg-white px-3 md:min-h-9">
               <option value="">Tous</option>
               <option value="brouillon">Brouillon</option>
               <option value="validee">Validée</option>
             </select>
           </label>
-          <button className="min-h-11 rounded-lg bg-papel-700 px-4 font-semibold text-white">Filtrer</button>
+          <button className="min-h-11 rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">Filtrer</button>
           <ExportCsv
             nomFichier="fiches-production"
             entetes={["Date", "Poste", "Équipe", "Statut", "Papier (kg)", "Paquets", "Rendement / théorique", "Taux de perte", "Arrêts non planifiés (min)", "TRS", "Alertes"]}
@@ -65,7 +65,7 @@ export default async function PageFiches({ searchParams }: PageProps<"/productio
           {fiches.map((f) => (
             <tr key={f.id}>
               <Cellule className="whitespace-nowrap">
-                <Link href={`/production/fiches/${f.id}`} className="font-semibold text-papel-800 underline">
+                <Link href={`/production/fiches/${f.id}`} className="font-medium text-papel-700 hover:underline">
                   {formaterDate(f.date)}
                 </Link>
               </Cellule>

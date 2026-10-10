@@ -25,14 +25,14 @@ export default async function PageVisites({ searchParams }: PageProps<"/commerci
   return (
     <>
       <TitrePage titre="Visites et check-ins" sousTitre="Chaque check-in est horodaté et géolocalisé ; « hors zone » = trop loin du point de vente ou GPS imprécis." />
-      <form className="mb-4 flex flex-wrap items-end gap-2 rounded-xl border border-gray-200 bg-white p-3">
+      <form className="mb-4 flex flex-wrap items-end gap-2 rounded-md border border-gray-200 bg-white p-3">
         <label className="flex flex-col">
           <span className="text-sm font-medium text-gray-700">Jour</span>
-          <input type="date" name="jour" defaultValue={jour} className="min-h-11 rounded-lg border border-gray-300 px-3" />
+          <input type="date" name="jour" defaultValue={jour} className="min-h-11 rounded border border-gray-300 px-3 md:min-h-9" />
         </label>
         <label className="flex min-w-0 flex-col">
           <span className="text-sm font-medium text-gray-700">Commercial</span>
-          <select name="commercial" defaultValue={commercial ?? ""} className="min-h-11 rounded-lg border border-gray-300 bg-white px-3">
+          <select name="commercial" defaultValue={commercial ?? ""} className="min-h-11 rounded border border-gray-300 bg-white px-3 md:min-h-9">
             <option value="">Tous</option>
             {(commerciaux ?? []).filter((c) => c.profils).map((c) => (
               <option key={c.profils!.id} value={c.profils!.id}>{c.profils!.prenom} {c.profils!.nom}</option>
@@ -42,7 +42,7 @@ export default async function PageVisites({ searchParams }: PageProps<"/commerci
         <label className="flex min-h-11 items-center gap-2">
           <input type="checkbox" name="hors_zone" value="1" defaultChecked={horsZone} className="size-5 accent-papel-700" /> Hors zone uniquement
         </label>
-        <button className="min-h-11 rounded-lg bg-papel-700 px-4 font-semibold text-white">Afficher</button>
+        <button className="min-h-11 rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">Afficher</button>
         <ExportCsv
           nomFichier={`visites-${jour}`}
           entetes={["Heure", "Commercial", "Point de vente", "Distance (m)", "Précision GPS (m)", "Dans la zone", "Rupture", "Stock Papel (colis)", "Notes", "Latitude", "Longitude"]}

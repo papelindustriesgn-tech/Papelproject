@@ -23,12 +23,12 @@ export default async function RapportHebdomadaire({ searchParams }: PageProps<"/
       <form className="mb-4 flex flex-wrap items-end gap-2 print:hidden">
         <label className="flex flex-col">
           <span className="text-sm font-medium text-gray-700">Semaine se terminant le</span>
-          <input type="date" name="au" defaultValue={fin} className="min-h-11 rounded-lg border border-gray-300 px-3" />
+          <input type="date" name="au" defaultValue={fin} className="min-h-11 rounded border border-gray-300 px-3 md:min-h-9" />
         </label>
-        <button className="min-h-11 rounded-lg border border-papel-300 bg-white px-4 font-semibold text-papel-800">Afficher</button>
+        <button className="min-h-11 rounded bg-[#e7e9ed] hover:bg-[#d8dadd] px-4 font-medium text-gray-900 md:min-h-9">Afficher</button>
         <BoutonImprimer />
       </form>
-      <header className="imprimer-couleurs mb-4 flex items-center justify-between rounded-lg bg-papel-700 p-4 text-white">
+      <header className="imprimer-couleurs mb-4 flex items-center justify-between rounded bg-papel-700 p-4 text-white">
         <Image src="/logo-papel.png" alt="Papel" width={120} height={68} />
         <div className="text-right">
           <div className="text-xl font-bold">Rapport hebdomadaire</div>

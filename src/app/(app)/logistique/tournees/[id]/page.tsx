@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
+import { Badge, BarreEtapes, Carte, Cellule, etapesStatut, Tableau, TitrePage } from "@/components/ui";
 import { BoutonImprimer } from "@/components/ui/bouton-imprimer";
 import { Indicateur } from "@/components/ui/indicateur";
 import { formaterDate, formaterDateHeure } from "@/lib/formulaires/dates";
@@ -38,7 +38,6 @@ export default async function PageTournee({ params }: PageProps<"/logistique/tou
   const { data: aPlanifier } = planifiee
     ? await supabase.from("livraisons").select(SELECT_BL).eq("statut", "validee").is("tournee_id", null).eq("statut_remise", "a_livrer").order("date_livraison").limit(100)
     : { data: [] };
-  const statut = STATUTS_TOURNEE[t.statut!];
 
   return (
     <>
@@ -46,7 +45,7 @@ export default async function PageTournee({ params }: PageProps<"/logistique/tou
       <TitrePage
         titre={`Tournée ${t.numero}`}
         sousTitre={`${formaterDate(t.date_tournee)} · ${t.immatriculation} · ${t.chauffeur_nom}`}
-        action={<Badge ton={statut.ton}>{statut.libelle}</Badge>}
+        action={<BarreEtapes etapes={etapesStatut(STATUTS_TOURNEE, ["planifiee", "en_cours", "terminee"], t.statut!)} courante={t.statut!} />}
       />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
         <Indicateur

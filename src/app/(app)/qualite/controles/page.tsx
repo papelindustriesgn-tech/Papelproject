@@ -54,7 +54,7 @@ export default async function PageControles({ searchParams }: PageProps<"/qualit
           {lignes.map((c) => (
             <tr key={c.id}>
               <Cellule>
-                <Link href={`/qualite/controles/${c.id}`} className="font-semibold text-papel-800 underline">{formaterDate(c.date_controle)}</Link>
+                <Link href={`/qualite/controles/${c.id}`} className="font-medium text-papel-700 hover:underline">{formaterDate(c.date_controle)}</Link>
               </Cellule>
               <Cellule>{ETAPES_CONTROLE[c.etape!]}</Cellule>
               <Cellule className="font-mono">{c.numero_lot ?? c.code_lot}</Cellule>

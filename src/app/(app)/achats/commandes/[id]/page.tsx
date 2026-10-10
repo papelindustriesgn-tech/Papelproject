@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DocumentsJoints } from "@/components/achats/documents";
-import { Badge, Bouton, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
+import { BarreEtapes, Bouton, Carte, Cellule, etapesStatut, Tableau, TitrePage } from "@/components/ui";
 import { LIBELLES_STATUT_CONTENEUR, STATUTS_BC } from "@/lib/achats/libelles";
 import { formaterDate } from "@/lib/formulaires/dates";
 import { formaterMontant, usdCentimesVersGnf } from "@/lib/metier/devises";
@@ -25,11 +25,11 @@ export default async function PageBc({ params }: PageProps<"/achats/commandes/[i
 
   return (
     <>
-      <Link href="/achats/commandes" className="text-papel-700 underline">← Bons de commande</Link>
       <TitrePage
+        fil={[{ libelle: "Bons de commande", href: "/achats/commandes" }]}
         titre={`Bon de commande ${b.numero ?? "(brouillon)"}`}
         sousTitre={`${b.fournisseurs?.nom} · ${formaterDate(b.date_commande)} · ${devise}${devise === "USD" && !brouillon ? ` · taux ${nombre(b.taux_change, 2)} GNF/USD` : ""}${b.incoterm ? ` · ${b.incoterm}` : ""}`}
-        action={<Badge ton={STATUTS_BC[b.statut].ton}>{STATUTS_BC[b.statut].libelle}</Badge>}
+        action={<BarreEtapes etapes={etapesStatut(STATUTS_BC, ["brouillon", "envoye", "recu"], b.statut)} courante={b.statut} />}
       />
       {b.demandes_achat.length > 0 && <p className="mb-3 text-gray-700">Demandes : {b.demandes_achat.map((d) => d.numero).join(", ")}</p>}
       <div className="flex flex-col gap-4">
@@ -72,7 +72,7 @@ export default async function PageBc({ params }: PageProps<"/achats/commandes/[i
               {b.conteneurs.map((c) => (
                 <tr key={c.id}>
                   <Cellule>
-                    <Link href={`/achats/conteneurs/${c.id}`} className="font-mono font-semibold text-papel-800 underline">{c.reference}</Link>
+                    <Link href={`/achats/conteneurs/${c.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{c.reference}</Link>
                   </Cellule>
                   <Cellule>{formaterPoids(kg(Number(c.poids_net_prevu_kg)))}</Cellule>
                   <Cellule>{formaterDate(c.date_livraison_prevue)}</Cellule>
@@ -81,7 +81,7 @@ export default async function PageBc({ params }: PageProps<"/achats/commandes/[i
               ))}
             </Tableau>
             {b.statut === "envoye" && (
-              <div className="mt-3 rounded-lg border border-gray-200 p-3">
+              <div className="mt-3 rounded border border-gray-200 p-3">
                 <FormulaireConteneur bcId={b.id} />
               </div>
             )}

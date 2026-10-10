@@ -120,7 +120,7 @@ export function FormulaireOperateurs({ ficheId, operateurs, presents, modifiable
       <Retour etat={etat} />
       <div className="grid gap-1 sm:grid-cols-2">
         {operateurs.map((o) => (
-          <label key={o.id} className="flex min-h-11 items-center gap-2 rounded-lg border border-gray-200 px-3">
+          <label key={o.id} className="flex min-h-11 items-center gap-2 rounded border border-gray-200 px-3">
             <input type="checkbox" name="operateurs" value={o.id} defaultChecked={presents.includes(o.id)} disabled={!modifiable} className="size-5 accent-papel-700" />
             {o.libelle} <span className="text-sm text-gray-600">{o.equipe}</span>
           </label>
@@ -185,7 +185,7 @@ export function BoutonValider({ ficheId, avertissements }: { ficheId: string; av
   const [confirmer, setConfirmer] = useState(false);
   if (etat.ok) return <Message ton="succes">{etat.message}</Message>;
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3">
+    <div className="flex flex-col gap-2 rounded border border-amber-300 bg-amber-50 p-3">
       {etat.message && <Message ton="erreur">{etat.message}</Message>}
       <p>
         La validation sort les bobines et emballages du stock et entre les produits finis au coût de revient. <strong>Elle est définitive.</strong>

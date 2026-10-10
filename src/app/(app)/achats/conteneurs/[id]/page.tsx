@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DocumentsJoints } from "@/components/achats/documents";
 import { EtapesConteneur } from "@/components/achats/etapes";
@@ -31,8 +30,8 @@ export default async function PageConteneur({ params }: PageProps<"/achats/conte
 
   return (
     <>
-      <Link href="/achats/conteneurs" className="text-papel-700 underline">← Conteneurs</Link>
-      <TitrePage titre={`Conteneur ${c.reference}`} sousTitre={`${c.bons_commande?.numero ?? ""} · ${c.bons_commande?.fournisseurs?.nom ?? ""}${c.navire ? ` · ${c.navire}` : ""}`} />
+      <TitrePage
+        fil={[{ libelle: "Conteneurs", href: "/achats/conteneurs" }]} titre={`Conteneur ${c.reference}`} sousTitre={`${c.bons_commande?.numero ?? ""} · ${c.bons_commande?.fournisseurs?.nom ?? ""}${c.navire ? ` · ${c.navire}` : ""}`} />
       <Carte className="mb-4">
         <EtapesConteneur conteneur={c} aujourdhui={jour} />
       </Carte>

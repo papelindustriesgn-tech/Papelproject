@@ -142,7 +142,7 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
             <ul className="divide-y divide-gray-100">
               {fichesEnAlerte.map((f) => (
                 <li key={f.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                  <Link href={`/production/fiches/${f.id}`} className="font-semibold text-papel-800 underline">
+                  <Link href={`/production/fiches/${f.id}`} className="font-medium text-papel-700 hover:underline">
                     {formaterDate(f.date)} – {f.poste}
                   </Link>
                   <span className="flex flex-wrap gap-1">

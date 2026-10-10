@@ -11,7 +11,7 @@ export function FormulaireTraitement({ id }: { id: string }) {
   const message = etatA.message ?? etatR.message;
   return (
     <form className="flex flex-wrap items-center gap-2">
-      <input name="commentaire" placeholder="Commentaire" aria-label="Commentaire" className="min-h-11 rounded-lg border border-gray-300 px-2" />
+      <input name="commentaire" placeholder="Commentaire" aria-label="Commentaire" className="min-h-11 rounded border border-gray-300 px-2 md:min-h-9" />
       <Bouton formAction={approuver} disabled={enCoursA} variante="secondaire">
         Approuver
       </Bouton>

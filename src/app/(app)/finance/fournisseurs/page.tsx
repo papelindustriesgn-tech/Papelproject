@@ -41,7 +41,7 @@ export default async function PageFournisseurs({ searchParams }: PageProps<"/fin
     (dettes ?? []).filter((d) => Number(d.jours_retard) >= t.min && Number(d.jours_retard) <= t.max).reduce((s, d) => s + Number(d.solde_gnf), 0);
   return (
     <>
-      <TitrePage titre="Fournisseurs et charges" sousTitre="Factures à payer, règlements et charges fixes mensuelles." action={<Link href="/finance/fournisseurs/nouvelle" className="inline-flex min-h-11 items-center rounded-lg bg-papel-700 px-4 font-semibold text-white">Nouvelle facture</Link>} />
+      <TitrePage titre="Fournisseurs et charges" sousTitre="Factures à payer, règlements et charges fixes mensuelles." action={<Link href="/finance/fournisseurs/nouvelle" className="inline-flex min-h-11 items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">Nouvelle facture</Link>} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {TRANCHES.map((t) => (
           <Indicateur key={t.libelle} libelle={`Dettes – ${t.libelle}`} valeur={gnf(tranche(t))} ton={t.min > 30 && tranche(t) > 0 ? "alerte" : "normal"} />
@@ -70,7 +70,7 @@ export default async function PageFournisseurs({ searchParams }: PageProps<"/fin
         <Tableau entetes={["N°", "Bénéficiaire", "Libellé", "Échéance", "Total", "Reste dû", ""]}>
           {lignes.map((f) => (
             <tr key={f.id}>
-              <Cellule><Link href={`/finance/fournisseurs/${f.id}`} className="font-mono font-semibold text-papel-800 underline">{f.numero}</Link></Cellule>
+              <Cellule><Link href={`/finance/fournisseurs/${f.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{f.numero}</Link></Cellule>
               <Cellule>{f.beneficiaire}</Cellule>
               <Cellule className="text-sm">{f.libelle}<span className="block text-gray-600">{f.categorie_libelle}</span></Cellule>
               <Cellule className={Number(f.solde_gnf) > 0 && Number(f.jours_retard) > 0 ? "font-semibold text-red-700" : ""}>{formaterDate(f.date_echeance)}</Cellule>

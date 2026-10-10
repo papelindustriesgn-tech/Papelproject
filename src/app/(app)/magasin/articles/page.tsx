@@ -33,7 +33,7 @@ export default async function PageArticles({ searchParams }: PageProps<"/magasin
         titre="Articles"
         sousTitre="Matières premières, emballages, produits finis et pièces"
         action={
-          <Link href="/magasin/articles/nouveau" className="min-h-11 content-center rounded-lg bg-papel-700 px-4 font-semibold text-white">
+          <Link href="/magasin/articles/nouveau" className="min-h-11 inline-flex items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">
             + Nouvel article
           </Link>
         }
@@ -67,7 +67,7 @@ export default async function PageArticles({ searchParams }: PageProps<"/magasin
               <tr key={l.article_id} className={l.actif ? "" : "opacity-60"}>
                 <Cellule className="font-mono text-sm">{l.code}</Cellule>
                 <Cellule>
-                  <Link href={`/magasin/articles/${l.article_id}`} className="font-semibold text-papel-800 underline">
+                  <Link href={`/magasin/articles/${l.article_id}`} className="font-medium text-papel-700 hover:underline">
                     {l.libelle}
                   </Link>
                   {!l.actif && <Badge ton="neutre">Archivé</Badge>}

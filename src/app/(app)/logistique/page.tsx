@@ -46,7 +46,7 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
             {duJour.map((t) => (
               <tr key={t.id}>
                 <Cellule>
-                  <Link href={`/logistique/tournees/${t.id}`} className="font-mono font-semibold text-papel-800 underline">{t.numero}</Link>
+                  <Link href={`/logistique/tournees/${t.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{t.numero}</Link>
                 </Cellule>
                 <Cellule>{t.immatriculation}</Cellule>
                 <Cellule>{t.chauffeur_nom}</Cellule>

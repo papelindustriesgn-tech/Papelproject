@@ -21,20 +21,20 @@ export default async function PageExports({ searchParams }: PageProps<"/finance/
         <form className="flex flex-wrap items-end gap-2">
           <label className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">Du</span>
-            <input type="date" name="du" defaultValue={du} className="min-h-11 rounded-lg border border-gray-300 px-3" />
+            <input type="date" name="du" defaultValue={du} className="min-h-11 rounded border border-gray-300 px-3 md:min-h-9" />
           </label>
           <label className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">Au</span>
-            <input type="date" name="au" defaultValue={au} className="min-h-11 rounded-lg border border-gray-300 px-3" />
+            <input type="date" name="au" defaultValue={au} className="min-h-11 rounded border border-gray-300 px-3 md:min-h-9" />
           </label>
-          <button className="min-h-11 rounded-lg border border-papel-700 px-4 font-semibold text-papel-700">Changer la période</button>
+          <button className="min-h-11 rounded border border-papel-700 px-4 font-semibold text-papel-700">Changer la période</button>
         </form>
       </Carte>
       <div className="grid gap-3 sm:grid-cols-3">
         {Object.entries(JOURNAUX).map(([code, j]) => (
           <Carte key={code} titre={`${j.libelle} (${j.code})`}>
             <p className="mb-3 text-gray-700">{j.description}</p>
-            <a href={`/finance/exports/${code}?du=${du}&au=${au}`} className="inline-flex min-h-11 items-center rounded-lg bg-papel-700 px-4 font-semibold text-white" download>
+            <a href={`/finance/exports/${code}?du=${du}&au=${au}`} className="inline-flex min-h-11 items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9" download>
               Télécharger
             </a>
           </Carte>

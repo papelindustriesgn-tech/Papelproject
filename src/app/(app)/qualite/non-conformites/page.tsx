@@ -60,7 +60,7 @@ export default async function PageNonConformites({ searchParams }: PageProps<"/q
           {lignes.map((n) => (
             <tr key={n.id}>
               <Cellule>
-                <Link href={`/qualite/non-conformites/${n.id}`} className="font-mono font-semibold text-papel-800 underline">{n.numero}</Link>
+                <Link href={`/qualite/non-conformites/${n.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{n.numero}</Link>
               </Cellule>
               <Cellule className="whitespace-nowrap">{formaterDate(n.date_constat)}</Cellule>
               <Cellule>{ORIGINES_NC[n.origine]}</Cellule>

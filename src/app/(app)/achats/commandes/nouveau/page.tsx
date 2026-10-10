@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Carte, TitrePage } from "@/components/ui";
 import { aujourdhui } from "@/lib/formulaires/dates";
 import { nombre } from "@/lib/stocks/libelles";
@@ -13,10 +12,8 @@ export default async function NouveauBc() {
   ]);
   return (
     <>
-      <Link href="/achats/commandes" className="text-papel-700 underline">
-        ← Bons de commande
-      </Link>
-      <TitrePage titre="Nouveau bon de commande" />
+      <TitrePage
+        fil={[{ libelle: "Bons de commande", href: "/achats/commandes" }]} titre="Nouveau bon de commande" />
       <Carte>
         <FormulaireBc
           dateDuJour={aujourdhui()}

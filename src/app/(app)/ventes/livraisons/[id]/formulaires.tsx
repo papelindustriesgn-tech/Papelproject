@@ -9,7 +9,7 @@ export function FormulaireLigneLivraison({ ligneId, livraisonId, paquets }: { li
   const [etat, action, enCours] = useActionState(modifierLigneLivraison.bind(null, ligneId, livraisonId), ETAT_INITIAL);
   return (
     <form action={action} className="flex flex-wrap items-center gap-2">
-      <input name="paquets" defaultValue={paquets} inputMode="numeric" aria-label="Paquets à livrer" className="min-h-11 w-28 rounded-lg border border-gray-300 px-2" />
+      <input name="paquets" defaultValue={paquets} inputMode="numeric" aria-label="Paquets à livrer" className="min-h-11 w-28 rounded border border-gray-300 px-2 md:min-h-9" />
       <span>paquets</span>
       <Bouton type="submit" variante="discret" disabled={enCours}>
         OK

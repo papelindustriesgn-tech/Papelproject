@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge, Bouton, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
+import { Badge, BarreEtapes, Bouton, Carte, Cellule, classesBouton, Tableau, TitrePage } from "@/components/ui";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
 import { calculerTotaux } from "@/lib/metier/tva";
 import { formaterStockProduitFini, type Paquets } from "@/lib/metier/unites";
 import { montantEnLettresGnf } from "@/lib/metier/ventes";
 import { gnf, nombre } from "@/lib/stocks/libelles";
-import { CANAUX_RELANCE, STATUTS_PIECE, TYPES_PIECE } from "@/lib/ventes/libelles";
+import { CANAUX_RELANCE, TYPES_PIECE } from "@/lib/ventes/libelles";
 import { parametresVente } from "@/lib/ventes/parametres";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { annulerPiece, preparerLivraison, supprimerBrouillon, supprimerLigne, transformerPiece } from "../../actions";
@@ -56,6 +56,14 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
     estFacture ? supabase.from("dotations").select("id, produit_id, paquets_dus, paquets_remis, produits(libelle)").eq("facture_id", p.id) : Promise.resolve({ data: [] }),
     estFacture ? supabase.from("relances").select("id, date_relance, canal, note, promesse_date").eq("facture_id", p.id).order("date_relance", { ascending: false }) : Promise.resolve({ data: [] }),
   ]);
+  // Barre d'étapes du document (à la Odoo).
+  const etapes = [
+    { code: "brouillon", libelle: "Brouillon" },
+    { code: "valide", libelle: p.type_piece === "facture" ? "Validée" : "Validé" },
+    ...(p.type_piece === "facture" ? [{ code: "payee", libelle: "Payée" }] : []),
+    ...(p.statut === "annule" ? [{ code: "annule", libelle: "Annulé" }] : []),
+  ];
+  const etapeCourante = estFacture && Number(etat?.solde_gnf ?? 1) <= 0 ? "payee" : p.statut;
   const resteALivrer = (reste ?? []).reduce((s, r) => s + Number(r.paquets_restants ?? 0), 0);
   const factureExiste = (derivees ?? []).some((d) => d.type_piece === "facture" && d.statut !== "annule");
   const commandeExiste = (derivees ?? []).some((d) => d.type_piece === "commande" && d.statut !== "annule");
@@ -63,23 +71,24 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
 
   return (
     <>
-      <Link href={`/ventes/pieces?type=${p.type_piece}`} className="text-papel-700 underline print:hidden">
-        ← {def.pluriel}
-      </Link>
       <TitrePage
-        titre={`${def.singulier} ${p.numero ?? "(brouillon)"}`}
+        fil={[{ libelle: def.pluriel, href: `/ventes/pieces?type=${p.type_piece}` }]}
+        titre={p.numero ?? `${def.singulier} (brouillon)`}
         sousTitre={`${p.clients?.nom} · ${p.clients?.types_clients?.libelle} · du ${formaterDate(p.date_piece)}${p.date_echeance ? ` · échéance ${formaterDate(p.date_echeance)}` : ""}`}
         action={
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge ton={STATUTS_PIECE[p.statut].ton}>{STATUTS_PIECE[p.statut].libelle}</Badge>
-            {!brouillon && (
-              <Link href={`/ventes/pieces/${p.id}/imprimer`} className="min-h-11 content-center rounded-lg border border-papel-300 bg-white px-3 font-semibold text-papel-800">
-                Imprimer / PDF
-              </Link>
-            )}
-          </div>
+          !brouillon && (
+            <Link href={`/ventes/pieces/${p.id}/imprimer`} className={classesBouton("secondaire")}>
+              Imprimer / PDF
+            </Link>
+          )
         }
       />
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-[1.1rem] font-semibold text-gray-900">
+          {def.singulier} · {p.clients?.nom}
+        </span>
+        <BarreEtapes etapes={etapes} courante={etapeCourante} />
+      </div>
       {(origine || (derivees ?? []).length > 0) && (
         <p className="mb-3 text-gray-700">
           {origine && (
@@ -193,7 +202,7 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
               {(livraisons ?? []).map((l) => (
                 <tr key={l.id}>
                   <Cellule>
-                    <Link href={`/ventes/livraisons/${l.id}`} className="font-mono font-semibold text-papel-800 underline">
+                    <Link href={`/ventes/livraisons/${l.id}`} className="font-mono font-semibold text-papel-700 hover:underline">
                       {l.numero ?? "Brouillon"}
                     </Link>
                   </Cellule>

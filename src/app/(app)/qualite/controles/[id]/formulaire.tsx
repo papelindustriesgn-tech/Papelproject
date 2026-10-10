@@ -29,7 +29,7 @@ export function FormulaireMesures({ controleId, criteres }: { controleId: string
         const n = lireNombre(valeurs[`valeur_${c.id}`] ?? "");
         const verdict = c.type_mesure === "mesure" && n !== null ? mesureConforme(n, tol) : null;
         return (
-          <fieldset key={c.id} className="rounded-lg border border-gray-200 p-3">
+          <fieldset key={c.id} className="rounded border border-gray-200 p-3">
             <legend className="px-1 font-semibold">{c.libelle}</legend>
             {c.type_mesure === "mesure" ? (
               <div className="flex flex-wrap items-center gap-3">
@@ -41,7 +41,7 @@ export function FormulaireMesures({ controleId, criteres }: { controleId: string
                     aria-label={`${c.libelle} : valeur`}
                     value={valeurs[`valeur_${c.id}`] ?? ""}
                     onChange={(ev) => setValeurs({ ...valeurs, [`valeur_${c.id}`]: ev.target.value })}
-                    className="min-h-11 w-40 rounded-lg border border-gray-300 px-3"
+                    className="min-h-11 w-40 rounded border border-gray-300 px-3 md:min-h-9"
                   />
                 </label>
                 {verdict !== null && <span className={`font-semibold ${verdict ? "text-papel-700" : "text-red-700"}`}>{verdict ? "Conforme" : "Hors tolérance"}</span>}
@@ -53,20 +53,20 @@ export function FormulaireMesures({ controleId, criteres }: { controleId: string
                   ["conforme", "Conforme"],
                   ["non_conforme", "Non conforme"],
                 ].map(([v, l]) => (
-                  <label key={v} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3">
+                  <label key={v} className="flex min-h-11 cursor-pointer items-center gap-2 rounded border border-gray-300 px-3 md:min-h-9">
                     <input type="radio" name={`visuel_${c.id}`} value={v} defaultChecked={etat.valeurs?.[`visuel_${c.id}`] === v} className="size-5 accent-papel-700" aria-label={`${c.libelle} : ${l}`} />
                     {l}
                   </label>
                 ))}
               </div>
             )}
-            <input name={`commentaire_${c.id}`} placeholder="Commentaire (facultatif)" aria-label={`${c.libelle} : commentaire`} defaultValue={etat.valeurs?.[`commentaire_${c.id}`]} className="mt-2 min-h-11 w-full rounded-lg border border-gray-300 px-3" />
+            <input name={`commentaire_${c.id}`} placeholder="Commentaire (facultatif)" aria-label={`${c.libelle} : commentaire`} defaultValue={etat.valeurs?.[`commentaire_${c.id}`]} className="mt-2 min-h-11 w-full rounded border border-gray-300 px-3 md:min-h-9" />
           </fieldset>
         );
       })}
       <label className="flex flex-col">
         <span className="text-sm font-medium text-gray-700">Observations</span>
-        <input name="notes" defaultValue={etat.valeurs?.notes} className="min-h-11 rounded-lg border border-gray-300 px-3" />
+        <input name="notes" defaultValue={etat.valeurs?.notes} className="min-h-11 rounded border border-gray-300 px-3 md:min-h-9" />
       </label>
       <p className="text-sm text-gray-700">Les critères laissés vides ne sont pas comptés. Une mesure hors tolérance rend le contrôle non conforme : une non-conformité est ouverte et, à réception, la bobine est bloquée.</p>
       <Bouton type="submit" disabled={enCours} className="self-start">Enregistrer et valider le contrôle</Bouton>

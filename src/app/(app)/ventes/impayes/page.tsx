@@ -50,7 +50,7 @@ export default async function PageImpayes() {
             return (
               <tr key={f.id}>
                 <Cellule>
-                  <Link href={`/ventes/pieces/${f.id}`} className="font-mono font-semibold text-papel-800 underline">
+                  <Link href={`/ventes/pieces/${f.id}`} className="font-mono font-semibold text-papel-700 hover:underline">
                     {f.numero}
                   </Link>
                 </Cellule>

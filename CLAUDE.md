@@ -317,7 +317,13 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
 - Tests RLS en SQL (pgTAP, `supabase/tests/`), parcours critiques en Playwright (`e2e/`, écran mobile 360 px).
 - Server Actions : valider avec Zod, renvoyer un `EtatFormulaire` (`src/lib/formulaires/etat.ts`), traduire les erreurs SQL avec `messageErreurBase`.
 - Nombres saisis à la française (« 9 450 », « 0,05 ») : `lireNombre()` ; pourcentages saisis en % et stockés en fraction (5 → 0,05).
-- Interface : composants `src/components/ui`, boutons ≥ 44 px, police système (aucune police téléchargée), couleur marque `papel-700` = #07524D.
+- Interface **à la Odoo** : écran `/applications` (une icône par application, `src/components/coque/applications.tsx`) ; barre de navigation
+  `BarreNavigation` avec les menus de l'application courante, déclarés dans **`src/lib/navigation/menus.ts`** (un lien ou un groupe déroulant
+  « Opérations », « Configuration »…) — un nouvel écran s'ajoute là, pas dans le layout de l'espace.
+  Pages : `TitrePage` = barre de contrôle (fil d'Ariane `fil`, titre, boutons) ; document = `BarreEtapes` (+ `etapesStatut`) ;
+  listes = `BarreFiltres` + `Tableau` ; liens-boutons avec `classesBouton()`.
+- Composants `src/components/ui`, zones tactiles ≥ 44 px sur téléphone (36 px sur ordinateur), police système (aucune police téléchargée),
+  couleur marque `papel-700` = #07524D, icônes `lucide-react`.
 - Comptabilité : le comptable suivra très probablement le **SYSCOHADA** ; prévoir des exports **Excel/CSV** compatibles (phase 3).
 
 ## 10. Phases

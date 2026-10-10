@@ -77,5 +77,5 @@ export function Carte({ points, hauteur = 360, onSelection }: { points: PointCar
     };
   }, [points, onSelection]);
 
-  return <div ref={conteneur} style={{ height: hauteur }} className="z-0 w-full overflow-hidden rounded-xl border border-gray-200" role="region" aria-label="Carte" />;
+  return <div ref={conteneur} style={{ height: hauteur }} className="z-0 w-full overflow-hidden rounded-md border border-gray-200" role="region" aria-label="Carte" />;
 }

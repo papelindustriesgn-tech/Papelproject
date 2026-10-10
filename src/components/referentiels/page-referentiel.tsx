@@ -18,7 +18,7 @@ export function IndexReferentiels({ espace }: { espace: string }) {
       <TitrePage titre="Listes de référence" sousTitre="Toutes ces listes sont modifiables par vos équipes." />
       <div className="grid gap-3 sm:grid-cols-2">
         {referentielsDeLEspace(espace).map((r) => (
-          <Link key={r.code} href={`/${espace}/listes/${r.code}`} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:border-papel-300">
+          <Link key={r.code} href={`/${espace}/listes/${r.code}`} className="rounded-md border border-gray-200 bg-white p-4 shadow-sm hover:border-papel-300">
             <div className="text-lg font-bold text-papel-900">{r.titre}</div>
             <div className="text-gray-600">{r.description}</div>
           </Link>

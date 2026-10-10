@@ -23,7 +23,7 @@ export default async function PageInventaires() {
             <tr key={i.id}>
               <Cellule>{formaterDate(i.date_inventaire)}</Cellule>
               <Cellule>
-                <Link href={`/magasin/inventaires/${i.id}`} className="font-semibold text-papel-800 underline">
+                <Link href={`/magasin/inventaires/${i.id}`} className="font-medium text-papel-700 hover:underline">
                   {i.libelle}
                 </Link>
               </Cellule>

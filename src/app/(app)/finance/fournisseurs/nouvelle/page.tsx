@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Carte, TitrePage } from "@/components/ui";
 import { aujourdhui } from "@/lib/formulaires/dates";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -16,8 +15,8 @@ export default async function NouvelleFacture() {
   const natures: Record<string, string> = { stock: "stocké", variable: "variable", fixe: "fixe" };
   return (
     <>
-      <Link href="/finance/fournisseurs" className="text-papel-700 underline">← Fournisseurs et charges</Link>
-      <TitrePage titre="Nouvelle facture fournisseur" />
+      <TitrePage
+        fil={[{ libelle: "Fournisseurs et charges", href: "/finance/fournisseurs" }]} titre="Nouvelle facture fournisseur" />
       <Carte>
         <FormulaireFacture
           dateDuJour={aujourdhui()}

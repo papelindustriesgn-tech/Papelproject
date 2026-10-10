@@ -135,9 +135,9 @@ export default async function PageTracabilite({ searchParams }: PageProps<"/qual
       <form className="mb-4 flex flex-wrap items-end gap-2">
         <label className="flex min-w-0 flex-1 flex-col">
           <span className="text-sm font-medium text-gray-700">N° de bobine ou code de lot (ex. JB-0012, PF261001-1)</span>
-          <input name="q" defaultValue={q} className="min-h-11 rounded-lg border border-gray-300 px-3" />
+          <input name="q" defaultValue={q} className="min-h-11 rounded border border-gray-300 px-3 md:min-h-9" />
         </label>
-        <button className="min-h-11 rounded-lg bg-papel-700 px-4 font-semibold text-white">Tracer</button>
+        <button className="min-h-11 rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">Tracer</button>
       </form>
       {contenu}
     </>

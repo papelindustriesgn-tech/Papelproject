@@ -73,8 +73,9 @@ export function espaceDuChemin(chemin: string): Espace | undefined {
   return ESPACES.find((e) => e.code === segment);
 }
 
-/** Page d'accueil d'un utilisateur selon ses rôles (le commercial terrain arrive sur son application). */
+/** Page d'accueil selon les rôles : l'écran des applications s'il y en a plusieurs, sinon l'application unique (ex. terrain). */
 export function accueilPour(roles: readonly string[]): string {
-  const premier = espacesAccessibles(roles)[0];
-  return premier ? `/${premier.code}` : "/acces-refuse";
+  const espaces = espacesAccessibles(roles);
+  if (espaces.length > 1) return "/applications"; // écran des applications, à la Odoo
+  return espaces[0] ? `/${espaces[0].code}` : "/acces-refuse";
 }

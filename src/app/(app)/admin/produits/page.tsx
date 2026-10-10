@@ -47,15 +47,15 @@ export default async function PageProduits() {
               }
             >
               <div className="mb-4 grid gap-2 sm:grid-cols-3">
-                <div className="rounded-lg bg-papel-50 p-3">
+                <div className="rounded bg-papel-50 p-3">
                   <div className="text-sm text-gray-700">Poids théorique d&apos;un paquet</div>
                   <div className="text-xl font-bold">{String(p.poids_paquet_g).replace(".", ",")} g</div>
                 </div>
-                <div className="rounded-lg bg-papel-50 p-3">
+                <div className="rounded bg-papel-50 p-3">
                   <div className="text-sm text-gray-700">Rendement théorique</div>
                   <div className="text-xl font-bold">{fr(p.rendement_theorique_paquets_t ?? 0)} paquets/t</div>
                 </div>
-                <div className="rounded-lg bg-papel-50 p-3">
+                <div className="rounded bg-papel-50 p-3">
                   <div className="text-sm text-gray-700">Prix Papel actuel (HT)</div>
                   <div className="text-xl font-bold">{prixPapel ? `${formaterMontant(prixPapel)} / paquet` : "Non défini"}</div>
                 </div>
@@ -107,7 +107,7 @@ export default async function PageProduits() {
                     );
                   })}
               </Tableau>
-              <div className="mt-3 rounded-lg border border-gray-200 p-3">
+              <div className="mt-3 rounded border border-gray-200 p-3">
                 <FormulairePrix produitId={p.id} dateDuJour={date} niveaux={niveauxActifs} />
               </div>
             </Carte>

@@ -41,7 +41,7 @@ export default async function PageMouvements({ searchParams }: PageProps<"/magas
         titre="Mouvements de stock"
         sousTitre="Journal des entrées et sorties. Une erreur se corrige par un mouvement inverse (jamais d'effacement)."
         action={
-          <Link href={`/magasin/mouvements/nouveau${article ? `?article=${article}` : ""}`} className="min-h-11 content-center rounded-lg bg-papel-700 px-4 font-semibold text-white">
+          <Link href={`/magasin/mouvements/nouveau${article ? `?article=${article}` : ""}`} className="min-h-11 inline-flex items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">
             + Nouveau mouvement
           </Link>
         }
@@ -50,7 +50,7 @@ export default async function PageMouvements({ searchParams }: PageProps<"/magas
         <form className="mb-3 flex flex-wrap items-end gap-2">
           <label className="flex min-w-0 flex-col">
             <span className="text-sm font-medium text-gray-700">Article</span>
-            <select name="article" defaultValue={article ?? ""} className="min-h-11 w-full max-w-64 rounded-lg border border-gray-300 bg-white px-3">
+            <select name="article" defaultValue={article ?? ""} className="min-h-11 w-full max-w-64 rounded border border-gray-300 bg-white px-3 md:min-h-9">
               <option value="">Tous</option>
               {(articles ?? []).map((a) => (
                 <option key={a.id} value={a.id}>
@@ -61,7 +61,7 @@ export default async function PageMouvements({ searchParams }: PageProps<"/magas
           </label>
           <label className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">Type</span>
-            <select name="type" defaultValue={type ?? ""} className="min-h-11 rounded-lg border border-gray-300 bg-white px-3">
+            <select name="type" defaultValue={type ?? ""} className="min-h-11 rounded border border-gray-300 bg-white px-3 md:min-h-9">
               <option value="">Tous</option>
               {Object.entries(TYPES_MOUVEMENT).map(([k, d]) => (
                 <option key={k} value={k}>
@@ -72,13 +72,13 @@ export default async function PageMouvements({ searchParams }: PageProps<"/magas
           </label>
           <label className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">Du</span>
-            <input type="date" name="du" defaultValue={du} max={aujourdhui()} className="min-h-11 rounded-lg border border-gray-300 bg-white px-3" />
+            <input type="date" name="du" defaultValue={du} max={aujourdhui()} className="min-h-11 rounded border border-gray-300 bg-white px-3 md:min-h-9" />
           </label>
           <label className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">Au</span>
-            <input type="date" name="au" defaultValue={au} className="min-h-11 rounded-lg border border-gray-300 bg-white px-3" />
+            <input type="date" name="au" defaultValue={au} className="min-h-11 rounded border border-gray-300 bg-white px-3 md:min-h-9" />
           </label>
-          <button className="min-h-11 rounded-lg bg-papel-700 px-4 font-semibold text-white">Filtrer</button>
+          <button className="min-h-11 rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">Filtrer</button>
           <Link href="/magasin/mouvements" className="min-h-11 content-center px-2 text-papel-700 underline">
             Effacer
           </Link>

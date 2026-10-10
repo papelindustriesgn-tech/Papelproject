@@ -46,7 +46,7 @@ export function FormulaireTournee({ commerciaux, pva, dateDuJour }: { commerciau
           {pva
             .filter((p) => p.commercialId === commercialId)
             .map((p) => (
-              <label key={p.id} className="flex min-h-11 items-center gap-2 rounded-lg border border-gray-200 px-3">
+              <label key={p.id} className="flex min-h-11 items-center gap-2 rounded border border-gray-200 px-3">
                 <input type="checkbox" name="pva" value={p.id} className="size-5 accent-papel-700" />
                 <span>
                   {p.nom} <span className="text-sm text-gray-600">{p.repere}</span>

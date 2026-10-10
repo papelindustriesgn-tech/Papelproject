@@ -23,8 +23,8 @@ export default async function PageControle({ params }: PageProps<"/qualite/contr
 
   return (
     <>
-      <Link href="/qualite/controles" className="text-papel-700 underline">← Contrôles</Link>
       <TitrePage
+        fil={[{ libelle: "Contrôles", href: "/qualite/controles" }]}
         titre={`Contrôle ${ETAPES_CONTROLE[c.etape!].toLowerCase()} – ${objet}`}
         sousTitre={formaterDate(c.date_controle)}
         action={c.statut === "brouillon" ? <Badge ton="alerte">En cours</Badge> : c.resultat === "conforme" ? <Badge ton="succes">Conforme</Badge> : <Badge ton="erreur">Non conforme</Badge>}
@@ -42,7 +42,7 @@ export default async function PageControle({ params }: PageProps<"/qualite/contr
             <p className="mb-3">
               Non-conformité ouverte :{" "}
               {nc.map((n) => (
-                <Link key={n.id} href={`/qualite/non-conformites/${n.id}`} className="font-mono font-semibold text-papel-700 underline">{n.numero}</Link>
+                <Link key={n.id} href={`/qualite/non-conformites/${n.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{n.numero}</Link>
               ))}
             </p>
           )}

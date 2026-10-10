@@ -14,7 +14,7 @@ export function ExportCsv({ nomFichier, entetes, lignes }: { nomFichier: string;
     URL.revokeObjectURL(url);
   };
   return (
-    <button type="button" onClick={exporter} className="min-h-11 rounded-lg border border-papel-300 bg-white px-3 font-semibold text-papel-800 hover:bg-papel-50">
+    <button type="button" onClick={exporter} className="min-h-11 rounded bg-[#e7e9ed] hover:bg-[#d8dadd] px-3 font-medium text-gray-900 md:min-h-9">
       Exporter (Excel)
     </button>
   );

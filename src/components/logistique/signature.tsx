@@ -57,7 +57,7 @@ export function ZoneSignature({ onChange }: { onChange: (signee: boolean) => voi
         ref={canvas}
         id="zone-signature"
         aria-label="Signature du client"
-        className="h-40 w-full touch-none rounded-lg border-2 border-dashed border-gray-400 bg-white"
+        className="h-40 w-full touch-none rounded border-2 border-dashed border-gray-400 bg-white"
         onPointerDown={debut}
         onPointerMove={trait}
         onPointerUp={() => (dessine.current = false)}

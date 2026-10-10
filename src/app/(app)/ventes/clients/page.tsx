@@ -31,7 +31,7 @@ export default async function PageClients({ searchParams }: PageProps<"/ventes/c
       <TitrePage
         titre="Clients"
         action={
-          <Link href="/ventes/clients/nouveau" className="min-h-11 content-center rounded-lg bg-papel-700 px-4 font-semibold text-white">
+          <Link href="/ventes/clients/nouveau" className="min-h-11 inline-flex items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">
             + Nouveau client
           </Link>
         }
@@ -59,7 +59,7 @@ export default async function PageClients({ searchParams }: PageProps<"/ventes/c
             return (
               <tr key={c.id} className={c.actif ? "" : "opacity-60"}>
                 <Cellule>
-                  <Link href={`/ventes/clients/${c.id}`} className="font-semibold text-papel-800 underline">
+                  <Link href={`/ventes/clients/${c.id}`} className="font-medium text-papel-700 hover:underline">
                     {c.nom}
                   </Link>
                   <span className="block font-mono text-sm text-gray-600">{c.code}</span>

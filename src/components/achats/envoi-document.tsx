@@ -34,13 +34,13 @@ export function EnvoiDocument({ objetType, objetId, types }: { objetType: "bon_c
     <div className="flex flex-wrap items-end gap-2">
       <label className="flex min-w-0 flex-col">
         <span className="text-sm font-medium text-gray-700">Type de document</span>
-        <select value={typeId} onChange={(e) => setTypeId(e.target.value)} className="min-h-11 rounded-lg border border-gray-300 bg-white px-3">
+        <select value={typeId} onChange={(e) => setTypeId(e.target.value)} className="min-h-11 rounded border border-gray-300 bg-white px-3 md:min-h-9">
           {types.map((t) => (
             <option key={t.id} value={t.id}>{t.libelle}</option>
           ))}
         </select>
       </label>
-      <label className={`flex min-h-11 cursor-pointer items-center rounded-lg px-4 font-semibold text-white ${enCours ? "bg-papel-300" : "bg-papel-700"}`}>
+      <label className={`flex min-h-11 cursor-pointer items-center rounded px-4 font-semibold text-white ${enCours ? "bg-papel-300" : "bg-papel-700"}`}>
         Joindre un fichier
         <input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" className="sr-only" disabled={enCours} onChange={(e) => void envoyer(e.target.files?.[0])} />
       </label>

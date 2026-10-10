@@ -31,8 +31,8 @@ export default async function PageEquipement({ params, searchParams }: PageProps
   const f = ind.parEquipement.find((x) => x.id === id);
   return (
     <>
-      <Link href="/maintenance/equipements" className="text-papel-700 underline">← Équipements</Link>
-      <TitrePage titre={`${e.code} – ${e.libelle}`} sousTitre={[e.lignes_production?.libelle, e.categorie, e.marque_modele, e.date_mise_service && `en service depuis le ${formaterDate(e.date_mise_service)}`].filter(Boolean).join(" · ")} action={<Badge ton={e.criticite === "A" ? "erreur" : e.criticite === "B" ? "alerte" : "neutre"}>Criticité {e.criticite}</Badge>} />
+      <TitrePage
+        fil={[{ libelle: "Équipements", href: "/maintenance/equipements" }]} titre={`${e.code} – ${e.libelle}`} sousTitre={[e.lignes_production?.libelle, e.categorie, e.marque_modele, e.date_mise_service && `en service depuis le ${formaterDate(e.date_mise_service)}`].filter(Boolean).join(" · ")} action={<Badge ton={e.criticite === "A" ? "erreur" : e.criticite === "B" ? "alerte" : "neutre"}>Criticité {e.criticite}</Badge>} />
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Pannes" valeur={nombre(f?.fiabilite.nbPannes ?? 0)} />
@@ -80,7 +80,7 @@ export default async function PageEquipement({ params, searchParams }: PageProps
           <Tableau entetes={["OT", "Date", "Type", "Description", "Arrêt", "Statut"]}>
             {(historique ?? []).map((o) => (
               <tr key={o.id}>
-                <Cellule><Link href={`/maintenance/interventions/${o.id}`} className="font-mono text-papel-800 underline">{o.numero}</Link></Cellule>
+                <Cellule><Link href={`/maintenance/interventions/${o.id}`} className="font-mono text-papel-700 hover:underline">{o.numero}</Link></Cellule>
                 <Cellule className="whitespace-nowrap">{formaterDateHeure(o.signale_le!)}</Cellule>
                 <Cellule>{TYPES_INTERVENTION[o.type_intervention!]}</Cellule>
                 <Cellule className="text-sm">{o.description}</Cellule>
