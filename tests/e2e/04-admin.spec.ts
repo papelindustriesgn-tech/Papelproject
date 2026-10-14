@@ -60,7 +60,7 @@ test("admin : statistiques, CRUD avantage, masquage, modération", async ({ page
 test("enquête d'avis : invitation, réponse, résultats admin et export", async ({ page }) => {
   const s = await signUp(page);
   const run = s.last;
-  await expect(page.getByRole("link", { name: /Donne ton avis sur Uny/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Ton avis compte/ })).toBeVisible();
   await page.goto("/notifications");
   await expect(page.getByText("Donne ton avis sur Uny").first()).toBeVisible();
 
@@ -81,7 +81,7 @@ test("enquête d'avis : invitation, réponse, résultats admin et export", async
   await expect(page.getByText("Merci pour ton avis !")).toBeVisible();
 
   await page.goto("/accueil");
-  await expect(page.getByRole("link", { name: /Donne ton avis sur Uny/ })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Ton avis compte/ })).toHaveCount(0);
   await page.goto("/avis");
   await expect(page.getByText("Tu as déjà répondu")).toBeVisible();
   await logout(page);

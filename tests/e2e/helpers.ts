@@ -34,14 +34,9 @@ export async function signUp(page: Page, s = uniqueStudent(), { pending = false 
   await page.goto("/inscription");
   await page.fill("#first_name", s.first);
   await page.fill("#last_name", s.last);
-  await page.fill("#birth_date", "2003-05-14");
-  await page.fill("#phone", s.phone);
   await page.fill("#email", s.email);
   await page.fill("#password", s.password);
-  await page.getByRole("button", { name: "Continuer" }).click();
   await page.selectOption("#university_id", { index: 1 });
-  await page.fill("#field_of_study", "Informatique");
-  await page.selectOption("#study_level", "Licence 3");
   await page.check("input[name=terms]");
   await page.getByRole("button", { name: "Créer mon compte" }).click();
   await page.waitForURL(/inscription\/confirmation/);
@@ -49,9 +44,16 @@ export async function signUp(page: Page, s = uniqueStudent(), { pending = false 
   await page.goto(link);
   await page.waitForURL(/\/accueil/);
   if (!pending) {
+    // Validation par l'équipe + profil complété (étape 1 de la vérification)
     const res = await serviceRest(`profiles?email=eq.${encodeURIComponent(s.email)}`, {
       method: "PATCH",
-      body: JSON.stringify({ account_status: "approved" }),
+      body: JSON.stringify({
+        account_status: "approved",
+        phone: `+224${s.phone}`,
+        birth_date: "2003-05-14",
+        field_of_study: "Informatique",
+        study_level: "Licence 3",
+      }),
     });
     expect(res.ok).toBeTruthy();
     await page.reload();

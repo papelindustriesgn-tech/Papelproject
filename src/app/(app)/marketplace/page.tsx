@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { ItemCard } from "@/components/content/cards";
 import { FilterChips, Pagination, SearchBar } from "@/components/ui/filters";
 import { PageTitle } from "@/components/ui/section-header";
+import { DealsTabs } from "@/components/content/deals-tabs";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { LinkButton } from "@/components/ui/button";
@@ -40,8 +41,9 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
 
   return (
     <div className="animate-fade-up">
+      <DealsTabs current="/marketplace" />
       <PageTitle
-        title="Marketplace"
+        title="Articles en promo"
         subtitle="Les promotions des partenaires Uny, et les bonnes affaires entre étudiants."
         action={
           <LinkButton href="/marketplace/mes-annonces" variant="outline" size="sm">

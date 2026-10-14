@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -9,6 +10,7 @@ import { runVerificationEngine } from "@/lib/verification/engine";
 import { hasMatchSecret, matchHash } from "@/lib/verification/hash";
 import { normalizeNumber } from "@/lib/verification/normalize";
 import { maskCandidate, officialBacProvider } from "@/lib/verification/bac";
+import { isValidPhone, normalizePhone } from "@/lib/format";
 
 const enrollmentSchema = z.object({
   university_id: z.coerce.number().int().positive("Choisis ton établissement"),
@@ -141,4 +143,56 @@ export async function submitBac(_prev: FormState, formData: FormData): Promise<F
   });
   revalidatePath("/profil/verification");
   return { ok: true, message: "Numéro de PV envoyé ✅ L'équipe Uny le vérifie dans les résultats officiels." };
+}
+
+const completeSchema = z.object({
+  phone: z
+    .string()
+    .trim()
+    .min(6, "Indique ton numéro")
+    .transform((v) => normalizePhone(v))
+    .refine(isValidPhone, "Numéro invalide"),
+  birth_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide")
+    .refine((v) => {
+      const age = (Date.now() - new Date(v).getTime()) / (365.25 * 86_400_000);
+      return age >= 14 && age <= 80;
+    }, "Date de naissance invalide"),
+  field_of_study: z.string().trim().min(2, "Indique ta filière").max(120),
+  study_level: z.string().trim().min(1, "Choisis ton niveau").max(40),
+});
+
+/** Étape 1 de la vérification : les informations non demandées à l'inscription. */
+export async function completeProfile(_prev: FormState, formData: FormData): Promise<FormState> {
+  const values = formValues(formData);
+  const parsed = completeSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Vérifie les champs indiqués.", fieldErrors: zodFieldErrors(parsed.error.issues), values };
+  const d = parsed.data;
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return { error: "Session expirée. Reconnecte-toi." };
+
+  const { data: taken } = await createAdminClient()
+    .from("profiles")
+    .select("id")
+    .eq("phone", d.phone)
+    .neq("id", auth.user.id)
+    .maybeSingle();
+  if (taken) return { error: "Ce numéro est déjà utilisé.", fieldErrors: { phone: "Numéro déjà utilisé" }, values };
+
+  const { data: current } = await supabase.from("profiles").select("verification_status").eq("id", auth.user.id).single();
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      phone: d.phone,
+      field_of_study: d.field_of_study,
+      study_level: d.study_level,
+      // la date de naissance est verrouillée une fois le statut vérifié
+      ...(current?.verification_status === "verified" ? {} : { birth_date: d.birth_date }),
+    })
+    .eq("id", auth.user.id);
+  if (error) return { error: "Enregistrement impossible. Réessaie.", values };
+  revalidatePath("/", "layout");
+  redirect("/profil/verification?profil=complet");
 }

@@ -344,6 +344,7 @@ export type Database = {
       };
       deals: {
         Row: {
+          announced_at: string | null;
           category: Database["public"]["Enums"]["deal_category"];
           city_id: number | null;
           conditions: string;
@@ -367,6 +368,7 @@ export type Database = {
           view_count: number;
         };
         Insert: {
+          announced_at?: string | null;
           category: Database["public"]["Enums"]["deal_category"];
           city_id?: number | null;
           conditions?: string;
@@ -390,6 +392,7 @@ export type Database = {
           view_count?: number;
         };
         Update: {
+          announced_at?: string | null;
           category?: Database["public"]["Enums"]["deal_category"];
           city_id?: number | null;
           conditions?: string;

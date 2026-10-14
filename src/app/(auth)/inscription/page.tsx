@@ -7,22 +7,26 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Créer mon compte",
-  description: "Inscription gratuite en moins de 3 minutes. Obtiens ta carte étudiante digitale Uny.",
+  description:
+    "Inscription gratuite en 1 minute. Obtiens ta carte étudiante numérique Uny et des réductions chez nos partenaires.",
 };
 
 export default async function SignUpPage() {
   const supabase = createPublicClient();
-  const [{ data: universities }, { data: cities }] = await Promise.all([
-    supabase.from("universities").select("id, name, short_name, city_id").eq("is_active", true).order("name"),
-    supabase.from("cities").select("id, name, slug, is_active").eq("country_code", "GN").eq("is_active", true).order("name"),
-  ]);
+  const { data: universities } = await supabase
+    .from("universities")
+    .select("id, name, short_name")
+    .eq("is_active", true)
+    .order("name");
 
   return (
     <>
       <h1 className="text-3xl font-extrabold tracking-tight">Rejoins Uny 🎓</h1>
-      <p className="text-muted mt-2">Gratuit, en moins de 3 minutes. Ta carte étudiante digitale t&apos;attend.</p>
+      <p className="text-muted mt-2">
+        Gratuit, en 1 minute. Ta carte étudiante numérique te donne des réductions chez nos partenaires.
+      </p>
       <div className="mt-6">
-        <SignUpForm universities={universities ?? []} cities={cities ?? []} />
+        <SignUpForm universities={universities ?? []} />
       </div>
       <p className="text-muted mt-8 text-center text-sm">
         Déjà inscrit ?{" "}

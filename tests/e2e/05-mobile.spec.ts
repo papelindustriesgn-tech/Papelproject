@@ -106,7 +106,7 @@ for (const vp of VIEWPORTS) {
       // Navigation basse visible et complète sur mobile
       const nav = page.getByRole("navigation", { name: "Navigation principale" });
       await expect(nav).toBeVisible();
-      for (const l of ["Accueil", "Avantages", "Ma carte", "Marketplace", "Profil"])
+      for (const l of ["Accueil", "Ma carte", "Avantages", "Profil"])
         await expect(nav.getByRole("link", { name: l })).toBeVisible();
     }
     await page.context().clearCookies();

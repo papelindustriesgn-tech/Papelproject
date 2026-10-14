@@ -4,10 +4,16 @@ const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const IMAGES = `${VERSION}-images`;
 const OFFLINE_URL = "/hors-ligne";
+const NETWORK_TIMEOUT_MS = 3000;
 const PRECACHE = [OFFLINE_URL, "/icons/icon-192.png", "/icons/icon.svg"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(STATIC).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches
+      .open(STATIC)
+      .then((c) => c.addAll(PRECACHE))
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -38,18 +44,40 @@ self.addEventListener("fetch", (event) => {
   // Jamais de cache pour l'authentification, les données Supabase privées et les requêtes RSC
   if (url.pathname.startsWith("/auth/") || url.pathname.startsWith("/admin") || req.headers.get("RSC") === "1") return;
 
-  // Pages : réseau d'abord, cache en secours (la carte reste consultable hors ligne)
+  // Pages : réseau d'abord, cache en secours (la carte reste consultable hors ligne).
+  // Réseau lent : au-delà de 3 s, on affiche la dernière version enregistrée et le réseau la met à jour en arrière-plan.
   if (req.mode === "navigate") {
+    const network = fetch(req).then((res) => {
+      if (res.ok && url.origin === self.location.origin && !res.redirected) {
+        const copy = res.clone();
+        caches
+          .open(PAGES)
+          .then((c) => c.put(req, copy))
+          .then(() => trim(PAGES, 30));
+      }
+      return res;
+    });
+    event.waitUntil(network.catch(() => undefined));
     event.respondWith(
-      fetch(req)
-        .then((res) => {
-          if (res.ok && url.origin === self.location.origin && !res.redirected) {
-            const copy = res.clone();
-            caches.open(PAGES).then((c) => c.put(req, copy)).then(() => trim(PAGES, 30));
+      new Promise((resolve) => {
+        let settled = false;
+        const done = (res) => {
+          if (!settled && res) {
+            settled = true;
+            resolve(res);
           }
-          return res;
-        })
-        .catch(async () => (await caches.match(req)) || (await caches.match(OFFLINE_URL))),
+        };
+        const timer = setTimeout(async () => done(await caches.match(req)), NETWORK_TIMEOUT_MS);
+        network
+          .then((res) => {
+            clearTimeout(timer);
+            done(res);
+          })
+          .catch(async () => {
+            clearTimeout(timer);
+            done((await caches.match(req)) || (await caches.match(OFFLINE_URL)));
+          });
+      }),
     );
     return;
   }

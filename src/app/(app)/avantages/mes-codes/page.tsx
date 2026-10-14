@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BackLink } from "@/components/ui/back-link";
+import { DealsTabs } from "@/components/content/deals-tabs";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LinkButton } from "@/components/ui/button";
@@ -28,7 +28,7 @@ export default async function MyPromoCodes() {
 
   return (
     <div className="animate-fade-up mx-auto max-w-2xl">
-      <BackLink href="/avantages" label="Avantages" />
+      <DealsTabs current="/avantages/mes-codes" />
       <PageTitle title="Mes codes promo" subtitle="Tes codes personnels chez les partenaires Uny." />
       {codes.length === 0 ? (
         <EmptyState

@@ -20,26 +20,9 @@ const signUpSchema = z
   .object({
     first_name: z.string().trim().min(1, "Indique ton prénom").max(60),
     last_name: z.string().trim().min(1, "Indique ton nom").max(60),
-    birth_date: z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide")
-      .refine((v) => {
-        const age = (Date.now() - new Date(v).getTime()) / (365.25 * 86_400_000);
-        return age >= 14 && age <= 80;
-      }, "Date de naissance invalide"),
-    gender: z.enum(["female", "male", "other", ""]).optional(),
-    phone: z
-      .string()
-      .trim()
-      .min(6, "Indique ton numéro")
-      .transform((v) => normalizePhone(v))
-      .refine(isValidPhone, "Numéro invalide"),
     email: z.string().trim().toLowerCase().email("Email invalide"),
-    university_id: z.string().min(1, "Choisis ton établissement"),
+    university_id: z.string().regex(/^(\d+|other)$/, "Choisis ton établissement"),
     university_other: z.string().trim().max(120).optional(),
-    field_of_study: z.string().trim().min(2, "Indique ta filière").max(120),
-    study_level: z.string().trim().min(1, "Choisis ton niveau").max(40),
-    city_id: z.string().regex(/^\d+$/, "Choisis ta ville"),
     password: passwordSchema,
     terms: z.literal("on", { message: "Accepte les conditions pour continuer" }),
   })
@@ -48,6 +31,10 @@ const signUpSchema = z
     message: "Indique le nom de ton établissement",
   });
 
+/**
+ * Inscription en 5 informations. Téléphone, date de naissance, filière et niveau sont
+ * demandés au moment de la vérification ; la ville est celle de l'établissement.
+ */
 export async function signUp(_prev: FormState, formData: FormData): Promise<FormState> {
   const values = formValues(formData);
   const parsed = signUpSchema.safeParse(Object.fromEntries(formData));
@@ -55,15 +42,16 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     return { error: "Vérifie les champs indiqués.", fieldErrors: zodFieldErrors(parsed.error.issues), values };
   }
   const d = parsed.data;
-
-  // Numéro déjà utilisé ? (message clair plutôt qu'une erreur base de données)
-  const admin = createAdminClient();
-  const { data: existing } = await admin.from("profiles").select("id").eq("phone", d.phone).maybeSingle();
-  if (existing) {
-    return { error: "Ce numéro est déjà associé à un compte.", fieldErrors: { phone: "Numéro déjà utilisé" }, values };
-  }
+  const other = d.university_id === "other";
 
   const supabase = await createClient();
+  let cityId: number | null = null;
+  if (!other) {
+    const { data: uni } = await supabase.from("universities").select("city_id").eq("id", Number(d.university_id)).maybeSingle();
+    if (!uni) return { error: "Choisis ton établissement.", fieldErrors: { university_id: "Établissement inconnu" }, values };
+    cityId = uni.city_id;
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email: d.email,
     password: d.password,
@@ -72,14 +60,9 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
       data: {
         first_name: d.first_name,
         last_name: d.last_name,
-        birth_date: d.birth_date,
-        gender: d.gender || null,
-        phone: d.phone,
-        university_id: d.university_id === "other" ? null : d.university_id,
-        university_other: d.university_id === "other" ? d.university_other : null,
-        field_of_study: d.field_of_study,
-        study_level: d.study_level,
-        city_id: d.city_id,
+        university_id: other ? null : d.university_id,
+        university_other: other ? d.university_other : null,
+        city_id: cityId,
       },
     },
   });

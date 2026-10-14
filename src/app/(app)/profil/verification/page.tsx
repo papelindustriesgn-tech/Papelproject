@@ -6,17 +6,21 @@ import { Badge, VerificationBadge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { FormMessage } from "@/components/ui/field";
 import { requireProfile } from "@/lib/auth";
+import { param, type SearchParams } from "@/lib/url";
 import { createClient } from "@/lib/supabase/server";
 import { DOCUMENT_TYPES } from "@/lib/constants";
 import { formatDate, timeAgo } from "@/lib/format";
 import { VerificationForm } from "./verification-form";
 import { BacForm, EnrollmentForm } from "./enrollment-forms";
+import { CompleteProfileForm } from "./complete-profile-form";
+import { missingProfileFields } from "@/lib/journey";
 import { ENROLLMENT_STATUS, VERIFICATION_METHODS } from "@/lib/university";
 import { BAC_METHODS, officialBacProvider } from "@/lib/verification/bac";
 
 export const metadata: Metadata = { title: "Vérification étudiante" };
 
-export default async function VerificationPage() {
+export default async function VerificationPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const sp = await searchParams;
   const p = await requireProfile();
   const supabase = await createClient();
   const [{ data: history }, { data: enrollments }, { data: partners }, { data: bac }] = await Promise.all([
@@ -47,6 +51,8 @@ export default async function VerificationPage() {
   const partnerUniversities = partners ?? [];
   const isPartnerUni = partnerUniversities.some((u) => u.id === p.university_id);
   const bacWaiting = bac?.some((b) => b.status === "manual_review" || b.status === "pending");
+  // Étape 1 : compléter le profil (ces informations ne sont plus demandées à l'inscription)
+  const incomplete = p.verification_status !== "verified" && missingProfileFields(p).length > 0;
 
   return (
     <div className="animate-fade-up mx-auto max-w-2xl space-y-5">
@@ -54,6 +60,10 @@ export default async function VerificationPage() {
         <BackLink href="/profil" label="Profil" />
         <PageTitle title="Vérification étudiante" subtitle="Prouve ton statut pour débloquer toutes les réductions." />
       </div>
+
+      {param(sp, "profil") && !incomplete && (
+        <FormMessage type="success">Profil complété ✅ Il reste à envoyer ton justificatif.</FormMessage>
+      )}
 
       <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -86,14 +96,31 @@ export default async function VerificationPage() {
           </div>
         ) : (
           <ol className="text-muted mt-4 space-y-2 text-sm">
-            <li>1. Choisis le type de justificatif.</li>
-            <li>2. Prends-le en photo (lisible, sans reflet) ou ajoute un PDF.</li>
+            <li className={incomplete ? "text-ink font-semibold" : "line-through"}>1. Complète ton profil.</li>
+            <li className={incomplete ? undefined : "text-ink font-semibold"}>
+              2. Envoie ta carte d&apos;étudiant ou ton attestation (photo lisible ou PDF).
+            </li>
             <li>3. L&apos;équipe Uny valide ton statut, généralement sous 48 h.</li>
           </ol>
         )}
       </section>
 
-      {p.verification_status !== "verified" && !enrollmentWaiting && partnerUniversities.length > 0 && (
+      {incomplete && (
+        <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
+          <h2 className="mb-1 font-bold">1. Complète ton profil</h2>
+          <p className="text-muted mb-4 text-sm">Ces informations figurent sur ta carte et aident à vérifier ton inscription.</p>
+          <CompleteProfileForm
+            defaults={{
+              phone: p.phone,
+              birth_date: p.birth_date,
+              field_of_study: p.field_of_study,
+              study_level: p.study_level,
+            }}
+          />
+        </section>
+      )}
+
+      {p.verification_status !== "verified" && !incomplete && !enrollmentWaiting && partnerUniversities.length > 0 && (
         <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
           <h2 className="mb-1 flex items-center gap-2 font-bold">
             <GraduationCap className="text-brand-600 size-5" aria-hidden /> Confirmer mon inscription
@@ -116,7 +143,7 @@ export default async function VerificationPage() {
         </section>
       )}
 
-      {p.verification_status !== "verified" && !pending && !enrollmentWaiting && (
+      {p.verification_status !== "verified" && !incomplete && !pending && !enrollmentWaiting && (
         <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
           <h2 className="mb-4 font-bold">
             {partnerUniversities.length ? "Ou envoyer un justificatif à l'équipe Uny" : "Envoyer un justificatif"}
@@ -135,46 +162,48 @@ export default async function VerificationPage() {
         </LinkButton>
       )}
 
-      <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
-        <h2 className="mb-1 font-bold">Baccalauréat</h2>
-        <p className="text-muted mb-4 text-sm">
-          Facultatif. Faire vérifier ton BAC renforce ton identité Uny (utile pour certains partenaires, bourses et concours).
-          {!officialBacProvider.isConnected() &&
-            " Indique simplement ton numéro de PV : l'équipe Uny le contrôle dans les résultats officiels."}
-        </p>
-        {bac && bac.length > 0 && (
-          <ul className="divide-line mb-4 divide-y text-sm">
-            {bac.map((b) => (
-              <li key={b.id} className="flex items-start justify-between gap-3 py-2">
-                <div>
-                  <p className="font-semibold">
-                    BAC {b.exam_year} · PV {b.candidate_ref}
-                  </p>
-                  <p className="text-muted text-xs">
-                    {BAC_METHODS[b.method as keyof typeof BAC_METHODS]}
-                    {b.reviewed_at && <> · {formatDate(b.reviewed_at)}</>}
-                  </p>
-                  {b.rejection_reason && <p className="text-coral-600 mt-1">Motif : {b.rejection_reason}</p>}
-                </div>
-                <Badge tone={ENROLLMENT_STATUS[b.status].tone}>
-                  {b.status === "verified"
-                    ? "Vérifié"
-                    : b.status === "manual_review"
-                      ? "En cours"
-                      : ENROLLMENT_STATUS[b.status].label}
-                </Badge>
-              </li>
-            ))}
-          </ul>
-        )}
-        {bacWaiting ? (
-          <p className="bg-mango-50 text-mango-700 rounded-2xl p-3 text-sm">
-            Ton numéro de PV est en cours de vérification par l&apos;équipe Uny.
+      {!incomplete && (
+        <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
+          <h2 className="mb-1 font-bold">Baccalauréat</h2>
+          <p className="text-muted mb-4 text-sm">
+            Facultatif. Faire vérifier ton BAC renforce ton identité Uny (utile pour certains partenaires, bourses et concours).
+            {!officialBacProvider.isConnected() &&
+              " Indique simplement ton numéro de PV : l'équipe Uny le contrôle dans les résultats officiels."}
           </p>
-        ) : (
-          !bac?.some((b) => b.status === "verified") && <BacForm />
-        )}
-      </section>
+          {bac && bac.length > 0 && (
+            <ul className="divide-line mb-4 divide-y text-sm">
+              {bac.map((b) => (
+                <li key={b.id} className="flex items-start justify-between gap-3 py-2">
+                  <div>
+                    <p className="font-semibold">
+                      BAC {b.exam_year} · PV {b.candidate_ref}
+                    </p>
+                    <p className="text-muted text-xs">
+                      {BAC_METHODS[b.method as keyof typeof BAC_METHODS]}
+                      {b.reviewed_at && <> · {formatDate(b.reviewed_at)}</>}
+                    </p>
+                    {b.rejection_reason && <p className="text-coral-600 mt-1">Motif : {b.rejection_reason}</p>}
+                  </div>
+                  <Badge tone={ENROLLMENT_STATUS[b.status].tone}>
+                    {b.status === "verified"
+                      ? "Vérifié"
+                      : b.status === "manual_review"
+                        ? "En cours"
+                        : ENROLLMENT_STATUS[b.status].label}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          )}
+          {bacWaiting ? (
+            <p className="bg-mango-50 text-mango-700 rounded-2xl p-3 text-sm">
+              Ton numéro de PV est en cours de vérification par l&apos;équipe Uny.
+            </p>
+          ) : (
+            !bac?.some((b) => b.status === "verified") && <BacForm />
+          )}
+        </section>
+      )}
 
       {enrollments && enrollments.length > 0 && (
         <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">

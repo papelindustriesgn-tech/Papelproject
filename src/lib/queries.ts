@@ -34,6 +34,24 @@ const inCity = (cityId: number) => `city_id.eq.${cityId},city_id.is.null`;
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+/** Les exemples « Démo » disparaissent dès qu'il existe au moins un contenu réel (offre d'un partenaire réel). */
+async function hasRealContent(supabase: AnyClient, table: "deals" | "marketplace_items") {
+  const { count } =
+    table === "deals"
+      ? await supabase
+          .from("deals")
+          .select("id, partner:partners!inner(is_demo)", { count: "exact", head: true })
+          .eq("is_demo", false)
+          .eq("is_active", true)
+          .eq("partner.is_demo", false)
+      : await supabase
+          .from("marketplace_items")
+          .select("id", { count: "exact", head: true })
+          .eq("is_demo", false)
+          .eq("status", "active");
+  return (count ?? 0) > 0;
+}
+
 function range(page: number) {
   const from = (page - 1) * PAGE_SIZE;
   return [from, from + PAGE_SIZE] as const; // +1 élément pour savoir s'il y a une page suivante
@@ -55,6 +73,7 @@ async function _listDeals(
     .select(DEAL_COLUMNS)
     .eq("is_active", true)
     .or(`valid_until.is.null,valid_until.gte.${today()}`);
+  if (await hasRealContent(supabase, "deals")) query = query.eq("is_demo", false);
   if (cityId) query = query.or(inCity(cityId));
   if (category) query = query.eq("category", category as DealCategory);
   if (district) query = query.eq("district", district);
@@ -172,6 +191,7 @@ async function _listMarket(
   },
 ) {
   let query = supabase.from("marketplace_items").select(ITEM_COLUMNS).eq("status", "active");
+  if (await hasRealContent(supabase, "marketplace_items")) query = query.eq("is_demo", false);
   if (view === "promos") query = query.not("original_price_gnf", "is", null);
   if (view === "etudiants") query = query.is("partner_id", null);
   if (cityId) query = query.or(inCity(cityId));

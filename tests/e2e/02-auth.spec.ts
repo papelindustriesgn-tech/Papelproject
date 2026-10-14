@@ -12,20 +12,17 @@ test("validation : champs manquants et email déjà utilisé", async ({ page }) 
   const s = await signUp(page);
   await logout(page);
   await page.goto("/inscription");
-  await page.getByRole("button", { name: "Continuer" }).click();
-  // Le navigateur bloque le passage à l'étape 2 tant que l'étape 1 est invalide
-  await expect(page.locator("#first_name")).toBeVisible();
+  // Inscription en un seul écran : 5 informations seulement
+  await expect(page.locator("#birth_date, #phone, #field_of_study, #study_level, #city_id")).toHaveCount(0);
+  await page.getByRole("button", { name: "Créer mon compte" }).click();
+  // Le navigateur bloque l'envoi tant que le formulaire est invalide
+  await expect(page).toHaveURL(/inscription$/);
   const again = { ...uniqueStudent(), email: s.email };
   await page.fill("#first_name", again.first);
   await page.fill("#last_name", again.last);
-  await page.fill("#birth_date", "2002-01-01");
-  await page.fill("#phone", again.phone);
   await page.fill("#email", again.email);
   await page.fill("#password", again.password);
-  await page.getByRole("button", { name: "Continuer" }).click();
   await page.selectOption("#university_id", { index: 2 });
-  await page.fill("#field_of_study", "Droit");
-  await page.selectOption("#study_level", "Licence 1");
   await page.check("input[name=terms]");
   await page.getByRole("button", { name: "Créer mon compte" }).click();
   await expect(page.getByText("Un compte existe déjà avec cet email.")).toBeVisible();

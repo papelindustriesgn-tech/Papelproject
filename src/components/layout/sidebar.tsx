@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { Logo } from "@/components/ui/logo";
-import { ADMIN_LINK, DESKTOP_NAV } from "./nav-items";
+import { ADMIN_LINK, DESKTOP_NAV, isActive } from "./nav-items";
 
 export function Sidebar({ isAdmin, unread }: { isAdmin: boolean; unread: number }) {
   const pathname = usePathname();
@@ -16,8 +16,9 @@ export function Sidebar({ isAdmin, unread }: { isAdmin: boolean; unread: number 
       </Link>
       <nav aria-label="Navigation" className="flex-1">
         <ul className="space-y-1">
-          {items.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || pathname.startsWith(`${href}/`);
+          {items.map((item) => {
+            const { href, label, icon: Icon } = item;
+            const active = isActive(pathname, item);
             return (
               <li key={href}>
                 <Link

@@ -105,6 +105,9 @@ test("partenaire : demande → validation admin → publication → scan d'une c
   await page.goto(`/marketplace?q=${run}&ville=toutes`);
   await expect(page.getByText(`Sandwich ${run}`)).toBeVisible();
   await expect(page.getByText(business).first()).toBeVisible();
+
+  // Nettoyage : ce partenaire réel masquerait les exemples de démo utilisés par les autres tests
+  await serviceRest(`partners?name=eq.${encodeURIComponent(business)}`, { method: "DELETE" });
 });
 
 test("un étudiant n'accède pas à l'espace partenaire", async ({ page }) => {

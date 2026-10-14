@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DealCard } from "@/components/content/cards";
 import { FilterChips, Pagination, SearchBar } from "@/components/ui/filters";
 import { PageTitle } from "@/components/ui/section-header";
+import { DealsTabs } from "@/components/content/deals-tabs";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { LinkButton } from "@/components/ui/button";
@@ -35,15 +36,8 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="animate-fade-up">
-      <PageTitle
-        title="Avantages"
-        subtitle="Obtiens ton code promo, paie avec Orange Money chez les partenaires Uny."
-        action={
-          <LinkButton href="/avantages/mes-codes" variant="outline" size="sm">
-            Mes codes
-          </LinkButton>
-        }
-      />
+      <DealsTabs current="/avantages" />
+      <PageTitle title="Avantages" subtitle="Choisis une offre, obtiens ton code promo et montre-le au partenaire." />
       <div className="space-y-3">
         <SearchBar
           pathname="/avantages"
