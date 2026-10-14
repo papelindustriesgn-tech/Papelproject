@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AFaire } from "@/components/coque/a-faire";
 import Link from "next/link";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
@@ -33,6 +34,7 @@ export default async function TableauDeBordMagasin() {
   return (
     <>
       <TitrePage titre="Stocks" sousTitre="Situation en temps réel — usine de Coyah" />
+      <AFaire espace="magasin" />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Matière première disponible" valeur={formaterPoids(kg(kgMp))} detail={`${nbBobines} bobine(s) en stock`} />
         <Indicateur

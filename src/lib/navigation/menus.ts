@@ -179,7 +179,10 @@ export interface ActionRapide {
   icone: string;
 }
 
-/** Les gestes les plus courants de chaque service, pour un utilisateur qui découvre l'outil. */
+/**
+ * Les gestes les plus courants de chaque service, pour un utilisateur qui découvre l'outil.
+ * Le PREMIER est le bouton principal de l'application (le geste le plus fréquent) : un seul par écran.
+ */
 export const ACTIONS_RAPIDES: Record<string, ActionRapide[]> = {
   direction: [
     { libelle: "Rapport de la semaine", description: "Résumé imprimable", href: "/direction/rapport", icone: "rapport" },
@@ -188,8 +191,8 @@ export const ACTIONS_RAPIDES: Record<string, ActionRapide[]> = {
     { libelle: "Finance", description: "Trésorerie et résultat", href: "/finance", icone: "argent" },
   ],
   magasin: [
-    { libelle: "Réceptionner une bobine", description: "Arrivée d'une bobine jumbo", href: "/magasin/bobines", icone: "reception" },
     { libelle: "Entrée ou sortie", description: "Emballages, pièces, corrections", href: "/magasin/mouvements/nouveau", icone: "mouvement" },
+    { libelle: "Réceptionner une bobine", description: "Arrivée d'une bobine jumbo", href: "/magasin/bobines", icone: "reception" },
     { libelle: "Faire un inventaire", description: "Compter le stock réel", href: "/magasin/inventaires", icone: "inventaire" },
     { libelle: "Demander un achat", description: "Il va manquer quelque chose", href: "/magasin/demandes", icone: "panier" },
   ],
@@ -206,7 +209,6 @@ export const ACTIONS_RAPIDES: Record<string, ActionRapide[]> = {
     { libelle: "Nouveau client", description: "Créer la fiche", href: "/ventes/clients/nouveau", icone: "client" },
   ],
   commercial: [
-    { libelle: "Carte des points de vente", description: "Où sont les commerciaux", href: "/commercial", icone: "carte" },
     { libelle: "Planifier une tournée", description: "Tournées et objectifs", href: "/commercial/planification", icone: "calendrier" },
     { libelle: "Répartir les clients", description: "Un client = un commercial", href: "/commercial/portefeuilles", icone: "client" },
     { libelle: "Visites", description: "Ce qui a été fait", href: "/commercial/visites", icone: "visite" },

@@ -14,7 +14,7 @@ export default async function PageApplications() {
     <div className="-mx-3 -mt-3 min-h-[calc(100vh-3rem)] bg-gradient-to-b from-papel-50 to-[#eef1f0] px-4 py-8 md:-mx-5 md:py-14">
       <div className="mx-auto max-w-4xl">
         <p className="mb-8 text-center text-gray-600">
-          Bonjour <span className="font-semibold text-gray-900">{u.prenom || u.nom}</span>, choisissez une application.
+          Bonjour <span className="font-semibold text-gray-900">{u.prenom || u.nom}</span>, touchez votre application pour commencer.
         </p>
         <ul className="grid grid-cols-3 gap-x-2 gap-y-8 sm:grid-cols-4 md:grid-cols-6">
           {applis.map((a) => (
@@ -24,6 +24,7 @@ export default async function PageApplications() {
                   <IconeAppli code={a.code} taille={64} />
                 </span>
                 <span className="text-sm font-medium leading-tight text-gray-800">{a.libelle}</span>
+                <span className="hidden text-xs leading-tight text-gray-500 sm:block">{a.description}</span>
               </Link>
             </li>
           ))}

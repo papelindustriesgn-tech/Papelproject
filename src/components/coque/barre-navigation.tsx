@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, LayoutGrid, LogOut, Menu, X } from "lucide-react";
+import { ChevronDown, LayoutGrid, LogOut, Menu, Settings, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -78,18 +78,27 @@ export function BarreNavigation({
                 {e.libelle}
               </Link>
             ) : (
-              <div key={e.libelle} className="relative">
+              // « Configuration » (listes de référence) : option secondaire, réduite à une roue dentée à droite.
+              <div key={e.libelle} className={`relative ${e.libelle === "Configuration" ? "ml-auto" : ""}`}>
                 <button
                   type="button"
                   aria-expanded={ouvert === e.libelle}
                   onClick={() => setOuvert(ouvert === e.libelle ? null : e.libelle)}
+                  title={e.libelle}
                   className={`flex items-center gap-1 whitespace-nowrap rounded px-3 py-2 text-[0.95rem] hover:bg-white/10 ${actif(e) ? "bg-white/15 font-semibold" : ""}`}
                 >
-                  {e.libelle}
+                  {e.libelle === "Configuration" ? (
+                    <>
+                      <Settings size={18} />
+                      <span className="sr-only">{e.libelle}</span>
+                    </>
+                  ) : (
+                    e.libelle
+                  )}
                   <ChevronDown size={14} />
                 </button>
                 {ouvert === e.libelle && (
-                  <div className="absolute left-0 top-full mt-1 min-w-60 rounded-md border border-gray-200 bg-white py-1 text-gray-800 shadow-lg">
+                  <div className={`absolute ${e.libelle === "Configuration" ? "right-0" : "left-0"} top-full mt-1 min-w-60 rounded-md border border-gray-200 bg-white py-1 text-gray-800 shadow-lg`}>
                     {(e.enfants ?? []).map((l) => (
                       <Link key={l.href} href={l.href} className={`block px-4 py-2 text-[0.95rem] hover:bg-gray-100 ${lienActif(l.href, chemin, recherche) ? "font-semibold text-papel-700" : ""}`}>
                         {l.libelle}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AFaire } from "@/components/coque/a-faire";
 import Link from "next/link";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -84,6 +85,7 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
   return (
     <>
       <TitrePage titre="Production" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)} · ${fiches.length} fiche(s) validée(s)`} />
+      <AFaire espace="production" />
       <SelecteurPeriode periode={periode} />
 
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

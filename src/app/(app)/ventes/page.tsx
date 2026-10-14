@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AFaire } from "@/components/coque/a-faire";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { GraphiqueBarresJour } from "@/components/graphiques/production";
@@ -29,6 +30,7 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
   return (
     <>
       <TitrePage titre="Ventes" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}`} />
+      <AFaire espace="ventes" />
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Chiffre d'affaires HT" valeur={gnf(v.caHtGnf)} detail={variation(v.caHtGnf, prec.caHtGnf) ?? `${v.nbFactures} facture(s)`} />

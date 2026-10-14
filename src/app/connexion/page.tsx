@@ -9,7 +9,8 @@ export default function PageConnexion() {
     <main className="flex min-h-screen flex-col items-center justify-center bg-papel-700 px-4 py-8">
       <Image src="/logo-papel.png" alt="Papel" width={200} height={113} priority />
       <div className="mt-6 w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg">
-        <h1 className="mb-4 text-xl font-bold text-papel-900">Connexion à Papel ERP</h1>
+        <h1 className="text-xl font-bold text-papel-900">Connexion à Papel ERP</h1>
+        <p className="mb-4 text-sm text-gray-600">Toute l&apos;usine dans un seul outil : chacun y trouve son travail du jour.</p>
         <FormulaireConnexion />
         <p className="mt-4 text-sm text-gray-600">Mot de passe oublié ? Demandez à l&apos;administrateur de le réinitialiser.</p>
       </div>

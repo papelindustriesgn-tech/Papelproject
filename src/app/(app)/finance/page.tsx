@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AFaire } from "@/components/coque/a-faire";
 import Link from "next/link";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -26,6 +27,7 @@ export default async function TableauDeBordFinance({ searchParams }: PageProps<"
   return (
     <>
       <TitrePage titre="Finance" sousTitre="Trésorerie, créances, dettes et résultat de gestion" />
+      <AFaire espace="finance" />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Trésorerie disponible" valeur={gnf(s.tresorerieGnf)} detail="Tous comptes (USD au taux du jour)" ton={s.tresorerieGnf < 0 ? "danger" : "normal"} />
         <Indicateur libelle="Créances clients" valeur={gnf(s.creancesGnf)} detail={`dont échu : ${gnf(s.creancesEchuesGnf)}`} ton={s.creancesEchuesGnf > 0 ? "alerte" : "normal"} />

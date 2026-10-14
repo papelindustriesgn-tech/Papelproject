@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AFaire } from "@/components/coque/a-faire";
 import Link from "next/link";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -28,6 +29,7 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
   return (
     <>
       <TitrePage titre="Maintenance" sousTitre="Fiabilité du parc, ordres de travail et pièces de rechange" />
+      <AFaire espace="maintenance" />
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Pannes (arrêt machine)" valeur={nombre(g.nbPannes)} detail={`${minutes(g.heuresArret * 60)} d'arrêt au total`} />
