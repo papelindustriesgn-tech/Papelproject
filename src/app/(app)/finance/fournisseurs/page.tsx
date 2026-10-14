@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { lireSeuils } from "@/lib/parametres";
 import Link from "next/link";
 import { ExportCsv } from "@/components/donnees/export-csv";
 import { BarreFiltres, lireParam, motifRecherche } from "@/components/donnees/filtres";
@@ -30,10 +31,11 @@ export default async function PageFournisseurs({ searchParams }: PageProps<"/fin
   if (etat === "en_retard") requete = requete.gt("solde_gnf", 0).gt("jours_retard", 0);
   if (etat === "soldee") requete = requete.eq("solde_gnf", 0).neq("statut", "annulee");
   if (categorie) requete = requete.eq("categorie_id", categorie);
-  const [{ data }, { data: categories }, { data: dettes }] = await Promise.all([
+  const [{ data }, { data: categories }, { data: dettes }, { alerte_dette_jours: seuilDette }] = await Promise.all([
     requete,
     supabase.from("categories_charges").select("id, libelle").order("ordre"),
     supabase.from("factures_fournisseurs_etat").select("solde_gnf, jours_retard").gt("solde_gnf", 0).limit(20000),
+    lireSeuils({ alerte_dette_jours: 30 }),
   ]);
   const lignes = data ?? [];
   // Jours de retard = 0 tant que l'échéance n'est pas dépassée.
@@ -44,7 +46,7 @@ export default async function PageFournisseurs({ searchParams }: PageProps<"/fin
       <TitrePage titre="Fournisseurs et charges" sousTitre="Factures à payer, règlements et charges fixes mensuelles." action={<Link href="/finance/fournisseurs/nouvelle" className="inline-flex min-h-11 items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">Nouvelle facture</Link>} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {TRANCHES.map((t) => (
-          <Indicateur key={t.libelle} libelle={`Dettes – ${t.libelle}`} valeur={gnf(tranche(t))} ton={t.min > 30 && tranche(t) > 0 ? "alerte" : "normal"} />
+          <Indicateur key={t.libelle} libelle={`Dettes – ${t.libelle}`} valeur={gnf(tranche(t))} ton={t.min > seuilDette && tranche(t) > 0 ? "alerte" : "normal"} />
         ))}
       </div>
       <Carte className="mb-4">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { EntreeAppli } from "@/components/coque/entree-appli";
 import { CarteDynamique } from "@/components/carte/carte-dynamique";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -27,6 +28,7 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
         sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)} · comparaison avec la période précédente de même durée`}
         action={<BoutonImprimer />}
       />
+      <EntreeAppli espace="direction" />
       <div className="print:hidden">
         <SelecteurPeriode periode={periode} />
       </div>
@@ -42,7 +44,7 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
               const r = s.rendementParJour.get(d);
               return { date: d, ratio: r === undefined || r === null ? null : Math.round(r * 1000) / 10 };
             })}
-            seuilPct={95}
+            seuilPct={s.seuils.rendementMin * 100}
           />
         </Carte>
       </div>

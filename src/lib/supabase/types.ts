@@ -23,7 +23,29 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "actions_correctives": {
+            "accueil_elements": {
+                  Row: {
+                    "actif": boolean,"created_at": string,"description": string,"ecran": string,"espace": string,"genre": string,"icone": string,"id": string,"indicateur": string | null,"libelle": string,"ordre": number,"seuil": number,"urgent": boolean
+                  }
+                  Insert: {
+                    "actif"?: boolean,"created_at"?: string,"description"?: string,"ecran": string,"espace": string,"genre": string,"icone"?: string,"id"?: string,"indicateur"?: string | null,"libelle": string,"ordre"?: number,"seuil"?: number,"urgent"?: boolean
+                  }
+                  Update: {
+                    "actif"?: boolean,"created_at"?: string,"description"?: string,"ecran"?: string,"espace"?: string,"genre"?: string,"icone"?: string,"id"?: string,"indicateur"?: string | null,"libelle"?: string,"ordre"?: number,"seuil"?: number,"urgent"?: boolean
+                  }
+                  Relationships: []
+                },"accueil_espaces": {
+                  Row: {
+                    "espace": string,"promesse": string,"updated_at": string,"updated_by": string | null
+                  }
+                  Insert: {
+                    "espace": string,"promesse"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "espace"?: string,"promesse"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: []
+                },"actions_correctives": {
                   Row: {
                     "commentaire": string,"created_at": string,"description": string,"echeance": string | null,"efficace": boolean | null,"id": string,"nc_id": string,"realisee_le": string | null,"responsable": string
                   }
@@ -3253,6 +3275,9 @@ isOneToOne: false
                            },
 "pva_des_collegues":
 { Args: Record<PropertyKey, never>; Returns: { "commercial": string,"latitude": number,"longitude": number,"nom": string,"telephone": string }[]
+                           },
+"peut_regler_espace":
+{ Args: { "p_espace": string }; Returns: boolean
                            },
 "reattribuer_pva":
 { Args: { "p_commercial": string,"p_pva": string }; Returns: undefined

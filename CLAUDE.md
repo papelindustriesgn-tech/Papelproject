@@ -331,11 +331,18 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
   listes = `BarreFiltres` + `Tableau` (fiches empilées « Colonne : valeur » sur téléphone, automatiquement) ; liens-boutons avec `classesBouton()`.
 - **Couleur par service** : `APPARENCE_APPLI` (applications.tsx) ; `ThemeAppli` redéfinit la gamme `papel-*` selon l'application courante
   (toujours utiliser les classes `papel-*` pour la couleur d'accent). Les documents clients (`.imprimer-couleurs`) restent aux couleurs Papel.
-- **Pensé pour des débutants — « ne pas faire réfléchir »** : à l'entrée de chaque application (page racine, affiché par `TitrePage`) :
-  une **promesse** en une phrase (`PROMESSES`, `src/lib/navigation/guides.ts`), **un seul bouton principal** = le 1er de `ACTIONS_RAPIDES`
-  (`menus.ts`, le geste le plus fréquent), les autres en petit, le **parcours** numéroté (`PARCOURS`), puis **« À faire aujourd'hui »**
-  (`<AFaire espace=… />`, `src/components/coque/a-faire.tsx` : seulement ce qui attend, urgent en rouge). « Configuration » est réduite
-  à une roue dentée à droite de la barre. Champs de nombres → clavier numérique (`Champ`, d'après le nom du champ).
+- **Pensé pour des débutants — « ne pas faire réfléchir »**, et **réglé par chaque service lui-même** : à l'entrée de chaque application,
+  `<EntreeAppli espace=… />` (`src/components/coque/entree-appli.tsx`) affiche la **phrase d'accueil** (`accueil_espaces`), **un seul
+  bouton principal** (1er bouton actif) + les autres en petit, le **parcours** numéroté et **« À faire aujourd'hui »** (`accueil_elements`,
+  genres `action` / `etape` / `tache`). Rien de tout cela n'est dans le code : chaque service le règle dans **`/<espace>/reglages`**
+  (`PageReglages`, menu Configuration ⚙). Le code ne fournit que le **catalogue** de ce qui peut se compter (`INDICATEURS`,
+  `src/lib/navigation/indicateurs.ts` ↔ `CALCULS` dans entree-appli), les icônes et la liste des écrans (`catalogueEcrans`).
+  Nouvel indicateur = une entrée dans `INDICATEURS` + son calcul dans `CALCULS`. Droits : `peut_regler_espace(espace)`.
+- **Seuils de calcul = paramètres** (table `parametres`), jamais des nombres en dur : lire avec `lireSeuils({ cle: defaut })`
+  (`src/lib/parametres.ts`). Chaque catégorie appartient à un service (`espace_de_categorie` en SQL ↔ `CATEGORIES_PARAMETRES`) qui la
+  modifie dans ses réglages ; l'admin voit tout dans `/admin/parametres`. Ex. : `alerte_impaye_jours`, `alerte_taux_rupture`,
+  `alerte_livraison_jours`, `terrain_jours_a_visiter` (envoyé au téléphone à la synchro).
+  « Configuration » est réduite à une roue dentée à droite de la barre. Champs de nombres → clavier numérique (`Champ`, d'après le nom du champ).
 - **Connexion Excel** (`/finance/excel`) : clés personnelles en lecture seule (`cles_export`, hachées SHA-256, révocables) ;
   `/api/excel/<jeu>?cle=…&du=&au=` → CSV via `exporter_donnees` (jeux : `src/lib/excel/jeux.ts`). Exemptée par le proxy.
 - Performance : fonctions Vercel à **Paris (`cdg1`, vercel.json)**, comme la base ; session lue par `getClaims` (pas d'appel au serveur Auth).

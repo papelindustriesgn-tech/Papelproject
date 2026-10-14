@@ -3,7 +3,6 @@
  * zones tactiles confortables (≥ 44 px) sur téléphone.
  */
 import Link from "next/link";
-import { ActionsRapides } from "@/components/coque/actions-rapides";
 import { Children, cloneElement, isValidElement } from "react";
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactElement, ReactNode, SelectHTMLAttributes } from "react";
 
@@ -225,8 +224,6 @@ export function TitrePage({ titre, sousTitre, action, fil }: { titre: string; so
         </div>
         {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
       </div>
-      {/* À l'entrée d'une application seulement : gros boutons des gestes courants. */}
-      <ActionsRapides />
       </>
   );
 }

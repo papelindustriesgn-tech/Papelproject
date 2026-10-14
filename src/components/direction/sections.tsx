@@ -80,7 +80,7 @@ export function BlocsIndicateurs({ s }: { s: SyntheseDirection }) {
       <Section titre="Production" lien="/production">
         <Indicateur libelle="Papier transformé" valeur={formaterPoids(kg(p.tonnesConsommees * 1000))} detail={comparaison(p.tonnesConsommees, pp.tonnesConsommees)} />
         <Indicateur libelle="Production" valeur={`${nombre(p.paquetsBons)} paquets`} detail={s.colisProduits.map((c) => `${c.libelle} : ${nombre(c.colis)} colis`).join(" · ") || "—"} />
-        <Indicateur libelle="Rendement réel / théorique" valeur={pct(p.ratioRendement)} detail={comparaison(p.ratioRendement, pp.ratioRendement, "points")} ton={p.ratioRendement !== null && p.ratioRendement < 0.95 ? "danger" : "normal"} />
+        <Indicateur libelle="Rendement réel / théorique" valeur={pct(p.ratioRendement)} detail={comparaison(p.ratioRendement, pp.ratioRendement, "points")} ton={p.ratioRendement !== null && p.ratioRendement < s.seuils.rendementMin ? "danger" : "normal"} />
         <Indicateur libelle="Pertes" valeur={pct(p.tauxPerte)} detail={comparaison(p.tauxPerte, pp.tauxPerte, "points")} ton={(p.tauxPerte ?? 0) > 0.05 ? "danger" : "normal"} />
         <Indicateur libelle="Arrêts non planifiés" valeur={minutes(p.minutesArretNonPlanifie)} detail={`Disponibilité : ${pct(p.disponibilite)}`} />
         <Indicateur libelle="TRS (utilisation)" valeur={pct(p.trs)} detail={p.trs === null ? "Cadences nominales à renseigner" : comparaison(p.trs, pp.trs, "points")} />
@@ -109,7 +109,7 @@ export function BlocsIndicateurs({ s }: { s: SyntheseDirection }) {
       <Section titre="Distribution" lien="/commercial">
         <Indicateur libelle="Grossistes / semi-grossistes" valeur={`${s.distribution.grossistes} / ${s.distribution.semiGrossistes}`} />
         <Indicateur libelle="Points de vente actifs" valeur={nombre(s.distribution.pvaActifs)} detail={`${s.distribution.nouveauxPva} nouveau(x) sur la période`} />
-        <Indicateur libelle="Taux de rupture" valeur={pct(s.distribution.tauxRupture)} detail={comparaison(s.distribution.tauxRupture, s.distributionPrec.tauxRupture, "points")} ton={(s.distribution.tauxRupture ?? 0) > 0.15 ? "alerte" : "normal"} />
+        <Indicateur libelle="Taux de rupture" valeur={pct(s.distribution.tauxRupture)} detail={comparaison(s.distribution.tauxRupture, s.distributionPrec.tauxRupture, "points")} ton={(s.distribution.tauxRupture ?? 0) > s.seuils.tauxRupture ? "alerte" : "normal"} />
         <Indicateur libelle="Couverture" valeur={`${s.distribution.quartiersCouverts} / ${s.distribution.quartiersTotal} quartiers`} detail={`${s.distribution.visites} visites · ${s.distribution.communesCouvertes} commune(s)`} />
       </Section>
     </>

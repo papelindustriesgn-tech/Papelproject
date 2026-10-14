@@ -86,7 +86,7 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
     supabase.from("types_clients").select("id, libelle, niveau_prix").eq("actif", true).order("ordre"),
     supabase.from("quartiers").select("id, nom, communes(nom)").order("nom"),
     supabase.from("marques_concurrentes").select("id, libelle").eq("actif", true).order("libelle"),
-    supabase.from("parametres").select("cle, valeur").in("cle", ["gps_rayon_checkin_m", "gps_precision_max_m", "gps_rayon_doublon_m", "tva_applicable", "tva_taux", "entreprise_nom", "entreprise_adresse", "entreprise_telephone", "entreprise_nif"]),
+    supabase.from("parametres").select("cle, valeur").in("cle", ["gps_rayon_checkin_m", "gps_precision_max_m", "gps_rayon_doublon_m", "terrain_jours_a_visiter", "tva_applicable", "tva_taux", "entreprise_nom", "entreprise_adresse", "entreprise_telephone", "entreprise_nif"]),
     supabase.from("profils").select("nom, prenom, code_serie").eq("id", utilisateurId).single(),
     supabase.from("pva_carte").select("*").eq("commercial_id", utilisateurId),
     supabase.from("clients").select("id, code, nom, type_client_id, condition_paiement, plafond_credit_gnf, responsable, telephone, adresse, quartier_id").eq("commercial_id", utilisateurId).eq("actif", true),
@@ -129,6 +129,7 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
     const p = new Map((params.data ?? []).map((x) => [x.cle, x.valeur]));
     await ecrireMeta(base, "regles", { rayonM: Number(p.get("gps_rayon_checkin_m") ?? 100), precisionMaxM: Number(p.get("gps_precision_max_m") ?? 50) });
     await ecrireMeta(base, "rayonDoublonM", Number(p.get("gps_rayon_doublon_m") ?? 30));
+    await ecrireMeta(base, "joursAVisiter", Number(p.get("terrain_jours_a_visiter") ?? 7));
     if (!collegues.error) await ecrireMeta(base, "pvaCollegues", collegues.data ?? []);
     await ecrireMeta(base, "tva", { applicable: p.get("tva_applicable") === true, taux: Number(p.get("tva_taux") ?? 0.18) });
     await ecrireMeta(base, "entreprise", { nom: String(p.get("entreprise_nom") ?? "Papel Industries"), adresse: String(p.get("entreprise_adresse") ?? ""), telephone: String(p.get("entreprise_telephone") ?? ""), nif: String(p.get("entreprise_nif") ?? "") });

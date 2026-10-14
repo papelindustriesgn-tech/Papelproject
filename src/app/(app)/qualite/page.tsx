@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AFaire } from "@/components/coque/a-faire";
+import { EntreeAppli } from "@/components/coque/entree-appli";
 import Link from "next/link";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -34,7 +34,7 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
   return (
     <>
       <TitrePage titre="Qualité" sousTitre="Contrôles, non-conformités et traçabilité" />
-      <AFaire espace="qualite" />
+      <EntreeAppli espace="qualite" />
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Conformité à réception" valeur={pct(tauxConformite(c.filter((x) => x.etape === "reception")))} detail={`${c.filter((x) => x.etape === "reception").length} contrôle(s) de bobines`} />

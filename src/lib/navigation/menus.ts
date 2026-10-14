@@ -20,6 +20,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   direction: [
     { libelle: "Tableau de bord", href: "/direction" },
     { libelle: "Rapport hebdomadaire", href: "/direction/rapport" },
+    { libelle: "Configuration", enfants: [{ href: "/direction/reglages", libelle: "Réglages (accueil, entreprise, rapport)" }] },
   ],
   magasin: [
     { libelle: "Vue d'ensemble", href: "/magasin" },
@@ -40,7 +41,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
       ],
     },
     { libelle: "Non-conformités", href: "/magasin/non-conformites" },
-    { libelle: "Configuration", enfants: [{ href: "/magasin/listes", libelle: "Listes de référence" }] },
+    { libelle: "Configuration", enfants: [{ href: "/magasin/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/magasin/listes", libelle: "Listes de référence" }] },
   ],
   production: [
     { libelle: "Vue d'ensemble", href: "/production" },
@@ -60,7 +61,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
         { href: "/production/demandes", libelle: "Demandes d'achat" },
       ],
     },
-    { libelle: "Configuration", enfants: [{ href: "/production/listes", libelle: "Postes, équipes, lignes, causes d'arrêt…" }] },
+    { libelle: "Configuration", enfants: [{ href: "/production/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/production/listes", libelle: "Postes, équipes, lignes, causes d'arrêt…" }] },
   ],
   ventes: [
     { libelle: "Vue d'ensemble", href: "/ventes" },
@@ -81,7 +82,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
         { href: "/ventes/dotations", libelle: "Dotations" },
       ],
     },
-    { libelle: "Configuration", enfants: [{ href: "/ventes/listes", libelle: "Types de clients, modes de paiement…" }] },
+    { libelle: "Configuration", enfants: [{ href: "/ventes/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/ventes/listes", libelle: "Types de clients, modes de paiement…" }] },
   ],
   commercial: [
     { libelle: "Carte et indicateurs", href: "/commercial" },
@@ -89,7 +90,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
     { libelle: "Visites", href: "/commercial/visites" },
     { libelle: "Tournées et objectifs", href: "/commercial/planification" },
     { libelle: "Réclamations", href: "/commercial/reclamations" },
-    { libelle: "Configuration", enfants: [{ href: "/commercial/listes", libelle: "Listes de référence" }] },
+    { libelle: "Configuration", enfants: [{ href: "/commercial/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/commercial/listes", libelle: "Listes de référence" }] },
   ],
   achats: [
     { libelle: "Vue d'ensemble", href: "/achats" },
@@ -102,7 +103,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
       ],
     },
     { libelle: "Conteneurs", href: "/achats/conteneurs" },
-    { libelle: "Configuration", enfants: [{ href: "/achats/listes", libelle: "Fournisseurs, frais, documents" }] },
+    { libelle: "Configuration", enfants: [{ href: "/achats/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/achats/listes", libelle: "Fournisseurs, frais, documents" }] },
   ],
   logistique: [
     { libelle: "Vue d'ensemble", href: "/logistique" },
@@ -113,21 +114,21 @@ export const MENUS: Record<string, EntreeMenu[]> = {
         { href: "/logistique/tournees/nouvelle", libelle: "Nouvelle tournée" },
       ],
     },
-    { libelle: "Configuration", enfants: [{ href: "/logistique/listes", libelle: "Véhicules, chauffeurs, dépenses" }] },
+    { libelle: "Configuration", enfants: [{ href: "/logistique/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/logistique/listes", libelle: "Véhicules, chauffeurs, dépenses" }] },
   ],
   qualite: [
     { libelle: "Vue d'ensemble", href: "/qualite" },
     { libelle: "Contrôles", href: "/qualite/controles" },
     { libelle: "Non-conformités", href: "/qualite/non-conformites" },
     { libelle: "Traçabilité", href: "/qualite/tracabilite" },
-    { libelle: "Configuration", enfants: [{ href: "/qualite/listes", libelle: "Critères et types de NC" }] },
+    { libelle: "Configuration", enfants: [{ href: "/qualite/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/qualite/listes", libelle: "Critères et types de NC" }] },
   ],
   maintenance: [
     { libelle: "Vue d'ensemble", href: "/maintenance" },
     { libelle: "Ordres de travail", href: "/maintenance/interventions" },
     { libelle: "Préventif", href: "/maintenance/preventif" },
     { libelle: "Équipements", href: "/maintenance/equipements" },
-    { libelle: "Configuration", enfants: [{ href: "/maintenance/listes", libelle: "Listes de référence" }] },
+    { libelle: "Configuration", enfants: [{ href: "/maintenance/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/maintenance/listes", libelle: "Listes de référence" }] },
   ],
   finance: [
     { libelle: "Vue d'ensemble", href: "/finance" },
@@ -148,7 +149,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
         { href: "/finance/excel", libelle: "Connexion Excel" },
       ],
     },
-    { libelle: "Configuration", enfants: [{ href: "/finance/listes", libelle: "Comptes, catégories, charges fixes" }] },
+    { libelle: "Configuration", enfants: [{ href: "/finance/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/finance/listes", libelle: "Comptes, catégories, charges fixes" }] },
   ],
   admin: [
     { libelle: "Utilisateurs", href: "/admin/utilisateurs" },
@@ -169,79 +170,3 @@ export function lienActif(href: string, chemin: string, recherche: string): bool
   if (cible.split("/").length === 2) return chemin === cible;
   return chemin === cible || chemin.startsWith(`${cible}/`);
 }
-
-/** Action rapide affichée en gros bouton à l'entrée d'une application (« Que voulez-vous faire ? »). */
-export interface ActionRapide {
-  libelle: string;
-  description: string;
-  href: string;
-  /** Nom d'icône (voir ICONES_ACTIONS dans actions-rapides.tsx). */
-  icone: string;
-}
-
-/**
- * Les gestes les plus courants de chaque service, pour un utilisateur qui découvre l'outil.
- * Le PREMIER est le bouton principal de l'application (le geste le plus fréquent) : un seul par écran.
- */
-export const ACTIONS_RAPIDES: Record<string, ActionRapide[]> = {
-  direction: [
-    { libelle: "Rapport de la semaine", description: "Résumé imprimable", href: "/direction/rapport", icone: "rapport" },
-    { libelle: "Ventes", description: "Factures, impayés", href: "/ventes", icone: "ventes" },
-    { libelle: "Stocks", description: "Matières et produits finis", href: "/magasin", icone: "stock" },
-    { libelle: "Finance", description: "Trésorerie et résultat", href: "/finance", icone: "argent" },
-  ],
-  magasin: [
-    { libelle: "Entrée ou sortie", description: "Emballages, pièces, corrections", href: "/magasin/mouvements/nouveau", icone: "mouvement" },
-    { libelle: "Réceptionner une bobine", description: "Arrivée d'une bobine jumbo", href: "/magasin/bobines", icone: "reception" },
-    { libelle: "Faire un inventaire", description: "Compter le stock réel", href: "/magasin/inventaires", icone: "inventaire" },
-    { libelle: "Demander un achat", description: "Il va manquer quelque chose", href: "/magasin/demandes", icone: "panier" },
-  ],
-  production: [
-    { libelle: "Saisir ma fiche de poste", description: "Production, bobines, arrêts", href: "/production/fiches/nouvelle", icone: "fiche" },
-    { libelle: "Signaler une panne", description: "Prévenir la maintenance", href: "/production/pannes", icone: "panne" },
-    { libelle: "Signaler un problème qualité", description: "Défaut, matière non conforme", href: "/production/non-conformites", icone: "alerte" },
-    { libelle: "Ordres de fabrication", description: "Ce qu'il faut produire", href: "/production/ordres", icone: "usine" },
-  ],
-  ventes: [
-    { libelle: "Nouvelle facture", description: "Facturer un client", href: "/ventes/pieces/nouvelle?type=facture", icone: "facture" },
-    { libelle: "Nouveau devis", description: "Proposer un prix", href: "/ventes/pieces/nouvelle?type=devis", icone: "devis" },
-    { libelle: "Encaisser un paiement", description: "Factures à payer", href: "/ventes/impayes", icone: "argent" },
-    { libelle: "Nouveau client", description: "Créer la fiche", href: "/ventes/clients/nouveau", icone: "client" },
-  ],
-  commercial: [
-    { libelle: "Planifier une tournée", description: "Tournées et objectifs", href: "/commercial/planification", icone: "calendrier" },
-    { libelle: "Répartir les clients", description: "Un client = un commercial", href: "/commercial/portefeuilles", icone: "client" },
-    { libelle: "Visites", description: "Ce qui a été fait", href: "/commercial/visites", icone: "visite" },
-    { libelle: "Réclamation client", description: "Enregistrer un problème", href: "/commercial/reclamations", icone: "alerte" },
-  ],
-  achats: [
-    { libelle: "Nouveau bon de commande", description: "Commander à un fournisseur", href: "/achats/commandes/nouveau", icone: "panier" },
-    { libelle: "Demandes à traiter", description: "Besoins des services", href: "/achats/demandes", icone: "fiche" },
-    { libelle: "Suivre les conteneurs", description: "En mer, au port, livrés", href: "/achats/conteneurs", icone: "bateau" },
-  ],
-  logistique: [
-    { libelle: "Préparer une tournée", description: "Camion, chauffeur, livraisons", href: "/logistique/tournees/nouvelle", icone: "camion" },
-    { libelle: "Tournées", description: "En cours et terminées", href: "/logistique/tournees", icone: "calendrier" },
-  ],
-  qualite: [
-    { libelle: "Nouveau contrôle", description: "Bobine ou production", href: "/qualite/controles", icone: "controle" },
-    { libelle: "Problèmes ouverts", description: "Non-conformités à traiter", href: "/qualite/non-conformites?statut=ouverte", icone: "alerte" },
-    { libelle: "Retrouver un lot", description: "Traçabilité", href: "/qualite/tracabilite", icone: "recherche" },
-  ],
-  maintenance: [
-    { libelle: "Nouvel ordre de travail", description: "Panne ou intervention", href: "/maintenance/interventions", icone: "panne" },
-    { libelle: "Préventif à faire", description: "Entretiens prévus", href: "/maintenance/preventif", icone: "calendrier" },
-    { libelle: "Équipements", description: "Machines et pièces", href: "/maintenance/equipements", icone: "usine" },
-  ],
-  finance: [
-    { libelle: "Facture fournisseur", description: "Saisir une dépense", href: "/finance/fournisseurs/nouvelle", icone: "facture" },
-    { libelle: "Trésorerie", description: "Caisse, banque, mobile money", href: "/finance/tresorerie", icone: "argent" },
-    { libelle: "Exports comptables", description: "Pour le comptable", href: "/finance/exports", icone: "export" },
-    { libelle: "Connexion Excel", description: "Données à jour dans Excel", href: "/finance/excel", icone: "excel" },
-  ],
-  admin: [
-    { libelle: "Créer un utilisateur", description: "Compte et rôles", href: "/admin/utilisateurs", icone: "client" },
-    { libelle: "Prix des produits", description: "Grille de prix", href: "/admin/produits", icone: "argent" },
-    { libelle: "Paramètres", description: "TVA, seuils, entreprise", href: "/admin/parametres", icone: "reglages" },
-  ],
-};

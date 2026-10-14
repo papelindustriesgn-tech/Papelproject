@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { AFaire } from "@/components/coque/a-faire";
+import { lireSeuils } from "@/lib/parametres";
+import { EntreeAppli } from "@/components/coque/entree-appli";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { CarteDynamique } from "@/components/carte/carte-dynamique";
@@ -19,9 +20,10 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
   const sp = await searchParams;
   const periode = resoudrePeriode(lireParam(sp, "periode") ?? "7j", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
   const supabase = await clientServeur();
-  const [ind, { data: pva }] = await Promise.all([
+  const [ind, { data: pva }, seuils] = await Promise.all([
     chargerIndicateursCommerciaux(periode.du, periode.au, periode.nbJours),
     supabase.from("pva_carte").select("id, nom, commercial_id, commercial_nom, type_libelle, latitude, longitude, derniere_visite, derniere_rupture").eq("actif", true),
+    lireSeuils({ alerte_taux_rupture: 0.15, alerte_taux_hors_zone: 0.15 }),
   ]);
   // Couleur fixe par commercial (ordre alphabétique stable), légende sous la carte.
   const couleur = new Map(ind.parCommercial.map((c, i) => [c.id, COULEURS_SERIES[i % COULEURS_SERIES.length]]));
@@ -40,11 +42,11 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
   return (
     <>
       <TitrePage titre="Équipe commerciale" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}`} />
-      <AFaire espace="commercial" />
+      <EntreeAppli espace="commercial" />
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicateur libelle="Visites" valeur={nombre(ind.visites)} detail={`${nombre(ind.visitesParJour, 1)} par jour · ${ind.horsZone} hors zone`} ton={ind.visites && ind.horsZone / ind.visites > 0.15 ? "alerte" : "normal"} />
-        <Indicateur libelle="Taux de rupture" valeur={pct(ind.tauxRupture)} detail={`${ind.ruptures} visite(s) avec rupture`} ton={(ind.tauxRupture ?? 0) > 0.15 ? "alerte" : "normal"} />
+        <Indicateur libelle="Visites" valeur={nombre(ind.visites)} detail={`${nombre(ind.visitesParJour, 1)} par jour · ${ind.horsZone} hors zone`} ton={ind.visites && ind.horsZone / ind.visites > seuils.alerte_taux_hors_zone ? "alerte" : "normal"} />
+        <Indicateur libelle="Taux de rupture" valeur={pct(ind.tauxRupture)} detail={`${ind.ruptures} visite(s) avec rupture`} ton={(ind.tauxRupture ?? 0) > seuils.alerte_taux_rupture ? "alerte" : "normal"} />
         <Indicateur libelle="Points de vente" valeur={nombre(ind.pvaActifs)} detail={`${ind.nouveauxPva} nouveau(x) sur la période`} />
         <Indicateur libelle="Couverture géographique" valeur={`${ind.quartiersCouverts} / ${ind.quartiersTotal} quartiers`} detail={`${ind.communesCouvertes} commune(s) couverte(s)`} />
       </div>
@@ -68,7 +70,7 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
             <tr key={c.id}>
               <Cellule className="font-semibold">{c.nom}</Cellule>
               <Cellule>{nombre(c.visites)}{c.objectifs ? ` / ${nombre(c.objectifs.visites)}` : ""}</Cellule>
-              <Cellule className={c.visites && c.horsZone / c.visites > 0.15 ? "font-bold text-red-700" : ""}>{c.horsZone}</Cellule>
+              <Cellule className={c.visites && c.horsZone / c.visites > seuils.alerte_taux_hors_zone ? "font-bold text-red-700" : ""}>{c.horsZone}</Cellule>
               <Cellule>{c.ruptures}</Cellule>
               <Cellule>{c.nouveauxPva}{c.objectifs ? ` / ${c.objectifs.nouveaux_pva}` : ""}</Cellule>
               <Cellule>{c.pieces}</Cellule>

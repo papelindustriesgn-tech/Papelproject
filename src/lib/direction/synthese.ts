@@ -4,9 +4,10 @@ import type { Periode } from "@/lib/formulaires/periode";
 import { chargerSituation, coutDesVentes, type SituationFinanciere } from "@/lib/finance/indicateurs";
 import { margeBrute } from "@/lib/metier/ventes";
 import { libelleAlerte } from "@/lib/production/affichage";
-import { agreger, chargerFiches } from "@/lib/production/indicateurs";
+import { agreger, chargerFiches, seuilsProduction } from "@/lib/production/indicateurs";
 import type { IndicateursFiche } from "@/lib/metier/production";
 import { chargerIndicateursVentes, type IndicateursVentes } from "@/lib/ventes/indicateurs";
+import { lireSeuils } from "@/lib/parametres";
 import { clientServeur } from "@/lib/supabase/serveur";
 
 export interface Alerte {
@@ -31,9 +32,22 @@ export interface SyntheseDirection {
   alertes: Alerte[];
   finance: SituationFinanciere;
   rendementParJour: Map<string, number | null>;
+  /** Seuils d'alerte réglés par les services (paramètres). */
+  seuils: { rendementMin: number; tauxRupture: number; impayeJours: number; impayeCritiqueJours: number; livraisonJours: number };
 }
 
 export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
+  const [seuilsLus, production] = await Promise.all([
+    lireSeuils({ alerte_impaye_jours: 30, alerte_impaye_critique_jours: 60, alerte_taux_rupture: 0.15, alerte_livraison_jours: 2 }),
+    seuilsProduction(),
+  ]);
+  const seuils = {
+    rendementMin: production.ratioRendementMin,
+    tauxRupture: seuilsLus.alerte_taux_rupture,
+    impayeJours: seuilsLus.alerte_impaye_jours,
+    impayeCritiqueJours: seuilsLus.alerte_impaye_critique_jours,
+    livraisonJours: seuilsLus.alerte_livraison_jours,
+  };
   const supabase = await clientServeur();
   const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, alertesStock, factures, distribution, distributionPrec, pva, transit, enRetard, ncCritiques, piecesCritiques, finance] = await Promise.all([
     chargerIndicateursVentes(p.du, p.au, p.nbJours),
@@ -44,13 +58,13 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
     coutDesVentes(p.precedente.du, p.precedente.au),
     supabase.from("etat_stock").select("famille, unite, quantite, valeur_gnf, conso_jour, libelle, paquets_par_colis").eq("actif", true),
     supabase.from("alertes_stock").select("article_id, libelle, niveau_alerte, jours_couverture, famille"),
-    supabase.from("factures_etat").select("id, numero, client_nom, solde_gnf, jours_retard").gt("solde_gnf", 0).gt("jours_retard", 30).order("jours_retard", { ascending: false }).limit(10),
+    supabase.from("factures_etat").select("id, numero, client_nom, solde_gnf, jours_retard").gt("solde_gnf", 0).gt("jours_retard", seuils.impayeJours).order("jours_retard", { ascending: false }).limit(10),
     chargerIndicateursCommerciaux(p.du, p.au, p.nbJours),
     chargerIndicateursCommerciaux(p.precedente.du, p.precedente.au, p.nbJours),
     supabase.from("pva_carte").select("type_libelle, actif"),
     supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
-    // Bons de livraison validés depuis plus de 2 jours et toujours pas remis au client.
-    supabase.from("livraisons").select("id", { count: "exact", head: true }).eq("statut", "validee").eq("statut_remise", "a_livrer").lt("date_livraison", hier(hier(p.au))),
+    // Bons de livraison validés depuis plus de N jours (paramètre) et toujours pas remis au client.
+    supabase.from("livraisons").select("id", { count: "exact", head: true }).eq("statut", "validee").eq("statut_remise", "a_livrer").lt("date_livraison", joursAvant(p.au, seuils.livraisonJours)),
     supabase.from("non_conformites").select("id, numero, description").eq("gravite", "critique").neq("statut", "cloturee"),
     supabase.from("pieces_critiques_alerte").select("article_id, libelle, equipements"),
     chargerSituation(),
@@ -84,11 +98,11 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
   for (const f of derniers.filter((x) => x.alertes.length))
     alertes.push({ gravite: f.alertes.some((a) => a.type === "arret_long") ? "critique" : "importante", domaine: "Production", message: `${f.poste} du ${f.date.split("-").reverse().join("/")} : ${f.alertes.map(libelleAlerte).join(", ")}`, lien: `/production/fiches/${f.id}` });
   for (const fa of factures.data ?? [])
-    alertes.push({ gravite: Number(fa.jours_retard) > 60 ? "critique" : "importante", domaine: "Ventes", message: `Impayé ${fa.numero} – ${fa.client_nom} : ${Number(fa.solde_gnf).toLocaleString("fr-FR")} GNF, ${fa.jours_retard} j de retard`, lien: `/ventes/pieces/${fa.id}` });
-  if ((distribution.tauxRupture ?? 0) > 0.15)
+    alertes.push({ gravite: Number(fa.jours_retard) > seuils.impayeCritiqueJours ? "critique" : "importante", domaine: "Ventes", message: `Impayé ${fa.numero} – ${fa.client_nom} : ${Number(fa.solde_gnf).toLocaleString("fr-FR")} GNF, ${fa.jours_retard} j de retard`, lien: `/ventes/pieces/${fa.id}` });
+  if ((distribution.tauxRupture ?? 0) > seuils.tauxRupture)
     alertes.push({ gravite: "importante", domaine: "Distribution", message: `Taux de rupture chez les points de vente : ${Math.round((distribution.tauxRupture ?? 0) * 100)} %`, lien: "/commercial" });
   if ((enRetard.count ?? 0) > 0)
-    alertes.push({ gravite: "importante", domaine: "Logistique", message: `${enRetard.count} bon(s) de livraison validé(s) depuis plus de 2 jours et non remis au client`, lien: "/logistique" });
+    alertes.push({ gravite: "importante", domaine: "Logistique", message: `${enRetard.count} bon(s) de livraison validé(s) depuis plus de ${seuils.livraisonJours} jour(s) et non remis au client`, lien: "/logistique" });
   for (const n of ncCritiques.data ?? [])
     alertes.push({ gravite: "critique", domaine: "Qualité", message: `Non-conformité critique ${n.numero} : ${n.description}`, lien: `/qualite/non-conformites/${n.id}` });
   for (const pc of piecesCritiques.data ?? [])
@@ -122,6 +136,7 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
     distributionPrec,
     alertes,
     finance,
+    seuils,
     rendementParJour: new Map([...parJour.entries()].map(([d, fs]) => [d, agreger(fs).ratioRendement])),
   };
 }
@@ -130,4 +145,9 @@ function hier(iso: string): string {
   const d = new Date(`${iso}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() - 1);
   return d.toISOString().slice(0, 10);
+}
+
+/** Date ISO située `jours` jours avant `iso`. */
+function joursAvant(iso: string, jours: number): string {
+  return new Date(Date.parse(`${iso}T00:00:00Z`) - jours * 86_400_000).toISOString().slice(0, 10);
 }

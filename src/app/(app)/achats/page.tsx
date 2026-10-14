@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AFaire } from "@/components/coque/a-faire";
+import { EntreeAppli } from "@/components/coque/entree-appli";
 import Link from "next/link";
 import { EtapesConteneur } from "@/components/achats/etapes";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
@@ -32,7 +32,7 @@ export default async function TableauDeBordAchats() {
   return (
     <>
       <TitrePage titre="Achats et approvisionnement" />
-      <AFaire espace="achats" />
+      <EntreeAppli espace="achats" />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="En transit" valeur={formaterPoids(kg(Number(transit?.kg_en_transit ?? 0)))} detail={`${transit?.nb_conteneurs ?? 0} conteneur(s) non livré(s)`} />
         <Indicateur libelle="Coût réel par tonne (livrés)" valeur={coutTonne === null ? "—" : gnf(coutTonne)} detail="Prix + fret + transit + douane + transport" />

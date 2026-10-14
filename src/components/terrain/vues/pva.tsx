@@ -19,8 +19,6 @@ const FILTRES: { code: Filtre; libelle: string }[] = [
   { code: "rupture", libelle: "En rupture" },
   { code: "tournee", libelle: "Tournée du jour" },
 ];
-/** Un point de vente non visité depuis ce nombre de jours est « à visiter ». */
-const JOURS_A_VISITER = 7;
 
 /** Prospects et clients : recherche, filtres rapides, « autour de moi », carte, actions en un geste. */
 export function VueListePva() {
@@ -31,7 +29,9 @@ export function VueListePva() {
   const [position, setPosition] = useState<PointGps | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [afficherCarte, setAfficherCarte] = useState(false);
-  const donnees = useLiveQuery(async () => ({ pva: await base.pva.orderBy("nom").toArray(), tournee: await lireMeta<string[]>(base, "tournee", []), nbClients: await base.clients.count() }), [base]);
+  const donnees = useLiveQuery(async () => ({ pva: await base.pva.orderBy("nom").toArray(), tournee: await lireMeta<string[]>(base, "tournee", []), nbClients: await base.clients.count(), joursAVisiter: await lireMeta<number>(base, "joursAVisiter", 7) }), [base]);
+  // Un point de vente non visité depuis ce nombre de jours (paramètre réglé par le responsable commercial) est « à visiter ».
+  const JOURS_A_VISITER = donnees?.joursAVisiter ?? 7;
 
   const liste = useMemo(() => {
     const q = recherche.trim().toLowerCase();
@@ -48,7 +48,7 @@ export function VueListePva() {
       });
     const avecDistance = filtres.map((p) => ({ ...p, distance: position && p.latitude !== null && p.longitude !== null ? distanceMetres(position, { latitude: p.latitude, longitude: p.longitude! }) : null }));
     return position ? avecDistance.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity)) : avecDistance;
-  }, [donnees, recherche, filtre, position, segment]);
+  }, [donnees, recherche, filtre, position, segment, JOURS_A_VISITER]);
 
   const autourDeMoi = async () => {
     setMessage("Recherche de votre position…");

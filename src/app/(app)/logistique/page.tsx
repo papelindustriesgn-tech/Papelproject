@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AFaire } from "@/components/coque/a-faire";
+import { EntreeAppli } from "@/components/coque/entree-appli";
 import Link from "next/link";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -31,7 +31,7 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
   return (
     <>
       <TitrePage titre="Logistique" sousTitre="Tournées de livraison depuis l'usine de Coyah" />
-      <AFaire espace="logistique" />
+      <EntreeAppli espace="logistique" />
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Bons à planifier" valeur={nombre(aPlanifier ?? 0)} detail="Bons de livraison validés sans tournée" ton={(aPlanifier ?? 0) > 0 ? "alerte" : "normal"} />

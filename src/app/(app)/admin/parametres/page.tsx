@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Carte, TitrePage } from "@/components/ui";
 import { clientServeur } from "@/lib/supabase/serveur";
-import { LigneParametre, type Parametre } from "./ligne-parametre";
+import { LigneParametre, type Parametre } from "@/components/reglages/ligne-parametre";
 
 export const metadata: Metadata = { title: "Paramètres" };
 
@@ -10,7 +10,12 @@ const CATEGORIES: Record<string, string> = {
   production: "Production",
   stock: "Stock",
   ventes: "Ventes et dotation",
-  terrain: "Application terrain",
+  terrain: "Application terrain et alertes commerciales",
+  logistique: "Logistique",
+  qualite: "Qualité",
+  maintenance: "Maintenance",
+  comptabilite: "Comptabilité",
+  direction: "Rapport hebdomadaire",
   devises: "Devises",
 };
 
@@ -22,9 +27,10 @@ export default async function PageParametres() {
 
   return (
     <>
-      <TitrePage titre="Paramètres" sousTitre="Chaque modification est enregistrée dans le journal d'audit." />
+      <TitrePage titre="Paramètres" sousTitre="Tous les paramètres. Chaque service peut aussi régler les siens dans « Réglages du service ». Chaque modification est enregistrée dans le journal d'audit." />
       <div className="flex flex-col gap-4">
-        {Object.entries(CATEGORIES)
+        {/* Toutes les catégories, y compris celles qui n'ont pas encore de libellé ci-dessus. */}
+        {[...Object.entries(CATEGORIES), ...[...parCategorie.keys()].filter((c) => !CATEGORIES[c]).map((c) => [c, c] as [string, string])]
           .filter(([c]) => parCategorie.has(c))
           .map(([c, libelle]) => (
             <Carte key={c} titre={libelle}>

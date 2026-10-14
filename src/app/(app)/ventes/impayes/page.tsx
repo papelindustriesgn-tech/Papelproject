@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { lireSeuils } from "@/lib/parametres";
 import Link from "next/link";
 import { ExportCsv } from "@/components/donnees/export-csv";
 import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
@@ -18,9 +19,10 @@ const TRANCHES = [
 
 export default async function PageImpayes() {
   const supabase = await clientServeur();
-  const [{ data }, { data: relances }] = await Promise.all([
+  const [{ data }, { data: relances }, { alerte_impaye_jours: seuilImpaye }] = await Promise.all([
     supabase.from("factures_etat").select("*").gt("solde_gnf", 0).order("jours_retard", { ascending: false }),
     supabase.from("relances").select("facture_id, date_relance, promesse_date").order("date_relance", { ascending: false }),
+    lireSeuils({ alerte_impaye_jours: 30 }),
   ]);
   const factures = (data ?? []).map((f) => ({ ...f, solde: Number(f.solde_gnf ?? 0), retard: Number(f.jours_retard ?? 0) }));
   const derniereRelance = new Map<string, { date_relance: string; promesse_date: string | null }>();
@@ -33,7 +35,7 @@ export default async function PageImpayes() {
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {TRANCHES.map((t) => {
           const montant = factures.filter((f) => f.retard >= t.min && f.retard <= t.max).reduce((s, f) => s + f.solde, 0);
-          return <Indicateur key={t.libelle} libelle={t.libelle} valeur={gnf(montant)} ton={t.min > 30 && montant > 0 ? "danger" : t.min > 0 && montant > 0 ? "alerte" : "normal"} detail={total ? `${Math.round((montant / total) * 100)} % des créances` : undefined} />;
+          return <Indicateur key={t.libelle} libelle={t.libelle} valeur={gnf(montant)} ton={t.min > seuilImpaye && montant > 0 ? "danger" : t.min > 0 && montant > 0 ? "alerte" : "normal"} detail={total ? `${Math.round((montant / total) * 100)} % des créances` : undefined} />;
         })}
       </div>
       <Carte titre={`Créances : ${gnf(total)}`}>
@@ -57,7 +59,7 @@ export default async function PageImpayes() {
                 <Cellule>{f.client_nom}</Cellule>
                 <Cellule>{formaterDate(f.date_echeance)}</Cellule>
                 <Cellule className="font-semibold">{gnf(f.solde)}</Cellule>
-                <Cellule className={f.retard > 30 ? "font-bold text-red-700" : f.retard > 0 ? "font-semibold text-amber-800" : ""}>{f.retard > 0 ? `${f.retard} j` : "—"}</Cellule>
+                <Cellule className={f.retard > seuilImpaye ? "font-bold text-red-700" : f.retard > 0 ? "font-semibold text-amber-800" : ""}>{f.retard > 0 ? `${f.retard} j` : "—"}</Cellule>
                 <Cellule className="text-sm">{r ? `${formaterDate(r.date_relance)}${r.promesse_date ? ` · promesse ${formaterDate(r.promesse_date)}` : ""}` : "Jamais relancé"}</Cellule>
               </tr>
             );
