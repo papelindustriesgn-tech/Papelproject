@@ -21,7 +21,7 @@ const cached = <A extends unknown[], R>(fn: (...args: A) => Promise<R>, key: str
   unstable_cache(fn, [key], { revalidate: 60, tags: [CONTENT_TAG] });
 
 export const DEAL_COLUMNS =
-  "id, title, discount_label, category, district, image_url, valid_until, is_demo, is_featured, partner:partners(name, logo_url), city:cities(name)";
+  "id, title, discount_label, category, district, image_url, valid_until, is_demo, is_featured, flash_ends_at, partner:partners(name, logo_url), city:cities(name)";
 export const JOB_COLUMNS =
   "id, title, company_name, type, location, is_remote, compensation, deadline, is_demo, created_at, city:cities(name)";
 export const HOUSING_COLUMNS =
@@ -72,7 +72,8 @@ async function _listDeals(
     .from("deals")
     .select(DEAL_COLUMNS)
     .eq("is_active", true)
-    .or(`valid_until.is.null,valid_until.gte.${today()}`);
+    .or(`valid_until.is.null,valid_until.gte.${today()}`)
+    .or(`flash_ends_at.is.null,flash_ends_at.gt.${new Date().toISOString()}`);
   if (await hasRealContent(supabase, "deals")) query = query.eq("is_demo", false);
   if (cityId) query = query.or(inCity(cityId));
   if (category) query = query.eq("category", category as DealCategory);

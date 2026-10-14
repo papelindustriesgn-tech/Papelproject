@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, LayoutDashboard, ScanLine, ShoppingBag, Tag } from "lucide-react";
+import { Building2, Gift, LayoutDashboard, ScanLine, ShoppingBag, Tag } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const ALL = [
   { href: "/partenaire", label: "Tableau de bord", short: "Accueil", icon: LayoutDashboard },
   { href: "/partenaire/scanner", label: "Scanner carte / code promo", short: "Scanner", icon: ScanLine },
   { href: "/partenaire/offres", label: "Offres étudiantes", short: "Offres", icon: Tag },
+  { href: "/partenaire/fidelite", label: "Fidélité & clients", short: "Fidélité", icon: Gift },
   { href: "/partenaire/boutique", label: "Boutique", short: "Boutique", icon: ShoppingBag },
   { href: "/partenaire/profil", label: "Ma fiche partenaire", short: "Fiche", icon: Building2 },
 ];
@@ -44,7 +45,8 @@ export function PartnerSidebar() {
   );
 }
 
-const MOBILE = [ALL[0], ALL[2], ALL[1], ALL[3], ALL[4]];
+// Mobile : Accueil, Offres, Scanner (au centre), Fidélité, Fiche — la boutique reste accessible depuis le tableau de bord
+const MOBILE = [ALL[0], ALL[2], ALL[1], ALL[3], ALL[5]];
 
 export function PartnerBottomNav() {
   const pathname = usePathname();

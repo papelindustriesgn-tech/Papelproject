@@ -13,6 +13,7 @@ import { requireProfile, universityLabel } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { favoriteIds, listDeals, listMarket } from "@/lib/queries";
 import { getJourney } from "@/lib/journey";
+import { isFlashActive } from "@/lib/flash";
 import { param, type SearchParams } from "@/lib/url";
 
 export const metadata: Metadata = { title: "Accueil" };
@@ -31,8 +32,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   ]);
   const showDemoNotice = latest.items.some((d) => d.is_demo) || market.items.some((m) => m.is_demo);
   const askSurvey = !survey.error && (!survey.data || survey.data.version < SURVEY_MIN_VERSION);
-  const featured = { items: latest.items.filter((d) => d.is_featured) };
-  const newest = latest.items.filter((d) => !d.is_featured).slice(0, 4);
+  const flashDeals = latest.items.filter((d) => isFlashActive(d.flash_ends_at));
+  const featured = { items: latest.items.filter((d) => d.is_featured && !isFlashActive(d.flash_ends_at)) };
+  const newest = latest.items.filter((d) => !d.is_featured && !isFlashActive(d.flash_ends_at)).slice(0, 4);
   const hour = new Date().toLocaleString("fr-FR", { hour: "numeric", hour12: false, timeZone: "Africa/Conakry" });
   const greeting = Number(hour) >= 18 ? "Bonsoir" : "Bonjour";
 
@@ -68,6 +70,17 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           university={universityLabel(profile)}
         />
       </section>
+
+      {flashDeals.length > 0 && (
+        <section>
+          <SectionHeader title="⚡ Offres flash" href="/avantages" />
+          <Rail label="Offres flash">
+            {flashDeals.map((d) => (
+              <DealCard key={d.id} deal={d} compact favorite={favDeals.has(d.id)} />
+            ))}
+          </Rail>
+        </section>
+      )}
 
       {featured.items.length > 0 && (
         <section>

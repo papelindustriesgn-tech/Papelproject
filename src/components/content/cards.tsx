@@ -5,6 +5,7 @@ import { BadgeCheck, CalendarClock, MapPin, Wallet } from "lucide-react";
 import { Badge, DemoBadge } from "@/components/ui/badge";
 import { FavoriteButton } from "@/components/content/favorite-button";
 import { cn } from "@/lib/cn";
+import { flashUntil, isFlashActive } from "@/lib/flash";
 import {
   DEAL_CATEGORIES,
   HOUSING_TYPES,
@@ -32,6 +33,7 @@ export type DealCardData = {
   image_url: string | null;
   valid_until: string | null;
   is_demo: boolean;
+  flash_ends_at?: string | null;
   partner: { name: string; logo_url: string | null } | null;
   city?: { name: string } | null;
 };
@@ -50,6 +52,7 @@ export function DealCard({
   priority?: boolean;
 }) {
   const cat = DEAL_CATEGORIES[deal.category];
+  const flash = isFlashActive(deal.flash_ends_at);
   return (
     <div className={cn("relative", compact && "w-64 shrink-0 snap-start")}>
       <Link href={href ?? `/avantages/${deal.id}`} className={cn(cardBase, "h-full")}>
@@ -67,7 +70,12 @@ export function DealCard({
           <span className="bg-coral-500 absolute bottom-3 left-3 rounded-xl px-2.5 py-1 text-base font-extrabold text-white shadow-lg">
             {deal.discount_label}
           </span>
-          <div className="absolute top-3 left-3 flex gap-1.5">{deal.is_demo && <DemoBadge />}</div>
+          <div className="absolute top-3 left-3 flex gap-1.5">
+            {flash && (
+              <span className="bg-mango-400 text-ink rounded-full px-2 py-0.5 text-[11px] font-extrabold shadow">⚡ Flash</span>
+            )}
+            {deal.is_demo && <DemoBadge />}
+          </div>
         </div>
         <div className="p-3.5">
           <p className="text-muted flex items-center gap-1 truncate text-xs font-semibold">
@@ -77,7 +85,11 @@ export function DealCard({
           <p className="text-muted mt-2 flex items-center gap-1 text-xs">
             <MapPin className="size-3.5 shrink-0" aria-hidden />
             <span className="truncate">{[deal.district, deal.city?.name].filter(Boolean).join(", ") || "Guinée"}</span>
-            {deal.valid_until && <span className="ml-auto shrink-0">jusqu&apos;au {formatShortDate(deal.valid_until)}</span>}
+            {flash && deal.flash_ends_at ? (
+              <span className="text-coral-600 ml-auto shrink-0 font-semibold">{flashUntil(deal.flash_ends_at)}</span>
+            ) : (
+              deal.valid_until && <span className="ml-auto shrink-0">jusqu&apos;au {formatShortDate(deal.valid_until)}</span>
+            )}
           </p>
         </div>
       </Link>

@@ -352,6 +352,10 @@ export type Database = {
           description: string;
           discount_label: string;
           district: string | null;
+          flash_ends_at: string | null;
+          flash_hours: number | null;
+          flash_quantity: number | null;
+          flash_started_at: string | null;
           id: string;
           image_url: string | null;
           is_active: boolean;
@@ -376,6 +380,10 @@ export type Database = {
           description?: string;
           discount_label: string;
           district?: string | null;
+          flash_ends_at?: string | null;
+          flash_hours?: number | null;
+          flash_quantity?: number | null;
+          flash_started_at?: string | null;
           id?: string;
           image_url?: string | null;
           is_active?: boolean;
@@ -400,6 +408,10 @@ export type Database = {
           description?: string;
           discount_label?: string;
           district?: string | null;
+          flash_ends_at?: string | null;
+          flash_hours?: number | null;
+          flash_quantity?: number | null;
+          flash_started_at?: string | null;
           id?: string;
           image_url?: string | null;
           is_active?: boolean;
@@ -710,6 +722,134 @@ export type Database = {
             foreignKeyName: "jobs_partner_id_fkey";
             columns: ["partner_id"];
             isOneToOne: false;
+            referencedRelation: "partners";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      loyalty_cards: {
+        Row: {
+          created_at: string;
+          id: string;
+          last_visit_at: string | null;
+          partner_id: string;
+          rewards_available: number;
+          rewards_used: number;
+          stamps: number;
+          student_id: string;
+          total_spent_gnf: number;
+          total_visits: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          last_visit_at?: string | null;
+          partner_id: string;
+          rewards_available?: number;
+          rewards_used?: number;
+          stamps?: number;
+          student_id: string;
+          total_spent_gnf?: number;
+          total_visits?: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          last_visit_at?: string | null;
+          partner_id?: string;
+          rewards_available?: number;
+          rewards_used?: number;
+          stamps?: number;
+          student_id?: string;
+          total_spent_gnf?: number;
+          total_visits?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_cards_partner_id_fkey";
+            columns: ["partner_id"];
+            isOneToOne: false;
+            referencedRelation: "partners";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "loyalty_cards_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      loyalty_events: {
+        Row: {
+          amount_gnf: number | null;
+          card_id: string;
+          created_at: string;
+          created_by: string | null;
+          id: number;
+          kind: string;
+        };
+        Insert: {
+          amount_gnf?: number | null;
+          card_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: never;
+          kind: string;
+        };
+        Update: {
+          amount_gnf?: number | null;
+          card_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          id?: never;
+          kind?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_events_card_id_fkey";
+            columns: ["card_id"];
+            isOneToOne: false;
+            referencedRelation: "loyalty_cards";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "loyalty_events_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      loyalty_programs: {
+        Row: {
+          is_active: boolean;
+          partner_id: string;
+          reward: string;
+          stamps_required: number;
+          updated_at: string;
+        };
+        Insert: {
+          is_active?: boolean;
+          partner_id: string;
+          reward: string;
+          stamps_required?: number;
+          updated_at?: string;
+        };
+        Update: {
+          is_active?: boolean;
+          partner_id?: string;
+          reward?: string;
+          stamps_required?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_programs_partner_id_fkey";
+            columns: ["partner_id"];
+            isOneToOne: true;
             referencedRelation: "partners";
             referencedColumns: ["id"];
           },
@@ -2218,14 +2358,18 @@ export type Database = {
       claim_promo_code: { Args: { p_deal: string }; Returns: Json };
       current_academic_year: { Args: Record<PropertyKey, never>; Returns: string };
       data_watch_digest: { Args: Record<PropertyKey, never>; Returns: undefined };
+      deal_flash_remaining: { Args: { p_deal: string }; Returns: number };
       declare_promo_payment: { Args: { p_code: string; p_reference: string }; Returns: undefined };
       expire_enrollments: { Args: Record<PropertyKey, never>; Returns: number };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_approved: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_partner_member: { Args: { p_partner: string }; Returns: boolean };
       is_university_member: { Args: { p_university: number }; Returns: boolean };
+      loyalty_add_visit: { Args: { p_amount: number; p_partner: string; p_student: string }; Returns: Json };
+      loyalty_status: { Args: { p_partner: string; p_student: string; p_unlocked?: boolean }; Returns: Json };
       new_promo_code: { Args: Record<PropertyKey, never>; Returns: string };
       next_uny_id: { Args: { p_country: string }; Returns: string };
+      partner_gift_loyalty: { Args: { p_card: string; p_kind: string; p_partner: string }; Returns: Json };
       partner_job_applications: {
         Args: { p_job: string };
         Returns: {
@@ -2253,7 +2397,25 @@ export type Database = {
         };
         Returns: Json;
       };
+      partner_top_customers: {
+        Args: { p_limit?: number; p_partner: string };
+        Returns: {
+          avatar_url: string;
+          card_id: string;
+          first_name: string;
+          last_initial: string;
+          last_visit_at: string;
+          rewards_available: number;
+          rewards_used: number;
+          stamps: number;
+          total_spent_gnf: number;
+          total_visits: number;
+          uny_id: string;
+        }[];
+      };
+      partner_use_reward: { Args: { p_card: string; p_partner: string }; Returns: Json };
       partner_validate_card: { Args: { p_deal?: string; p_partner: string; p_token?: string; p_uny_id?: string }; Returns: Json };
+      partner_weekly_report: { Args: Record<PropertyKey, never>; Returns: number };
       publish_card_template: {
         Args: { p_fields: string[]; p_labels?: Json; p_layout: string; p_university: number };
         Returns: {

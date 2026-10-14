@@ -1,5 +1,6 @@
 "use client";
 
+import { LoyaltyBlock } from "@/components/partner/loyalty-block";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { BadgeCheck, Camera, CameraOff, Keyboard, Loader2, RotateCcw, ShieldAlert, XCircle } from "lucide-react";
 import type QrScannerType from "qr-scanner";
@@ -81,6 +82,11 @@ function Verdict({ r }: { r: ValidationResult }) {
         <p className="bg-mango-50 text-mango-700 px-5 py-3 text-sm font-semibold">
           ⚠️ Déjà utilisée {r.uses_today} fois aujourd&apos;hui pour cette offre.
         </p>
+      )}
+      {r.loyalty && (
+        <div className="bg-white px-5">
+          <LoyaltyBlock key={r.uny_id} initial={r.loyalty} />
+        </div>
       )}
       <p className="text-muted bg-white px-5 pb-4 text-xs">
         Compare la photo avec la personne en face de toi. Sur la carte présentée, l&apos;heure doit défiler en direct.

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "@/components/ui/safe-image";
 import { notFound } from "next/navigation";
-import { CalendarDays, MapPin, Phone, ShieldCheck, Ticket } from "lucide-react";
+import { CalendarDays, Gift, MapPin, Phone, ShieldCheck, Ticket, Zap } from "lucide-react";
+import { flashUntil, isFlashActive, isFlashOver } from "@/lib/flash";
 import { BackLink } from "@/components/ui/back-link";
 import { Badge, DemoBadge } from "@/components/ui/badge";
 import { DemoBanner } from "@/components/ui/demo-banner";
@@ -42,7 +43,7 @@ export default async function DealPage({ params }: Props) {
   const [deal, profile] = await Promise.all([load(id), requireProfile()]);
   if (!deal) notFound();
   const supabase = await createClient();
-  const [{ data: fav }, { data: promo }] = await Promise.all([
+  const [{ data: fav }, { data: promo }, { data: remaining }, { data: program }, { data: loyalty }] = await Promise.all([
     supabase.from("deal_favorites").select("deal_id").eq("deal_id", id).eq("user_id", profile.id).maybeSingle(),
     supabase
       .from("promo_codes")
@@ -54,11 +55,27 @@ export default async function DealPage({ params }: Props) {
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    deal.flash_quantity != null ? supabase.rpc("deal_flash_remaining", { p_deal: id }) : Promise.resolve({ data: null }),
+    supabase
+      .from("loyalty_programs")
+      .select("stamps_required, reward")
+      .eq("partner_id", deal.partner_id)
+      .eq("is_active", true)
+      .maybeSingle(),
+    supabase
+      .from("loyalty_cards")
+      .select("stamps, rewards_available")
+      .eq("partner_id", deal.partner_id)
+      .eq("student_id", profile.id)
+      .maybeSingle(),
   ]);
+  const flash = isFlashActive(deal.flash_ends_at);
+  const flashOver = isFlashOver(deal.flash_ends_at);
+  const soldOut = flash && remaining === 0;
   const pct = discountPercent(deal.price_gnf, deal.promo_price_gnf);
   const cat = DEAL_CATEGORIES[deal.category];
   const verified = profile.verification_status === "verified";
-  const expired = deal.valid_until ? new Date(`${deal.valid_until}T23:59:59`) < new Date() : false;
+  const expired = flashOver || (deal.valid_until ? new Date(`${deal.valid_until}T23:59:59`) < new Date() : false);
 
   return (
     <article className="animate-fade-up mx-auto max-w-3xl">
@@ -88,6 +105,36 @@ export default async function DealPage({ params }: Props) {
       {deal.is_demo && (
         <div className="mt-4">
           <DemoBanner />
+        </div>
+      )}
+
+      {flash && deal.flash_ends_at && (
+        <div
+          className="bg-mango-50 ring-mango-100 mt-4 flex items-center gap-3 rounded-2xl p-4 ring-1"
+          data-testid="flash-banner"
+        >
+          <Zap className="text-mango-700 size-6 shrink-0" aria-hidden />
+          <p className="text-sm">
+            <strong className="text-ink">Offre flash, {flashUntil(deal.flash_ends_at)}.</strong>{" "}
+            {remaining != null &&
+              (soldOut ? "Toutes les places sont parties." : `Plus que ${remaining} place${remaining > 1 ? "s" : ""}.`)}
+          </p>
+        </div>
+      )}
+
+      {program && (
+        <div className="ring-line mt-4 flex items-center gap-3 rounded-2xl bg-white p-4 ring-1" data-testid="loyalty-info">
+          <Gift className="text-brand-600 size-6 shrink-0" aria-hidden />
+          <div className="min-w-0 text-sm">
+            <p className="font-bold">
+              Carte de fidélité : {program.stamps_required} passages = {program.reward}
+            </p>
+            <p className="text-muted">
+              {loyalty?.rewards_available
+                ? `🎁 ${loyalty.rewards_available} récompense${loyalty.rewards_available > 1 ? "s" : ""} à utiliser ici.`
+                : `Tu as ${loyalty?.stamps ?? 0}/${program.stamps_required} tampons. Un tampon à chaque passage validé.`}
+            </p>
+          </div>
         </div>
       )}
 
@@ -144,9 +191,9 @@ export default async function DealPage({ params }: Props) {
       </section>
 
       <div className="mt-6">
-        {expired ? (
+        {expired || (soldOut && !promo) ? (
           <p className="bg-canvas text-muted ring-line rounded-2xl p-4 text-center text-sm font-semibold ring-1">
-            Cette offre a expiré.
+            {soldOut ? "Offre flash épuisée." : flashOver ? "Cette offre flash est terminée." : "Cette offre a expiré."}
           </p>
         ) : verified || !deal.requires_verification ? (
           <PromoPanel

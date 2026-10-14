@@ -4,13 +4,14 @@ import { cn } from "@/lib/cn";
 const TABS = [
   { href: "/avantages", label: "Offres" },
   { href: "/marketplace", label: "Promos" },
-  { href: "/avantages/mes-codes", label: "Mes codes" },
+  { href: "/avantages/mes-codes", label: "Codes" },
+  { href: "/avantages/fidelite", label: "Fidélité" },
 ] as const;
 
 /** Onglets de la rubrique « Avantages » (offres, marketplace, codes promo). */
 export function DealsTabs({ current }: { current: (typeof TABS)[number]["href"] }) {
   return (
-    <nav aria-label="Rubrique avantages" className="bg-canvas mb-4 grid grid-cols-3 gap-1 rounded-2xl p-1">
+    <nav aria-label="Rubrique avantages" className="bg-canvas mb-4 grid grid-cols-4 gap-1 rounded-2xl p-1">
       {TABS.map((t) => (
         <Link
           key={t.href}

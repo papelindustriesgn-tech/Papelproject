@@ -28,6 +28,7 @@ const APP = [
   "/marketplace/nouveau",
   "/marketplace/mes-annonces",
   "/avantages/mes-codes",
+  "/avantages/fidelite",
   "/profil",
   "/profil/modifier",
   "/profil/verification",
@@ -54,6 +55,7 @@ const ADMIN_PAGES = [
   "/admin/verifications?type=bac",
   "/admin/verifications?type=registre",
   "/admin/emails",
+  "/admin/sauvegardes",
 ];
 const UNIVERSITY_PAGES = [
   "/universite",
@@ -72,6 +74,7 @@ const PARTNER_PAGES = [
   "/partenaire/boutique/nouveau",
   "/partenaire/publier",
   "/partenaire/avis",
+  "/partenaire/fidelite",
   "/partenaire/profil",
 ];
 
@@ -122,7 +125,7 @@ for (const vp of VIEWPORTS) {
     }
     if (vp.width < 1024) {
       const nav = page.getByRole("navigation", { name: "Navigation partenaire" });
-      for (const l of ["Accueil", "Offres", "Scanner", "Boutique", "Fiche"])
+      for (const l of ["Accueil", "Offres", "Scanner", "Fidélité", "Fiche"])
         await expect(nav.getByRole("link", { name: l })).toBeVisible();
     }
     for (const url of UNIVERSITY_PAGES) {

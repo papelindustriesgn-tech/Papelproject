@@ -1,5 +1,6 @@
 "use client";
 
+import { LoyaltyBlock } from "@/components/partner/loyalty-block";
 import { useActionState, useState } from "react";
 import { BadgeCheck, Search, ShieldAlert, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -122,6 +123,11 @@ export function PromoRedeem({ merchantCode }: { merchantCode: string | null }) {
                 <BadgeCheck className="size-5" /> Valider le code et appliquer la réduction
               </SubmitButton>
             </form>
+          )}
+          {r.loyalty && (
+            <div className="px-4 pb-1">
+              <LoyaltyBlock key={`${r.code}-${r.state}`} initial={r.loyalty} />
+            </div>
           )}
           {r.state === "redeemed" && (
             <div className="border-line border-t p-4">

@@ -1,5 +1,6 @@
 "use server";
 
+import type { LoyaltyStatus } from "@/lib/loyalty";
 import { cookies } from "next/headers";
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
@@ -131,6 +132,7 @@ export type ValidationResult = {
   deal_title?: string | null;
   deal_requires_verification?: boolean;
   uses_today?: number;
+  loyalty?: LoyaltyStatus;
 };
 export type ValidateState = { result?: ValidationResult; error?: string; at?: number };
 
@@ -214,6 +216,7 @@ export type PromoCheck = {
   expires_at?: string;
   used_at?: string | null;
   payment_reference?: string | null;
+  loyalty?: LoyaltyStatus;
 };
 export type PromoRedeemState = { result?: PromoCheck; error?: string; at?: number };
 

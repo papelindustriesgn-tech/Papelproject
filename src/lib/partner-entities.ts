@@ -57,6 +57,19 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
         hint: "Laisse « Toute la Guinée » si l'offre est valable partout.",
       },
       ...DEAL_PRICE_FIELDS,
+      {
+        name: "flash_hours",
+        label: "⚡ Offre flash : durée",
+        type: "select",
+        options: [
+          { value: "2", label: "Pendant 2 heures" },
+          { value: "4", label: "Pendant 4 heures" },
+          { value: "8", label: "Pendant 8 heures" },
+          { value: "24", label: "Pendant 24 heures" },
+          { value: "48", label: "Pendant 48 heures" },
+        ],
+      },
+      { name: "flash_quantity", label: "Nombre de places (offre flash)", type: "number", min: 1, max: 10000, step: 1 },
       { name: "valid_from", label: "Valable à partir du", type: "date", required: true },
       { name: "valid_until", label: "Valable jusqu'au", type: "date" },
       {
