@@ -1,25 +1,33 @@
--- Réglages des services : chaque service règle son application et ses propres paramètres, pas ceux des autres.
+-- Réglages des services et paramètres : réservés à l'administrateur (ni les services, ni la Direction).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(7);
+select plan(8);
 
+-- Un service (magasin) ne règle rien, pas même ses propres seuils.
 -- L'identifiant se lit avant de prendre le rôle « authenticated » (sinon la RLS des profils le masque).
 select set_config('request.jwt.claims', json_build_object('sub', (select id from public.profils where identifiant = 'magasin'), 'role', 'authenticated')::text, true);
 set local role authenticated;
-
--- Paramètres : le magasin modifie un seuil de stock, pas un seuil de production.
 update public.parametres set valeur = '20' where cle = 'stock_jours_couverture_alerte';
-select is((select valeur::text from public.parametres where cle = 'stock_jours_couverture_alerte'), '20', 'Le magasin modifie ses seuils de stock');
+select isnt((select valeur::text from public.parametres where cle = 'stock_jours_couverture_alerte'), '20', 'Le magasin ne modifie pas ses seuils');
+select throws_ok($$ insert into public.accueil_elements (espace, genre, libelle, ecran, icone) values ('magasin', 'action', 'Test', '/magasin', 'stock') $$, '42501', null, 'Le magasin ne règle pas son application');
+update public.accueil_espaces set promesse = 'x' where espace = 'magasin';
+select isnt((select promesse from public.accueil_espaces where espace = 'magasin'), 'x', 'Le magasin ne change pas sa phrase d''accueil');
+reset role;
+
+-- La Direction non plus.
+select set_config('request.jwt.claims', json_build_object('sub', (select id from public.profils where identifiant = 'pdg'), 'role', 'authenticated')::text, true);
+set local role authenticated;
 update public.parametres set valeur = '0.5' where cle = 'seuil_rendement_min';
-select isnt((select valeur::text from public.parametres where cle = 'seuil_rendement_min'), '0.5', 'Le magasin ne modifie pas les seuils de production');
+select isnt((select valeur::text from public.parametres where cle = 'seuil_rendement_min'), '0.5', 'La Direction ne modifie pas les paramètres');
+reset role;
 
--- Entrée de l'application : la sienne oui, celle d'un autre service non.
-select lives_ok($$ insert into public.accueil_elements (espace, genre, libelle, ecran, icone) values ('magasin', 'action', 'Test', '/magasin', 'stock') $$, 'Le magasin ajoute un bouton à son application');
-select throws_ok($$ insert into public.accueil_elements (espace, genre, libelle, ecran, icone) values ('production', 'action', 'Test', '/production', 'usine') $$, '42501', null, 'Le magasin ne règle pas l''application Production');
-update public.accueil_espaces set promesse = 'x' where espace = 'ventes';
-select isnt((select promesse from public.accueil_espaces where espace = 'ventes'), 'x', 'Le magasin ne change pas la phrase des Ventes');
+-- L'administrateur règle tout.
+select set_config('request.jwt.claims', json_build_object('sub', (select id from public.profils where identifiant = 'admin'), 'role', 'authenticated')::text, true);
+set local role authenticated;
+update public.parametres set valeur = '20' where cle = 'stock_jours_couverture_alerte';
+select is((select valeur::text from public.parametres where cle = 'stock_jours_couverture_alerte'), '20', 'L''administrateur modifie les paramètres');
+select lives_ok($$ insert into public.accueil_elements (espace, genre, libelle, ecran, icone) values ('magasin', 'action', 'Test', '/magasin', 'stock') $$, 'L''administrateur règle les applications');
 select throws_ok($$ insert into public.accueil_elements (espace, genre, libelle, ecran) values ('magasin', 'tache', 'Sans indicateur', '/magasin') $$, '23514', null, 'Une ligne « À faire » exige un indicateur');
-
 reset role;
 select ok(exists (select 1 from public.journal_audit where table_nom = 'accueil_elements'), 'Les réglages sont tracés dans le journal d''audit');
 

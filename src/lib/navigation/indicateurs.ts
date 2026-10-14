@@ -76,7 +76,10 @@ export const ICONES: { code: string; libelle: string }[] = [
   { code: "livre", libelle: "Colis livré" },
 ];
 
-/** Catégories de paramètres réglées par chaque service (même correspondance que `espace_de_categorie` en SQL). */
+/** Applications dont l'entrée se règle (l'application terrain est réglée avec l'équipe commerciale). */
+export const ESPACES_REGLABLES = ["direction", "magasin", "production", "ventes", "commercial", "achats", "logistique", "qualite", "maintenance", "finance"];
+
+/** Catégories de paramètres de chaque service (même correspondance que `espace_de_categorie` en SQL). */
 export const CATEGORIES_PARAMETRES: Record<string, { code: string; libelle: string }[]> = {
   direction: [
     { code: "entreprise", libelle: "Entreprise (devis et factures)" },

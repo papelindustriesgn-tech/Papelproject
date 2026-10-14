@@ -2,24 +2,24 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { exigerConnexion } from "@/lib/auth/session";
+import { exigerAdministrateur } from "@/lib/auth/session";
 import { erreursZod, messageErreurBase, valeursFormulaire, type EtatFormulaire } from "@/lib/formulaires/etat";
 import { lireNombre } from "@/lib/formulaires/nombres";
 import { INDICATEURS } from "@/lib/navigation/indicateurs";
 import { clientServeur } from "@/lib/supabase/serveur";
 import type { Json } from "@/lib/supabase/types";
 
-// Les droits sont appliqués par la base (RLS : peut_regler_espace) ; ici on valide la saisie.
+// Réglages réservés à l'administrateur : vérifié ici et appliqué par la base (RLS : peut_regler_espace).
 
 const ESPACE = z.string().regex(/^[a-z]+$/);
 
 function rafraichir(espace: string) {
   revalidatePath(`/${espace}`);
-  revalidatePath(`/${espace}/reglages`);
+  revalidatePath(`/admin/reglages/${espace}`);
 }
 
 export async function enregistrerPromesse(espace: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
-  await exigerConnexion();
+  await exigerAdministrateur();
   const promesse = String(fd.get("promesse") ?? "").trim();
   if (!ESPACE.safeParse(espace).success) return { message: "Application inconnue." };
   if (promesse.length > 300) return { erreurs: { promesse: "300 caractères au maximum." }, valeurs: valeursFormulaire(fd) };
@@ -51,7 +51,7 @@ const schemaElement = z
 
 /** Ajoute (id absent) ou modifie un bouton, une étape ou une ligne « À faire ». */
 export async function enregistrerElement(espace: string, id: string | null, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
-  await exigerConnexion();
+  await exigerAdministrateur();
   if (!ESPACE.safeParse(espace).success) return { message: "Application inconnue." };
   const r = schemaElement.safeParse({
     genre: fd.get("genre"),
@@ -76,7 +76,7 @@ export async function enregistrerElement(espace: string, id: string | null, _e: 
 }
 
 export async function supprimerElement(espace: string, id: string): Promise<EtatFormulaire> {
-  await exigerConnexion();
+  await exigerAdministrateur();
   const supabase = await clientServeur();
   const { data, error } = await supabase.from("accueil_elements").delete().eq("id", id).eq("espace", espace).select("id");
   if (error) return { message: messageErreurBase(error) };
@@ -113,9 +113,9 @@ function convertir(type: string, brut: FormDataEntryValue | null): { valeur: Non
   }
 }
 
-/** Modifie un paramètre : l'administrateur, la Direction ou le service à qui appartient la catégorie (RLS). */
+/** Modifie un paramètre (administrateur uniquement). */
 export async function modifierParametre(cle: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
-  await exigerConnexion();
+  await exigerAdministrateur();
   const supabase = await clientServeur();
   const { data: p } = await supabase.from("parametres").select("type_valeur").eq("cle", cle).maybeSingle();
   if (!p) return { message: "Paramètre introuvable." };

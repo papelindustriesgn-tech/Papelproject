@@ -13,7 +13,7 @@ const BLOCS: { genre: Element["genre"]; titre: string; aide: string }[] = [
 ];
 
 /**
- * Réglages d'un service, faits par le service lui-même (rien n'est figé dans le code) :
+ * Réglages d'un service, faits par l'administrateur dans l'interface (rien n'est figé dans le code) :
  * entrée de l'application (phrase, boutons, parcours, « À faire ») et paramètres de calcul de son domaine.
  */
 export async function PageReglages({ espace }: { espace: string }) {
@@ -31,8 +31,8 @@ export async function PageReglages({ espace }: { espace: string }) {
 
   return (
     <>
-      <TitrePage titre="Réglages du service" fil={[{ libelle, href: `/${espace}` }]} sousTitre="Ce que voit votre équipe en ouvrant l'application, et les seuils de vos calculs. Chaque modification est tracée." />
-      {!peut && <Message ton="info">Seul le responsable du service, la Direction ou l&apos;administrateur peut modifier ces réglages.</Message>}
+      <TitrePage titre={libelle} fil={[{ libelle: "Réglages des services", href: "/admin/reglages" }]} sousTitre={`Ce que voit l'équipe en ouvrant l'application ${libelle}, et les seuils de ses calculs. Chaque modification est tracée.`} />
+      {!peut && <Message ton="info">Seul l&apos;administrateur peut modifier ces réglages.</Message>}
       <div className="flex flex-col gap-4">
         <Carte titre="1. Phrase d'accueil">
           <FormulairePromesse espace={espace} promesse={accueil?.promesse ?? ""} modifiable={peut} />

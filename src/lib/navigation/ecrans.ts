@@ -38,7 +38,7 @@ export function catalogueEcrans(): { href: string; libelle: string; appli: strin
       ...(ECRANS_SUPPLEMENTAIRES[espace.code] ?? []),
     ];
     for (const l of liens) {
-      if (vus.has(l.href) || l.href.endsWith("/reglages")) continue;
+      if (vus.has(l.href) || l.href.includes("/reglages")) continue;
       vus.add(l.href);
       liste.push({ ...l, appli: espace.libelle });
     }

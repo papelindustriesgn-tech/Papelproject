@@ -109,7 +109,7 @@ const CALCULS: Record<string, (s: Client, jour: string) => Promise<number>> = {
 
 /**
  * Entrée d'une application, pensée pour ne pas faire réfléchir — et réglée par le service lui-même
- * (page « Réglages du service ») : phrase d'accueil, UN bouton principal (le 1er), les autres en petit,
+ * (réservé à l'administrateur : Administration › Réglages des services) : phrase d'accueil, UN bouton principal (le 1er), les autres en petit,
  * le parcours étape par étape, puis « À faire aujourd'hui » (seulement ce qui attend, urgent d'abord).
  */
 export async function EntreeAppli({ espace }: { espace: string }) {
@@ -198,7 +198,7 @@ export async function EntreeAppli({ espace }: { espace: string }) {
           <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-4 py-2">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">À faire aujourd&apos;hui</h2>
             {peutRegler && (
-              <Link href={`/${espace}/reglages`} className="flex min-h-9 items-center gap-1 rounded px-2 text-sm font-semibold text-papel-700 hover:bg-papel-50">
+              <Link href={`/admin/reglages/${espace}`} className="flex min-h-9 items-center gap-1 rounded px-2 text-sm font-semibold text-papel-700 hover:bg-papel-50">
                 <Settings size={16} /> Régler cette page
               </Link>
             )}

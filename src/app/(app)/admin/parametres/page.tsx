@@ -27,7 +27,7 @@ export default async function PageParametres() {
 
   return (
     <>
-      <TitrePage titre="Paramètres" sousTitre="Tous les paramètres. Chaque service peut aussi régler les siens dans « Réglages du service ». Chaque modification est enregistrée dans le journal d'audit." />
+      <TitrePage titre="Paramètres" sousTitre="Tous les paramètres, modifiables par l'administrateur uniquement (aussi présentés service par service dans « Réglages des services »). Chaque modification est enregistrée dans le journal d'audit." />
       <div className="flex flex-col gap-4">
         {/* Toutes les catégories, y compris celles qui n'ont pas encore de libellé ci-dessus. */}
         {[...Object.entries(CATEGORIES), ...[...parCategorie.keys()].filter((c) => !CATEGORIES[c]).map((c) => [c, c] as [string, string])]

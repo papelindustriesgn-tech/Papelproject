@@ -20,7 +20,6 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   direction: [
     { libelle: "Tableau de bord", href: "/direction" },
     { libelle: "Rapport hebdomadaire", href: "/direction/rapport" },
-    { libelle: "Configuration", enfants: [{ href: "/direction/reglages", libelle: "Réglages (accueil, entreprise, rapport)" }] },
   ],
   magasin: [
     { libelle: "Vue d'ensemble", href: "/magasin" },
@@ -41,7 +40,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
       ],
     },
     { libelle: "Non-conformités", href: "/magasin/non-conformites" },
-    { libelle: "Configuration", enfants: [{ href: "/magasin/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/magasin/listes", libelle: "Listes de référence" }] },
+    { libelle: "Configuration", enfants: [{ href: "/magasin/listes", libelle: "Listes de référence" }] },
   ],
   production: [
     { libelle: "Vue d'ensemble", href: "/production" },
@@ -61,7 +60,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
         { href: "/production/demandes", libelle: "Demandes d'achat" },
       ],
     },
-    { libelle: "Configuration", enfants: [{ href: "/production/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/production/listes", libelle: "Postes, équipes, lignes, causes d'arrêt…" }] },
+    { libelle: "Configuration", enfants: [{ href: "/production/listes", libelle: "Postes, équipes, lignes, causes d'arrêt…" }] },
   ],
   ventes: [
     { libelle: "Vue d'ensemble", href: "/ventes" },
@@ -82,7 +81,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
         { href: "/ventes/dotations", libelle: "Dotations" },
       ],
     },
-    { libelle: "Configuration", enfants: [{ href: "/ventes/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/ventes/listes", libelle: "Types de clients, modes de paiement…" }] },
+    { libelle: "Configuration", enfants: [{ href: "/ventes/listes", libelle: "Types de clients, modes de paiement…" }] },
   ],
   commercial: [
     { libelle: "Carte et indicateurs", href: "/commercial" },
@@ -90,7 +89,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
     { libelle: "Visites", href: "/commercial/visites" },
     { libelle: "Tournées et objectifs", href: "/commercial/planification" },
     { libelle: "Réclamations", href: "/commercial/reclamations" },
-    { libelle: "Configuration", enfants: [{ href: "/commercial/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/commercial/listes", libelle: "Listes de référence" }] },
+    { libelle: "Configuration", enfants: [{ href: "/commercial/listes", libelle: "Listes de référence" }] },
   ],
   achats: [
     { libelle: "Vue d'ensemble", href: "/achats" },
@@ -103,7 +102,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
       ],
     },
     { libelle: "Conteneurs", href: "/achats/conteneurs" },
-    { libelle: "Configuration", enfants: [{ href: "/achats/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/achats/listes", libelle: "Fournisseurs, frais, documents" }] },
+    { libelle: "Configuration", enfants: [{ href: "/achats/listes", libelle: "Fournisseurs, frais, documents" }] },
   ],
   logistique: [
     { libelle: "Vue d'ensemble", href: "/logistique" },
@@ -114,21 +113,21 @@ export const MENUS: Record<string, EntreeMenu[]> = {
         { href: "/logistique/tournees/nouvelle", libelle: "Nouvelle tournée" },
       ],
     },
-    { libelle: "Configuration", enfants: [{ href: "/logistique/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/logistique/listes", libelle: "Véhicules, chauffeurs, dépenses" }] },
+    { libelle: "Configuration", enfants: [{ href: "/logistique/listes", libelle: "Véhicules, chauffeurs, dépenses" }] },
   ],
   qualite: [
     { libelle: "Vue d'ensemble", href: "/qualite" },
     { libelle: "Contrôles", href: "/qualite/controles" },
     { libelle: "Non-conformités", href: "/qualite/non-conformites" },
     { libelle: "Traçabilité", href: "/qualite/tracabilite" },
-    { libelle: "Configuration", enfants: [{ href: "/qualite/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/qualite/listes", libelle: "Critères et types de NC" }] },
+    { libelle: "Configuration", enfants: [{ href: "/qualite/listes", libelle: "Critères et types de NC" }] },
   ],
   maintenance: [
     { libelle: "Vue d'ensemble", href: "/maintenance" },
     { libelle: "Ordres de travail", href: "/maintenance/interventions" },
     { libelle: "Préventif", href: "/maintenance/preventif" },
     { libelle: "Équipements", href: "/maintenance/equipements" },
-    { libelle: "Configuration", enfants: [{ href: "/maintenance/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/maintenance/listes", libelle: "Listes de référence" }] },
+    { libelle: "Configuration", enfants: [{ href: "/maintenance/listes", libelle: "Listes de référence" }] },
   ],
   finance: [
     { libelle: "Vue d'ensemble", href: "/finance" },
@@ -149,10 +148,11 @@ export const MENUS: Record<string, EntreeMenu[]> = {
         { href: "/finance/excel", libelle: "Connexion Excel" },
       ],
     },
-    { libelle: "Configuration", enfants: [{ href: "/finance/reglages", libelle: "Réglages du service (accueil, seuils)" }, { href: "/finance/listes", libelle: "Comptes, catégories, charges fixes" }] },
+    { libelle: "Configuration", enfants: [{ href: "/finance/listes", libelle: "Comptes, catégories, charges fixes" }] },
   ],
   admin: [
     { libelle: "Utilisateurs", href: "/admin/utilisateurs" },
+    { libelle: "Réglages des services", href: "/admin/reglages" },
     { libelle: "Paramètres", href: "/admin/parametres" },
     { libelle: "Produits et prix", href: "/admin/produits" },
     { libelle: "Taux de change", href: "/admin/taux-change" },

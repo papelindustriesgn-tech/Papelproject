@@ -52,3 +52,10 @@ export async function exigerEspace(code: string): Promise<UtilisateurConnecte> {
   if (!espace || !peutAcceder(espace, u.roles)) redirect("/acces-refuse");
   return u;
 }
+
+/** Réglages des services et paramètres : réservés à l'administrateur (décision de la direction). */
+export async function exigerAdministrateur(): Promise<UtilisateurConnecte> {
+  const u = await exigerConnexion();
+  if (!u.roles.includes("admin")) redirect("/acces-refuse");
+  return u;
+}
