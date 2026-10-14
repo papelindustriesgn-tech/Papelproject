@@ -4,6 +4,7 @@ import { StatCard } from "@/components/admin/stat-card";
 import { FormMessage } from "@/components/ui/field";
 import { createClient } from "@/lib/supabase/server";
 import { requireUniversity } from "@/lib/university";
+import { DeclaredStudents } from "@/components/university/declared-students";
 import { formatDate } from "@/lib/format";
 
 export const metadata = { title: "Tableau de bord" };
@@ -26,12 +27,15 @@ type Stats = {
 export default async function UniversityHome() {
   const { profile, university } = await requireUniversity();
   const supabase = await createClient();
-  const [{ data }, { data: branding }] = await Promise.all([
+  const [{ data }, { data: declared }, { data: branding }] = await Promise.all([
     supabase.rpc("university_stats", { p_university: university.id }),
+    supabase.rpc("university_declared_students", { p_university: university.id }),
     supabase.from("university_branding").select("university_id").eq("university_id", university.id).maybeSingle(),
   ]);
   const s = data as Stats;
   const toReview = s.pending + s.manual_review;
+  const declaredList = declared ?? [];
+  const withoutRequest = declaredList.filter((d) => !d.enrollment_status && d.verification_status !== "verified").length;
 
   return (
     <div className="animate-fade-up space-y-6">
@@ -73,6 +77,8 @@ export default async function UniversityHome() {
         </span>
         <ArrowRight className="size-6 shrink-0" aria-hidden />
       </Link>
+
+      {declaredList.length > 0 && <DeclaredStudents total={declaredList.length} withoutRequest={withoutRequest} />}
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Inscriptions confirmées" value={s.verified} tone="mint" hint={`${s.auto_verified} automatiquement`} />
@@ -132,6 +138,14 @@ export default async function UniversityHome() {
             <p className="text-muted text-sm">Les statistiques apparaîtront après les premières confirmations.</p>
           )}
         </section>
+      </div>
+      <div className="flex flex-wrap gap-2 text-sm lg:hidden">
+        <Link href="/universite/carte" className="ring-line rounded-full bg-white px-4 py-2 font-semibold ring-1">
+          Carte de l&apos;université
+        </Link>
+        <Link href="/universite/etablissement" className="ring-line rounded-full bg-white px-4 py-2 font-semibold ring-1">
+          Établissement & connexion
+        </Link>
       </div>
       <p className="text-muted text-xs">
         🔒 Ce portail n&apos;affiche que les étudiants qui ont déclaré une inscription dans votre établissement.

@@ -39,6 +39,9 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
           Cartes émises pour vos étudiants. Expirez une carte (fin d&apos;inscription) ou révoquez-la (fraude, exclusion) :
           l&apos;étudiant est notifié et les partenaires voient immédiatement la carte comme non valable.
         </p>
+        <a href="/universite/etudiants/export" className="text-brand-600 mt-2 inline-block text-sm font-semibold">
+          ⬇ Exporter la liste (Excel)
+        </a>
       </div>
       <SearchBar
         pathname="/universite/etudiants"

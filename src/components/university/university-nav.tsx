@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CreditCard, FileSpreadsheet, GraduationCap, Inbox, LayoutDashboard, Landmark } from "lucide-react";
+import { CreditCard, FileSpreadsheet, GraduationCap, Inbox, LayoutDashboard, Landmark, Megaphone } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const ALL = [
   { href: "/universite", label: "Tableau de bord", short: "Accueil", icon: LayoutDashboard },
   { href: "/universite/demandes", label: "Demandes à traiter", short: "Demandes", icon: Inbox },
   { href: "/universite/etudiants", label: "Étudiants & cartes", short: "Étudiants", icon: GraduationCap },
+  { href: "/universite/annonces", label: "Annonces aux étudiants", short: "Annonces", icon: Megaphone },
   { href: "/universite/imports", label: "Listes d'étudiants", short: "Listes", icon: FileSpreadsheet },
   { href: "/universite/carte", label: "Carte de l'université", short: "Carte", icon: CreditCard },
   { href: "/universite/etablissement", label: "Établissement & connexion", short: "Fiche", icon: Landmark },
@@ -48,6 +49,7 @@ export function UniversitySidebar({ pending }: { pending: number }) {
   );
 }
 
+// Mobile : Accueil, Demandes, Étudiants, Annonces, Listes (carte et fiche depuis le tableau de bord)
 const MOBILE = [ALL[0], ALL[1], ALL[2], ALL[3], ALL[4]];
 
 export function UniversityBottomNav({ pending }: { pending: number }) {

@@ -1901,6 +1901,60 @@ export type Database = {
           },
         ];
       };
+      university_announcements: {
+        Row: {
+          audience: string;
+          body: string;
+          created_at: string;
+          created_by: string | null;
+          faculty: string | null;
+          id: string;
+          recipients: number;
+          study_level: string | null;
+          title: string;
+          university_id: number;
+        };
+        Insert: {
+          audience: string;
+          body: string;
+          created_at?: string;
+          created_by?: string | null;
+          faculty?: string | null;
+          id?: string;
+          recipients?: number;
+          study_level?: string | null;
+          title: string;
+          university_id: number;
+        };
+        Update: {
+          audience?: string;
+          body?: string;
+          created_at?: string;
+          created_by?: string | null;
+          faculty?: string | null;
+          id?: string;
+          recipients?: number;
+          study_level?: string | null;
+          title?: string;
+          university_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "university_announcements_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "university_announcements_university_id_fkey";
+            columns: ["university_id"];
+            isOneToOne: false;
+            referencedRelation: "universities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       university_applications: {
         Row: {
           city_id: number | null;
@@ -2554,6 +2608,29 @@ export type Database = {
       };
       touch_last_seen: { Args: Record<PropertyKey, never>; Returns: undefined };
       track_view: { Args: { p_id: string; p_type: Database["public"]["Enums"]["view_entity"] }; Returns: undefined };
+      university_audience: {
+        Args: { p_audience: string; p_faculty?: string; p_level?: string; p_university: number };
+        Returns: {
+          user_id: string;
+        }[];
+      };
+      university_audience_count: {
+        Args: { p_audience: string; p_faculty?: string; p_level?: string; p_university: number };
+        Returns: number;
+      };
+      university_declared_students: {
+        Args: { p_university: number };
+        Returns: {
+          created_at: string;
+          enrollment_status: Database["public"]["Enums"]["enrollment_status"];
+          field_of_study: string;
+          first_name: string;
+          last_name: string;
+          study_level: string;
+          user_id: string;
+          verification_status: Database["public"]["Enums"]["verification_status"];
+        }[];
+      };
       university_enrollments: {
         Args: {
           p_limit?: number;
@@ -2586,6 +2663,11 @@ export type Database = {
           uny_id: string;
           user_id: string;
         }[];
+      };
+      university_invite_declared: { Args: { p_university: number }; Returns: number };
+      university_send_announcement: {
+        Args: { p_audience: string; p_body: string; p_faculty?: string; p_level?: string; p_title: string; p_university: number };
+        Returns: number;
       };
       university_stats: { Args: { p_university: number }; Returns: Json };
       verify_card: {

@@ -64,6 +64,7 @@ const UNIVERSITY_PAGES = [
   "/universite/imports",
   "/universite/carte",
   "/universite/etablissement",
+  "/universite/annonces",
 ];
 const PARTNER_PAGES = [
   "/partenaire",
@@ -135,7 +136,7 @@ for (const vp of VIEWPORTS) {
     }
     if (vp.width < 1024) {
       const nav = page.getByRole("navigation", { name: "Navigation université" });
-      for (const l of ["Accueil", "Demandes", "Étudiants", "Listes", "Carte"])
+      for (const l of ["Accueil", "Demandes", "Étudiants", "Annonces", "Listes"])
         await expect(nav.getByRole("link", { name: l })).toBeVisible();
     }
   });
