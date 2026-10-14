@@ -1,0 +1,63 @@
+# Sauvegarde quotidienne de la base Uny (indépendante de Supabase).
+# Copie chiffrée (AES-256) conservée 90 jours dans les artefacts GitHub Actions.
+# Secrets requis : SUPABASE_DB_URL (chaîne « Session pooler ») et BACKUP_PASSPHRASE.
+# Restauration : docs/SAUVEGARDE.md
+name: Sauvegarde base de données
+
+on:
+  schedule:
+    - cron: "30 2 * * *" # 02:30 UTC, chaque nuit
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    container: postgres:17
+    timeout-minutes: 30
+    steps:
+      - name: Vérifier les secrets
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::error::Ajoute les secrets SUPABASE_DB_URL et BACKUP_PASSPHRASE (voir docs/SAUVEGARDE.md)."
+            exit 1
+          fi
+
+      - name: Exporter la base (données + structure)
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          STAMP=$(date -u +%Y-%m-%d)
+          echo "STAMP=$STAMP" >> "$GITHUB_ENV"
+          pg_dump "$SUPABASE_DB_URL" \
+            --format=custom --no-owner --no-privileges \
+            --schema=public --schema=auth --schema=supabase_migrations \
+            --file="uny-$STAMP.dump"
+          # Contrôle : l'archive est lisible et contient les tables principales
+          pg_restore --list "uny-$STAMP.dump" > contents.txt
+          for t in profiles student_cards deals promo_codes users; do
+            grep -q "TABLE DATA [a-z_]* $t " contents.txt || { echo "::error::Table $t absente de la sauvegarde"; exit 1; }
+          done
+          ls -lh "uny-$STAMP.dump"
+
+      - name: Chiffrer
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          apt-get update -qq && apt-get install -y -qq gnupg >/dev/null
+          gpg --batch --yes --pinentry-mode loopback --symmetric --cipher-algo AES256 \
+            --passphrase "$BACKUP_PASSPHRASE" --output "uny-$STAMP.dump.gpg" "uny-$STAMP.dump"
+          rm "uny-$STAMP.dump"
+
+      - name: Conserver la copie (90 jours)
+        uses: actions/upload-artifact@v4
+        with:
+          name: uny-sauvegarde-${{ env.STAMP }}
+          path: uny-${{ env.STAMP }}.dump.gpg
+          retention-days: 90
+          if-no-files-found: error
