@@ -2213,6 +2213,7 @@ export type Database = {
         };
       };
       apply_student_email_policy: { Args: Record<PropertyKey, never>; Returns: number };
+      backup_snapshot: { Args: Record<PropertyKey, never>; Returns: Json };
       card_template_fields: { Args: Record<PropertyKey, never>; Returns: string[] };
       claim_promo_code: { Args: { p_deal: string }; Returns: Json };
       current_academic_year: { Args: Record<PropertyKey, never>; Returns: string };

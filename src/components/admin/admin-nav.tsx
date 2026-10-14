@@ -17,6 +17,7 @@ import {
   UserCheck,
   UserPlus,
   Users,
+  DatabaseBackup,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -35,6 +36,7 @@ export const ADMIN_NAV = [
   { href: "/admin/statistiques", label: "Statistiques", icon: BarChart3 },
   { href: "/admin/avis", label: "Avis des inscrits", icon: MessageSquareHeart },
   { href: "/admin/contacts", label: "Contacter les inscrits", icon: Send },
+  { href: "/admin/sauvegardes", label: "Sauvegardes", icon: DatabaseBackup },
 ];
 
 export function AdminNav({
