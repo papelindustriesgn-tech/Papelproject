@@ -34,6 +34,12 @@ export default async function SignUpPage() {
           Se connecter
         </Link>
       </p>
+      <p className="text-muted mt-3 text-center text-sm">
+        Vous représentez une université ou une école ?{" "}
+        <Link href="/universites#demande" className="text-brand-600 font-bold hover:underline">
+          Créer l&apos;espace de l&apos;établissement
+        </Link>
+      </p>
     </>
   );
 }

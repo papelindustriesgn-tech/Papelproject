@@ -3,9 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import type { Profile } from "@/lib/auth";
 
-/** Parcours étudiant affiché sur l'accueil : Inscription → Vérification → Carte → Utilisation. */
-export const JOURNEY_STEPS = ["Inscription", "Vérification", "Carte", "Utilisation"] as const;
-
+/** Parcours étudiant (Inscription → Vérification → Carte → Utilisation) : prochaine action affichée sur l'accueil. */
 export type NextStep = {
   title: string;
   body: string;

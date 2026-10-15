@@ -44,8 +44,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <Link href="/partenaires" className="text-brand-600 font-semibold hover:underline">
           deviens partenaire
         </Link>
-        . Université ? Connectez-vous avec l&apos;accès du portail université.
+        .
       </p>
+      <Link
+        href="/universites#demande"
+        className="bg-brand-50 text-brand-700 hover:bg-brand-100 mt-4 flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-center text-sm font-bold"
+      >
+        🎓 Université, institut ou école ? Créer l&apos;espace de votre établissement
+      </Link>
     </>
   );
 }

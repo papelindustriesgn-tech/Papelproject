@@ -5,13 +5,13 @@ test("parcours : une seule action principale, profil complété à la vérificat
   const s = await signUp(page);
   const email = encodeURIComponent(s.email);
 
-  // Accueil : promesse claire, barre de progression, une action principale
+  // Accueil : promesse claire, une seule action principale, pas de barre de progression
   await page.goto("/accueil");
   await expect(page.getByText(/Ta carte Uny prouve que tu es étudiant/)).toBeVisible();
-  await expect(page.locator('[aria-current="step"]')).toContainText("Vérification");
   const next = page.getByTestId("next-step");
   await expect(next).toContainText("Fais vérifier ton statut étudiant");
   await expect(page.getByRole("navigation", { name: "Raccourcis" })).toHaveCount(0);
+  await expect(page.getByRole("list", { name: "Ton parcours Uny" })).toHaveCount(0);
 
   // Profil incomplet (inscription en 5 champs) : la vérification commence par le compléter
   await serviceRest(`profiles?email=eq.${email}`, {
@@ -45,7 +45,6 @@ test("parcours : une seule action principale, profil complété à la vérificat
   await serviceRest(`profiles?email=eq.${email}`, { method: "PATCH", body: JSON.stringify({ verification_status: "verified" }) });
   await page.goto("/accueil");
   await expect(next).toContainText("Obtiens ton premier code promo");
-  await expect(page.locator('[aria-current="step"]')).toContainText("Utilisation");
 });
 
 test("rétention : une nouvelle offre réelle prévient les étudiants, pas une offre de démo", async ({ page }) => {

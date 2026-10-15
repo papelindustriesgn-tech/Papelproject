@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MessageSquareHeart } from "lucide-react";
 import { MiniPass } from "@/components/home/mini-pass";
-import { JourneyProgress, NextStepCard } from "@/components/home/journey";
+import { NextStepCard } from "@/components/home/journey";
+import { formatGNF } from "@/lib/format";
 import { Rail } from "@/components/home/rail";
 import { DealCard, ItemCard } from "@/components/content/cards";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -55,12 +56,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       )}
       {param(sp, "mdp") && <FormMessage type="success">Ton mot de passe a bien été modifié.</FormMessage>}
 
-      <section className="space-y-4">
-        <JourneyProgress current={journey.current} />
-        <NextStepCard journey={journey} />
-      </section>
+      {/* Une seule action principale ; pas de doublon quand l'action est simplement d'ouvrir la carte (affichée juste en dessous) */}
+      {journey.next.href !== "/carte" && <NextStepCard journey={journey} />}
 
-      <section className="max-w-md">
+      <section className="max-w-md space-y-2">
         <MiniPass
           first={profile.first_name}
           last={profile.last_name}
@@ -69,6 +68,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           status={profile.verification_status}
           university={universityLabel(profile)}
         />
+        {journey.next.href === "/carte" && journey.savedGnf > 0 && (
+          <p className="text-mint-700 text-sm font-bold">💰 Tu as économisé {formatGNF(journey.savedGnf)} avec Uny</p>
+        )}
       </section>
 
       {flashDeals.length > 0 && (

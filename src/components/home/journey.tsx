@@ -1,40 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { formatGNF } from "@/lib/format";
-import { JOURNEY_STEPS, type Journey } from "@/lib/journey";
+import type { Journey } from "@/lib/journey";
 
 const TONES = {
   brand: "bg-brand-600 text-white",
   mango: "bg-mango-50 text-ink ring-1 ring-mango-100",
   mint: "bg-mint-50 text-ink ring-1 ring-mint-100",
 } as const;
-
-/** Barre de progression du parcours étudiant. */
-export function JourneyProgress({ current }: { current: number }) {
-  return (
-    <ol aria-label="Ton parcours Uny" className="grid grid-cols-4 gap-1.5">
-      {JOURNEY_STEPS.map((label, i) => {
-        const done = i < current;
-        const active = i === current;
-        return (
-          <li key={label} className="min-w-0" aria-current={active ? "step" : undefined}>
-            <div className={cn("h-1.5 rounded-full", done ? "bg-mint-500" : active ? "bg-brand-600" : "bg-line")} />
-            <p
-              className={cn(
-                "mt-1.5 flex items-center gap-1 truncate text-[11px] font-semibold sm:text-xs",
-                done ? "text-mint-700" : active ? "text-brand-700" : "text-muted",
-              )}
-            >
-              {done && <Check className="size-3 shrink-0" aria-hidden />}
-              {label}
-            </p>
-          </li>
-        );
-      })}
-    </ol>
-  );
-}
 
 /** Une seule action principale : la prochaine étape du parcours. */
 export function NextStepCard({ journey }: { journey: Journey }) {

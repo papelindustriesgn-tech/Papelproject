@@ -91,6 +91,12 @@ export default async function PartnersLanding() {
           </ol>
         </div>
         <div className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)] sm:p-6">
+          <Link
+            href="/universites#demande"
+            className="bg-brand-50 text-brand-700 hover:bg-brand-100 mb-4 block rounded-2xl px-4 py-3 text-sm font-bold"
+          >
+            🎓 Vous êtes une université, un institut ou une école ? Créez plutôt l&apos;espace de votre établissement →
+          </Link>
           <h2 className="mb-4 text-xl font-extrabold">Demande de partenariat</h2>
           <ApplicationForm cities={cities} />
         </div>
