@@ -34,6 +34,10 @@ Les stores refusent souvent une app dont la politique de confidentialité et le 
 
 ## 2. Google Play
 
+> **Mise à jour :** pour Google Play, utiliser l'application du dossier `android/` (voir `docs/PLAY-STORE.md`),
+> déjà signée et vérifiée. Le dossier `mobile/` sert désormais à l'App Store (iOS).
+
+
 ### 2.1 Clé de signature (une seule fois, à conserver précieusement)
 
 Sur n'importe quel ordinateur avec Java :

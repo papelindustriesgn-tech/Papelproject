@@ -4,6 +4,11 @@ L'application Android (dossier `android/`) affiche le site www.unyafrica.com en 
 (technologie « Trusted Web Activity »). Toute mise à jour du site est donc visible tout de suite
 dans l'application, sans republier sur Google Play.
 
+> **Quelle application envoyer ?** Le dépôt contient aussi `mobile/` (Capacitor, Android + iOS).
+> Les deux utilisent le même nom de paquet `com.unyafrica.app` : un seul peut être publié.
+> Pour **Google Play**, on envoie celui-ci (`android/`, fichier `uny-1.0.0.aab`) : il est déjà signé
+> et le site est vérifié par Google. `mobile/` reste utilisé pour l'**App Store** (iOS).
+
 ## Identité de l'application
 
 | Élément | Valeur |
