@@ -43,6 +43,11 @@ export const INDICATEURS: Indicateur[] = [
   { code: "preventif_en_retard", libelle: "Entretiens préventifs à échéance dépassée", domaine: "Maintenance", ecran: "/maintenance/preventif" },
   { code: "pieces_critiques", libelle: "Pièces de rechange critiques sous le seuil", domaine: "Maintenance", ecran: "/maintenance/equipements" },
   { code: "factures_fournisseurs_retard", libelle: "Factures fournisseurs en retard de paiement", domaine: "Finance", ecran: "/finance/fournisseurs?etat=en_retard" },
+  { code: "absences_a_decider", libelle: "Demandes de congé ou d'absence à décider", domaine: "Ressources humaines", ecran: "/rh/absences?statut=demandee" },
+  { code: "presences_non_saisies", libelle: "Feuille de présence du jour non remplie (1 si oui)", domaine: "Ressources humaines", ecran: "/rh/presences" },
+  { code: "contrats_echeance", libelle: "Contrats qui se terminent dans N jours (paramètre)", domaine: "Ressources humaines", ecran: "/rh/employes?contrat=echeance" },
+  { code: "paie_a_valider", libelle: "Paie du mois dernier non validée (1 si oui)", domaine: "Ressources humaines", ecran: "/rh/paie" },
+  { code: "absents_du_jour", libelle: "Employés absents aujourd'hui", domaine: "Ressources humaines", ecran: "/rh/presences" },
   { code: "factures_fournisseurs_a_payer", libelle: "Factures fournisseurs à payer", domaine: "Finance", ecran: "/finance/fournisseurs" },
 ];
 
@@ -77,7 +82,7 @@ export const ICONES: { code: string; libelle: string }[] = [
 ];
 
 /** Applications dont l'entrée se règle (l'application terrain est réglée avec l'équipe commerciale). */
-export const ESPACES_REGLABLES = ["direction", "magasin", "production", "ventes", "commercial", "achats", "logistique", "qualite", "maintenance", "finance"];
+export const ESPACES_REGLABLES = ["direction", "magasin", "production", "ventes", "commercial", "achats", "logistique", "qualite", "maintenance", "finance", "rh"];
 
 /** Catégories de paramètres de chaque service (même correspondance que `espace_de_categorie` en SQL). */
 export const CATEGORIES_PARAMETRES: Record<string, { code: string; libelle: string }[]> = {
@@ -93,6 +98,7 @@ export const CATEGORIES_PARAMETRES: Record<string, { code: string; libelle: stri
   logistique: [{ code: "logistique", libelle: "Livraisons" }],
   qualite: [{ code: "qualite", libelle: "Qualité" }],
   maintenance: [{ code: "maintenance", libelle: "Maintenance" }],
+  rh: [{ code: "rh", libelle: "Congés, heures supplémentaires, CNSS" }],
   finance: [
     { code: "comptabilite", libelle: "Comptes et dettes" },
     { code: "finance", libelle: "Finance" },

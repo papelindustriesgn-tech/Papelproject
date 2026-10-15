@@ -594,3 +594,76 @@ begin
          (select id from public.categories_charges where libelle = 'Frais bancaires'), 'Frais de tenue de compte'
   from generate_series(date_trunc('month', public.aujourdhui_conakry() - 60), date_trunc('month', public.aujourdhui_conakry()), interval '1 month') d;
 end $$;
+
+-- -----------------------------------------------------------------------------
+-- Ressources humaines (démo) : compte « rh », employés, présences des 30 derniers jours, congés.
+-- -----------------------------------------------------------------------------
+insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_change, email_change_token_new, recovery_token)
+values ('00000000-0000-0000-0000-000000000000', '20000000-0000-0000-0000-000000000014', 'authenticated', 'authenticated', 'drh@papel.local',
+        extensions.crypt('Papel2026!', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}',
+        jsonb_build_object('identifiant', 'drh', 'nom', 'Kaba', 'prenom', 'Mariame', 'telephone', '+224 620 00 00 14'), now(), now(), '', '', '', '')
+on conflict (id) do nothing;
+insert into auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
+select gen_random_uuid(), '20000000-0000-0000-0000-000000000014', '20000000-0000-0000-0000-000000000014', 'email',
+  jsonb_build_object('sub', '20000000-0000-0000-0000-000000000014', 'email', 'drh@papel.local', 'email_verified', true), now(), now(), now()
+where not exists (select 1 from auth.identities where user_id = '20000000-0000-0000-0000-000000000014');
+insert into public.utilisateur_roles (utilisateur_id, role) values ('20000000-0000-0000-0000-000000000014', 'rh') on conflict do nothing;
+
+insert into public.fonctions (libelle, departement_id)
+select f.libelle, d.id from (values
+  ('Directeur général', 'Direction'), ('Chef de production', 'Production'), ('Conducteur de ligne', 'Production'), ('Opérateur de conditionnement', 'Production'),
+  ('Magasinier', 'Magasin'), ('Technicien de maintenance', 'Maintenance'), ('Contrôleur qualité', 'Qualité'), ('Commercial terrain', 'Commercial'),
+  ('Chauffeur-livreur', 'Logistique'), ('Comptable', 'Finance et administration'), ('Agent de sécurité', 'Finance et administration')
+) f(libelle, service) join public.departements d on d.libelle = f.service
+on conflict (libelle) do nothing;
+
+insert into public.jours_feries (jour, libelle) values
+  ('2026-01-01', 'Jour de l''an'), ('2026-05-01', 'Fête du travail'),
+  ('2026-10-02', 'Fête de l''indépendance'), ('2026-12-25', 'Noël')
+on conflict (jour) do nothing;
+
+insert into public.employes (id, nom, prenom, sexe, date_naissance, telephone, departement_id, fonction_id, type_contrat_id, date_embauche, date_fin_contrat, salaire_base_gnf, numero_cnss, mode_paiement, compte_paiement)
+select e.id::uuid, e.nom, e.prenom, e.sexe, e.naissance::date, e.tel,
+  (select id from public.departements where libelle = e.service),
+  (select id from public.fonctions where libelle = e.fonction),
+  (select id from public.types_contrats where libelle = e.contrat),
+  e.embauche::date, e.fin::date, e.salaire, e.cnss, e.paiement, e.compte
+from (values
+  ('80000000-0000-0000-0000-000000000001', 'Keïta', 'Sékou', 'M', '1982-03-12', '+224 621 10 00 01', 'Production', 'Chef de production', 'CDI', '2023-02-01', null, 6000000, 'CN-110001', 'banque', 'Ecobank 0012'),
+  ('80000000-0000-0000-0000-000000000002', 'Camara', 'Mohamed', 'M', '1990-07-01', '+224 621 10 00 02', 'Production', 'Conducteur de ligne', 'CDI', '2023-05-15', null, 2800000, 'CN-110002', 'mobile', '621100002'),
+  ('80000000-0000-0000-0000-000000000003', 'Diallo', 'Mariama', 'F', '1995-11-23', '+224 621 10 00 03', 'Production', 'Conducteur de ligne', 'CDI', '2024-01-08', null, 2600000, 'CN-110003', 'mobile', '621100003'),
+  ('80000000-0000-0000-0000-000000000004', 'Soumah', 'Abdoulaye', 'M', '1998-02-14', '+224 621 10 00 04', 'Production', 'Opérateur de conditionnement', 'CDD', '2026-04-01', (current_date + 18)::text, 1500000, '', 'especes', ''),
+  ('80000000-0000-0000-0000-000000000005', 'Bangoura', 'Fanta', 'F', '1999-09-09', '+224 621 10 00 05', 'Production', 'Opérateur de conditionnement', 'CDD', '2026-03-01', (current_date + 75)::text, 1500000, '', 'especes', ''),
+  ('80000000-0000-0000-0000-000000000006', 'Sylla', 'Ousmane', 'M', '2000-01-30', '+224 621 10 00 06', 'Production', 'Opérateur de conditionnement', 'Journalier', '2026-08-01', (current_date + 10)::text, 1200000, '', 'especes', ''),
+  ('80000000-0000-0000-0000-000000000007', 'Kourouma', 'Aminata', 'F', '1997-06-18', '+224 621 10 00 07', 'Production', 'Opérateur de conditionnement', 'CDI', '2024-06-01', null, 1600000, 'CN-110007', 'mobile', '621100007'),
+  ('80000000-0000-0000-0000-000000000008', 'Soumah', 'Lansana', 'M', '1988-04-04', '+224 621 10 00 08', 'Magasin', 'Magasinier', 'CDI', '2023-03-01', null, 2400000, 'CN-110008', 'banque', 'Orabank 3301'),
+  ('80000000-0000-0000-0000-000000000009', 'Condé', 'Moussa', 'M', '1986-08-27', '+224 621 10 00 09', 'Maintenance', 'Technicien de maintenance', 'CDI', '2023-02-15', null, 3500000, 'CN-110009', 'banque', 'Ecobank 0099'),
+  ('80000000-0000-0000-0000-000000000010', 'Bah', 'Fatoumata', 'F', '1993-12-05', '+224 621 10 00 10', 'Qualité', 'Contrôleur qualité', 'CDI', '2023-09-01', null, 3000000, 'CN-110010', 'mobile', '621100010'),
+  ('80000000-0000-0000-0000-000000000011', 'Diallo', 'Ousmane', 'M', '1994-10-10', '+224 621 10 00 11', 'Commercial', 'Commercial terrain', 'CDI', '2024-02-01', null, 2200000, 'CN-110011', 'mobile', '621100011'),
+  ('80000000-0000-0000-0000-000000000012', 'Cissé', 'Mamadou', 'M', '1985-05-20', '+224 621 10 00 12', 'Logistique', 'Chauffeur-livreur', 'CDI', '2023-04-01', null, 2000000, 'CN-110012', 'especes', ''),
+  ('80000000-0000-0000-0000-000000000013', 'Sow', 'Hawa', 'F', '1989-01-15', '+224 621 10 00 13', 'Finance et administration', 'Comptable', 'CDI', '2023-02-01', null, 4500000, 'CN-110013', 'banque', 'BICIGUI 7781'),
+  ('80000000-0000-0000-0000-000000000014', 'Touré', 'Ibrahima', 'M', '1980-07-07', '+224 621 10 00 14', 'Finance et administration', 'Agent de sécurité', 'CDI', '2023-02-01', null, 1300000, 'CN-110014', 'especes', '')
+) e(id, nom, prenom, sexe, naissance, tel, service, fonction, contrat, embauche, fin, salaire, cnss, paiement, compte)
+on conflict (id) do nothing;
+
+-- Présences des 30 derniers jours (hors dimanches et aujourd'hui) : quelques retards, absences et heures sup.
+insert into public.presences (employe_id, jour, statut, heures_sup)
+select e.id, g.j::date,
+  case
+    when (abs(hashtext(e.id::text || g.j::text)) % 100) < 4 then 'absent'
+    when (abs(hashtext(e.id::text || g.j::text)) % 100) < 10 then 'retard'
+    else 'present'
+  end,
+  case when e.departement_id = (select id from public.departements where libelle = 'Production') and (abs(hashtext(g.j::text || e.id::text)) % 5) = 0 then 2 else 0 end
+from public.employes e
+cross join generate_series(current_date - 30, current_date - 1, interval '1 day') g(j)
+where extract(isodow from g.j) <> 7 and e.actif and g.j::date >= e.date_embauche
+on conflict do nothing;
+
+-- Congés : un congé approuvé (pointé « congé »), deux demandes à décider.
+insert into public.absences (employe_id, type_absence_id, du, au, motif, statut)
+values
+  ('80000000-0000-0000-0000-000000000010', (select id from public.types_absences where libelle = 'Congé annuel'), current_date - 12, current_date - 8, 'Congé annuel', 'approuvee'),
+  ('80000000-0000-0000-0000-000000000003', (select id from public.types_absences where libelle = 'Congé annuel'), current_date + 7, current_date + 14, 'Mariage familial à Kindia', 'demandee'),
+  ('80000000-0000-0000-0000-000000000012', (select id from public.types_absences where libelle = 'Maladie (justifiée)'), current_date, current_date + 1, 'Certificat médical', 'demandee');
+update public.presences set statut = 'conge' where employe_id = '80000000-0000-0000-0000-000000000010' and jour between current_date - 12 and current_date - 8;

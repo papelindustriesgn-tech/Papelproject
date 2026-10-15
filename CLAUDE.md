@@ -284,6 +284,21 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
   Mise en forme pure et testée : `src/lib/rapports/hebdo.ts`. La clé secrète n'appelle que des fonctions dédiées, jamais les tables.
 - Interface : `Selection` se recrée quand `defaultValue` change (sinon une liste déroulante revenait à vide après une erreur de validation).
 
+## 6 duodecies. Ressources humaines
+
+- Rôle **`rh`** (migration séparée `20261018001900_role_rh.sql` : une valeur d'enum ne s'utilise pas dans la transaction qui l'ajoute).
+  Salaires **confidentiels** : RH (+ Direction) gèrent ; la Finance **lit** employés et bulletins pour payer ; les autres ne voient rien (RLS).
+- Listes modifiables (RH › Configuration) : **services** (`departements`), **fonctions**, **types de contrat** (durée déterminée),
+  **types d'absence** (`decompte_conges`, `payee`), **jours fériés**, **barème RTS** (`tranches_rts`, à valider avec le comptable).
+- **Employé** : matricule `EMP-NNNNN` (trigger), contrat, salaire de base GNF, CNSS, mode de paiement ; sortie = date + motif (inactif, gardé en historique).
+- **Absences** : jours **ouvrables** (lundi–samedi, fériés exclus : `jours_ouvrables()` SQL ↔ `joursOuvrables()` TS) ; demande → approuvée/refusée ;
+  un congé payé approuvé ne dépasse pas le **solde** (vue `soldes_conges` : mois complets × `rh_conges_jours_par_mois` − pris).
+- **Présences** : une feuille par jour (`presences`, statut présent / retard / absent / congé / repos + heures sup.), les absences approuvées proposées en « congé ».
+- **Paie** (`src/lib/metier/rh.ts`, testé) : brut = base + primes + HS (taux horaire × (1 + majoration)) − retenue d'absence non payée
+  (base ÷ `rh_jours_ouvrables_mois` × jours) ; CNSS = taux × min(brut, plafond) ; RTS = barème progressif sur (brut − CNSS salariale) ;
+  net = brut − CNSS − RTS − avances. « Préparer la paie » calcule les bulletins depuis présences et absences (primes/avances gardées) ;
+  `valider_paie` fige (trigger `bulletin_fige`). Bulletin imprimable avec montant en lettres ; export CSV de l'état de paie.
+
 ## 7. Seuils d'alerte (paramétrables)
 
 - Production : rendement < **95 %** du théorique ; perte > **5 %** ; arrêt > **30 min**.
@@ -307,6 +322,7 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
 9. Logistique et livraison (chauffeurs)
 10. Comptabilité et finance
 11. Administrateur système — utilisateurs, rôles, paramètres
+12. Ressources humaines — personnel, présences, congés, paie (salaires confidentiels)
 
 - Droits appliqués **en base (RLS)**, pas seulement dans l'interface. Fonctions : `a_role(r)`, `a_un_role(...)` (inclut toujours la Direction), `est_admin()`, `est_actif()`.
   Un compte désactivé perd tous ses droits. Seule la Direction attribue le rôle Direction.

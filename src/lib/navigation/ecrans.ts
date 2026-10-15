@@ -24,6 +24,11 @@ const ECRANS_SUPPLEMENTAIRES: Record<string, { href: string; libelle: string }[]
     { href: "/maintenance/interventions?statut=en_cours", libelle: "Ordres de travail en cours" },
   ],
   finance: [{ href: "/finance/fournisseurs?etat=en_retard", libelle: "Factures fournisseurs en retard" }],
+  rh: [
+    { href: "/rh/employes/nouveau", libelle: "Nouvel employé" },
+    { href: "/rh/absences?statut=demandee", libelle: "Demandes à décider" },
+    { href: "/rh/employes?contrat=echeance", libelle: "Contrats à échéance" },
+  ],
 };
 
 /** Tous les écrans de l'ERP (sauf réglages et application terrain), regroupés par application. */

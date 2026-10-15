@@ -14,6 +14,7 @@ export const ROLES = [
   "responsable_commercial",
   "logistique",
   "finance",
+  "rh",
   "admin",
 ] as const;
 
@@ -30,6 +31,7 @@ export const LIBELLES_ROLES: Record<Role, string> = {
   responsable_commercial: "Responsable commercial",
   logistique: "Logistique et livraison",
   finance: "Comptabilité et finance",
+  rh: "Ressources humaines",
   admin: "Administrateur système",
 };
 
@@ -56,6 +58,7 @@ export const ESPACES: Espace[] = [
   { code: "qualite", libelle: "Qualité", description: "Contrôles, non-conformités, traçabilité", roles: ["qualite"], disponibilite: "Phase 2 – étape 3" },
   { code: "maintenance", libelle: "Maintenance", description: "Équipements, préventif, pannes", roles: ["maintenance"], disponibilite: "Phase 2 – étape 4" },
   { code: "finance", libelle: "Finance", description: "Trésorerie, créances, dettes, résultat", roles: ["finance"], disponibilite: "Phase 3" },
+  { code: "rh", libelle: "Ressources humaines", description: "Employés, présences, congés, paie", roles: ["rh"], disponibilite: "Disponible" },
   { code: "admin", libelle: "Administration", description: "Utilisateurs, paramètres, produits, journal", roles: ["admin"], disponibilite: "Disponible" },
 ];
 

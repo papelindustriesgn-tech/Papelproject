@@ -105,6 +105,24 @@ const CALCULS: Record<string, (s: Client, jour: string) => Promise<number>> = {
   preventif_en_retard: async (s) => n(await s.from("echeances_preventif").select("id", compter).lte("jours_restants", 0)),
   pieces_critiques: async (s) => n(await s.from("pieces_critiques_alerte").select("article_id", compter)),
   factures_fournisseurs_retard: async (s) => n(await s.from("factures_fournisseurs_etat").select("id", compter).gt("solde_gnf", 0).gt("jours_retard", 0)),
+  absences_a_decider: async (s) => n(await s.from("absences").select("id", compter).eq("statut", "demandee")),
+  presences_non_saisies: async (s, jour) => {
+    const [actifs, saisies] = await Promise.all([s.from("employes").select("id", compter).eq("actif", true), s.from("presences").select("employe_id", compter).eq("jour", jour)]);
+    return n(actifs) > 0 && n(saisies) === 0 ? 1 : 0;
+  },
+  contrats_echeance: async (s, jour) => {
+    const { rh_alerte_fin_contrat_jours } = await lireSeuils({ rh_alerte_fin_contrat_jours: 30 });
+    const limite = new Date(Date.parse(`${jour}T00:00:00Z`) + rh_alerte_fin_contrat_jours * 86_400_000).toISOString().slice(0, 10);
+    return n(await s.from("employes").select("id", compter).eq("actif", true).gte("date_fin_contrat", jour).lte("date_fin_contrat", limite));
+  },
+  paie_a_valider: async (s, jour) => {
+    const d = new Date(`${jour.slice(0, 7)}-01T00:00:00Z`);
+    d.setUTCMonth(d.getUTCMonth() - 1);
+    const mois = d.toISOString().slice(0, 10);
+    const [actifs, { data }] = await Promise.all([s.from("employes").select("id", compter).eq("actif", true), s.from("periodes_paie").select("statut").eq("mois", mois).maybeSingle()]);
+    return n(actifs) > 0 && data?.statut !== "validee" ? 1 : 0;
+  },
+  absents_du_jour: async (s, jour) => n(await s.from("presences").select("employe_id", compter).eq("jour", jour).eq("statut", "absent")),
   factures_fournisseurs_a_payer: async (s) => n(await s.from("factures_fournisseurs_etat").select("id", compter).gt("solde_gnf", 0)),
 };
 

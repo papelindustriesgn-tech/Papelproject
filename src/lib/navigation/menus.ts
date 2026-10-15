@@ -152,6 +152,14 @@ export const MENUS: Record<string, EntreeMenu[]> = {
     },
     { libelle: "Configuration", enfants: [{ href: "/finance/listes", libelle: "Comptes, catégories, charges fixes" }] },
   ],
+  rh: [
+    { libelle: "Vue d'ensemble", href: "/rh" },
+    { libelle: "Employés", href: "/rh/employes" },
+    { libelle: "Présences", href: "/rh/presences" },
+    { libelle: "Congés et absences", href: "/rh/absences" },
+    { libelle: "Paie", href: "/rh/paie" },
+    { libelle: "Configuration", enfants: [{ href: "/rh/listes", libelle: "Services, fonctions, contrats, absences, fériés, barème RTS" }] },
+  ],
   admin: [
     { libelle: "Utilisateurs", href: "/admin/utilisateurs" },
     { libelle: "Réglages des services", href: "/admin/reglages", adminSeulement: true },

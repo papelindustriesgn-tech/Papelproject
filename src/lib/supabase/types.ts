@@ -23,7 +23,212 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "accueil_elements": {
+            "absences": {
+                  Row: {
+                    "id": string,"employe_id": string,"type_absence_id": string,"du": string,"au": string,"nb_jours": number,"motif": string,"statut": string,"decide_par": string | null,"decide_le": string | null,"created_by": string | null,"created_at": string
+                  }
+                  Insert: {
+                    "id"?: string,"employe_id": string,"type_absence_id": string,"du": string,"au": string,"nb_jours"?: number,"motif"?: string,"statut"?: string,"decide_par"?: string | null,"decide_le"?: string | null,"created_by"?: string | null,"created_at"?: string
+                  }
+                  Update: {
+                    "id"?: string,"employe_id"?: string,"type_absence_id"?: string,"du"?: string,"au"?: string,"nb_jours"?: number,"motif"?: string,"statut"?: string,"decide_par"?: string | null,"decide_le"?: string | null,"created_by"?: string | null,"created_at"?: string
+                  }
+                  Relationships: [{
+      foreignKeyName: "absences_employe_id_fkey"
+      columns: ["employe_id"]
+isOneToOne: false
+      referencedRelation: "employes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "absences_type_absence_id_fkey"
+      columns: ["type_absence_id"]
+isOneToOne: false
+      referencedRelation: "types_absences"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "absences_decide_par_fkey"
+      columns: ["decide_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "absences_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }]
+                },"bulletins": {
+                  Row: {
+                    "id": string,"mois": string,"employe_id": string,"salaire_base_gnf": number,"primes_gnf": number,"heures_sup": number,"montant_heures_sup_gnf": number,"jours_absence_non_payee": number,"retenue_absences_gnf": number,"avances_gnf": number,"brut_gnf": number,"cnss_salarie_gnf": number,"cnss_employeur_gnf": number,"rts_gnf": number,"net_gnf": number
+                  }
+                  Insert: {
+                    "id"?: string,"mois": string,"employe_id": string,"salaire_base_gnf": number,"primes_gnf"?: number,"heures_sup"?: number,"montant_heures_sup_gnf"?: number,"jours_absence_non_payee"?: number,"retenue_absences_gnf"?: number,"avances_gnf"?: number,"brut_gnf": number,"cnss_salarie_gnf": number,"cnss_employeur_gnf": number,"rts_gnf": number,"net_gnf": number
+                  }
+                  Update: {
+                    "id"?: string,"mois"?: string,"employe_id"?: string,"salaire_base_gnf"?: number,"primes_gnf"?: number,"heures_sup"?: number,"montant_heures_sup_gnf"?: number,"jours_absence_non_payee"?: number,"retenue_absences_gnf"?: number,"avances_gnf"?: number,"brut_gnf"?: number,"cnss_salarie_gnf"?: number,"cnss_employeur_gnf"?: number,"rts_gnf"?: number,"net_gnf"?: number
+                  }
+                  Relationships: [{
+      foreignKeyName: "bulletins_employe_id_fkey"
+      columns: ["employe_id"]
+isOneToOne: false
+      referencedRelation: "employes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bulletins_mois_fkey"
+      columns: ["mois"]
+isOneToOne: false
+      referencedRelation: "periodes_paie"
+      referencedColumns: ["mois"]
+    }]
+                },"departements": {
+                  Row: {
+                    "id": string,"libelle": string,"ordre": number,"actif": boolean
+                  }
+                  Insert: {
+                    "id"?: string,"libelle": string,"ordre"?: number,"actif"?: boolean
+                  }
+                  Update: {
+                    "id"?: string,"libelle"?: string,"ordre"?: number,"actif"?: boolean
+                  }
+                  Relationships: []
+                },"employes": {
+                  Row: {
+                    "id": string,"matricule": string | null,"nom": string,"prenom": string,"sexe": string | null,"date_naissance": string | null,"telephone": string,"adresse": string,"departement_id": string | null,"fonction_id": string | null,"type_contrat_id": string | null,"date_embauche": string,"date_fin_contrat": string | null,"salaire_base_gnf": number,"numero_cnss": string,"mode_paiement": string,"compte_paiement": string,"profil_id": string | null,"actif": boolean,"date_sortie": string | null,"motif_sortie": string,"notes": string,"created_at": string
+                  }
+                  Insert: {
+                    "id"?: string,"matricule"?: string | null,"nom": string,"prenom"?: string,"sexe"?: string | null,"date_naissance"?: string | null,"telephone"?: string,"adresse"?: string,"departement_id"?: string | null,"fonction_id"?: string | null,"type_contrat_id"?: string | null,"date_embauche": string,"date_fin_contrat"?: string | null,"salaire_base_gnf"?: number,"numero_cnss"?: string,"mode_paiement"?: string,"compte_paiement"?: string,"profil_id"?: string | null,"actif"?: boolean,"date_sortie"?: string | null,"motif_sortie"?: string,"notes"?: string,"created_at"?: string
+                  }
+                  Update: {
+                    "id"?: string,"matricule"?: string | null,"nom"?: string,"prenom"?: string,"sexe"?: string | null,"date_naissance"?: string | null,"telephone"?: string,"adresse"?: string,"departement_id"?: string | null,"fonction_id"?: string | null,"type_contrat_id"?: string | null,"date_embauche"?: string,"date_fin_contrat"?: string | null,"salaire_base_gnf"?: number,"numero_cnss"?: string,"mode_paiement"?: string,"compte_paiement"?: string,"profil_id"?: string | null,"actif"?: boolean,"date_sortie"?: string | null,"motif_sortie"?: string,"notes"?: string,"created_at"?: string
+                  }
+                  Relationships: [{
+      foreignKeyName: "employes_departement_id_fkey"
+      columns: ["departement_id"]
+isOneToOne: false
+      referencedRelation: "departements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "employes_fonction_id_fkey"
+      columns: ["fonction_id"]
+isOneToOne: false
+      referencedRelation: "fonctions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "employes_type_contrat_id_fkey"
+      columns: ["type_contrat_id"]
+isOneToOne: false
+      referencedRelation: "types_contrats"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "employes_profil_id_fkey"
+      columns: ["profil_id"]
+isOneToOne: true
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }]
+                },"fonctions": {
+                  Row: {
+                    "id": string,"libelle": string,"departement_id": string | null,"actif": boolean
+                  }
+                  Insert: {
+                    "id"?: string,"libelle": string,"departement_id"?: string | null,"actif"?: boolean
+                  }
+                  Update: {
+                    "id"?: string,"libelle"?: string,"departement_id"?: string | null,"actif"?: boolean
+                  }
+                  Relationships: [{
+      foreignKeyName: "fonctions_departement_id_fkey"
+      columns: ["departement_id"]
+isOneToOne: false
+      referencedRelation: "departements"
+      referencedColumns: ["id"]
+    }]
+                },"jours_feries": {
+                  Row: {
+                    "id": string,"jour": string,"libelle": string
+                  }
+                  Insert: {
+                    "id"?: string,"jour": string,"libelle": string
+                  }
+                  Update: {
+                    "id"?: string,"jour"?: string,"libelle"?: string
+                  }
+                  Relationships: []
+                },"periodes_paie": {
+                  Row: {
+                    "mois": string,"statut": string,"valide_par": string | null,"valide_le": string | null
+                  }
+                  Insert: {
+                    "mois": string,"statut"?: string,"valide_par"?: string | null,"valide_le"?: string | null
+                  }
+                  Update: {
+                    "mois"?: string,"statut"?: string,"valide_par"?: string | null,"valide_le"?: string | null
+                  }
+                  Relationships: [{
+      foreignKeyName: "periodes_paie_valide_par_fkey"
+      columns: ["valide_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }]
+                },"presences": {
+                  Row: {
+                    "employe_id": string,"jour": string,"statut": string,"heures_sup": number,"note": string,"saisi_par": string | null,"saisi_le": string
+                  }
+                  Insert: {
+                    "employe_id": string,"jour": string,"statut": string,"heures_sup"?: number,"note"?: string,"saisi_par"?: string | null,"saisi_le"?: string
+                  }
+                  Update: {
+                    "employe_id"?: string,"jour"?: string,"statut"?: string,"heures_sup"?: number,"note"?: string,"saisi_par"?: string | null,"saisi_le"?: string
+                  }
+                  Relationships: [{
+      foreignKeyName: "presences_employe_id_fkey"
+      columns: ["employe_id"]
+isOneToOne: false
+      referencedRelation: "employes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "presences_saisi_par_fkey"
+      columns: ["saisi_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }]
+                },"tranches_rts": {
+                  Row: {
+                    "id": string,"de_gnf": number,"taux": number
+                  }
+                  Insert: {
+                    "id"?: string,"de_gnf": number,"taux": number
+                  }
+                  Update: {
+                    "id"?: string,"de_gnf"?: number,"taux"?: number
+                  }
+                  Relationships: []
+                },"types_absences": {
+                  Row: {
+                    "id": string,"libelle": string,"decompte_conges": boolean,"payee": boolean,"ordre": number,"actif": boolean
+                  }
+                  Insert: {
+                    "id"?: string,"libelle": string,"decompte_conges"?: boolean,"payee"?: boolean,"ordre"?: number,"actif"?: boolean
+                  }
+                  Update: {
+                    "id"?: string,"libelle"?: string,"decompte_conges"?: boolean,"payee"?: boolean,"ordre"?: number,"actif"?: boolean
+                  }
+                  Relationships: []
+                },"types_contrats": {
+                  Row: {
+                    "id": string,"libelle": string,"duree_determinee": boolean,"ordre": number,"actif": boolean
+                  }
+                  Insert: {
+                    "id"?: string,"libelle": string,"duree_determinee"?: boolean,"ordre"?: number,"actif"?: boolean
+                  }
+                  Update: {
+                    "id"?: string,"libelle"?: string,"duree_determinee"?: boolean,"ordre"?: number,"actif"?: boolean
+                  }
+                  Relationships: []
+                },"accueil_elements": {
                   Row: {
                     "actif": boolean,"created_at": string,"description": string,"ecran": string,"espace": string,"genre": string,"icone": string,"id": string,"indicateur": string | null,"libelle": string,"ordre": number,"seuil": number,"urgent": boolean
                   }
@@ -3075,6 +3280,11 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"soldes_conges": {
+                  Row: {
+                    "employe_id": string | null,"acquis": number | null,"pris": number | null,"solde": number | null
+                  }
+                  Relationships: []
                 },"soldes_clients": {
                   Row: {
                     "client_id": string | null,"code": string | null,"commercial_id": string | null,"condition_paiement": string | null,"echu_gnf": number | null,"encours_gnf": number | null,"nom": string | null,"plafond_credit_gnf": number | null,"retard_max_jours": number | null
@@ -3276,6 +3486,12 @@ isOneToOne: false
 "pva_des_collegues":
 { Args: Record<PropertyKey, never>; Returns: { "commercial": string,"latitude": number,"longitude": number,"nom": string,"telephone": string }[]
                            },
+"valider_paie":
+{ Args: { "p_mois": string }; Returns: undefined
+                           },
+"jours_ouvrables":
+{ Args: { "p_du": string,"p_au": string }; Returns: number
+                           },
 "peut_regler_espace":
 { Args: { "p_espace": string }; Returns: boolean
                            },
@@ -3373,7 +3589,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "famille_article": "matiere_premiere"|"emballage"|"produit_fini"|"piece_detachee"|"autre","role_code": "direction"|"achats"|"magasin"|"production"|"maintenance"|"qualite"|"commercial_terrain"|"responsable_commercial"|"logistique"|"finance"|"admin","statut_bc": "brouillon"|"envoye"|"recu"|"annule","statut_conteneur": "commande"|"en_mer"|"au_port"|"dedouane"|"livre","statut_demande": "soumise"|"approuvee"|"refusee"|"commandee","statut_fiche": "brouillon"|"validee","statut_inventaire": "en_cours"|"valide"|"annule","statut_lot": "disponible"|"bloque"|"epuise","statut_of": "planifie"|"en_cours"|"termine"|"annule","statut_piece": "brouillon"|"valide"|"annule","type_mouvement": "reception"|"production"|"retour"|"consommation"|"sortie"|"vente"|"dotation"|"rebut"|"ajustement"|"inventaire","type_piece": "devis"|"commande"|"facture"|"avoir","unite_stock": "kg"|"paquet"|"unite"|"rouleau"|"litre"|"metre"
+            "famille_article": "matiere_premiere"|"emballage"|"produit_fini"|"piece_detachee"|"autre","role_code": "direction"|"achats"|"magasin"|"production"|"maintenance"|"qualite"|"commercial_terrain"|"responsable_commercial"|"logistique"|"finance"|"admin"|"rh","statut_bc": "brouillon"|"envoye"|"recu"|"annule","statut_conteneur": "commande"|"en_mer"|"au_port"|"dedouane"|"livre","statut_demande": "soumise"|"approuvee"|"refusee"|"commandee","statut_fiche": "brouillon"|"validee","statut_inventaire": "en_cours"|"valide"|"annule","statut_lot": "disponible"|"bloque"|"epuise","statut_of": "planifie"|"en_cours"|"termine"|"annule","statut_piece": "brouillon"|"valide"|"annule","type_mouvement": "reception"|"production"|"retour"|"consommation"|"sortie"|"vente"|"dotation"|"rebut"|"ajustement"|"inventaire","type_piece": "devis"|"commande"|"facture"|"avoir","unite_stock": "kg"|"paquet"|"unite"|"rouleau"|"litre"|"metre"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -3493,7 +3709,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "famille_article": ["matiere_premiere", "emballage", "produit_fini", "piece_detachee", "autre"],"role_code": ["direction", "achats", "magasin", "production", "maintenance", "qualite", "commercial_terrain", "responsable_commercial", "logistique", "finance", "admin"],"statut_bc": ["brouillon", "envoye", "recu", "annule"],"statut_conteneur": ["commande", "en_mer", "au_port", "dedouane", "livre"],"statut_demande": ["soumise", "approuvee", "refusee", "commandee"],"statut_fiche": ["brouillon", "validee"],"statut_inventaire": ["en_cours", "valide", "annule"],"statut_lot": ["disponible", "bloque", "epuise"],"statut_of": ["planifie", "en_cours", "termine", "annule"],"statut_piece": ["brouillon", "valide", "annule"],"type_mouvement": ["reception", "production", "retour", "consommation", "sortie", "vente", "dotation", "rebut", "ajustement", "inventaire"],"type_piece": ["devis", "commande", "facture", "avoir"],"unite_stock": ["kg", "paquet", "unite", "rouleau", "litre", "metre"]
+            "famille_article": ["matiere_premiere", "emballage", "produit_fini", "piece_detachee", "autre"],"role_code": ["direction", "achats", "magasin", "production", "maintenance", "qualite", "commercial_terrain", "responsable_commercial", "logistique", "finance", "admin", "rh"],"statut_bc": ["brouillon", "envoye", "recu", "annule"],"statut_conteneur": ["commande", "en_mer", "au_port", "dedouane", "livre"],"statut_demande": ["soumise", "approuvee", "refusee", "commandee"],"statut_fiche": ["brouillon", "validee"],"statut_inventaire": ["en_cours", "valide", "annule"],"statut_lot": ["disponible", "bloque", "epuise"],"statut_of": ["planifie", "en_cours", "termine", "annule"],"statut_piece": ["brouillon", "valide", "annule"],"type_mouvement": ["reception", "production", "retour", "consommation", "sortie", "vente", "dotation", "rebut", "ajustement", "inventaire"],"type_piece": ["devis", "commande", "facture", "avoir"],"unite_stock": ["kg", "paquet", "unite", "rouleau", "litre", "metre"]
           }
         }
 } as const

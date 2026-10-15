@@ -2,6 +2,7 @@ import {
   Boxes,
   ClipboardCheck,
   Factory,
+  IdCard,
   Landmark,
   LayoutDashboard,
   type LucideIcon,
@@ -27,6 +28,7 @@ export const APPARENCE_APPLI: Record<string, { Icone: LucideIcon; couleur: strin
   qualite: { Icone: ClipboardCheck, couleur: "#0f766e" },
   maintenance: { Icone: Wrench, couleur: "#475569" },
   finance: { Icone: Landmark, couleur: "#1d4ed8" },
+  rh: { Icone: IdCard, couleur: "#be185d" },
   admin: { Icone: Settings, couleur: "#374151" },
 };
 
