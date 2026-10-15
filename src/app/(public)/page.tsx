@@ -376,7 +376,7 @@ export default async function LandingPage() {
               Confirmez vos inscrits en quelques clics et offrez-leur une carte étudiante numérique à vos couleurs. Gratuit.
             </p>
           </div>
-          <LinkButton href="/universites#demande" variant="outline" className="w-full whitespace-normal sm:w-auto">
+          <LinkButton href="/inscription/etablissement" variant="outline" className="w-full whitespace-normal sm:w-auto">
             Créer l&apos;espace de mon établissement <ArrowRight className="size-4" />
           </LinkButton>
         </div>

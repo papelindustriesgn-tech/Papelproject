@@ -13,6 +13,7 @@ const PUBLIC = [
   "/",
   "/connexion",
   "/inscription",
+  "/inscription/etablissement",
   "/mot-de-passe-oublie",
   "/conditions",
   "/confidentialite",

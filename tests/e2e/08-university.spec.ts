@@ -19,7 +19,11 @@ test("université : demande → portail → carte personnalisée → import → 
 
   // 1. L'établissement crée lui-même son espace et y accède tout de suite (en attente de vérification)
   const password = `Scol${run}x`;
-  await page.goto("/universites");
+  // Depuis la connexion : même parcours que les étudiants (choix « Établissement »)
+  await page.goto("/connexion");
+  await page.getByRole("link", { name: "🏛️ Établissement" }).click();
+  await expect(page).toHaveURL(/inscription\/etablissement/);
+  await expect(page.getByRole("link", { name: "🏛️ Établissement" })).toHaveAttribute("aria-current", "page");
   await page.waitForLoadState("networkidle");
   await page.fill("#university_name", uniName);
   await page.fill("#contact_name", "Kadiatou Sow");

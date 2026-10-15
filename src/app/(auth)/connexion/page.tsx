@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FormMessage } from "@/components/ui/field";
+import { LinkButton } from "@/components/ui/button";
 import { LoginForm } from "./login-form";
 import { ClearPageCache } from "@/components/pwa/clear-cache";
 import { param, type SearchParams } from "@/lib/url";
@@ -33,25 +34,24 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         )}
         <LoginForm next={next} />
       </div>
-      <p className="text-muted mt-8 text-center text-sm">
-        Pas encore de compte ?{" "}
-        <Link href="/inscription" className="text-brand-600 font-bold hover:underline">
-          Créer mon compte gratuitement
-        </Link>
-      </p>
-      <p className="text-muted mt-3 text-center text-xs">
-        Commerçant, bailleur ou entreprise ? Connecte-toi ici avec ton accès partenaire, ou{" "}
-        <Link href="/partenaires" className="text-brand-600 font-semibold hover:underline">
-          deviens partenaire
-        </Link>
-        .
-      </p>
-      <Link
-        href="/universites#demande"
-        className="bg-brand-50 text-brand-700 hover:bg-brand-100 mt-4 flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-center text-sm font-bold"
-      >
-        🎓 Université, institut ou école ? Créer l&apos;espace de votre établissement
-      </Link>
+      <div className="mt-8">
+        <p className="text-muted text-center text-sm">Pas encore de compte ?</p>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <LinkButton href="/inscription" variant="outline" className="w-full">
+            🎓 Étudiant
+          </LinkButton>
+          <LinkButton href="/inscription/etablissement" variant="outline" className="w-full">
+            🏛️ Établissement
+          </LinkButton>
+        </div>
+        <p className="text-muted mt-4 text-center text-xs">
+          Commerce ou entreprise ?{" "}
+          <Link href="/partenaires" className="text-brand-600 font-semibold hover:underline">
+            Devenir partenaire
+          </Link>
+          . Les partenaires et les établissements se connectent ici avec leur email.
+        </p>
+      </div>
     </>
   );
 }

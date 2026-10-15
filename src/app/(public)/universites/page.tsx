@@ -52,12 +52,12 @@ export default async function UniversitiesLanding() {
             établissements.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="#demande"
+            <Link
+              href="/inscription/etablissement"
               className="bg-mango-400 text-ink inline-flex h-12 w-full items-center justify-center rounded-2xl px-6 font-bold sm:w-auto"
             >
               Créer mon espace établissement
-            </a>
+            </Link>
             <Link
               href="/connexion?next=/universite"
               className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-white/15 px-6 font-semibold sm:w-auto"
