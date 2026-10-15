@@ -13,6 +13,7 @@ import { getUniversityCardConfig, PARTNER_STATUS } from "@/lib/university";
 import {
   disableIntegration,
   grantUniversityAccess,
+  openUniversityPortal,
   removeUniversityMember,
   saveIntegration,
   setUniversityStatus,
@@ -83,6 +84,11 @@ export default async function UniversityAdmin({ params }: { params: Promise<{ id
         {uni.partner_status === "listed" && statusButton("pending", "Ouvrir le portail (en attente)")}
         {uni.partner_status === "partner" && statusButton("suspended", "Suspendre le partenariat", true)}
         {uni.partner_status !== "listed" && statusButton("listed", "Repasser en simple référencement", true)}
+        <form action={openUniversityPortal.bind(null, id)}>
+          <button className="bg-brand-600 rounded-full px-4 py-2 text-sm font-bold text-white">
+            Ouvrir le portail de l&apos;établissement →
+          </button>
+        </form>
         {s && (
           <p className="text-muted ml-auto self-center text-sm">
             {s.verified} inscriptions confirmées · {s.cards_active} cartes actives · {s.pending + s.manual_review} à traiter

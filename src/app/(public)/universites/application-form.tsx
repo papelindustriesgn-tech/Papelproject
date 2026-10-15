@@ -78,6 +78,22 @@ export function UniversityApplicationForm({
         <Field label="Email professionnel" htmlFor="email" error={fe.email}>
           <Input id="email" name="email" type="email" required defaultValue={v.email} />
         </Field>
+        <Field
+          label="Mot de passe"
+          htmlFor="password"
+          error={fe.password}
+          hint="8 caractères minimum, avec une lettre et un chiffre. Il sert à vous connecter à votre espace."
+        >
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            pattern="(?=.*[A-Za-z])(?=.*\d).{8,}"
+          />
+        </Field>
         <Field label="Nombre d'étudiants" htmlFor="student_count" optional>
           <Input id="student_count" name="student_count" type="number" min={0} defaultValue={v.student_count} />
         </Field>
@@ -89,9 +105,13 @@ export function UniversityApplicationForm({
       <Field label="Message" htmlFor="message" optional>
         <Textarea id="message" name="message" rows={3} maxLength={1000} defaultValue={v.message} />
       </Field>
-      <SubmitButton size="lg" className="w-full" pendingLabel="Envoi…">
-        Demander l&apos;ouverture du portail
+      <SubmitButton size="lg" className="w-full" pendingLabel="Création de votre espace…">
+        Créer mon espace établissement
       </SubmitButton>
+      <p className="text-muted text-center text-xs">
+        Vous accédez tout de suite à votre espace. Les fonctions liées à vos étudiants s&apos;ouvrent après une vérification
+        rapide de l&apos;établissement par l&apos;équipe Uny (48 h).
+      </p>
     </form>
   );
 }

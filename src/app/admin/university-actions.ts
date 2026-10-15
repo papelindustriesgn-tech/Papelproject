@@ -2,9 +2,11 @@
 
 import { resolveTxt } from "node:dns/promises";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
+import { UNIVERSITY_COOKIE } from "@/lib/university";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ensureProAccount } from "@/lib/accounts";
@@ -489,4 +491,17 @@ export async function checkEmailDns(): Promise<{ checks?: DnsCheck; error?: stri
       },
     ],
   };
+}
+
+/** Ouvre le portail d'un établissement (aperçu admin), sans être membre du portail. */
+export async function openUniversityPortal(universityId: number) {
+  await requireAdmin();
+  if (!Number.isInteger(universityId)) return;
+  (await cookies()).set(UNIVERSITY_COOKIE, String(universityId), {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+  redirect("/universite");
 }

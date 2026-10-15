@@ -17,7 +17,8 @@ test("université : demande → portail → carte personnalisée → import → 
   const official = `Institut Supérieur de Test ${run}`;
   const email = `scolarite.${run}@example.com`;
 
-  // 1. Demande publique d'ouverture du portail
+  // 1. L'établissement crée lui-même son espace et y accède tout de suite (en attente de vérification)
+  const password = `Scol${run}x`;
   await page.goto("/universites");
   await page.waitForLoadState("networkidle");
   await page.fill("#university_name", uniName);
@@ -25,21 +26,33 @@ test("université : demande → portail → carte personnalisée → import → 
   await page.fill("#contact_title", "Directrice de la scolarité");
   await page.fill("#phone", `62${run}`);
   await page.fill("#email", email);
+  await page.fill("#password", password);
   await page.check("input[name=has_api]");
-  await page.getByRole("button", { name: "Demander l'ouverture du portail" }).click();
-  await expect(page.getByText("Demande envoyée")).toBeVisible();
+  await page.getByRole("button", { name: "Créer mon espace établissement" }).click();
+  await expect(page).toHaveURL(/\/universite\?bienvenue=1/);
+  await expect(page.getByText(`L'espace de ${uniName} est créé`)).toBeVisible();
+  await expect(page.getByText(/en cours d.approbation/)).toBeVisible();
+  // Avant la vérification par Uny : pas d'annonce aux étudiants
+  await page.goto("/universite/annonces");
+  await page.fill("#title", "Test avant validation");
+  await page.fill("#body", "Ce message ne doit pas partir.");
+  await page.getByRole("button", { name: "Envoyer l'annonce" }).click();
+  await expect(page.getByText(/doit être approuvé par Uny/)).toBeVisible();
+  // Déconnexion depuis l'en-tête mobile
+  await page.getByRole("banner").getByRole("button", { name: "Se déconnecter" }).click();
+  await page.waitForURL(/connexion\?deconnecte=1/);
 
-  // 2. Approbation par l'admin : établissement partenaire + compte du portail
+  // 2. Vérification et approbation par l'admin (l'admin est prévenu de l'inscription)
   await login(page, ADMIN.email, ADMIN.password);
+  await page.goto("/notifications");
+  await expect(page.getByText(`Nouvel établissement inscrit : ${uniName}`)).toBeVisible();
   await page.goto("/admin/universites");
   const appCard = page
     .locator("div", { hasText: uniName })
     .filter({ has: page.getByRole("button", { name: /Approuver/ }) })
     .last();
   await appCard.getByRole("button", { name: /Approuver/ }).click();
-  const msg = page.getByText(/Mot de passe provisoire/);
-  await expect(msg).toBeVisible();
-  const password = (await msg.textContent())!.match(/provisoire : (\S+)/)![1];
+  await expect(page.getByText(/Compte existant relié/)).toBeVisible();
   await logout(page);
 
   // 3. Deux étudiants : A (correspond à la liste) et B (nom différent)

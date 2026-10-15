@@ -15,9 +15,14 @@ export type UniversitySummary = {
   slug: string;
   partner_status: string;
   city_id: number | null;
+  /** Ouvert par un admin Uny qui n'est pas membre du portail. */
+  preview?: boolean;
 };
 
-/** Établissements dont l'utilisateur connecté est membre du portail. */
+/**
+ * Établissements dont l'utilisateur connecté est membre du portail. Un admin Uny peut aussi
+ * ouvrir le portail de n'importe quel établissement (aperçu, choisi depuis l'administration).
+ */
 export const getMyUniversities = cache(async (): Promise<UniversitySummary[]> => {
   const profile = await getProfile();
   if (!profile) return [];
@@ -26,9 +31,21 @@ export const getMyUniversities = cache(async (): Promise<UniversitySummary[]> =>
     .from("university_members")
     .select("university:universities(id, name, short_name, slug, partner_status, city_id)")
     .eq("user_id", profile.id);
-  return (data ?? [])
+  const mine = (data ?? [])
     .map((r) => r.university)
     .filter((u): u is UniversitySummary => !!u && ["pending", "partner"].includes(u.partner_status));
+  if (profile.role === "admin") {
+    const chosen = Number((await cookies()).get(UNIVERSITY_COOKIE)?.value);
+    if (Number.isInteger(chosen) && chosen > 0 && !mine.some((u) => u.id === chosen)) {
+      const { data: u } = await supabase
+        .from("universities")
+        .select("id, name, short_name, slug, partner_status, city_id")
+        .eq("id", chosen)
+        .maybeSingle();
+      if (u) mine.unshift({ ...u, preview: true });
+    }
+  }
+  return mine;
 });
 
 /** Portail université : profil + établissement courant (choisi via cookie si plusieurs). */

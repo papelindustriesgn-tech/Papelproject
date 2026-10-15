@@ -2618,6 +2618,7 @@ export type Database = {
         Args: { p_audience: string; p_faculty?: string; p_level?: string; p_university: number };
         Returns: number;
       };
+      university_declared_count: { Args: { p_university: number }; Returns: Json };
       university_declared_students: {
         Args: { p_university: number };
         Returns: {

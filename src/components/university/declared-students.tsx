@@ -5,7 +5,15 @@ import { Users } from "lucide-react";
 import { inviteDeclared } from "@/app/universite/annonces/actions";
 
 /** « N de vos étudiants sont déjà sur Uny » + demande de matricule en un clic. */
-export function DeclaredStudents({ total, withoutRequest }: { total: number; withoutRequest: number }) {
+export function DeclaredStudents({
+  total,
+  withoutRequest,
+  canInvite,
+}: {
+  total: number;
+  withoutRequest: number;
+  canInvite: boolean;
+}) {
   const [message, setMessage] = useState<string | null>(null);
   const [pending, start] = useTransition();
   return (
@@ -19,7 +27,12 @@ export function DeclaredStudents({ total, withoutRequest }: { total: number; wit
           ? `${withoutRequest} n'${withoutRequest > 1 ? "ont" : "a"} pas encore envoyé de demande de confirmation. Demandez-leur leur matricule : leurs demandes arriveront dans « Demandes à traiter ».`
           : "Tous ont déjà envoyé leur demande de confirmation."}
       </p>
-      {withoutRequest > 0 && (
+      {withoutRequest > 0 && !canInvite && (
+        <p className="bg-mango-50 text-mango-700 mt-3 rounded-xl px-3 py-2 text-sm font-semibold">
+          Disponible dès que l&apos;équipe Uny aura vérifié votre établissement.
+        </p>
+      )}
+      {withoutRequest > 0 && canInvite && (
         <button
           type="button"
           disabled={pending}

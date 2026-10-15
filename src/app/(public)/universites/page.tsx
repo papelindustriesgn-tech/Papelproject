@@ -56,7 +56,7 @@ export default async function UniversitiesLanding() {
               href="#demande"
               className="bg-mango-400 text-ink inline-flex h-12 w-full items-center justify-center rounded-2xl px-6 font-bold sm:w-auto"
             >
-              Devenir université partenaire
+              Créer mon espace établissement
             </a>
             <Link
               href="/connexion?next=/universite"
@@ -85,8 +85,8 @@ export default async function UniversitiesLanding() {
           <h2 className="text-3xl font-extrabold tracking-tight">Comment ça marche ?</h2>
           <ol className="text-ink/80 mt-5 space-y-4">
             {[
-              "Vous envoyez la demande (2 minutes).",
-              "L'équipe Uny vérifie votre identité auprès de l'établissement et ouvre le portail.",
+              "Vous créez l'espace de votre établissement (2 minutes) et y accédez tout de suite.",
+              "L'équipe Uny vérifie l'établissement (48 h) : la confirmation des inscriptions et les annonces s'ouvrent.",
               "Vous personnalisez la carte et importez votre liste d'inscrits (ou confirmez au cas par cas).",
               "Vos étudiants reçoivent une carte Uny vérifiée, reconnue par tous les partenaires.",
             ].map((s, i) => (
@@ -100,7 +100,7 @@ export default async function UniversitiesLanding() {
           </ol>
         </div>
         <div className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)] sm:p-6">
-          <h2 className="mb-4 text-xl font-extrabold">Demande d&apos;ouverture du portail</h2>
+          <h2 className="mb-4 text-xl font-extrabold">Créer l&apos;espace de votre établissement</h2>
           <UniversityApplicationForm universities={universities ?? []} cities={cities} />
         </div>
       </section>

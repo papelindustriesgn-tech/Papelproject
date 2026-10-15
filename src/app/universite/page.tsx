@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireUniversity } from "@/lib/university";
 import { DeclaredStudents } from "@/components/university/declared-students";
 import { formatDate } from "@/lib/format";
+import { param, type SearchParams } from "@/lib/url";
 
 export const metadata = { title: "Tableau de bord" };
 
@@ -24,18 +25,18 @@ type Stats = {
   by_faculty: { label: string; count: number }[];
 };
 
-export default async function UniversityHome() {
+export default async function UniversityHome({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const sp = await searchParams;
   const { profile, university } = await requireUniversity();
   const supabase = await createClient();
   const [{ data }, { data: declared }, { data: branding }] = await Promise.all([
     supabase.rpc("university_stats", { p_university: university.id }),
-    supabase.rpc("university_declared_students", { p_university: university.id }),
+    supabase.rpc("university_declared_count", { p_university: university.id }),
     supabase.from("university_branding").select("university_id").eq("university_id", university.id).maybeSingle(),
   ]);
   const s = data as Stats;
   const toReview = s.pending + s.manual_review;
-  const declaredList = declared ?? [];
-  const withoutRequest = declaredList.filter((d) => !d.enrollment_status && d.verification_status !== "verified").length;
+  const declaredCount = (declared ?? { total: 0, without_request: 0 }) as { total: number; without_request: number };
 
   return (
     <div className="animate-fade-up space-y-6">
@@ -78,7 +79,20 @@ export default async function UniversityHome() {
         <ArrowRight className="size-6 shrink-0" aria-hidden />
       </Link>
 
-      {declaredList.length > 0 && <DeclaredStudents total={declaredList.length} withoutRequest={withoutRequest} />}
+      {param(sp, "bienvenue") && (
+        <FormMessage type="success">
+          Bienvenue sur Uny 🎓 L&apos;espace de {university.name} est créé. Préparez dès maintenant votre fiche et votre carte ;
+          l&apos;équipe Uny vérifie l&apos;établissement sous 48 h.
+        </FormMessage>
+      )}
+
+      {declaredCount.total > 0 && (
+        <DeclaredStudents
+          total={declaredCount.total}
+          withoutRequest={declaredCount.without_request}
+          canInvite={university.partner_status === "partner" || !!university.preview}
+        />
+      )}
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Inscriptions confirmées" value={s.verified} tone="mint" hint={`${s.auto_verified} automatiquement`} />

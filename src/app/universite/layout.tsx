@@ -68,6 +68,15 @@ export default async function UniversityLayout({ children }: { children: React.R
             <MobileLogout />
           </div>
         </header>
+        {university.preview && (
+          <p className="bg-ink px-4 py-2 text-center text-xs font-semibold text-white">
+            Aperçu admin Uny : vous voyez le portail de {university.short_name ?? university.name} tel que l&apos;établissement le
+            verra.{" "}
+            <Link href={`/admin/universites/${university.id}`} className="text-mango-400 underline">
+              Retour à l&apos;administration
+            </Link>
+          </p>
+        )}
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-28 lg:pb-12">{children}</main>
       </div>
       <UniversityBottomNav pending={pending} />
