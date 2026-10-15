@@ -81,7 +81,7 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
           libelle="Papier consommé"
           valeur={formaterPoids(kg(ind.tonnesConsommees * 1000))}
           variation={{ ecart: ecartRelatif(ind.tonnesConsommees, indPrec.tonnesConsommees) }}
-          tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.has(d) ? parJour.get(d)!.indicateurs.tonnesConsommees * 1000 : 0 }))}
+          tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.has(d) ? parJour.get(d)!.indicateurs.tonnesConsommees * 1000 : null }))}
           formatTendance="kg"
           lien="/production/fiches"
         />
@@ -89,7 +89,7 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
           libelle="Production"
           valeur={`${nombre(ind.paquetsBons)} paquets`}
           variation={{ ecart: ecartRelatif(ind.paquetsBons, indPrec.paquetsBons) }}
-          tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.get(d)?.indicateurs.paquetsBons ?? 0 }))}
+          tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.get(d)?.indicateurs.paquetsBons ?? null }))}
           detail={produits.map((p) => `${p} : ${nombre(parProduit.get(p)!.colis)} colis`).join(" · ") || "—"}
           lien="/production/fiches"
         />

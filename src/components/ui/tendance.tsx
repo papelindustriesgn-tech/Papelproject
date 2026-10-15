@@ -65,7 +65,7 @@ export function Tendance({ points, format = "nombre" }: { points: PointTendance[
         {choisi?.valeur != null && <circle cx={x(actif!)} cy={y(choisi.valeur)} r={3.5} fill="currentColor" stroke="white" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />}
       </svg>
       {choisi && (
-        <div className="pointer-events-none absolute -top-8 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-xs font-medium text-white shadow" style={{ left: `${(x(actif!) / L) * 100}%` }}>
+        <div className="pointer-events-none absolute top-full z-10 mt-1 -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-xs font-medium text-white shadow" style={{ left: `${(x(actif!) / L) * 100}%` }}>
           {choisi.libelle} : {choisi.valeur === null ? "—" : fmt(choisi.valeur)}
         </div>
       )}

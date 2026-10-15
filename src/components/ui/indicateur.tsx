@@ -13,14 +13,16 @@ export interface Variation {
 
 function libelleVariation(v: Variation): string {
   const e = v.ecart ?? 0;
-  const n = Math.abs(v.unite === "points" ? e * 100 : e * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
-  return `${e > 0 ? "+" : e < 0 ? "−" : ""}${n}${v.unite === "points" ? " pt" : " %"}`;
+  const arrondi = Math.round(Math.abs(e) * 1000) / 10;
+  const n = arrondi.toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+  return `${arrondi === 0 ? "" : e > 0 ? "+" : "−"}${n}${v.unite === "points" ? " pt" : " %"}`;
 }
 
 /** Pastille d'évolution : flèche + texte, verte si l'évolution est favorable, rouge sinon (jamais la couleur seule). */
 export function PastilleVariation({ v }: { v: Variation }) {
   if (v.ecart === null || !Number.isFinite(v.ecart)) return null;
-  const nul = Math.abs(v.ecart) < 0.0005;
+  // Nul à l'affichage (arrondi à 0,1) : pas de signe ni de couleur.
+  const nul = Math.abs(v.ecart * 100) < 0.05;
   const favorable = nul ? null : (v.ecart > 0) === (v.hausseBonne ?? true);
   const Icone = nul ? Minus : v.ecart > 0 ? ArrowUpRight : ArrowDownRight;
   const style = favorable === null ? "bg-gray-100 text-gray-700" : favorable ? "bg-green-50 text-[#006300]" : "bg-red-50 text-red-700";
