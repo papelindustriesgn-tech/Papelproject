@@ -1,0 +1,129 @@
+{
+  "date": "2026-09-29T22:10:54.440Z",
+  "users": 1000,
+  "concurrency": 50,
+  "machine": {
+    "cpus": 4,
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "memGB": 17,
+    "node": "v22.22.2"
+  },
+  "target": {
+    "app": "http://localhost:3000",
+    "supabase": "http://127.0.0.1:54321"
+  },
+  "phases": {
+    "1. Connexion (Supabase Auth)": {
+      "requests": 1000,
+      "errors": 0,
+      "errorRate": "0.00 %",
+      "durationS": 37.4,
+      "rps": 26.7,
+      "latencyMs": {
+        "count": 1000,
+        "p50": 1849,
+        "p95": 2307,
+        "p99": 2554,
+        "max": 2903,
+        "avg": 1852
+      }
+    },
+    "2. Dashboard /accueil (SSR)": {
+      "requests": 1000,
+      "errors": 0,
+      "errorRate": "0.00 %",
+      "durationS": 46.2,
+      "rps": 21.6,
+      "latencyMs": {
+        "count": 1000,
+        "p50": 1692,
+        "p95": 2235,
+        "p99": 3071,
+        "max": 3089,
+        "avg": 1733
+      }
+    },
+    "sessionIsolation": {
+      "wrongUserRendered": 0
+    },
+    "3. Carte digitale /carte": {
+      "requests": 1000,
+      "errors": 0,
+      "errorRate": "0.00 %",
+      "durationS": 23.3,
+      "rps": 42.9,
+      "latencyMs": {
+        "count": 1000,
+        "p50": 947,
+        "p95": 1092,
+        "p99": 1284,
+        "max": 1375,
+        "avg": 911
+      }
+    },
+    "4. Consultation offres/jobs/logement/market": {
+      "requests": 3000,
+      "errors": 0,
+      "errorRate": "0.00 %",
+      "durationS": 93.4,
+      "rps": 32.1,
+      "latencyMs": {
+        "count": 3000,
+        "p50": 1053,
+        "p95": 1348,
+        "p99": 1479,
+        "max": 1634,
+        "avg": 1055
+      }
+    },
+    "5. Lecture BDD (profil + carte + deals)": {
+      "requests": 1000,
+      "errors": 0,
+      "errorRate": "0.00 %",
+      "durationS": 11.8,
+      "rps": 84.9,
+      "latencyMs": {
+        "count": 1000,
+        "p50": 513,
+        "p95": 1285,
+        "p99": 1786,
+        "max": 2352,
+        "avg": 583
+      }
+    },
+    "6a. Écriture favoris (RLS)": {
+      "requests": 1000,
+      "errors": 0,
+      "errorRate": "0.00 %",
+      "durationS": 1.3,
+      "rps": 776.2,
+      "latencyMs": {
+        "count": 1000,
+        "p50": 52,
+        "p95": 148,
+        "p99": 220,
+        "max": 482,
+        "avg": 63
+      }
+    },
+    "6b. Publication marketplace (200 annonces)": {
+      "requests": 200,
+      "errors": 0,
+      "errorRate": "0.00 %",
+      "durationS": 0.3,
+      "rps": 743.6,
+      "latencyMs": {
+        "count": 200,
+        "p50": 51,
+        "p95": 149,
+        "p99": 202,
+        "max": 250,
+        "avg": 60
+      }
+    },
+    "rlsIsolation": {
+      "crossUserProfileReads": 0,
+      "checked": 100
+    }
+  }
+}

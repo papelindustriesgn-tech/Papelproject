@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.unyafrica.app",
+      "sha256_cert_fingerprints": [
+        "D6:0B:09:80:94:FD:49:D5:A5:16:E0:99:78:FD:9A:66:E6:3B:1E:8A:59:AA:A9:43:16:25:D9:49:30:23:6B:96"
+      ]
+    }
+  }
+]

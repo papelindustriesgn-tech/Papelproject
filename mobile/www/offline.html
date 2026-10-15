@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Uny — hors ligne</title>
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        padding: 24px; background: #f6f5fb; color: #15122e; text-align: center;
+        font-family: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+      }
+      .box { max-width: 340px; }
+      h1 { font-size: 22px; margin: 20px 0 8px; }
+      p { color: #6b6889; line-height: 1.5; margin: 0 0 24px; }
+      button {
+        width: 100%; height: 48px; border: 0; border-radius: 16px; background: #5733f0; color: #fff;
+        font-size: 16px; font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <svg width="72" height="72" viewBox="0 0 48 48" aria-hidden="true">
+        <rect width="48" height="48" rx="14" fill="#5733f0" />
+        <path d="M14 14v11a10 10 0 0 0 20 0V14" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round" />
+        <circle cx="36.5" cy="36.5" r="4.5" fill="#ffb23f" />
+      </svg>
+      <h1>Pas de connexion</h1>
+      <p>Uny a besoin d'internet pour charger tes avantages, jobs et logements. Vérifie ta connexion puis réessaie.</p>
+      <button type="button" id="retry">Réessayer</button>
+    </div>
+    <script>
+      document.getElementById("retry").addEventListener("click", function () {
+        fetch("app-url.json")
+          .then(function (r) { return r.json(); })
+          .then(function (c) { window.location.href = c.url + "/accueil"; })
+          .catch(function () { window.location.reload(); });
+      });
+    </script>
+  </body>
+</html>

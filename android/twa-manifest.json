@@ -1,0 +1,60 @@
+{
+  "packageId": "com.unyafrica.app",
+  "host": "www.unyafrica.com",
+  "name": "Uny — Le passeport étudiant",
+  "launcherName": "Uny",
+  "display": "standalone",
+  "themeColor": "#5733F0",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#F6F5FB",
+  "enableNotifications": true,
+  "startUrl": "/accueil?source=android",
+  "iconUrl": "https://www.unyafrica.com/icons/icon-512.png",
+  "maskableIconUrl": "https://www.unyafrica.com/icons/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./uny-upload.keystore",
+    "alias": "uny"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Ma carte",
+      "shortName": "Ma carte",
+      "url": "https://www.unyafrica.com/carte",
+      "chosenIconUrl": "https://www.unyafrica.com/icons/icon-192.png"
+    },
+    {
+      "name": "Avantages",
+      "shortName": "Avantages",
+      "url": "https://www.unyafrica.com/avantages",
+      "chosenIconUrl": "https://www.unyafrica.com/icons/icon-192.png"
+    }
+  ],
+  "generatorApp": "unknown",
+  "webManifestUrl": "https://www.unyafrica.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://www.unyafrica.com/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1.0.0"
+}
