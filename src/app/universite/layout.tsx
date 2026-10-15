@@ -4,6 +4,7 @@ import { LogOut } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { UniversityBottomNav, UniversitySidebar } from "@/components/university/university-nav";
 import { UniversitySwitcher } from "@/components/university/university-switcher";
+import { MobileLogout } from "@/components/layout/mobile-logout";
 import { createClient } from "@/lib/supabase/server";
 import { requireUniversity } from "@/lib/university";
 
@@ -64,6 +65,7 @@ export default async function UniversityLayout({ children }: { children: React.R
             <Link href="/universite/etablissement" className="text-muted ml-auto text-xs font-semibold lg:hidden">
               Fiche
             </Link>
+            <MobileLogout />
           </div>
         </header>
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-28 lg:pb-12">{children}</main>

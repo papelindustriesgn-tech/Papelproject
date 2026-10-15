@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ADMIN, login, logout, serviceRest, signUp } from "./helpers";
+import { ADMIN, adminAsPartnerMember, login, logout, serviceRest, signUp } from "./helpers";
 
 async function setVerified(unyId: string) {
   const res = await serviceRest(`profiles?uny_id=eq.${unyId}`, {
@@ -114,4 +114,15 @@ test("un étudiant n'accède pas à l'espace partenaire", async ({ page }) => {
   await signUp(page);
   await page.goto("/partenaire");
   await expect(page).toHaveURL(/accueil/);
+});
+
+test("partenaire sur mobile : bouton de déconnexion dans l'en-tête", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await adminAsPartnerMember();
+  await login(page, ADMIN.email, ADMIN.password);
+  await page.goto("/partenaire");
+  await page.getByRole("banner").getByRole("button", { name: "Se déconnecter" }).click();
+  await page.waitForURL(/connexion\?deconnecte=1/);
+  await page.goto("/partenaire");
+  await expect(page).toHaveURL(/connexion/);
 });

@@ -5,6 +5,7 @@ import { Logo } from "@/components/ui/logo";
 import { PartnerBottomNav, PartnerSidebar } from "@/components/partner/partner-nav";
 import { PartnerSwitcher } from "@/components/partner/partner-switcher";
 import { requirePartner } from "@/lib/partner";
+import { MobileLogout } from "@/components/layout/mobile-logout";
 
 export const metadata: Metadata = {
   title: { default: "Espace partenaire", template: "%s · Partenaire Uny" },
@@ -46,6 +47,7 @@ export default async function PartnerLayout({ children }: { children: React.Reac
                 Fiche masquée par Uny
               </span>
             )}
+            <MobileLogout />
           </div>
         </header>
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-28 lg:pb-12">{children}</main>

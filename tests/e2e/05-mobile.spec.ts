@@ -128,6 +128,8 @@ for (const vp of VIEWPORTS) {
       const nav = page.getByRole("navigation", { name: "Navigation partenaire" });
       for (const l of ["Accueil", "Offres", "Scanner", "Fidélité", "Fiche"])
         await expect(nav.getByRole("link", { name: l })).toBeVisible();
+      // La déconnexion est accessible sur mobile (en-tête)
+      await expect(page.getByRole("banner").getByRole("button", { name: "Se déconnecter" })).toBeVisible();
     }
     for (const url of UNIVERSITY_PAGES) {
       await page.goto(url);
