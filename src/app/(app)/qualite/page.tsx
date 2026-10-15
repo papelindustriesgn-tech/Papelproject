@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { EntreeAppli } from "@/components/coque/entree-appli";
+import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
 import Link from "next/link";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -34,14 +34,15 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
   return (
     <>
       <TitrePage titre="Qualité" sousTitre="Contrôles, non-conformités et traçabilité" />
-      <EntreeAppli espace="qualite" />
+      <UrgencesAppli espace="qualite" />
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicateur libelle="Conformité à réception" valeur={pct(tauxConformite(c.filter((x) => x.etape === "reception")))} detail={`${c.filter((x) => x.etape === "reception").length} contrôle(s) de bobines`} />
-        <Indicateur libelle="Conformité en production" valeur={pct(tauxConformite(c.filter((x) => x.etape !== "reception")))} detail={`${c.filter((x) => x.etape !== "reception").length} contrôle(s)`} />
-        <Indicateur libelle="Non-conformités ouvertes" valeur={nombre(ouvertes?.length ?? 0)} detail={`${critiques} critique(s) · ${ncPeriode?.length ?? 0} déclarée(s) sur la période`} ton={critiques > 0 ? "danger" : (ouvertes?.length ?? 0) > 0 ? "alerte" : "normal"} />
-        <Indicateur libelle="Délai moyen de clôture" valeur={delaiMoyenClotureJours(ncPeriode ?? []) === null ? "—" : `${nombre(delaiMoyenClotureJours(ncPeriode ?? []), 1)} j`} detail={`Réclamations clients : ${(ncPeriode ?? []).filter((n) => n.origine === "client").length}`} />
+        <Indicateur lien="/qualite/controles" libelle="Conformité à réception" valeur={pct(tauxConformite(c.filter((x) => x.etape === "reception")))} detail={`${c.filter((x) => x.etape === "reception").length} contrôle(s) de bobines`} />
+        <Indicateur lien="/qualite/controles" libelle="Conformité en production" valeur={pct(tauxConformite(c.filter((x) => x.etape !== "reception")))} detail={`${c.filter((x) => x.etape !== "reception").length} contrôle(s)`} />
+        <Indicateur lien="/qualite/non-conformites?statut=ouverte" libelle="Non-conformités ouvertes" valeur={nombre(ouvertes?.length ?? 0)} detail={`${critiques} critique(s) · ${ncPeriode?.length ?? 0} déclarée(s) sur la période`} ton={critiques > 0 ? "danger" : (ouvertes?.length ?? 0) > 0 ? "alerte" : "normal"} />
+        <Indicateur lien="/qualite/non-conformites" libelle="Délai moyen de clôture" valeur={delaiMoyenClotureJours(ncPeriode ?? []) === null ? "—" : `${nombre(delaiMoyenClotureJours(ncPeriode ?? []), 1)} j`} detail={`Réclamations clients : ${(ncPeriode ?? []).filter((n) => n.origine === "client").length}`} />
       </div>
+      <RaccourcisAppli espace="qualite" />
       <div className="flex flex-col gap-4">
         <Carte titre={`Non-conformités à traiter (${ouvertes?.length ?? 0})`}>
           <Tableau entetes={["Numéro", "Date", "Origine", "Gravité", "Description", "Statut"]}>

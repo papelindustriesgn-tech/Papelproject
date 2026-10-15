@@ -59,3 +59,8 @@ export async function exigerAdministrateur(): Promise<UtilisateurConnecte> {
   if (!u.roles.includes("admin")) redirect("/acces-refuse");
   return u;
 }
+
+/** Vrai si l'utilisateur connecté a le rôle Administrateur (pour afficher un message clair plutôt qu'une redirection). */
+export async function estAdministrateur(): Promise<boolean> {
+  return (await exigerConnexion()).roles.includes("admin");
+}

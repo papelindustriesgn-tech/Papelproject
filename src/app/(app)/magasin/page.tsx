@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { EntreeAppli } from "@/components/coque/entree-appli";
+import { lireSeuils } from "@/lib/parametres";
+import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
 import Link from "next/link";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
@@ -22,6 +23,7 @@ export default async function TableauDeBordMagasin() {
     supabase.from("alertes_stock").select("article_id, code, libelle, unite, quantite, seuil_alerte, jours_couverture, paquets_par_colis, niveau_alerte"),
     supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
   ]);
+  const { stock_jours_couverture_alerte: seuilCouverture } = await lireSeuils({ stock_jours_couverture_alerte: 15 });
   const lignes = etat ?? [];
   const mp = lignes.filter((l) => l.famille === "matiere_premiere");
   const kgMp = mp.filter((l) => l.unite === "kg").reduce((s, l) => s + Number(l.quantite), 0);
@@ -34,18 +36,20 @@ export default async function TableauDeBordMagasin() {
   return (
     <>
       <TitrePage titre="Stocks" sousTitre="Situation en temps réel — usine de Coyah" />
-      <EntreeAppli espace="magasin" />
+      <UrgencesAppli espace="magasin" />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicateur libelle="Matière première disponible" valeur={formaterPoids(kg(kgMp))} detail={`${nbBobines} bobine(s) en stock`} />
+        <Indicateur lien="/magasin/bobines" libelle="Matière première disponible" valeur={formaterPoids(kg(kgMp))} detail={`${nbBobines} bobine(s) en stock`} />
         <Indicateur
+          lien="/magasin/articles"
           libelle="Jours de couverture MP"
           valeur={couvertureMp === null ? "—" : `${nombre(couvertureMp, 1)} j`}
           detail={consoMpJour > 0 ? `Consommation moyenne : ${formaterPoids(kg(consoMpJour))}/jour` : "Pas de consommation récente"}
-          ton={couvertureMp !== null && couvertureMp < 15 ? "alerte" : "normal"}
+          ton={couvertureMp !== null && couvertureMp < seuilCouverture ? "alerte" : "normal"}
         />
-        <Indicateur libelle="Tonnes en transit" valeur={formaterPoids(kg(Number(transit?.kg_en_transit ?? 0)))} detail={`${transit?.nb_conteneurs ?? 0} conteneur(s) commandé(s), en mer ou au port`} />
-        <Indicateur libelle="Valeur du stock" valeur={gnf(valeurTotale)} detail="Au coût moyen pondéré" />
+        <Indicateur lien="/achats/conteneurs" libelle="Tonnes en transit" valeur={formaterPoids(kg(Number(transit?.kg_en_transit ?? 0)))} detail={`${transit?.nb_conteneurs ?? 0} conteneur(s) commandé(s), en mer ou au port`} />
+        <Indicateur lien="/magasin/articles" libelle="Valeur du stock" valeur={gnf(valeurTotale)} detail="Au coût moyen pondéré" />
       </div>
+      <RaccourcisAppli espace="magasin" />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Carte titre={`Alertes (${alertes?.length ?? 0})`}>

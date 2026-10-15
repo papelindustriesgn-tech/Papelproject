@@ -332,9 +332,14 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
 - **Couleur par service** : `APPARENCE_APPLI` (applications.tsx) ; `ThemeAppli` redéfinit la gamme `papel-*` selon l'application courante
   (toujours utiliser les classes `papel-*` pour la couleur d'accent). Les documents clients (`.imprimer-couleurs`) restent aux couleurs Papel.
 - **Pensé pour des débutants — « ne pas faire réfléchir »**, et **réglé dans l'interface par l'administrateur seul** (décision de la direction) : à l'entrée de chaque application,
-  `<EntreeAppli espace=… />` (`src/components/coque/entree-appli.tsx`) affiche la **phrase d'accueil** (`accueil_espaces`), **un seul
-  bouton principal** (1er bouton actif) + les autres en petit, le **parcours** numéroté et **« À faire aujourd'hui »** (`accueil_elements`,
-  genres `action` / `etape` / `tache`). Rien de tout cela n'est dans le code : l'administrateur le règle dans **`/admin/reglages/<espace>`**
+  ordre fixe des **vues d'ensemble** : `TitrePage` → **`<UrgencesAppli espace=… />`** (« À traiter maintenant », cartes cliquables, urgent
+  en rouge ; Direction : `ListeAlertes`) → période → **indicateurs** → **`<RaccourcisAppli espace=… />`** (phrase d'accueil `accueil_espaces`,
+  **un seul bouton principal** = 1er bouton actif, autres en petit, **parcours** numéroté) → graphiques et tableaux
+  (`src/components/coque/entree-appli.tsx`, données `accueil_elements`, genres `action` / `etape` / `tache`).
+- **Indicateurs (KPI)** : `Indicateur` (`src/components/ui/indicateur.tsx`) avec `lien` (tuile cliquable vers le détail), `variation`
+  (`ecartRelatif` / `ecartPoints`, `hausseBonne: false` quand une hausse est mauvaise : pertes, DSO, impayés), `tendance` (mini-courbe
+  interactive `Tendance`, format par code `formatTendance` : jamais de fonction passée à un composant client), `ton` écrit
+  (« À surveiller », « Critique »), jamais la couleur seule. Rien de tout cela n'est dans le code : l'administrateur le règle dans **`/admin/reglages/<espace>`**
   (`PageReglages`, Administration › Réglages des services ; `exigerAdministrateur()`). Le code ne fournit que le **catalogue** de ce qui peut se compter (`INDICATEURS`,
   `src/lib/navigation/indicateurs.ts` ↔ `CALCULS` dans entree-appli), les icônes et la liste des écrans (`catalogueEcrans`).
   Nouvel indicateur = une entrée dans `INDICATEURS` + son calcul dans `CALCULS`. Droits : `peut_regler_espace(espace)` = administrateur seulement (ni les services, ni la Direction).

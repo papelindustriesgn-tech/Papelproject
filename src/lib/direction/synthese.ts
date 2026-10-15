@@ -33,16 +33,18 @@ export interface SyntheseDirection {
   finance: SituationFinanciere;
   rendementParJour: Map<string, number | null>;
   /** Seuils d'alerte réglés par les services (paramètres). */
-  seuils: { rendementMin: number; tauxRupture: number; impayeJours: number; impayeCritiqueJours: number; livraisonJours: number };
+  seuils: { rendementMin: number; tauxPerteMax: number; couvertureJours: number; tauxRupture: number; impayeJours: number; impayeCritiqueJours: number; livraisonJours: number };
 }
 
 export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
   const [seuilsLus, production] = await Promise.all([
-    lireSeuils({ alerte_impaye_jours: 30, alerte_impaye_critique_jours: 60, alerte_taux_rupture: 0.15, alerte_livraison_jours: 2 }),
+    lireSeuils({ alerte_impaye_jours: 30, alerte_impaye_critique_jours: 60, alerte_taux_rupture: 0.15, alerte_livraison_jours: 2, stock_jours_couverture_alerte: 15 }),
     seuilsProduction(),
   ]);
   const seuils = {
     rendementMin: production.ratioRendementMin,
+    tauxPerteMax: production.tauxPerteMax,
+    couvertureJours: seuilsLus.stock_jours_couverture_alerte,
     tauxRupture: seuilsLus.alerte_taux_rupture,
     impayeJours: seuilsLus.alerte_impaye_jours,
     impayeCritiqueJours: seuilsLus.alerte_impaye_critique_jours,

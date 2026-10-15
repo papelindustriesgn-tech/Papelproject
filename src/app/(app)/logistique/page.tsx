@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { EntreeAppli } from "@/components/coque/entree-appli";
+import { lireSeuils } from "@/lib/parametres";
+import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
 import Link from "next/link";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -26,22 +27,24 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
     supabase.from("tournees_livraison_etat").select("*").or(`date_tournee.eq.${jour},statut.eq.en_cours`).neq("statut", "annulee").order("date_tournee"),
     supabase.from("livraisons").select("id", { count: "exact", head: true }).eq("statut", "validee").is("tournee_id", null).eq("statut_remise", "a_livrer"),
   ]);
+  const { alerte_livraisons_reussies_min: seuilReussite } = await lireSeuils({ alerte_livraisons_reussies_min: 0.95 });
   const reussite = tauxLivraisonReussie(b);
 
   return (
     <>
       <TitrePage titre="Logistique" sousTitre="Tournées de livraison depuis l'usine de Coyah" />
-      <EntreeAppli espace="logistique" />
+      <UrgencesAppli espace="logistique" />
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicateur libelle="Bons à planifier" valeur={nombre(aPlanifier ?? 0)} detail="Bons de livraison validés sans tournée" ton={(aPlanifier ?? 0) > 0 ? "alerte" : "normal"} />
-        <Indicateur libelle="Tournées" valeur={nombre(b.nbTournees)} detail={`${nombre(b.nbLivraisons)} bons de livraison`} />
-        <Indicateur libelle="Livraisons réussies" valeur={pct(reussite)} detail={`${b.nbPartielles} partielle(s) · ${b.nbRefusees} refus`} ton={reussite !== null && reussite < 0.95 ? "alerte" : "normal"} />
-        <Indicateur libelle="Colis livrés" valeur={nombre(b.colisLivres)} detail={`Retours : ${pct(tauxRetour(b))} des paquets chargés`} />
+        <Indicateur lien="/logistique/tournees/nouvelle" libelle="Bons à planifier" valeur={nombre(aPlanifier ?? 0)} detail="Bons de livraison validés sans tournée" ton={(aPlanifier ?? 0) > 0 ? "alerte" : "normal"} />
+        <Indicateur lien="/logistique/tournees" libelle="Tournées" valeur={nombre(b.nbTournees)} detail={`${nombre(b.nbLivraisons)} bons de livraison`} />
+        <Indicateur lien="/logistique/tournees" libelle="Livraisons réussies" valeur={pct(reussite)} detail={`${b.nbPartielles} partielle(s) · ${b.nbRefusees} refus`} ton={reussite !== null && reussite < seuilReussite ? "alerte" : "normal"} />
+        <Indicateur lien="/logistique/tournees" libelle="Colis livrés" valeur={nombre(b.colisLivres)} detail={`Retours : ${pct(tauxRetour(b))} des paquets chargés`} />
         <Indicateur libelle="Dépenses de tournée" valeur={gnf(b.depensesGnf)} />
         <Indicateur libelle="Coût par colis livré" valeur={coutParColis(b.depensesGnf, b.colisLivres) === null ? "—" : gnf(coutParColis(b.depensesGnf, b.colisLivres))} />
         <Indicateur libelle="Kilomètres" valeur={b.kmParcourus === null ? "—" : `${nombre(b.kmParcourus)} km`} detail={coutAuKm(b.depensesGnf, b.kmParcourus) === null ? undefined : `${gnf(coutAuKm(b.depensesGnf, b.kmParcourus))} / km`} />
       </div>
+      <RaccourcisAppli espace="logistique" />
       <Carte titre="Tournées du jour et en cours">
         {duJour && duJour.length > 0 ? (
           <Tableau entetes={["Tournée", "Véhicule", "Chauffeur", "Bons", "Colis", "Statut"]}>

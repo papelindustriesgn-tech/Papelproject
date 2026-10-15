@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { EntreeAppli } from "@/components/coque/entree-appli";
+import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
 import Link from "next/link";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { GraphiqueArrets, GraphiqueProduction, GraphiqueRendement } from "@/components/graphiques/production";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
-import { Indicateur } from "@/components/ui/indicateur";
+import { ecartPoints, ecartRelatif, Indicateur, jourCourt } from "@/components/ui/indicateur";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
 import { joursDeLaPeriode, resoudrePeriode } from "@/lib/formulaires/periode";
 import { formaterPoids, kg, paquetsVersColis, type Paquets } from "@/lib/metier/unites";
@@ -14,18 +14,6 @@ import { agreger, chargerFiches, regrouper, rendementReelParProduit, seuilsProdu
 import { nombre } from "@/lib/stocks/libelles";
 
 export const metadata: Metadata = { title: "Production" };
-
-/** Variation par rapport à la période précédente, ex. « +4,2 pts » ou « −3 % ». */
-function variation(actuel: number | null, precedent: number | null, mode: "points" | "relatif"): string | undefined {
-  if (actuel === null || precedent === null) return undefined;
-  if (mode === "points") {
-    const d = (actuel - precedent) * 100;
-    return `${d >= 0 ? "+" : "−"}${nombre(Math.abs(d), 1)} pt vs période précédente`;
-  }
-  if (precedent === 0) return undefined;
-  const d = ((actuel - precedent) / precedent) * 100;
-  return `${d >= 0 ? "+" : "−"}${nombre(Math.abs(d), 1)} % vs période précédente`;
-}
 
 export default async function TableauDeBordProduction({ searchParams }: PageProps<"/production">) {
   const sp = await searchParams;
@@ -85,30 +73,61 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
   return (
     <>
       <TitrePage titre="Production" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)} · ${fiches.length} fiche(s) validée(s)`} />
-      <EntreeAppli espace="production" />
+      <UrgencesAppli espace="production" />
       <SelecteurPeriode periode={periode} />
 
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <Indicateur libelle="Papier consommé" valeur={formaterPoids(kg(ind.tonnesConsommees * 1000))} detail={variation(ind.tonnesConsommees, indPrec.tonnesConsommees, "relatif")} />
+        <Indicateur
+          libelle="Papier consommé"
+          valeur={formaterPoids(kg(ind.tonnesConsommees * 1000))}
+          variation={{ ecart: ecartRelatif(ind.tonnesConsommees, indPrec.tonnesConsommees) }}
+          tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.has(d) ? parJour.get(d)!.indicateurs.tonnesConsommees * 1000 : 0 }))}
+          formatTendance="kg"
+          lien="/production/fiches"
+        />
         <Indicateur
           libelle="Production"
           valeur={`${nombre(ind.paquetsBons)} paquets`}
+          variation={{ ecart: ecartRelatif(ind.paquetsBons, indPrec.paquetsBons) }}
+          tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.get(d)?.indicateurs.paquetsBons ?? 0 }))}
           detail={produits.map((p) => `${p} : ${nombre(parProduit.get(p)!.colis)} colis`).join(" · ") || "—"}
+          lien="/production/fiches"
         />
         <Indicateur
           libelle="Rendement réel / théorique"
           valeur={pct(ind.ratioRendement)}
-          detail={variation(ind.ratioRendement, indPrec.ratioRendement, "points")}
+          variation={{ ecart: ecartPoints(ind.ratioRendement, indPrec.ratioRendement), unite: "points" }}
+          tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.get(d)?.indicateurs.ratioRendement ?? null }))}
+          formatTendance="pct"
+          detail={`Seuil d'alerte : ${pct(seuils.ratioRendementMin, 0)}`}
           ton={ind.ratioRendement !== null && ind.ratioRendement < seuils.ratioRendementMin ? "danger" : "normal"}
+          lien="/production/fiches"
         />
-        <Indicateur libelle="Taux de perte" valeur={pct(ind.tauxPerte)} detail={variation(ind.tauxPerte, indPrec.tauxPerte, "points")} ton={ind.tauxPerte !== null && ind.tauxPerte > seuils.tauxPerteMax ? "danger" : "normal"} />
-        <Indicateur libelle="Arrêts non planifiés" valeur={minutes(ind.minutesArretNonPlanifie)} detail={`Disponibilité : ${pct(ind.disponibilite)}`} />
+        <Indicateur
+          libelle="Taux de perte"
+          valeur={pct(ind.tauxPerte)}
+          variation={{ ecart: ecartPoints(ind.tauxPerte, indPrec.tauxPerte), unite: "points", hausseBonne: false }}
+          tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.get(d)?.indicateurs.tauxPerte ?? null }))}
+          formatTendance="pct"
+          detail={`Seuil d'alerte : ${pct(seuils.tauxPerteMax, 0)}`}
+          ton={ind.tauxPerte !== null && ind.tauxPerte > seuils.tauxPerteMax ? "danger" : "normal"}
+          lien="/production/fiches"
+        />
+        <Indicateur
+          libelle="Arrêts non planifiés"
+          valeur={minutes(ind.minutesArretNonPlanifie)}
+          variation={{ ecart: ecartRelatif(ind.minutesArretNonPlanifie, indPrec.minutesArretNonPlanifie), hausseBonne: false }}
+          detail={`Disponibilité : ${pct(ind.disponibilite)}`}
+          lien="/production/pannes"
+        />
         <Indicateur
           libelle="TRS (OEE)"
           valeur={pct(ind.trs)}
+          variation={{ ecart: ecartPoints(ind.trs, indPrec.trs), unite: "points" }}
           detail={ind.trs === null ? "Renseignez les cadences nominales" : `Perf. ${pct(ind.performance, 0)} · Qualité ${pct(ind.qualite, 0)}`}
         />
       </div>
+      <RaccourcisAppli espace="production" />
 
       <Carte titre="Rendement réel par produit" className="mb-4">
         <Tableau entetes={["Produit", "Rendement réel", "Théorique", "Réel / théorique"]}>

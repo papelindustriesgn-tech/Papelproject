@@ -14,6 +14,8 @@ export interface EntreeMenu {
   href?: string;
   /** …ou groupe déroulant. */
   enfants?: LienMenu[];
+  /** Visible seulement pour l'administrateur (ex. réglages des services). */
+  adminSeulement?: boolean;
 }
 
 export const MENUS: Record<string, EntreeMenu[]> = {
@@ -152,7 +154,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   ],
   admin: [
     { libelle: "Utilisateurs", href: "/admin/utilisateurs" },
-    { libelle: "Réglages des services", href: "/admin/reglages" },
+    { libelle: "Réglages des services", href: "/admin/reglages", adminSeulement: true },
     { libelle: "Paramètres", href: "/admin/parametres" },
     { libelle: "Produits et prix", href: "/admin/produits" },
     { libelle: "Taux de change", href: "/admin/taux-change" },

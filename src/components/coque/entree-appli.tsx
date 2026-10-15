@@ -29,6 +29,7 @@ import {
   Wrench,
 } from "lucide-react";
 import Link from "next/link";
+import { cache } from "react";
 import { aujourdhui } from "@/lib/formulaires/dates";
 import { lireSeuils } from "@/lib/parametres";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -107,12 +108,8 @@ const CALCULS: Record<string, (s: Client, jour: string) => Promise<number>> = {
   factures_fournisseurs_a_payer: async (s) => n(await s.from("factures_fournisseurs_etat").select("id", compter).gt("solde_gnf", 0)),
 };
 
-/**
- * Entrée d'une application, pensée pour ne pas faire réfléchir — et réglée par le service lui-même
- * (réservé à l'administrateur : Administration › Réglages des services) : phrase d'accueil, UN bouton principal (le 1er), les autres en petit,
- * le parcours étape par étape, puis « À faire aujourd'hui » (seulement ce qui attend, urgent d'abord).
- */
-export async function EntreeAppli({ espace }: { espace: string }) {
+/** Chargement commun aux deux blocs d'entrée (une seule fois par page grâce à `cache`). */
+const chargerEntree = cache(async (espace: string) => {
   const s = await clientServeur();
   const [{ data: accueil }, { data: elements }, { data: peutRegler }] = await Promise.all([
     s.from("accueil_espaces").select("promesse").eq("espace", espace).maybeSingle(),
@@ -120,8 +117,6 @@ export async function EntreeAppli({ espace }: { espace: string }) {
     s.rpc("peut_regler_espace", { p_espace: espace }),
   ]);
   const liste = elements ?? [];
-  const actions = liste.filter((e) => e.genre === "action");
-  const etapes = liste.filter((e) => e.genre === "etape");
   const jour = aujourdhui();
   const taches = (
     await Promise.all(
@@ -132,15 +127,81 @@ export async function EntreeAppli({ espace }: { espace: string }) {
   )
     .filter((t) => t.nombre >= t.seuil)
     .sort((a, b) => Number(b.urgent) - Number(a.urgent));
-  const [principale, ...autres] = actions;
-  const IconePrincipale = principale ? (ICONES[principale.icone] ?? FileText) : FileText;
-  const aDesTaches = liste.some((e) => e.genre === "tache");
+  return {
+    promesse: accueil?.promesse ?? "",
+    actions: liste.filter((e) => e.genre === "action"),
+    etapes: liste.filter((e) => e.genre === "etape"),
+    taches,
+    aDesTaches: liste.some((e) => e.genre === "tache"),
+    peutRegler: peutRegler === true,
+  };
+});
 
+/**
+ * Haut de la vue d'ensemble : « À traiter maintenant » — seulement ce qui attend, l'urgent d'abord, chaque carte
+ * ouvre l'écran où le traiter. Contenu réglé par l'administrateur (Administration › Réglages des services).
+ */
+export async function UrgencesAppli({ espace }: { espace: string }) {
+  const { taches, aDesTaches, peutRegler } = await chargerEntree(espace);
+  if (!aDesTaches && !peutRegler) return null;
   return (
-    <div className="mb-4 flex flex-col gap-3 print:hidden">
-      {accueil?.promesse && <p className="text-[1.05rem] text-gray-700">{accueil.promesse}</p>}
+    <section aria-label="À traiter maintenant" className="mb-4 print:hidden">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">À traiter maintenant</h2>
+        {peutRegler && (
+          <Link href={`/admin/reglages/${espace}`} className="flex min-h-9 items-center gap-1 rounded px-2 text-sm font-semibold text-papel-700 hover:bg-papel-50">
+            <Settings size={16} /> Régler cette page
+          </Link>
+        )}
+      </div>
+      {taches.length ? (
+        <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {taches.map((t) => (
+            <li key={t.id}>
+              <Link
+                href={t.ecran}
+                className={`flex h-full min-h-16 items-center gap-3 rounded-xl border px-3 py-2 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${t.urgent ? "border-red-200 bg-red-50 hover:border-red-400" : "border-gray-200 bg-white hover:border-papel-400"}`}
+              >
+                <span className={`flex h-11 min-w-11 shrink-0 items-center justify-center rounded-full px-2 text-lg font-bold ${t.urgent ? "bg-red-600 text-white" : "bg-papel-100 text-papel-800"}`}>{t.nombre}</span>
+                <span className="min-w-0 flex-1">
+                  {t.urgent && (
+                    <span className="mb-0.5 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-red-700">
+                      <AlertTriangle size={12} aria-hidden /> Urgent
+                    </span>
+                  )}
+                  <span className="block font-semibold leading-snug text-gray-900">{t.libelle}</span>
+                </span>
+                <ChevronRight size={20} className="shrink-0 text-gray-400" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 font-semibold text-green-800">
+          <CheckCircle2 size={20} /> {aDesTaches ? "Rien en attente : tout est à jour." : "Aucune ligne « À traiter » choisie : réglez cette page."}
+        </p>
+      )}
+    </section>
+  );
+}
+
+/**
+ * Bas de la vue d'ensemble, pour ne pas faire réfléchir : phrase d'accueil, UN bouton principal (le 1er),
+ * les autres en petit, et le parcours étape par étape. Réglé par l'administrateur.
+ */
+export async function RaccourcisAppli({ espace }: { espace: string }) {
+  const { promesse, actions, etapes } = await chargerEntree(espace);
+  const [principale, ...autres] = actions;
+  if (!principale && !etapes.length && !promesse) return null;
+  const IconePrincipale = principale ? (ICONES[principale.icone] ?? FileText) : FileText;
+  return (
+    <section aria-label="Que voulez-vous faire ?" className="mb-4 flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm print:hidden md:p-4">
+      <div>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Que voulez-vous faire ?</h2>
+        {promesse && <p className="mt-0.5 text-gray-700">{promesse}</p>}
+      </div>
       {principale && (
-        <section aria-label="Que voulez-vous faire ?" className="flex flex-col gap-2 md:flex-row md:items-stretch">
+        <div className="flex flex-col gap-2 md:flex-row md:items-stretch">
           <Link
             href={principale.ecran}
             className="flex min-h-16 items-center gap-3 rounded-xl bg-papel-700 px-4 py-3 text-white shadow-sm transition hover:bg-papel-800 active:scale-[0.99] md:min-w-80"
@@ -175,7 +236,7 @@ export async function EntreeAppli({ espace }: { espace: string }) {
               })}
             </ul>
           )}
-        </section>
+        </div>
       )}
       {etapes.length > 0 && (
         <nav aria-label="Comment ça marche" className="-mx-3 overflow-x-auto px-3 md:mx-0 md:px-0">
@@ -193,35 +254,6 @@ export async function EntreeAppli({ espace }: { espace: string }) {
           </ol>
         </nav>
       )}
-      {(aDesTaches || peutRegler) && (
-        <section aria-label="À faire aujourd'hui" className="rounded-xl border border-gray-200 bg-white">
-          <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-4 py-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">À faire aujourd&apos;hui</h2>
-            {peutRegler && (
-              <Link href={`/admin/reglages/${espace}`} className="flex min-h-9 items-center gap-1 rounded px-2 text-sm font-semibold text-papel-700 hover:bg-papel-50">
-                <Settings size={16} /> Régler cette page
-              </Link>
-            )}
-          </div>
-          {taches.length ? (
-            <ul className="divide-y divide-gray-100">
-              {taches.map((t) => (
-                <li key={t.id}>
-                  <Link href={t.ecran} className="flex min-h-14 items-center gap-3 px-4 py-2 hover:bg-gray-50 active:bg-gray-100">
-                    <span className={`flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full px-2 font-bold ${t.urgent ? "bg-red-100 text-red-800" : "bg-papel-100 text-papel-800"}`}>{t.nombre}</span>
-                    <span className="min-w-0 flex-1 font-semibold text-gray-900">{t.libelle}</span>
-                    <ChevronRight size={20} className="shrink-0 text-gray-400" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="flex items-center gap-2 px-4 py-3 font-semibold text-green-800">
-              <CheckCircle2 size={20} /> {aDesTaches ? "Rien en attente : tout est à jour." : "Aucune ligne « À faire » choisie : réglez cette page."}
-            </p>
-          )}
-        </section>
-      )}
-    </div>
+    </section>
   );
 }

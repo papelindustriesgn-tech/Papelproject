@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { EntreeAppli } from "@/components/coque/entree-appli";
+import { RaccourcisAppli } from "@/components/coque/entree-appli";
 import { CarteDynamique } from "@/components/carte/carte-dynamique";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -28,12 +28,12 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
         sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)} · comparaison avec la période précédente de même durée`}
         action={<BoutonImprimer />}
       />
-      <EntreeAppli espace="direction" />
+      <ListeAlertes alertes={s.alertes} />
       <div className="print:hidden">
         <SelecteurPeriode periode={periode} />
       </div>
-      <ListeAlertes alertes={s.alertes} />
-      <BlocsIndicateurs s={s} />
+      <BlocsIndicateurs s={s} jours={jours} />
+      <RaccourcisAppli espace="direction" />
       <div className="mb-5 grid gap-4 lg:grid-cols-2">
         <Carte titre="Chiffre d'affaires HT par jour" className="break-inside-avoid">
           <GraphiqueBarresJour donnees={jours.map((d) => ({ date: d, valeur: s.ventes.caParJour.get(d) ?? 0 }))} unite="GNF" />

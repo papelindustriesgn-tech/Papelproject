@@ -23,14 +23,14 @@ export function BarreNavigation({
   deconnexion,
 }: {
   applis: AppliNav[];
-  utilisateur: { nomComplet: string; initiales: string; roles: string };
+  utilisateur: { nomComplet: string; initiales: string; roles: string; estAdmin: boolean };
   deconnexion: (fd: FormData) => Promise<void>;
 }) {
   const chemin = usePathname();
   const recherche = useSearchParams().toString();
   const code = chemin.split("/")[1] ?? "";
   const appli = applis.find((a) => a.code === code);
-  const menu = MENUS[code] ?? [];
+  const menu = (MENUS[code] ?? []).filter((e) => !e.adminSeulement || utilisateur.estAdmin);
   const [ouvert, setOuvert] = useState<string | null>(null);
   const [panneau, setPanneau] = useState(false);
   const racine = useRef<HTMLElement>(null);

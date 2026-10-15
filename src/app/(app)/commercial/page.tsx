@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { lireSeuils } from "@/lib/parametres";
-import { EntreeAppli } from "@/components/coque/entree-appli";
+import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { CarteDynamique } from "@/components/carte/carte-dynamique";
@@ -42,14 +42,15 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
   return (
     <>
       <TitrePage titre="Équipe commerciale" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}`} />
-      <EntreeAppli espace="commercial" />
+      <UrgencesAppli espace="commercial" />
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicateur libelle="Visites" valeur={nombre(ind.visites)} detail={`${nombre(ind.visitesParJour, 1)} par jour · ${ind.horsZone} hors zone`} ton={ind.visites && ind.horsZone / ind.visites > seuils.alerte_taux_hors_zone ? "alerte" : "normal"} />
-        <Indicateur libelle="Taux de rupture" valeur={pct(ind.tauxRupture)} detail={`${ind.ruptures} visite(s) avec rupture`} ton={(ind.tauxRupture ?? 0) > seuils.alerte_taux_rupture ? "alerte" : "normal"} />
-        <Indicateur libelle="Points de vente" valeur={nombre(ind.pvaActifs)} detail={`${ind.nouveauxPva} nouveau(x) sur la période`} />
-        <Indicateur libelle="Couverture géographique" valeur={`${ind.quartiersCouverts} / ${ind.quartiersTotal} quartiers`} detail={`${ind.communesCouvertes} commune(s) couverte(s)`} />
+        <Indicateur lien="/commercial/visites" libelle="Visites" valeur={nombre(ind.visites)} detail={`${nombre(ind.visitesParJour, 1)} par jour · ${ind.horsZone} hors zone`} ton={ind.visites && ind.horsZone / ind.visites > seuils.alerte_taux_hors_zone ? "alerte" : "normal"} />
+        <Indicateur lien="/commercial/visites" libelle="Taux de rupture" valeur={pct(ind.tauxRupture)} detail={`${ind.ruptures} visite(s) avec rupture`} ton={(ind.tauxRupture ?? 0) > seuils.alerte_taux_rupture ? "alerte" : "normal"} />
+        <Indicateur lien="/commercial/portefeuilles" libelle="Points de vente" valeur={nombre(ind.pvaActifs)} detail={`${ind.nouveauxPva} nouveau(x) sur la période`} />
+        <Indicateur lien="/commercial/portefeuilles" libelle="Couverture géographique" valeur={`${ind.quartiersCouverts} / ${ind.quartiersTotal} quartiers`} detail={`${ind.communesCouvertes} commune(s) couverte(s)`} />
       </div>
+      <RaccourcisAppli espace="commercial" />
       <CarteUi titre="Carte des points de vente" className="mb-4">
         <CarteDynamique points={points} hauteur={420} />
         <ul className="mt-2 flex flex-wrap gap-3 text-sm" aria-label="Légende">

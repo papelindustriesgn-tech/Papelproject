@@ -2,16 +2,28 @@ import { Settings } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { IconeAppli } from "@/components/coque/applications";
-import { TitrePage } from "@/components/ui";
-import { exigerAdministrateur } from "@/lib/auth/session";
+import { Message, TitrePage } from "@/components/ui";
+import { estAdministrateur } from "@/lib/auth/session";
 import { ESPACES_REGLABLES } from "@/lib/navigation/indicateurs";
 import { ESPACES } from "@/lib/auth/espaces";
 
 export const metadata: Metadata = { title: "Réglages des services" };
 
+function ReserveAdministrateur() {
+  return (
+    <>
+      <TitrePage titre="Réglages des services" />
+      <Message ton="info">
+        Les réglages des services sont réservés au compte <strong>Administrateur</strong>. Connectez-vous avec ce compte (ou demandez qu&apos;on lui ajoute le rôle
+        Administrateur) pour régler les applications.
+      </Message>
+    </>
+  );
+}
+
 /** Choix du service à régler (réservé à l'administrateur). */
 export default async function PageReglagesServices() {
-  await exigerAdministrateur();
+  if (!(await estAdministrateur())) return <ReserveAdministrateur />;
   const services = ESPACES.filter((e) => ESPACES_REGLABLES.includes(e.code));
   return (
     <>

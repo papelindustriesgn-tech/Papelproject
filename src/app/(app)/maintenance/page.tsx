@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { EntreeAppli } from "@/components/coque/entree-appli";
+import { lireSeuils } from "@/lib/parametres";
+import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
 import Link from "next/link";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -25,22 +26,24 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
     supabase.from("echeances_preventif").select("id, libelle, equipement_code, prochaine_echeance, jours_restants").lt("jours_restants", 0).order("prochaine_echeance"),
     supabase.from("pieces_critiques_alerte").select("*"),
   ]);
+  const { alerte_disponibilite_min: seuilDisponibilite } = await lireSeuils({ alerte_disponibilite_min: 0.95 });
   const g = ind.global;
   return (
     <>
       <TitrePage titre="Maintenance" sousTitre="Fiabilité du parc, ordres de travail et pièces de rechange" />
-      <EntreeAppli espace="maintenance" />
+      <UrgencesAppli espace="maintenance" />
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicateur libelle="Pannes (arrêt machine)" valeur={nombre(g.nbPannes)} detail={`${minutes(g.heuresArret * 60)} d'arrêt au total`} />
-        <Indicateur libelle="Disponibilité" valeur={pct(g.disponibilite)} detail={`Sur ${nombre(g.heuresRequises)} h requises`} ton={g.disponibilite !== null && g.disponibilite < 0.95 ? "alerte" : "normal"} />
+        <Indicateur lien="/maintenance/interventions" libelle="Pannes (arrêt machine)" valeur={nombre(g.nbPannes)} detail={`${minutes(g.heuresArret * 60)} d'arrêt au total`} />
+        <Indicateur lien="/maintenance/equipements" libelle="Disponibilité" valeur={pct(g.disponibilite)} detail={`Sur ${nombre(g.heuresRequises)} h requises`} ton={g.disponibilite !== null && g.disponibilite < seuilDisponibilite ? "alerte" : "normal"} />
         <Indicateur libelle="MTBF" valeur={g.mtbfHeures === null ? "—" : `${nombre(g.mtbfHeures, 0)} h`} detail="Temps moyen entre deux pannes" />
         <Indicateur libelle="MTTR" valeur={g.mttrMinutes === null ? "—" : minutes(g.mttrMinutes)} detail="Temps moyen de réparation" />
-        <Indicateur libelle="Coût de maintenance" valeur={gnf(ind.coutTotalGnf)} detail="Main-d'œuvre, prestataires, pièces" />
-        <Indicateur libelle="Part du préventif" valeur={pct(ind.partPreventif)} detail={`${ind.nbInterventions} intervention(s) terminée(s)`} />
-        <Indicateur libelle="Préventifs en retard" valeur={nombre(retards?.length ?? 0)} ton={(retards?.length ?? 0) > 0 ? "alerte" : "normal"} />
-        <Indicateur libelle="Pièces critiques en alerte" valeur={nombre(pieces?.length ?? 0)} ton={(pieces?.length ?? 0) > 0 ? "danger" : "normal"} />
+        <Indicateur lien="/maintenance/interventions" libelle="Coût de maintenance" valeur={gnf(ind.coutTotalGnf)} detail="Main-d'œuvre, prestataires, pièces" />
+        <Indicateur lien="/maintenance/preventif" libelle="Part du préventif" valeur={pct(ind.partPreventif)} detail={`${ind.nbInterventions} intervention(s) terminée(s)`} />
+        <Indicateur lien="/maintenance/preventif" libelle="Préventifs en retard" valeur={nombre(retards?.length ?? 0)} ton={(retards?.length ?? 0) > 0 ? "alerte" : "normal"} />
+        <Indicateur lien="/maintenance/equipements" libelle="Pièces critiques en alerte" valeur={nombre(pieces?.length ?? 0)} ton={(pieces?.length ?? 0) > 0 ? "danger" : "normal"} />
       </div>
+      <RaccourcisAppli espace="maintenance" />
       <div className="flex flex-col gap-4">
         <Carte titre={`Ordres de travail ouverts (${ouverts?.length ?? 0})`}>
           <Tableau entetes={["OT", "Équipement", "Description", "Priorité", "Signalé", "Statut"]}>

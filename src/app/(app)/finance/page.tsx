@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { EntreeAppli } from "@/components/coque/entree-appli";
+import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
 import Link from "next/link";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -27,11 +27,11 @@ export default async function TableauDeBordFinance({ searchParams }: PageProps<"
   return (
     <>
       <TitrePage titre="Finance" sousTitre="Trésorerie, créances, dettes et résultat de gestion" />
-      <EntreeAppli espace="finance" />
+      <UrgencesAppli espace="finance" />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicateur libelle="Trésorerie disponible" valeur={gnf(s.tresorerieGnf)} detail="Tous comptes (USD au taux du jour)" ton={s.tresorerieGnf < 0 ? "danger" : "normal"} />
-        <Indicateur libelle="Créances clients" valeur={gnf(s.creancesGnf)} detail={`dont échu : ${gnf(s.creancesEchuesGnf)}`} ton={s.creancesEchuesGnf > 0 ? "alerte" : "normal"} />
-        <Indicateur libelle="Dettes fournisseurs" valeur={gnf(s.dettesGnf)} detail={`dont échu : ${gnf(s.dettesEchuesGnf)}`} ton={s.dettesEchuesGnf > 0 ? "alerte" : "normal"} />
+        <Indicateur lien="/finance/tresorerie" libelle="Trésorerie disponible" valeur={gnf(s.tresorerieGnf)} detail="Tous comptes (USD au taux du jour)" ton={s.tresorerieGnf < 0 ? "danger" : "normal"} />
+        <Indicateur lien="/ventes/impayes" libelle="Créances clients" valeur={gnf(s.creancesGnf)} detail={`dont échu : ${gnf(s.creancesEchuesGnf)}`} ton={s.creancesEchuesGnf > 0 ? "alerte" : "normal"} />
+        <Indicateur lien="/finance/fournisseurs" libelle="Dettes fournisseurs" valeur={gnf(s.dettesGnf)} detail={`dont échu : ${gnf(s.dettesEchuesGnf)}`} ton={s.dettesEchuesGnf > 0 ? "alerte" : "normal"} />
         <Indicateur libelle="BFR" valeur={gnf(bfrGnf(s.stocksGnf, s.creancesGnf, s.dettesGnf))} detail={`Stocks ${gnf(s.stocksGnf)} + créances − dettes`} />
         <Indicateur
           libelle="Trésorerie dans 13 semaines"
@@ -42,11 +42,12 @@ export default async function TableauDeBordFinance({ searchParams }: PageProps<"
       </div>
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicateur libelle="Chiffre d'affaires HT" valeur={gnf(r.caHtGnf)} />
-        <Indicateur libelle="Marge brute" valeur={gnf(r.margeBruteGnf)} detail={r.caHtGnf ? `${pct(r.margeBruteGnf / r.caHtGnf)} du CA` : undefined} />
-        <Indicateur libelle="Résultat d'exploitation" valeur={gnf(r.resultatGnf)} detail={`${pct(r.tauxResultat)} du CA`} ton={r.resultatGnf < 0 ? "danger" : "normal"} />
-        <Indicateur libelle="Seuil de rentabilité" valeur={seuil === null ? "—" : gnf(seuil)} detail={pm ? `Atteint au jour ${pm} de la période` : seuil === null ? "Marge sur coûts variables négative" : "Non atteint sur la période"} ton={pm ? "normal" : "alerte"} />
+        <Indicateur lien="/finance/resultat" libelle="Chiffre d'affaires HT" valeur={gnf(r.caHtGnf)} />
+        <Indicateur lien="/finance/resultat" libelle="Marge brute" valeur={gnf(r.margeBruteGnf)} detail={r.caHtGnf ? `${pct(r.margeBruteGnf / r.caHtGnf)} du CA` : undefined} />
+        <Indicateur lien="/finance/resultat" libelle="Résultat d'exploitation" valeur={gnf(r.resultatGnf)} detail={`${pct(r.tauxResultat)} du CA`} ton={r.resultatGnf < 0 ? "danger" : "normal"} />
+        <Indicateur lien="/finance/resultat" libelle="Seuil de rentabilité" valeur={seuil === null ? "—" : gnf(seuil)} detail={pm ? `Atteint au jour ${pm} de la période` : seuil === null ? "Marge sur coûts variables négative" : "Non atteint sur la période"} ton={pm ? "normal" : "alerte"} />
       </div>
+      <RaccourcisAppli espace="finance" />
       <Carte titre="Comptes de trésorerie" action={<Link href="/finance/tresorerie" className="font-semibold text-papel-700 underline">Journal</Link>}>
         <Tableau entetes={["Compte", "Solde", "En GNF"]}>
           {s.comptes.map((c) => (

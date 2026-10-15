@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { EntreeAppli } from "@/components/coque/entree-appli";
+import { lireSeuils } from "@/lib/parametres";
+import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
 import Link from "next/link";
 import { EtapesConteneur } from "@/components/achats/etapes";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
@@ -22,6 +23,7 @@ export default async function TableauDeBordAchats() {
     supabase.from("conteneurs").select("*, bons_commande(numero, fournisseurs(nom))").neq("statut", "livre").order("date_livraison_prevue"),
     supabase.from("demandes_achat").select("id", { count: "exact", head: true }).eq("statut", "soumise"),
   ]);
+  const { alerte_ecart_cout_achat: seuilEcart } = await lireSeuils({ alerte_ecart_cout_achat: 0.05 });
   const livres = (couts ?? []).filter((c) => c.statut === "livre");
   const kgLivres = livres.reduce((s, c) => s + Number(c.poids_net_prevu_kg), 0);
   const coutTotal = livres.reduce((s, c) => s + Number(c.marchandise_gnf) + Number(c.frais_gnf), 0);
@@ -32,13 +34,14 @@ export default async function TableauDeBordAchats() {
   return (
     <>
       <TitrePage titre="Achats et approvisionnement" />
-      <EntreeAppli espace="achats" />
+      <UrgencesAppli espace="achats" />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicateur libelle="En transit" valeur={formaterPoids(kg(Number(transit?.kg_en_transit ?? 0)))} detail={`${transit?.nb_conteneurs ?? 0} conteneur(s) non livré(s)`} />
-        <Indicateur libelle="Coût réel par tonne (livrés)" valeur={coutTonne === null ? "—" : gnf(coutTonne)} detail="Prix + fret + transit + douane + transport" />
-        <Indicateur libelle="Écart réel / prévu" valeur={pct(ecartPrix(coutTotal, prevuTotal))} ton={(ecartPrix(coutTotal, prevuTotal) ?? 0) > 0.05 ? "alerte" : "normal"} detail="Coût complet réel vs prix commandé + frais estimés" />
-        <Indicateur libelle="Délai moyen fournisseur" valeur={delais.length ? `${nombre(delais.reduce((s, d) => s + d, 0) / delais.length, 0)} jours` : "—"} detail="De la commande à la livraison à l'usine" />
+        <Indicateur lien="/achats/conteneurs" libelle="En transit" valeur={formaterPoids(kg(Number(transit?.kg_en_transit ?? 0)))} detail={`${transit?.nb_conteneurs ?? 0} conteneur(s) non livré(s)`} />
+        <Indicateur lien="/achats/conteneurs" libelle="Coût réel par tonne (livrés)" valeur={coutTonne === null ? "—" : gnf(coutTonne)} detail="Prix + fret + transit + douane + transport" />
+        <Indicateur lien="/achats/conteneurs" libelle="Écart réel / prévu" valeur={pct(ecartPrix(coutTotal, prevuTotal))} ton={(ecartPrix(coutTotal, prevuTotal) ?? 0) > seuilEcart ? "alerte" : "normal"} detail="Coût complet réel vs prix commandé + frais estimés" />
+        <Indicateur lien="/achats/commandes" libelle="Délai moyen fournisseur" valeur={delais.length ? `${nombre(delais.reduce((s, d) => s + d, 0) / delais.length, 0)} jours` : "—"} detail="De la commande à la livraison à l'usine" />
       </div>
+      <RaccourcisAppli espace="achats" />
       {(demandes ?? 0) > 0 && (
         <p className="mb-4">
           <Link href="/achats/demandes" className="font-semibold text-papel-700 underline">
@@ -79,7 +82,7 @@ export default async function TableauDeBordAchats() {
                   <Cellule>{gnf(c.frais_gnf)}</Cellule>
                   <Cellule className="font-semibold">{gnf(c.cout_kg_gnf)}</Cellule>
                   <Cellule>{gnf(c.cout_kg_prevu_gnf)}</Cellule>
-                  <Cellule>{ecart === null ? "—" : <Badge ton={ecart > 0.05 ? "erreur" : ecart > 0 ? "alerte" : "succes"}>{pct(ecart)}</Badge>}</Cellule>
+                  <Cellule>{ecart === null ? "—" : <Badge ton={ecart > seuilEcart ? "erreur" : ecart > 0 ? "alerte" : "succes"}>{pct(ecart)}</Badge>}</Cellule>
                 </tr>
               );
             })}

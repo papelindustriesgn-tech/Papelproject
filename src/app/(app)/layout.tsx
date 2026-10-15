@@ -19,7 +19,7 @@ export default async function CoqueApplication({ children }: LayoutProps<"/">) {
         <Suspense fallback={<div className="h-12 bg-papel-700 print:hidden" />}>
           <BarreNavigation
             applis={applis}
-            utilisateur={{ nomComplet, initiales, roles: u.roles.map((r) => LIBELLES_ROLES[r]).join(", ") || "Aucun rôle" }}
+            utilisateur={{ nomComplet, initiales, roles: u.roles.map((r) => LIBELLES_ROLES[r]).join(", ") || "Aucun rôle", estAdmin: u.roles.includes("admin") }}
             deconnexion={seDeconnecter}
           />
         </Suspense>
