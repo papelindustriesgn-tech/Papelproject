@@ -140,7 +140,9 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
   - TRS = disponibilité × performance × qualité (rebuts convertis en paquets via le poids d'un paquet) ; non calculé sans cadence.
   - Agrégation sur une période = concaténation des fiches (pas de moyenne de pourcentages).
 - Périodes d'analyse et période précédente de même durée : `src/lib/formulaires/periode.ts` (jour, **semaine du lundi** comparée
-  aux mêmes jours de la semaine précédente, mois, année ; 7 j, 30 j, trimestre et dates libres dans « Autres dates »).
+  aux mêmes jours de la semaine précédente, **mois choisi dans une liste déroulante** (`?periode=mois&mois=AAAA-MM`, `listeMois`,
+  composant `ChoixMois` ; un mois passé est complet, comparé aux mêmes jours du mois précédent), année ; 7 j, 30 j, trimestre et
+  dates libres dans « Autres dates »).
   Courbes des cartes héros : `serieRegroupee` (par jour ≤ 5 semaines, par semaine ≤ 3 mois, par mois au-delà ; quantités seulement).
 - Graphiques : Recharts, palette catégorielle validée (`src/components/graphiques/production.tsx`), ordre de couleur fixe.
 
@@ -309,6 +311,16 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
   (base ÷ `rh_jours_ouvrables_mois` × jours) ; CNSS = taux × min(brut, plafond) ; RTS = barème progressif sur (brut − CNSS salariale) ;
   net = brut − CNSS − RTS − avances. « Préparer la paie » calcule les bulletins depuis présences et absences (primes/avances gardées) ;
   `valider_paie` fige (trigger `bulletin_fige`). Bulletin imprimable avec montant en lettres ; export CSV de l'état de paie.
+
+## 6 terdecies. Objectifs du business plan
+
+- Table `objectifs_mensuels` (un mois = une ligne : papier kg, paquets, CA HT, coûts variables, charges fixes), modifiable par la
+  Direction, la Finance et l'administrateur (Direction → Configuration → Objectifs ; liste générique `objectifs`), lue par tous.
+- Valeurs de départ (`donnees-initiales.sql`) : M1 supposé = **novembre 2026** ; lancement 25 / 35 / 40 t, puis 100 t/mois (an 1),
+  120 (an 2), 150 (an 3) ; CA HT = CA TTC du business plan ÷ 1,18 ; charges fixes 80 M GNF/mois. La démo ajoute les 3 derniers mois.
+- Rapport à une période : `objectifPeriode` (`src/lib/metier/objectifs.ts`, testé) = part de chaque mois au prorata des jours.
+  Affichage `CarteObjectifs` (barres d'avancement, % et statut écrits) : Direction (CA, paquets, papier), Ventes (CA), Production
+  (paquets, papier). Objectifs globaux : avec un filtre gamme ou commercial, la carte invite à retirer le filtre.
 
 ## 7. Seuils d'alerte (paramétrables)
 

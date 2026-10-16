@@ -16,12 +16,14 @@ import { formaterPoids, kg, paquetsVersColis, type Paquets } from "@/lib/metier/
 import { libelleAlerte, minutes, pct } from "@/lib/production/affichage";
 import { agreger, chargerFiches, regrouper, rendementReelParProduit, seuilsProduction } from "@/lib/production/indicateurs";
 import { nombre } from "@/lib/stocks/libelles";
+import { CarteObjectifs } from "@/components/direction/objectifs";
+import { chargerObjectif } from "@/lib/objectifs/charger";
 
 export const metadata: Metadata = { title: "Production" };
 
 export default async function TableauDeBordProduction({ searchParams }: PageProps<"/production">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode"), aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
+  const periode = resoudrePeriode(lireParam(sp, "periode"), aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const filtres = lireFiltresAnalyse(sp);
   const [fiches, precedentes, seuils, options] = await Promise.all([
     chargerFiches({ du: periode.du, au: periode.au, produit: filtres.produit }),
@@ -29,6 +31,7 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
     seuilsProduction(),
     chargerOptionsFiltres(),
   ]);
+  const objectif = await chargerObjectif(periode.du, periode.au);
   const gamme = decrireFiltres({ ...filtres, commercial: null }, options);
   const ind = agreger(fiches);
   const indPrec = agreger(precedentes);
@@ -106,6 +109,18 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
           <GraphiqueAnneau donnees={produits.map((p) => ({ libelle: p, valeur: parProduit.get(p)!.paquets }))} format="nombre" libelleTotal="Paquets" />
         </Carte>
       </div>
+      <CarteObjectifs
+        objectif={objectif}
+        filtre={!!filtres.produit}
+        lignes={
+          objectif
+            ? [
+                { libelle: "Paquets produits", reel: ind.paquetsBons, objectif: objectif.paquets, format: (v) => `${nombre(v)} paquets` },
+                { libelle: "Papier transformé", reel: ind.tonnesConsommees * 1000, objectif: objectif.productionKg, format: (v) => formaterPoids(kg(v)) },
+              ]
+            : []
+        }
+      />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur
           libelle="Papier consommé"

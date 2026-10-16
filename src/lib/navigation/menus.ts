@@ -22,6 +22,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   direction: [
     { libelle: "Tableau de bord", href: "/direction" },
     { libelle: "Rapport hebdomadaire", href: "/direction/rapport" },
+    { libelle: "Configuration", enfants: [{ href: "/direction/listes/objectifs", libelle: "Objectifs du business plan" }] },
   ],
   magasin: [
     { libelle: "Vue d'ensemble", href: "/magasin" },
@@ -150,7 +151,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
         { href: "/finance/excel", libelle: "Connexion Excel" },
       ],
     },
-    { libelle: "Configuration", enfants: [{ href: "/finance/listes", libelle: "Comptes, catégories, charges fixes" }] },
+    { libelle: "Configuration", enfants: [{ href: "/finance/listes", libelle: "Comptes, catégories, charges fixes, objectifs" }] },
   ],
   rh: [
     { libelle: "Vue d'ensemble", href: "/rh" },

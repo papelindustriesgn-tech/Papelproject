@@ -22,7 +22,7 @@ export default async function VueRh({ searchParams }: PageProps<"/rh">) {
   const sp = await searchParams;
   const jour = aujourdhui();
   // Absentéisme sur la période choisie (30 derniers jours par défaut), comparé à la précédente.
-  const periodeChoisie = resoudrePeriode(lireParam(sp, "periode"), jour, lireParam(sp, "du"), lireParam(sp, "au"));
+  const periodeChoisie = resoudrePeriode(lireParam(sp, "periode"), jour, lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const debut = periodeChoisie.du;
   const debutPrec = periodeChoisie.precedente.du;
   const supabase = await clientServeur();

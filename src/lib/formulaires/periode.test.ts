@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { joursDeLaPeriode, resoudrePeriode, serieRegroupee } from "./periode";
+import { joursDeLaPeriode, libelleMois, listeMois, resoudrePeriode, serieRegroupee } from "./periode";
 
 describe("périodes d'analyse", () => {
   const auj = "2026-10-02";
@@ -40,5 +40,23 @@ describe("périodes d'analyse", () => {
     const mois = serieRegroupee({ du: "2026-01-01", au: "2026-10-02" }, () => 1);
     expect(mois).toHaveLength(10);
     expect(mois[1]).toMatchObject({ date: "2026-02-01", valeur: 28, axe: "févr. 26", libelle: "Février 2026" });
+  });
+  it("mois choisi dans la liste : complet s'il est passé, comparé au mois précédent", () => {
+    expect(resoudrePeriode("mois", auj, undefined, undefined, "2026-09")).toMatchObject({ du: "2026-09-01", au: "2026-09-30", nbJours: 30, precedente: { du: "2026-08-01", au: "2026-08-30" } });
+    // Mois en cours : jusqu'à aujourd'hui, comparé aux mêmes jours du mois précédent.
+    expect(resoudrePeriode("mois", auj)).toMatchObject({ du: "2026-10-01", au: auj, precedente: { du: "2026-09-01", au: "2026-09-02" } });
+    // Mars (31 j) comparé à février : borné au 28.
+    expect(resoudrePeriode("mois", auj, undefined, undefined, "2026-03").precedente).toEqual({ du: "2026-02-01", au: "2026-02-28" });
+    // Mois futur ou mal formé : mois en cours.
+    expect(resoudrePeriode("mois", auj, undefined, undefined, "2027-01").du).toBe("2026-10-01");
+    expect(resoudrePeriode("mois", auj, undefined, undefined, "2026-13").du).toBe("2026-10-01");
+  });
+  it("liste des mois, du plus récent au plus ancien, changement d'année compris", () => {
+    expect(listeMois("2026-02-15", 3)).toEqual([
+      { valeur: "2026-02", libelle: "Févr. 2026" },
+      { valeur: "2026-01", libelle: "Janv. 2026" },
+      { valeur: "2025-12", libelle: "Déc. 2025" },
+    ]);
+    expect(libelleMois("2026-08")).toBe("Août 2026");
   });
 });

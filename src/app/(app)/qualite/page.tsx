@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: "Qualité" };
 export default async function TableauDeBordQualite({ searchParams }: PageProps<"/qualite">) {
   const sp = await searchParams;
   const jour = aujourdhui();
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "30j", jour, lireParam(sp, "du"), lireParam(sp, "au"));
+  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "30j", jour, lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const supabase = await clientServeur();
   const [{ data: controles }, { data: ncPeriode }, { data: ouvertes }, { data: actions }, { data: bloquees }] = await Promise.all([
     supabase.from("controles_qualite").select("etape, resultat").gte("date_controle", periode.du).lte("date_controle", periode.au).limit(5000),

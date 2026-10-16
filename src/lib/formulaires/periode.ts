@@ -34,8 +34,40 @@ const ajouterJours = (iso: string, n: number) => {
 const ecartJours = (du: string, au: string) => Math.round((versDate(au).getTime() - versDate(du).getTime()) / 86_400_000) + 1;
 const iso = /^\d{4}-\d{2}-\d{2}$/;
 
-/** Calcule la période demandée par rapport à « aujourd'hui » (passé en paramètre pour les tests). */
-export function resoudrePeriode(code: string | undefined, aujourdhui: string, du?: string, au?: string): Periode {
+const MOIS_COURTS = ["Janv.", "Févr.", "Mars", "Avr.", "Mai", "Juin", "Juil.", "Août", "Sept.", "Oct.", "Nov.", "Déc."];
+const MOIS_NOMS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+const moisValide = /^\d{4}-(0[1-9]|1[0-2])$/;
+/** Dernier jour d'un mois « AAAA-MM ». */
+const finDuMois = (m: string) => ajouterJours(`${ajouterMois(m, 1)}-01`, -1);
+/** Mois « AAAA-MM » décalé de n mois. */
+function ajouterMois(m: string, n: number): string {
+  const [a, mm] = m.split("-").map(Number);
+  const total = a * 12 + (mm - 1) + n;
+  return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, "0")}`;
+}
+
+/** Libellé d'un mois « AAAA-MM » : « Octobre 2026 ». */
+export function libelleMois(m: string): string {
+  return `${MOIS_NOMS[Number(m.slice(5, 7)) - 1]} ${m.slice(0, 4)}`;
+}
+
+/**
+ * Les `n` derniers mois jusqu'au mois en cours (le plus récent d'abord), pour la liste déroulante des mois.
+ * Libellés courts (« Sept. 2026 ») pour que la barre de période tienne sur un téléphone.
+ */
+export function listeMois(aujourdhui: string, n = 24): { valeur: string; libelle: string }[] {
+  const courant = aujourdhui.slice(0, 7);
+  return Array.from({ length: n }, (_, i) => {
+    const m = ajouterMois(courant, -i);
+    return { valeur: m, libelle: `${MOIS_COURTS[Number(m.slice(5, 7)) - 1]} ${m.slice(0, 4)}` };
+  });
+}
+
+/**
+ * Calcule la période demandée par rapport à « aujourd'hui » (passé en paramètre pour les tests).
+ * `mois` (« AAAA-MM », avec le code « mois ») choisit un mois dans la liste déroulante ; sans lui, le mois en cours.
+ */
+export function resoudrePeriode(code: string | undefined, aujourdhui: string, du?: string, au?: string, mois?: string): Periode {
   const c = (PERIODES.some((p) => p.code === code) ? code : "30j") as CodePeriode;
   let debut: string;
   let fin = aujourdhui;
@@ -53,9 +85,13 @@ export function resoudrePeriode(code: string | undefined, aujourdhui: string, du
     case "7j":
       debut = ajouterJours(aujourdhui, -6);
       break;
-    case "mois":
-      debut = `${a}-${String(m).padStart(2, "0")}-01`;
+    case "mois": {
+      // Mois choisi dans la liste (jamais dans le futur), sinon le mois en cours ; un mois passé est complet.
+      const choisi = mois && moisValide.test(mois) && mois <= aujourdhui.slice(0, 7) ? mois : aujourdhui.slice(0, 7);
+      debut = `${choisi}-01`;
+      fin = finDuMois(choisi) < aujourdhui ? finDuMois(choisi) : aujourdhui;
       break;
+    }
     case "trimestre":
       debut = `${a}-${String(Math.floor((m - 1) / 3) * 3 + 1).padStart(2, "0")}-01`;
       break;
@@ -73,8 +109,14 @@ export function resoudrePeriode(code: string | undefined, aujourdhui: string, du
   }
   const nbJours = ecartJours(debut, fin);
   // Semaine : on compare aux mêmes jours de la semaine précédente (lundi → même jour).
+  // Mois : on compare aux mêmes jours du mois précédent (1er → même quantième, borné à la fin de ce mois).
+  const moisPrecedent = ajouterMois(debut.slice(0, 7), -1);
   const precedente =
-    c === "semaine" ? { du: ajouterJours(debut, -7), au: ajouterJours(fin, -7) } : { du: ajouterJours(debut, -nbJours), au: ajouterJours(debut, -1) };
+    c === "semaine"
+      ? { du: ajouterJours(debut, -7), au: ajouterJours(fin, -7) }
+      : c === "mois"
+        ? { du: `${moisPrecedent}-01`, au: [ajouterJours(`${moisPrecedent}-01`, nbJours - 1), finDuMois(moisPrecedent)].sort()[0] }
+        : { du: ajouterJours(debut, -nbJours), au: ajouterJours(debut, -1) };
   return { code: c, du: debut, au: fin, nbJours, precedente };
 }
 

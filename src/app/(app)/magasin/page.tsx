@@ -24,7 +24,7 @@ const NIVEAUX_ALERTE: Record<string, { libelle: string; ton: "erreur" | "alerte"
 
 export default async function TableauDeBordMagasin({ searchParams }: PageProps<"/magasin">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode"), aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
+  const periode = resoudrePeriode(lireParam(sp, "periode"), aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const filtres = { ...lireFiltresAnalyse(sp), commercial: null };
   const supabase = await clientServeur();
   // Mouvements de produits finis de la période (entrées de production, livraisons, dotations, retours).

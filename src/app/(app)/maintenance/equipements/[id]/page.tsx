@@ -17,7 +17,7 @@ import { FormulaireAssocierPiece } from "./formulaire";
 export default async function PageEquipement({ params, searchParams }: PageProps<"/maintenance/equipements/[id]">) {
   const { id } = await params;
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "trimestre", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
+  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "trimestre", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const supabase = await clientServeur();
   const [{ data: e }, ind, { data: historique }, { data: pieces }, { data: plans }, { data: catalogue }] = await Promise.all([
     supabase.from("equipements").select("*, lignes_production(libelle)").eq("id", id).maybeSingle(),

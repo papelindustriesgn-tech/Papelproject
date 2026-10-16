@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: "Maintenance" };
 
 export default async function TableauDeBordMaintenance({ searchParams }: PageProps<"/maintenance">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "30j", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
+  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "30j", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const supabase = await clientServeur();
   const [ind, { data: ouverts }, { data: retards }, { data: pieces }] = await Promise.all([
     chargerIndicateursMaintenance(periode),

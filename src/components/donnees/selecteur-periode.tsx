@@ -1,11 +1,16 @@
 import { CalendarRange, X } from "lucide-react";
 import Link from "next/link";
 import { adresseFiltres, type FiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
-import { PERIODES, type Periode } from "@/lib/formulaires/periode";
+import { aujourdhui } from "@/lib/formulaires/dates";
+import { libelleMois, listeMois, PERIODES, type Periode } from "@/lib/formulaires/periode";
 import { ChoixFiltre } from "./choix-filtre";
+import { ChoixMois } from "./choix-mois";
 import type { OptionFiltre } from "./filtres";
 
-/** Les quatre périodes demandées par la direction, en pastilles ; les autres sont repliées dans « Autres dates ». */
+/**
+ * Les quatre périodes demandées par la direction : Jour, Semaine, Mois (liste déroulante des mois), Année ;
+ * les autres sont repliées dans « Autres dates ».
+ */
 const PRINCIPALES: Record<string, string> = { jour: "Jour", semaine: "Semaine", mois: "Mois", annee: "Année" };
 const AUTRES: Record<string, string> = { "7j": "7 derniers jours", "30j": "30 derniers jours", trimestre: "Ce trimestre" };
 
@@ -29,21 +34,25 @@ export function SelecteurPeriode({
   commerciaux?: OptionFiltre[];
 }) {
   const actuels = Object.fromEntries(Object.entries(params).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
-  const lienPeriode = (code: string) => adresseFiltres(actuels, { periode: code, du: null, au: null });
+  const lienPeriode = (code: string) => adresseFiltres(actuels, { periode: code, mois: null, du: null, au: null });
   const autreActive = periode.code === "perso" || periode.code in AUTRES;
   const pastille = (actif: boolean) =>
-    `flex min-h-10 shrink-0 items-center rounded-xl px-3.5 text-sm font-semibold transition ${actif ? "bg-papel-700 text-white shadow-sm" : "text-gray-600 hover:bg-gray-100"}`;
+    `flex min-h-10 shrink-0 items-center rounded-xl px-2.5 text-sm font-semibold transition sm:px-3.5 ${actif ? "bg-papel-700 text-white shadow-sm" : "text-gray-600 hover:bg-gray-100"}`;
   const filtreActif = !!(filtres?.produit || filtres?.commercial);
 
   return (
     <div className="mb-4 print:hidden">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="ombre-carte flex max-w-full gap-1 overflow-x-auto rounded-2xl bg-white p-1" role="group" aria-label="Période">
-          {Object.entries(PRINCIPALES).map(([code, libelle]) => (
-            <Link key={code} href={lienPeriode(code)} scroll={false} aria-current={periode.code === code ? "true" : undefined} className={pastille(periode.code === code)}>
-              {libelle}
-            </Link>
-          ))}
+        <div className="ombre-carte flex max-w-full flex-wrap gap-1 rounded-2xl bg-white p-1" role="group" aria-label="Période">
+          {Object.entries(PRINCIPALES).map(([code, libelle]) =>
+            code === "mois" ? (
+              <ChoixMois key={code} mois={listeMois(aujourdhui())} valeur={periode.code === "mois" ? periode.du.slice(0, 7) : null} />
+            ) : (
+              <Link key={code} href={lienPeriode(code)} scroll={false} aria-current={periode.code === code ? "true" : undefined} className={pastille(periode.code === code)}>
+                {libelle}
+              </Link>
+            ),
+          )}
         </div>
         <details className="relative" open={periode.code === "perso"}>
           <summary className={`ombre-carte flex min-h-12 cursor-pointer list-none items-center gap-2 rounded-2xl px-3.5 text-sm font-semibold ${autreActive ? "bg-papel-700 text-white" : "bg-white text-gray-700"}`}>
@@ -82,7 +91,7 @@ export function SelecteurPeriode({
         )}
       </div>
       <p className="mt-1.5 text-sm text-gray-500">
-        {PERIODES.find((p) => p.code === periode.code)?.libelle} · du {periode.du.split("-").reverse().join("/")} au {periode.au.split("-").reverse().join("/")}
+        {periode.code === "mois" ? libelleMois(periode.du.slice(0, 7)) : PERIODES.find((p) => p.code === periode.code)?.libelle} · du {periode.du.split("-").reverse().join("/")} au {periode.au.split("-").reverse().join("/")}
       </p>
     </div>
   );

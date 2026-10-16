@@ -22,7 +22,7 @@ export default async function TableauDeBordAchats({ searchParams }: PageProps<"/
   const sp = await searchParams;
   const jour = aujourdhui();
   // Les conteneurs arrivent rarement : l'année en cours par défaut.
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "annee", jour, lireParam(sp, "du"), lireParam(sp, "au"));
+  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "annee", jour, lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const supabase = await clientServeur();
   const [{ data: couts }, { data: transit }, { data: conteneurs }, { count: demandes }] = await Promise.all([
     supabase.from("couts_conteneurs").select("*"),

@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Finance" };
 
 export default async function TableauDeBordFinance({ searchParams }: PageProps<"/finance">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "mois", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
+  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "mois", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const [s, r, prev] = await Promise.all([chargerSituation(), chargerResultat(periode.du, periode.au, periode.nbJours), chargerPrevisionnel(13)]);
   const seuil = seuilRentabiliteGnf(r.chargesFixesGnf, r.tauxMcv);
   const pm = pointMortJours(seuil, r.caHtGnf, periode.nbJours);

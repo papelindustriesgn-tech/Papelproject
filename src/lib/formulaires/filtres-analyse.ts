@@ -12,7 +12,7 @@ export interface FiltresAnalyse {
 export const SANS_FILTRE: FiltresAnalyse = { produit: null, commercial: null };
 
 /** Paramètres d'adresse conservés d'un filtre à l'autre. */
-export const PARAMETRES_ANALYSE = ["periode", "du", "au", "produit", "commercial"] as const;
+export const PARAMETRES_ANALYSE = ["periode", "mois", "du", "au", "produit", "commercial"] as const;
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

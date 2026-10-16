@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { GraphiqueAnneau } from "@/components/graphiques/hero";
 import { CarteHero } from "@/components/ui/carte-hero";
 import { ecartRelatif, PastilleVariation } from "@/components/ui/indicateur";
-import { gnf } from "@/lib/stocks/libelles";
+import { gnf, nombre } from "@/lib/stocks/libelles";
+import { CarteObjectifs } from "@/components/direction/objectifs";
+import { formaterPoids, kg } from "@/lib/metier/unites";
+import { chargerObjectif } from "@/lib/objectifs/charger";
 import { RaccourcisAppli } from "@/components/coque/entree-appli";
 import { CarteDynamique } from "@/components/carte/carte-dynamique";
 import { lireParam } from "@/components/donnees/filtres";
@@ -22,12 +25,12 @@ export const metadata: Metadata = { title: "Tableau de bord" };
 
 export default async function TableauDeBordDirection({ searchParams }: PageProps<"/direction">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "mois", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
+  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "mois", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const filtres = lireFiltresAnalyse(sp);
   const supabase = await clientServeur();
   let requetePva = supabase.from("pva_carte").select("id, nom, latitude, longitude, derniere_rupture, type_libelle, commercial_nom").eq("actif", true);
   if (filtres.commercial) requetePva = requetePva.eq("commercial_id", filtres.commercial);
-  const [s, { data: pva }, options] = await Promise.all([chargerSynthese(periode, filtres), requetePva, chargerOptionsFiltres()]);
+  const [s, { data: pva }, options, objectif] = await Promise.all([chargerSynthese(periode, filtres), requetePva, chargerOptionsFiltres(), chargerObjectif(periode.du, periode.au)]);
   const filtresTexte = decrireFiltres(filtres, options);
   const jours = joursDeLaPeriode(periode);
 
@@ -63,6 +66,20 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
           <GraphiqueAnneau donnees={s.ventes.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="CA HT" />
         </Carte>
       </div>
+      <CarteObjectifs
+        objectif={objectif}
+        filtre={!!(filtres.produit || filtres.commercial)}
+        lienReglage="/direction/listes/objectifs"
+        lignes={
+          objectif
+            ? [
+                { libelle: "Chiffre d'affaires HT", reel: s.ventes.caHtGnf, objectif: objectif.caHtGnf, format: gnf },
+                { libelle: "Paquets produits", reel: s.production.paquetsBons, objectif: objectif.paquets, format: (v) => `${nombre(v)} paquets` },
+                { libelle: "Papier transformé", reel: s.production.tonnesConsommees * 1000, objectif: objectif.productionKg, format: (v) => formaterPoids(kg(v)) },
+              ]
+            : []
+        }
+      />
       <BlocsIndicateurs s={s} jours={jours} />
       <RaccourcisAppli espace="direction" />
       <div className="mb-5 grid gap-4">

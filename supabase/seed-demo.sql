@@ -655,3 +655,17 @@ values
   ('80000000-0000-0000-0000-000000000003', (select id from public.types_absences where libelle = 'Congé annuel'), current_date + 7, current_date + 14, 'Mariage familial à Kindia', 'demandee'),
   ('80000000-0000-0000-0000-000000000012', (select id from public.types_absences where libelle = 'Maladie (justifiée)'), current_date, current_date + 1, 'Certificat médical', 'demandee');
 update public.presences set statut = 'conge' where employe_id = '80000000-0000-0000-0000-000000000010' and jour between current_date - 12 and current_date - 8;
+
+-- -----------------------------------------------------------------------------
+-- Objectifs de démonstration : les objectifs réels du business plan commencent en novembre 2026
+-- (donnees-initiales.sql). Pour voir dès maintenant la comparaison réel / objectif, les 3 derniers mois
+-- reprennent le scénario de lancement (25, 35, 40 t). Un mois qui a déjà un objectif réel n'est pas touché.
+-- -----------------------------------------------------------------------------
+insert into public.objectifs_mensuels (mois, libelle, production_kg, paquets, ca_ht_gnf, couts_variables_gnf, charges_fixes_gnf)
+select (date_trunc('month', public.aujourdhui_conakry()) - make_interval(months => v.decalage))::date, v.libelle, v.kg, v.paquets, v.ca, v.cv, 80000000
+from (values
+  (2, 'Démonstration – scénario M1', 25000, 251026, 776271299::bigint, 725022009::bigint),
+  (1, 'Démonstration – scénario M2', 35000, 351212, 1087610561, 1015030813),
+  (0, 'Démonstration – scénario M3', 40000, 401492, 1242587907, 1160035215)
+) as v(decalage, libelle, kg, paquets, ca, cv)
+on conflict (mois) do nothing;

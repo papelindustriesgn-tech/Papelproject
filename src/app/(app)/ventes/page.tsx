@@ -12,18 +12,21 @@ import { resoudrePeriode, serieRegroupee } from "@/lib/formulaires/periode";
 import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { chargerIndicateursVentes } from "@/lib/ventes/indicateurs";
+import { CarteObjectifs } from "@/components/direction/objectifs";
+import { chargerObjectif } from "@/lib/objectifs/charger";
 
 export const metadata: Metadata = { title: "Ventes" };
 
 export default async function TableauDeBordVentes({ searchParams }: PageProps<"/ventes">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode"), aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
+  const periode = resoudrePeriode(lireParam(sp, "periode"), aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const filtres = lireFiltresAnalyse(sp);
   const [v, prec, options] = await Promise.all([
     chargerIndicateursVentes(periode.du, periode.au, periode.nbJours, filtres),
     chargerIndicateursVentes(periode.precedente.du, periode.precedente.au, periode.nbJours, filtres),
     chargerOptionsFiltres(),
   ]);
+  const objectif = await chargerObjectif(periode.du, periode.au);
   const filtresTexte = decrireFiltres(filtres, options);
   // Créances, échu et nouveaux clients ne se découpent pas par gamme (ils sont par client).
   const toutesGammes = filtres.produit ? " · toutes gammes" : "";
@@ -57,6 +60,11 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
           <GraphiqueAnneau donnees={v.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="CA HT" />
         </Carte>
       </div>
+      <CarteObjectifs
+        objectif={objectif}
+        filtre={!!(filtres.produit || filtres.commercial)}
+        lignes={objectif ? [{ libelle: "Chiffre d'affaires HT", reel: v.caHtGnf, objectif: objectif.caHtGnf, format: gnf }] : []}
+      />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur libelle="Prix moyen HT" valeur={v.prixMoyenPaquetGnf === null ? "—" : `${gnf(v.prixMoyenPaquetGnf)} / paquet`} variation={{ ecart: ecartRelatif(v.prixMoyenPaquetGnf, prec.prixMoyenPaquetGnf) }} />
         <Indicateur libelle="Commandes" valeur={nombre(v.nbCommandes)} variation={{ ecart: ecartRelatif(v.nbCommandes, prec.nbCommandes) }} lien="/ventes/pieces?type=commande" />

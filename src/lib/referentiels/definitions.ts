@@ -498,6 +498,26 @@ export const REFERENTIELS: Referentiel[] = [
     ],
   },
   {
+    code: "objectifs",
+    table: "objectifs_mensuels",
+    titre: "Objectifs du business plan",
+    description:
+      "Un objectif par mois : papier à transformer, paquets, chiffre d'affaires HT, coûts variables et charges fixes. Comparés au réel dans les vues d'ensemble (une semaine ou un jour prend la part du mois).",
+    espaces: ["direction", "finance"],
+    cle: "id",
+    tri: "mois",
+    archivable: true,
+    champs: [
+      { nom: "mois", libelle: "Mois (1er jour)", type: "date", requis: true, aide: "Toujours le 1er du mois, ex. 01/11/2026." },
+      { nom: "libelle", libelle: "Libellé", type: "texte", max: 60 },
+      { nom: "production_kg", libelle: "Papier à transformer (kg)", type: "decimal", requis: true },
+      { nom: "paquets", libelle: "Paquets à produire", type: "entier", requis: true },
+      { nom: "ca_ht_gnf", libelle: "Chiffre d'affaires HT (GNF)", type: "entier", requis: true },
+      { nom: "couts_variables_gnf", libelle: "Coûts variables (GNF)", type: "entier", requis: true },
+      { nom: "charges_fixes_gnf", libelle: "Charges fixes (GNF)", type: "entier", requis: true },
+    ],
+  },
+  {
     code: "charges-recurrentes",
     table: "charges_recurrentes",
     titre: "Charges fixes mensuelles",

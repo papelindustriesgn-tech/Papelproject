@@ -20,7 +20,7 @@ export const metadata: Metadata = { title: "Équipe commerciale" };
 
 export default async function TableauDeBordCommercial({ searchParams }: PageProps<"/commercial">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "7j", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
+  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "7j", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const filtres = lireFiltresAnalyse(sp);
   const supabase = await clientServeur();
   let requetePva = supabase.from("pva_carte").select("id, nom, commercial_id, commercial_nom, type_libelle, latitude, longitude, derniere_visite, derniere_rupture").eq("actif", true);

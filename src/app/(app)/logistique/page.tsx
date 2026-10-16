@@ -20,7 +20,7 @@ export const metadata: Metadata = { title: "Logistique" };
 export default async function TableauDeBordLogistique({ searchParams }: PageProps<"/logistique">) {
   const sp = await searchParams;
   const jour = aujourdhui();
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "30j", jour, lireParam(sp, "du"), lireParam(sp, "au"));
+  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "30j", jour, lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
   const supabase = await clientServeur();
   const [b, { data: duJour }, { count: aPlanifier }] = await Promise.all([
     chargerBilanLogistique(periode.du, periode.au),

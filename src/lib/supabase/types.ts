@@ -155,6 +155,17 @@ isOneToOne: false
                     "id"?: string,"jour"?: string,"libelle"?: string
                   }
                   Relationships: []
+                },"objectifs_mensuels": {
+                  Row: {
+                    "id": string,"mois": string,"libelle": string,"production_kg": number,"paquets": number,"ca_ht_gnf": number,"couts_variables_gnf": number,"charges_fixes_gnf": number,"actif": boolean,"created_at": string,"updated_at": string
+                  }
+                  Insert: {
+                    "id"?: string,"mois": string,"libelle"?: string,"production_kg"?: number,"paquets"?: number,"ca_ht_gnf"?: number,"couts_variables_gnf"?: number,"charges_fixes_gnf"?: number,"actif"?: boolean,"created_at"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "id"?: string,"mois"?: string,"libelle"?: string,"production_kg"?: number,"paquets"?: number,"ca_ht_gnf"?: number,"couts_variables_gnf"?: number,"charges_fixes_gnf"?: number,"actif"?: boolean,"created_at"?: string,"updated_at"?: string
+                  }
+                  Relationships: []
                 },"periodes_paie": {
                   Row: {
                     "mois": string,"statut": string,"valide_par": string | null,"valide_le": string | null
