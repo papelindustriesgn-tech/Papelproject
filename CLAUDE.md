@@ -31,6 +31,9 @@ Commandes : `npm run verifier` (types + lint + Vitest), `npm run test:db` (pgTAP
   en transit ; chargé aussi en production, une fois) ; `supabase/seed-demo.sql` = démonstration locale uniquement (comptes à mot de passe
   connu, ventes, production et stocks fictifs). **Règle : le réel remplace la démo partout où il existe** (prix, coûts, articles, charges,
   transit) ; la démo ne comble que ce qui n'existe pas encore (ventes, production, terrain, personnel).
+- **Passage en réel (16/10/2026)** : la base Supabase `shnwwgbcrmfswzaecmeo` (site papel-erp.vercel.app) est désormais la base de
+  travail réelle de Papel. La démo y a été supprimée (`supabase/scripts/passage-en-reel.sql`), les comptes de démonstration y sont
+  désactivés. **Ne plus jamais y charger `seed-demo.sql`** ni lancer de réinitialisation : les équipes y saisissent leurs vraies données.
 
 ## 1. Stack
 
