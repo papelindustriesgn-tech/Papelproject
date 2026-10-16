@@ -1,0 +1,319 @@
+-- =============================================================================
+-- Papel ERP — Configuration initiale (À CHARGER AUSSI EN PRODUCTION, une seule fois)
+-- Valeurs de départ communiquées par la direction. Tout est ensuite MODIFIABLE
+-- dans l'interface (Administration) : rien n'est figé dans le code.
+-- =============================================================================
+
+-- -----------------------------------------------------------------------------
+-- Paramètres métier
+-- -----------------------------------------------------------------------------
+insert into public.parametres (cle, valeur, libelle, description, categorie, type_valeur, unite) values
+  ('entreprise_nom', '"Papel Industries"', 'Raison sociale', 'Apparaît sur les devis et factures', 'entreprise', 'texte', null),
+  ('entreprise_adresse', '"Usine de Coyah, Guinée"', 'Adresse', 'Apparaît sur les devis et factures', 'entreprise', 'texte', null),
+  ('entreprise_telephone', '""', 'Téléphone', '', 'entreprise', 'texte', null),
+  ('entreprise_nif', '""', 'NIF', 'Numéro d''identification fiscale', 'entreprise', 'texte', null),
+  ('entreprise_rccm', '""', 'RCCM', 'Registre du commerce', 'entreprise', 'texte', null),
+  ('tva_applicable', 'true', 'TVA ajoutée sur les factures', 'Les prix de la grille sont hors taxes ; la TVA est ajoutée sur la facture', 'ventes', 'booleen', null),
+  ('tva_taux', '0.18', 'Taux de TVA', 'Taux légal en Guinée : 18 %', 'ventes', 'pourcentage', null),
+  ('taux_usd_gnf_defaut', '9450', 'Taux USD par défaut', 'Utilisé si aucun taux n''est saisi pour la date', 'devises', 'nombre', 'GNF / USD'),
+  ('grammage_reference', '13', 'Grammage de référence', 'Par pli', 'production', 'nombre', 'g/m²'),
+  ('taux_perte_reference', '0.03', 'Pertes de production de référence', 'Business plan : 3 % retirés une seule fois', 'production', 'pourcentage', null),
+  ('seuil_rendement_min', '0.95', 'Alerte rendement faible', 'Alerte si rendement réel < ce % du théorique', 'production', 'pourcentage', null),
+  ('seuil_perte_max', '0.05', 'Alerte perte élevée', 'Alerte si taux de perte > ce seuil', 'production', 'pourcentage', null),
+  ('seuil_arret_minutes', '30', 'Alerte arrêt long', 'Alerte si un arrêt dépasse cette durée', 'production', 'entier', 'min'),
+  ('taux_dotation', '0.04', 'Taux de dotation', 'Paquets offerts pour 100 achetés, sur montants encaissés', 'ventes', 'pourcentage', null),
+  ('stock_jours_couverture_alerte', '15', 'Alerte couverture de stock', 'Alerte si jours de couverture < ce seuil', 'stock', 'entier', 'jours'),
+  ('stock_periode_consommation_jours', '30', 'Période de consommation moyenne', 'Pour le calcul des jours de couverture', 'stock', 'entier', 'jours'),
+  ('gps_rayon_checkin_m', '100', 'Rayon de check-in', 'Distance maximale entre le commercial et le PVA', 'terrain', 'entier', 'm'),
+  ('gps_precision_max_m', '50', 'Précision GPS exigée', 'Au-delà, la position est jugée imprécise', 'terrain', 'entier', 'm');
+
+-- -----------------------------------------------------------------------------
+-- Taux de change (historique de démonstration)
+-- -----------------------------------------------------------------------------
+insert into public.taux_change (devise, date_effet, taux_gnf, note) values
+  ('USD', '2026-01-01', 9450, 'Taux de référence initial');
+
+-- -----------------------------------------------------------------------------
+-- Géographie (extrait, complétable dans l'interface)
+-- -----------------------------------------------------------------------------
+insert into public.villes (nom, prefecture, region) values
+  ('Conakry', 'Conakry', 'Conakry'),
+  ('Coyah', 'Coyah', 'Kindia'),
+  ('Dubréka', 'Dubréka', 'Kindia'),
+  ('Kindia', 'Kindia', 'Kindia');
+
+insert into public.communes (ville_id, nom)
+select v.id, c.nom from public.villes v
+join (values
+  ('Conakry', 'Kaloum'), ('Conakry', 'Dixinn'), ('Conakry', 'Matam'), ('Conakry', 'Ratoma'), ('Conakry', 'Matoto'),
+  ('Coyah', 'Coyah-Centre'), ('Coyah', 'Manéah'), ('Coyah', 'Wonkifong'),
+  ('Dubréka', 'Dubréka-Centre'), ('Kindia', 'Kindia-Centre')
+) as c(ville, nom) on c.ville = v.nom;
+
+insert into public.quartiers (commune_id, nom)
+select c.id, q.nom from public.communes c
+join (values
+  ('Kaloum', 'Almamya'), ('Kaloum', 'Boulbinet'), ('Kaloum', 'Sandervalia'),
+  ('Dixinn', 'Dixinn-Centre'), ('Dixinn', 'Landréah'), ('Dixinn', 'Belle-Vue'),
+  ('Matam', 'Madina'), ('Matam', 'Bonfi'), ('Matam', 'Coléah'),
+  ('Ratoma', 'Hamdallaye'), ('Ratoma', 'Kipé'), ('Ratoma', 'Taouyah'), ('Ratoma', 'Nongo'), ('Ratoma', 'Cosa'),
+  ('Matoto', 'Matoto-Centre'), ('Matoto', 'Enta'), ('Matoto', 'Gbessia'), ('Matoto', 'Yimbaya'),
+  ('Coyah-Centre', 'Coyah-Centre'), ('Manéah', 'Manéah-Centre'),
+  ('Dubréka-Centre', 'Dubréka-Centre'), ('Kindia-Centre', 'Kindia-Centre')
+) as q(commune, nom) on q.commune = c.nom;
+
+-- -----------------------------------------------------------------------------
+-- Produits, conditionnements et prix
+-- -----------------------------------------------------------------------------
+insert into public.produits (id, code, libelle, nb_mouchoirs, plis, longueur_mm, largeur_mm, grammage_g_m2_pli, taux_perte_ref, ordre) values
+  ('10000000-0000-0000-0000-000000000001', 'PETIT100', 'Petit 100', 100, 3, 190, 126, 13, 0.03, 1),
+  ('10000000-0000-0000-0000-000000000002', 'GRAND100', 'Grand 100', 100, 3, 190, 197, 13, 0.03, 2);
+-- Pertes 3 % (business plan) : rendement théorique net Petit 10 389 paquets/t, Grand 6 645 paquets/t.
+-- Grand 134 (5 000 paquets/t, colis de 80) : non produit au lancement, à créer dans Admin le moment venu.
+
+insert into public.conditionnements (produit_id, libelle, paquets_par_colis, par_defaut) values
+  ('10000000-0000-0000-0000-000000000001', 'Colis de 50', 50, false),
+  ('10000000-0000-0000-0000-000000000001', 'Colis de 80', 80, false),
+  ('10000000-0000-0000-0000-000000000001', 'Colis de 100', 100, true),  -- colisage du business plan
+  ('10000000-0000-0000-0000-000000000002', 'Colis de 30', 30, true);
+
+-- Niveaux de prix (le niveau « papel » est créé par la migration).
+insert into public.niveaux_prix (code, libelle, description, ordre) values
+  ('grossiste', 'Prix max. grossiste', 'Prix maximum de revente du grossiste au semi-grossiste', 1),
+  ('semi_grossiste', 'Prix semi-grossiste', 'Prix de revente du semi-grossiste au détaillant', 2),
+  ('detaillant', 'Prix public (détaillant)', 'Prix de vente du détaillant au consommateur', 3);
+
+-- Prix au paquet HORS TAXES, identiques quel que soit le colis. Business plan : prix TTC (TVA 18 % comprise)
+-- Petit 100 = 3 350 GNF le paquet (335 000 le colis de 100), Grand 100 = 230 000 GNF le colis de 30 ;
+-- HT = TTC ÷ 1,18 arrondi au franc (colis TTC obtenus : 335 002 et 229 994 GNF, la TVA étant calculée sur le total HT).
+-- Prix conseillés du Grand 100 : non communiqués, à saisir dans Administration → Produits et prix.
+insert into public.grille_prix (produit_id, niveau, prix_paquet_gnf, date_debut, note) values
+  ('10000000-0000-0000-0000-000000000001', 'papel', 2839, '2026-01-01', 'Business plan : 3 350 GNF TTC le paquet'),
+  ('10000000-0000-0000-0000-000000000002', 'papel', 6497, '2026-01-01', 'Business plan : 230 000 GNF TTC le colis de 30'),
+  ('10000000-0000-0000-0000-000000000001', 'grossiste', 3600, '2026-01-01', null),
+  ('10000000-0000-0000-0000-000000000001', 'semi_grossiste', 4000, '2026-01-01', null),
+  ('10000000-0000-0000-0000-000000000001', 'detaillant', 5000, '2026-01-01', null);
+
+
+-- -----------------------------------------------------------------------------
+-- Stocks : catégories d'articles (modifiables dans Magasin → Listes de référence).
+-- Les articles produits finis sont créés automatiquement pour chaque conditionnement.
+-- -----------------------------------------------------------------------------
+insert into public.categories_articles (famille, libelle) values
+  ('matiere_premiere', 'Bobines jumbo'),
+  ('emballage', 'Films'),
+  ('emballage', 'Sacs'),
+  ('emballage', 'Boîtes'),
+  ('emballage', 'Cartons'),
+  ('emballage', 'Encres'),
+  ('piece_detachee', 'Pièces mécaniques'),
+  ('piece_detachee', 'Pièces électriques');
+
+-- Matières et emballages du business plan (coûts variables pour 100 t / mois). Le stock de sécurité de
+-- matière première visé est de 50 t. Unité de stock définitive : kg (bobines, films, sacs, encres), unité (boîtes, cartons).
+insert into public.articles (id, code, libelle, famille, categorie_id, unite, suivi_par_lot, seuil_alerte)
+select v.id::uuid, v.code, v.libelle, v.famille::public.famille_article,
+       (select id from public.categories_articles c where c.libelle = v.categorie),
+       v.unite::public.unite_stock, v.lot, v.seuil
+from (values
+  ('40000000-0000-0000-0000-000000000001', 'MP-BOB', 'Bobine jumbo pâte vierge 13 g/m²', 'matiere_premiere', 'Bobines jumbo', 'kg', true, 50000),
+  ('40000000-0000-0000-0000-000000000002', 'EMB-FILM', 'Film d''emballage individuel', 'emballage', 'Films', 'kg', false, 0),
+  ('40000000-0000-0000-0000-000000000011', 'EMB-SAC10', 'Sac d''emballage (lot de 10 paquets)', 'emballage', 'Sacs', 'kg', false, 0),
+  ('40000000-0000-0000-0000-000000000012', 'EMB-SAC100', 'Sac d''emballage (colis de 100)', 'emballage', 'Sacs', 'kg', false, 0),
+  ('40000000-0000-0000-0000-000000000013', 'EMB-BOITE', 'Boîte individuelle (Grand 100)', 'emballage', 'Boîtes', 'unite', false, 0),
+  ('40000000-0000-0000-0000-000000000014', 'EMB-CARTON', 'Carton de 30 boîtes', 'emballage', 'Cartons', 'unite', false, 0),
+  ('40000000-0000-0000-0000-000000000015', 'EMB-ENCRE-BL', 'Encre blanche', 'emballage', 'Encres', 'kg', false, 0),
+  ('40000000-0000-0000-0000-000000000016', 'EMB-ENCRE-CO', 'Encres de couleur', 'emballage', 'Encres', 'kg', false, 0)
+) as v(id, code, libelle, famille, categorie, unite, lot, seuil);
+
+-- Fournisseurs connus (business plan, onglet Investissements) : coordonnées à compléter dans Achats → Fournisseurs.
+insert into public.fournisseurs (id, nom, notes) values
+  ('30000000-0000-0000-0000-000000000011', 'Fournisseur Lu (machines et matières)', 'Proformas Lu250714-21 (machines à mouchoirs) et Lu260113-08 (matières premières et emballages). Raison sociale à compléter.'),
+  ('30000000-0000-0000-0000-000000000012', 'BETCOM AI', 'Construction du hangar de l''usine de Coyah.'),
+  ('30000000-0000-0000-0000-000000000013', 'RIFA', 'Dédouanement des 2 conteneurs de machines (réf. RIFA260604).')
+on conflict (nom) do nothing;
+
+-- -----------------------------------------------------------------------------
+-- Production : postes, équipes, ligne, causes d'arrêt (modifiables dans Production → Listes de référence).
+-- Cadences nominales : à saisir par l'équipe (nécessaires au calcul du TRS).
+-- -----------------------------------------------------------------------------
+insert into public.postes (libelle, heure_debut, heure_fin, ordre) values
+  ('Matin', '06:00', '14:00', 1),
+  ('Après-midi', '14:00', '22:00', 2),
+  ('Nuit', '22:00', '06:00', 3);
+
+insert into public.equipes (libelle) values ('Équipe A'), ('Équipe B'), ('Équipe C');
+
+insert into public.lignes_production (libelle) values ('Ligne 1');
+
+insert into public.causes_arret (libelle, type_arret) values
+  ('Panne mécanique', 'non_planifie'),
+  ('Panne électrique', 'non_planifie'),
+  ('Coupure de courant / groupe électrogène', 'non_planifie'),
+  ('Manque de bobine', 'non_planifie'),
+  ('Manque d''emballage', 'non_planifie'),
+  ('Bourrage', 'non_planifie'),
+  ('Changement de format / réglage', 'non_planifie'),
+  ('Problème qualité', 'non_planifie'),
+  ('Absence de personnel', 'non_planifie'),
+  ('Pause', 'planifie'),
+  ('Nettoyage planifié', 'planifie'),
+  ('Maintenance préventive', 'planifie');
+
+-- -----------------------------------------------------------------------------
+-- Ventes : types de clients (niveau de prix appliqué, dotation oui/non) et modes de paiement.
+-- Modifiables dans Ventes → Listes de référence.
+-- -----------------------------------------------------------------------------
+insert into public.types_clients (libelle, niveau_prix, dotation, ordre) values
+  ('Grossiste', 'papel', true, 1),
+  ('Semi-grossiste', 'papel', false, 2),
+  ('Détaillant', 'papel', false, 3),
+  ('Supermarché', 'papel', false, 4),
+  ('B2B', 'papel', false, 5);
+
+insert into public.modes_paiement (libelle, ordre) values
+  ('Espèces', 1), ('Orange Money', 2), ('MTN Mobile Money', 3), ('Virement bancaire', 4), ('Chèque', 5);
+
+-- -----------------------------------------------------------------------------
+-- Achats : types de frais d'approche et de documents (modifiables dans Achats → Listes de référence).
+-- -----------------------------------------------------------------------------
+insert into public.types_frais (libelle, ordre) values
+  ('Fret maritime', 1), ('Assurance', 2), ('Transit', 3), ('Droits et taxes de douane', 4),
+  ('Manutention portuaire', 5), ('Transport jusqu''à l''usine', 6), ('Autres frais', 7);
+
+insert into public.types_documents (libelle, ordre) values
+  ('Facture fournisseur', 1), ('Connaissement (BL)', 2), ('Packing list', 3), ('Certificat d''origine', 4),
+  ('Déclaration en douane', 5), ('Bon de livraison', 6), ('Autre', 7);
+
+-- Logistique : types de dépenses de tournée (modifiables dans Logistique → Listes de référence).
+insert into public.types_depenses_tournee (libelle, ordre) values
+  ('Carburant', 1), ('Péage et taxes de route', 2), ('Manutention', 3), ('Réparation en route', 4), ('Autre', 9)
+on conflict (libelle) do nothing;
+
+-- Qualité : critères de contrôle et types de non-conformité (modifiables dans Qualité → Listes de référence).
+-- Tolérances de départ indicatives, à ajuster par le service qualité.
+insert into public.criteres_qualite (etape, libelle, type_mesure, unite, valeur_min, valeur_max, ordre) values
+  ('reception', 'Grammage', 'mesure', 'g/m²', 12.5, 13.5, 1),
+  ('reception', 'Humidité', 'mesure', '%', null, 8, 2),
+  ('reception', 'Largeur de la bobine', 'mesure', 'mm', null, null, 3),
+  ('reception', 'Aspect (trous, taches, mandrin)', 'visuel', '', null, null, 4),
+  ('production', 'Mouchoirs par paquet', 'mesure', 'mouchoirs', 100, 102, 1),
+  ('production', 'Longueur du mouchoir', 'mesure', 'mm', 187, 193, 2),
+  ('production', 'Soudure du sachet', 'visuel', '', null, null, 3),
+  ('production', 'Impression et marquage du lot', 'visuel', '', null, null, 4),
+  ('produit_fini', 'Paquets par colis', 'visuel', '', null, null, 1),
+  ('produit_fini', 'État du colis (fermeture, étiquette)', 'visuel', '', null, null, 2)
+on conflict (etape, libelle) do nothing;
+
+insert into public.types_non_conformite (libelle, ordre) values
+  ('Matière première non conforme', 1), ('Défaut de fabrication', 2), ('Emballage / conditionnement', 3),
+  ('Réclamation client', 4), ('Hygiène et sécurité', 5), ('Autre', 9)
+on conflict (libelle) do nothing;
+
+insert into public.parametres (cle, valeur, libelle, description, categorie, type_valeur, unite) values
+  ('tracabilite_fenetre_jours', '30', 'Fenêtre de traçabilité', 'Un lot de produits finis est supposé livré dans les N jours suivant sa production (recherche des clients concernés)', 'qualite', 'entier', 'jours')
+on conflict (cle) do nothing;
+
+-- Maintenance : temps d'ouverture servant au calcul du MTBF et de la disponibilité.
+insert into public.parametres (cle, valeur, libelle, description, categorie, type_valeur, unite) values
+  ('maintenance_heures_ouverture_jour', '16', 'Heures d''ouverture par jour', 'Temps requis des équipements (2 postes de 8 h) pour le MTBF et la disponibilité', 'maintenance', 'nombre', 'h')
+on conflict (cle) do nothing;
+
+-- -----------------------------------------------------------------------------
+-- Finance : comptes de trésorerie, catégories de charges (comptes SYSCOHADA indicatifs, à valider par le comptable),
+-- comptes comptables des journaux exportés.
+-- Avant la mise en service : saisir le solde d'ouverture et sa date sur chaque compte (Finance → Listes).
+-- -----------------------------------------------------------------------------
+insert into public.comptes_tresorerie (libelle, type_compte, devise, compte_comptable, ordre) values
+  ('Caisse principale', 'caisse', 'GNF', '5711', 1),
+  ('Banque (GNF)', 'banque', 'GNF', '5211', 2),
+  ('Banque (USD)', 'banque', 'USD', '5212', 3),
+  ('Orange Money', 'mobile', 'GNF', '5851', 4),
+  ('MTN Mobile Money', 'mobile', 'GNF', '5852', 5)
+on conflict (libelle) do nothing;
+
+update public.modes_paiement m set compte_id = c.id
+from public.comptes_tresorerie c
+where (m.libelle, c.libelle) in (('Espèces', 'Caisse principale'), ('Orange Money', 'Orange Money'), ('MTN Mobile Money', 'MTN Mobile Money'),
+                                 ('Virement bancaire', 'Banque (GNF)'), ('Chèque', 'Banque (GNF)'));
+
+insert into public.categories_charges (libelle, nature, compte_comptable, ordre) values
+  ('Matières premières et frais d''approche (stockés)', 'stock', '6021', 1),
+  ('Emballages (stockés)', 'stock', '6081', 2),
+  ('Pièces détachées (stockées)', 'stock', '6041', 3),
+  ('Énergie : électricité, carburant du groupe', 'fixe', '6052', 10),  -- charge fixe dans le business plan
+  ('Transport et livraison', 'variable', '6181', 11),
+  ('Entretien et réparations', 'variable', '6241', 12),
+  ('Commissions et frais commerciaux', 'variable', '6324', 13),
+  ('Salaires', 'fixe', '6611', 20),
+  ('Charges sociales', 'fixe', '6641', 21),
+  ('Loyer', 'fixe', '6222', 22),
+  ('Assurances', 'fixe', '6251', 23),
+  ('Télécommunications et internet', 'fixe', '6281', 24),
+  ('Honoraires (comptable, juriste)', 'fixe', '6324', 25),
+  ('Impôts et taxes', 'fixe', '6411', 26),
+  ('Frais bancaires', 'fixe', '6311', 27),
+  ('Autres charges', 'variable', '6588', 30),
+  -- Investissements (immobilisations, hors résultat de gestion) : comptes de classe 2 indicatifs.
+  ('Investissements : terrains', 'investissement', '222', 40),
+  ('Investissements : constructions (hangar)', 'investissement', '231', 41),
+  ('Investissements : machines et matériel (transport et douane compris)', 'investissement', '241', 42)
+on conflict (libelle) do nothing;
+
+insert into public.parametres (cle, valeur, libelle, description, categorie, type_valeur, unite) values
+  ('compta_compte_clients', '"4111"', 'Compte clients', 'Compte collectif des clients (journal des ventes)', 'comptabilite', 'texte', null),
+  ('compta_compte_ventes', '"7021"', 'Compte de ventes', 'Ventes de produits finis', 'comptabilite', 'texte', null),
+  ('compta_compte_tva_collectee', '"4431"', 'TVA collectée', 'TVA facturée aux clients', 'comptabilite', 'texte', null),
+  ('compta_compte_fournisseurs', '"4011"', 'Compte fournisseurs', 'Compte collectif des fournisseurs (journal des achats)', 'comptabilite', 'texte', null),
+  ('compta_compte_tva_deductible', '"4452"', 'TVA déductible', 'TVA récupérable sur achats', 'comptabilite', 'texte', null),
+  ('compta_compte_virements', '"585"', 'Virements internes', 'Compte de liaison des virements de fonds', 'comptabilite', 'texte', null),
+  ('compta_compte_divers', '"4711"', 'Compte d''attente', 'Contrepartie des mouvements de trésorerie divers non classés', 'comptabilite', 'texte', null)
+on conflict (cle) do nothing;
+
+-- -----------------------------------------------------------------------------
+-- Charges fixes mensuelles du business plan (générées chaque mois par Finance → Charges du mois).
+-- Électricité et carburant : montants réels fournis ; les autres : hypothèses du business plan.
+-- L'amortissement (20 000 000 GNF/mois) n'est pas une dépense payée : il n'est pas repris ici.
+-- -----------------------------------------------------------------------------
+insert into public.charges_recurrentes (libelle, categorie_id, tiers, montant_gnf, jour_echeance, date_debut)
+select v.libelle, (select id from public.categories_charges where libelle = v.categorie), v.tiers, v.montant, v.jour, '2026-11-01'
+from (values
+  ('Salaires et charges (production et support)', 'Salaires', 'Personnel', 56700000::bigint, 28::smallint),
+  ('Électricité de l''usine', 'Énergie : électricité, carburant du groupe', 'Électricité', 20000000, 10),
+  ('Carburant (essence)', 'Énergie : électricité, carburant du groupe', 'Station-service', 12000000, 10),
+  ('Maintenance : préventif et pièces', 'Entretien et réparations', 'Maintenance', 11340000, 10),
+  ('Marketing et animation commerciale', 'Commissions et frais commerciaux', 'Marketing', 11340000, 10),
+  ('Administration et divers (télécom, sécurité, fournitures)', 'Autres charges', 'Administration', 10395000, 10)
+) as v(libelle, categorie, tiers, montant, jour);
+
+-- -----------------------------------------------------------------------------
+-- Objectifs mensuels du business plan (Direction → Configuration → Objectifs du business plan).
+-- Mois 1 supposé = novembre 2026 (démarrage de l'usine à confirmer) : décaler les mois dans l'interface si besoin.
+-- Montants du fichier, tels quels : CA TTC (onglets Scénario_Lancement et Réel_Mensuel), coûts variables, charges fixes.
+-- Lancement M1–M3 : 25, 35, 40 t ; puis 100 t/mois (année 1), 120 t/mois (année 2), 150 t/mois (année 3).
+-- Charges fixes retenues par le business plan : 80 000 000 GNF/mois.
+-- -----------------------------------------------------------------------------
+insert into public.objectifs_mensuels (mois, libelle, production_kg, paquets, ca_ttc_gnf, couts_variables_gnf, charges_fixes_gnf) values
+  ('2026-11-01', 'M1 – lancement', 25000, 251026, 916000133, 725022009, 80000000),
+  ('2026-12-01', 'M2 – lancement', 35000, 351212, 1283380462, 1015030813, 80000000),
+  ('2027-01-01', 'M3 – lancement', 40000, 401492, 1466253730, 1160035215, 80000000);
+insert into public.objectifs_mensuels (mois, libelle, production_kg, paquets, ca_ttc_gnf, couts_variables_gnf, charges_fixes_gnf)
+select (date '2027-02-01' + make_interval(months => i))::date, 'Année 1 – M' || (i + 4), 100000, 1001860, 3673852346, 2900088037, 80000000
+from generate_series(0, 8) i
+union all
+select (date '2027-11-01' + make_interval(months => i))::date, 'Année 2', 120000, 1202232, 4408622815, 3480105645, 80000000
+from generate_series(0, 11) i
+union all
+select (date '2028-11-01' + make_interval(months => i))::date, 'Année 3', 150000, 1502790, 5510778519, 4350132056, 80000000
+from generate_series(0, 11) i;
+
+-- Objectifs mensuels des services (Direction, Ventes, Production) repris du business plan (même règle que la migration 20261020002400).
+insert into public.objectifs_services (espace, indicateur, mois, valeur)
+select x.espace, x.indicateur, o.mois, x.valeur
+from public.objectifs_mensuels o
+cross join lateral (values
+  ('direction', 'ca_ttc', o.ca_ttc_gnf::numeric), ('direction', 'paquets_produits', o.paquets::numeric), ('direction', 'papier_kg', o.production_kg),
+  ('ventes', 'ca_ttc', o.ca_ttc_gnf::numeric), ('production', 'paquets_produits', o.paquets::numeric), ('production', 'papier_kg', o.production_kg)
+) as x(espace, indicateur, valeur)
+where o.actif and x.valeur > 0
+on conflict (espace, indicateur, mois) do nothing;

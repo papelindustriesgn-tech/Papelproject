@@ -1,0 +1,447 @@
+# CLAUDE.md — Papel ERP
+
+ERP de **Papel Industries**, fabricant guinéen de mouchoirs en papier (usine de Coyah, Guinée).
+Chaîne couverte : achat MP → stock → production → stock produits finis → distribution → vente → encaissement → pilotage.
+
+> Ce fichier est la référence des règles métier et des conventions de code. Le tenir à jour à chaque phase.
+> État : **Phases 1, 2 et 3 livrées** (bilans : `docs/bilan-phase-1.md`, `docs/bilan-phase-2.md`, `docs/bilan-phase-3.md`). Plan : `docs/architecture.md`.
+
+@AGENTS.md
+
+**Next.js 16** : `middleware` s'appelle désormais `proxy` (`src/proxy.ts`) ; `cookies()`, `params`, `searchParams` sont asynchrones.
+Lire `node_modules/next/dist/docs/` avant d'utiliser une API Next inconnue.
+
+Commandes : `npm run verifier` (types + lint + Vitest), `npm run test:db` (pgTAP, sur une base fraîchement réinitialisée), `npm run test:e2e` (Playwright),
+`npm run db:reset` (migrations + seed), `npm run test:e2e:complet` (base neuve + build + serveur + Playwright), `npm run db:types` (régénère `src/lib/supabase/types.ts` après chaque migration).
+
+---
+
+## 0. Principe directeur : un ERP paramétrable « à la Odoo »
+
+**Les équipes de Papel saisissent et modifient elles-mêmes leurs données : rien n'est figé dans le code.**
+- Toute liste métier (niveaux de prix, villes/communes/quartiers, catégories d'articles, fournisseurs, puis causes d'arrêt,
+  marques concurrentes, types de clients…) est une **table** éditable dans l'interface — jamais un `enum` SQL ni une constante TS.
+  Exceptions assumées : les codes qui pilotent une logique du code (rôles, familles d'articles, unités, types de mouvement).
+- Nouvelle liste simple → la déclarer dans `src/lib/referentiels/definitions.ts` : la page générique `/<espace>/listes/<code>`
+  fournit recherche, ajout, modification, archivage (ou suppression si inutilisée) et export Excel.
+- Écrans de liste : recherche + filtres dans l'URL (`BarreFiltres`), **export Excel** (`ExportCsv` : CSV « ; » + BOM).
+- On **archive** (`actif = false`) plutôt que supprimer ce qui a servi ; les historiques (prix, mouvements, audit) sont inaltérables.
+- Données : `supabase/donnees-initiales.sql` = configuration de départ (chargée aussi en production, puis modifiée dans l'interface) ;
+  `supabase/historique-reel.sql` = historique réel du projet tiré du business plan (investissements, financement, commande de matières
+  en transit ; chargé aussi en production, une fois) ; `supabase/seed-demo.sql` = démonstration locale uniquement (comptes à mot de passe
+  connu, ventes, production et stocks fictifs). **Règle : le réel remplace la démo partout où il existe** (prix, coûts, articles, charges,
+  transit) ; la démo ne comble que ce qui n'existe pas encore (ventes, production, terrain, personnel).
+- **Passage en réel (16/10/2026)** : la base Supabase `shnwwgbcrmfswzaecmeo` (site papel-erp.vercel.app) est désormais la base de
+  travail réelle de Papel. La démo y a été supprimée (`supabase/scripts/passage-en-reel.sql`), les comptes de démonstration y sont
+  désactivés. **Ne plus jamais y charger `seed-demo.sql`** ni lancer de réinitialisation : les équipes y saisissent leurs vraies données.
+
+## 1. Stack
+
+- Next.js (App Router) + TypeScript strict + Tailwind CSS. Interface **en français**.
+- Supabase : PostgreSQL, Auth, Storage (photos), RLS (droits), PostGIS (géolocalisation).
+- Hébergement Vercel. Graphiques Recharts. Exports Excel et PDF.
+- Application commerciaux : PWA Android installable, **hors ligne**, synchronisation automatique.
+- Migrations SQL versionnées (`supabase/migrations`), configuration initiale (`supabase/donnees-initiales.sql`) et démo (`supabase/seed-demo.sql`).
+- Code commenté en français.
+
+## 2. Contraintes Guinée
+
+- **Devise principale : GNF** (pas de décimales). Achats souvent en **USD**.
+  - Chaque opération en devise stocke : `devise`, `montant`, `taux_change` **à la date de l'opération**, `montant_gnf`.
+  - Taux par défaut : **9 450 GNF/USD**, modifiable dans Admin, historisé par date.
+- **Fuseau horaire : Africa/Conakry** (UTC+0, sans heure d'été). Stockage en `timestamptz`, affichage et « date métier » calculés en Africa/Conakry.
+- Mobile d'abord : Android d'entrée de gamme, faible bande passante → pages légères, images compressées côté client avant envoi.
+
+## 3. Unités — règle absolue
+
+Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les mélange **JAMAIS**.
+
+- Toutes les conversions passent par **un seul module** : `src/lib/metier/unites.ts` (facteurs lus depuis la table de paramètres produits).
+- Types TypeScript « marqués » (`Tonnes`, `Kg`, `Paquets`, `Colis`…) : additionner des colis et des paquets ne compile pas.
+- En base, chaque quantité a une unité explicite (nom de colonne suffixé : `quantite_paquets`, `poids_kg`…).
+- Unité de stockage de référence : MP en **kg**, produits finis en **paquets** (le colis est une vue dérivée).
+- Le nombre de paquets par colis dépend du **conditionnement** (table `conditionnements`) : on ne code jamais « 50 » ou « 30 » en dur.
+
+## 4. Produits (paramétrables dans Admin)
+
+| Produit   | Mouchoirs | Plis | Format (mm) | Conditionnements (paquets / colis) | Rendement théorique | Prix Papel actuel |
+|-----------|-----------|------|-------------|------------------------------------|---------------------|-------------------|
+| Petit 100 | 100       | 3    | 190 × 126   | **100 (défaut)**, 50 ou 80 selon le client | 10 389 paquets/t | **2 839 GNF HT / paquet** (3 350 TTC) |
+| Grand 100 | 100       | 3    | 190 × 197   | 30                                 | 6 645 paquets/t     | **6 497 GNF HT / paquet** (230 000 TTC le colis de 30) |
+
+Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — prix **TTC** communiqués, saisis en HT = TTC ÷ 1,18 arrondi
+(colis TTC facturés : 335 002 et 229 994 GNF, la TVA étant calculée sur le total HT). Grand 134 : non produit au lancement.
+
+- **Le prix est fixé AU PAQUET, identique quelle que soit la taille du colis** (confirmé par la direction).
+  Prix du colis = prix du paquet × paquets du conditionnement (ex. Petit colis de 100 = 283 900 GNF HT ; Grand colis de 30 = 194 910 GNF HT).
+- **Prix, TVA et paramètres commerciaux : saisis par la direction elle-même dans l'interface** (valeurs de départ ci-dessous, modifiables).
+- **Prix HORS TAXES ; TVA 18 % AJOUTÉE sur la facture** (paramètres `tva_applicable` = oui, `tva_taux` = 18 %), calculée sur le total HT
+  avec un seul arrondi (`src/lib/metier/tva.ts`). À valider avec le comptable selon le régime fiscal de Papel.
+
+- Grammage de référence : **13 g/m² par pli**. Pertes de référence : **3 %** (business plan ; le seuil d'alerte perte reste 5 %).
+- Formule du rendement théorique (vérifie les valeurs ci-dessus) :
+  `poids_paquet_g = (L_m × l_m) × plis × grammage × nb_mouchoirs`
+  `rendement_theorique = arrondi(1 000 000 g × (1 − taux_perte) ÷ poids_paquet_g)` (arrondi à l'entier le plus proche)
+  Formule implémentée deux fois, à l'identique : `src/lib/metier/rendement.ts` et colonne générée `produits.rendement_theorique_paquets_t`.
+  - Petit : 0,190 × 0,126 × 3 × 13 × 100 = 93,366 g → 970 000 ÷ 93,366 = 10 389,2 → **10 389 paquets/t**
+  - Grand : 0,190 × 0,197 × 3 × 13 × 100 = 145,977 g → 970 000 ÷ 145,977 = 6 644,9 → **6 645 paquets/t**
+- Le système compare **toujours** le rendement RÉEL (paquets produits ÷ tonnes consommées) au théorique.
+- **Historique des prix conservé** : un prix a une date de début et une date de fin, jamais écrasé (table `grille_prix`, fonction `definir_prix`, contrainte anti-chevauchement, trigger d'immuabilité).
+
+## 5. Distribution et prix
+
+- Chaîne : Papel → grossiste → semi-grossiste → détaillant (PVA) → consommateur.
+- Niveaux de prix (table `niveaux_prix`, modifiable ; `papel` obligatoire) — Petit 100, prix au paquet :
+  Papel → grossiste **3 400** ; grossiste → semi-grossiste **3 600 max** ; semi-grossiste → détaillant **4 000** ; détaillant → consommateur **5 000**.
+  Prix conseillés du Grand 100 : non communiqués (à saisir dans l'interface).
+- **Dotation** : 4 paquets offerts pour 100 achetés (paramètre `taux_dotation`, **4 %** par défaut), du **même produit**,
+  calculée **uniquement sur les montants encaissés** (jamais sur le facturé non payé).
+  - Clients éligibles : colonne `dotation` du **type de client** (table `types_clients`, modifiable ; grossistes par défaut).
+  - Calcul cumulatif (`src/lib/metier/dotation.ts`) : paiements partiels sans perte ni doublon ; remise en colis complets, le reste reporté.
+- **Commerciaux terrain** : font des **devis et factures** depuis leur téléphone (hors ligne). Ils **n'encaissent pas** :
+  aucun encaissement n'est saisi par le terrain ; les paiements sont enregistrés au bureau (finance).
+- Site unique : **usine de Coyah** (pas de dépôt). Stock suivi **en temps réel** (chaque entrée/sortie est un mouvement).
+
+## 6. Coûts
+
+- Coût matière réel = prix fournisseur + fret + transit + douane + transport jusqu'à l'usine + pertes.
+- Postes de coûts variables : pâte/bobines, films, sacs, boîtes, cartons, encres, transport, douane.
+- Charges fixes mensuelles saisies séparément (business plan : salaires 56,7 M, électricité 20 M et carburant 12 M réels,
+  maintenance 11,34 M, marketing 11,34 M, administration 10,395 M GNF/mois ; amortissement 20 M non repris, ce n'est pas une dépense).
+- Coût rendu usine de la bobine (business plan) : pâte 960 USD/t + transport 1 043 USD/t + douane / fiscalité APIP 700 USD/t ≈ 2 703 USD/t.
+- **Données du business plan reprises telles quelles** (décision de la direction) : aucune estimation ni retraitement (pas de
+  découpage TVA / droits des montants de douane tant que la déclaration n'est pas fournie).
+
+## 6 bis. Stocks (étape 2)
+
+- Site unique (Coyah) : pas d'emplacements. Stock **temps réel** = somme des mouvements, tenu dans `stocks_articles` / `stocks_lots` par trigger.
+- `mouvements_stock` : journal **inaltérable** (ni UPDATE ni DELETE) ; quantité **signée** dans l'unité de l'article (imposée par la base) ;
+  le type impose le signe ; motif obligatoire pour sortie diverse, rebut, ajustement. Erreur → mouvement inverse.
+- Stock négatif refusé (verrou de ligne + contrôle). Bobines : article `suivi_par_lot` (kg) → lot obligatoire ; une bobine bloquée ne sort pas.
+- Valorisation au **coût moyen pondéré** : entrée au coût saisi (sinon coût du lot, sinon CMP) ; sortie au CMP ; stock à zéro → valeur à zéro.
+  Produits finis valorisés à 0 tant que le coût de revient de production n'existe pas (étape 3).
+- Produits finis : un article par (produit × conditionnement), créé automatiquement, stocké en **paquets**, affiché « paquets (colis) ».
+- Unité, famille et suivi par lot d'un article sont **définitifs** (sinon créer un nouvel article).
+- Jours de couverture = stock ÷ (sorties consommation/vente/sortie/dotation/rebut des N derniers jours ÷ N), N = `stock_periode_consommation_jours`.
+- Inventaire : photo du théorique à l'ouverture, comptage, validation → un mouvement « inventaire » par écart.
+- Écritures sensibles par fonctions SQL atomiques : `receptionner_bobine`, `ouvrir_inventaire`, `valider_inventaire`.
+
+## 6 ter. Production (étape 3)
+
+- Listes modifiables (Production → Listes de référence) : postes (heures, un poste peut passer minuit), équipes, opérateurs
+  (sans compte informatique), lignes, **cadences nominales** (paquets/min par ligne × produit, nécessaires au TRS),
+  causes d'arrêt (**planifié** : pause, nettoyage prévu → réduit le temps d'ouverture ; **non planifié** → réduit la disponibilité), campagnes.
+- Ordre de fabrication (OF) : produit × conditionnement, quantité visée en **colis**, numéro automatique `OF-AAAA-NNNN` ;
+  avancement = paquets des fiches validées rattachées à l'OF.
+- Fiche de poste : une par (jour × poste × ligne). Production saisie en **colis complets + paquets en vrac** (conversion par `unites.ts`),
+  rebuts en kg, bobines consommées (lot + kg), emballages, arrêts (cause + durée), opérateurs présents. Durée du poste figée à la création.
+- **Validation** (`valider_fiche_production`, atomique) : sorties des consommations au CMP, entrée des produits finis au **coût de revient
+  matière** (coût des consommations réparti au prorata du poids théorique de papier : paquets × poids d'un paquet). Fiche validée = figée.
+  Les rebuts ne font pas de mouvement : leur papier est déjà dans les kg consommés.
+- Indicateurs (`src/lib/metier/production.ts`, testés) :
+  - ratio rendement = Σ(paquets ÷ rendement théorique du produit) ÷ tonnes consommées (= réel/théorique pour un seul produit) ;
+  - rendement réel par produit (paquets/t) calculé sur les fiches mono-produit ;
+  - taux de perte = rebuts kg ÷ papier kg ;
+  - TRS = disponibilité × performance × qualité (rebuts convertis en paquets via le poids d'un paquet) ; non calculé sans cadence.
+  - Agrégation sur une période = concaténation des fiches (pas de moyenne de pourcentages).
+- Périodes d'analyse et période précédente de même durée : `src/lib/formulaires/periode.ts` (jour, **semaine du lundi** comparée
+  aux mêmes jours de la semaine précédente, **mois choisi dans une liste déroulante** (`?periode=mois&mois=AAAA-MM`, `listeMois`,
+  composant `ChoixPeriode` ; un mois passé est complet, comparé aux mêmes jours du mois précédent), année ; 7 j, 30 j, trimestre et
+  dates libres dans « Autres dates »).
+  Courbes des cartes héros : `serieRegroupee` (par jour ≤ 5 semaines, par semaine ≤ 3 mois, par mois au-delà ; quantités seulement).
+- Graphiques : Recharts, palette catégorielle validée (`src/components/graphiques/production.tsx`), ordre de couleur fixe.
+
+## 6 quater. Ventes (étape 4)
+
+- Listes modifiables : **types de clients** (niveau de prix appliqué, dotation oui/non), **modes de paiement**.
+- Clients : code automatique `CL-NNNNN`, comptant ou crédit (délai, **plafond** : une facture qui le ferait dépasser est refusée).
+- **Pièces de vente** (une seule table, comme Odoo) : devis → commande → facture ; facture → avoir. Lignes en colis + paquets en vrac,
+  **prix HT au paquet figé** à la création (grille en vigueur pour le niveau de prix du type de client, sinon prix Papel).
+- Validation (`valider_piece`) : numéro **continu sans trou** par type et par an (`DEV-`, `CMD-`, `FA-`, `AV-AAAA-NNNNN`, table `compteurs`),
+  TVA sur le total HT (un arrondi), échéance = date + délai du client. Pièce validée = figée (correction par avoir).
+- Livraison (bon `BL-`) : depuis une commande validée, partielle possible ; validation = sorties de stock « vente » (stock insuffisant → refus).
+- Paiements **saisis au bureau uniquement** (rôle finance) via `enregistrer_paiement` : refus au-delà du reste dû ; recalcul de la dotation.
+- Dotation (`calculer_dotation_facture`, même méthode que `dotation.ts`, part payée calculée sur le TTC) ; remise physique
+  (`remettre_dotation`) = sortie de stock « dotation » dans le même produit.
+- Avoir (`valider_avoir`) : reprend les lignes de la facture (quantités ajustables), remet les paquets en stock (« retour »), ne peut pas dépasser le reste dû.
+- Impayés : tranches d'ancienneté, relances (canal, compte rendu, promesse de paiement).
+- Indicateurs (`src/lib/ventes/indicateurs.ts`) : CA HT (factures − avoirs), volumes paquets/colis, prix moyen, commandes, clients actifs,
+  nouveaux clients, encaissements, créances, échu, **DSO** = créances ÷ CA TTC × jours (`src/lib/metier/ventes.ts`).
+- Documents imprimables (facture, devis, avoir, bon de livraison) avec **montant en lettres** (`nombreEnLettres`, orthographe rectifiée) ;
+  « Imprimer / enregistrer en PDF » via le navigateur (pas de dépendance PDF lourde).
+- Après une validation qui fige la page, l'action redirige avec `?succes=` (bandeau `BandeauSucces`, helper `avecSucces`).
+- Messages d'erreur SQL : nombres formatés à la française avec `public.nombre_fr()`.
+
+## 6 quinquies. Terrain hors ligne et supervision (étape 5)
+
+- Application `/terrain` = **application de téléphone plein écran** (pas de barre de l'ERP) : en-tête coloré, **onglets en bas** (Accueil « Ma journée »,
+  Points de vente, ➕ Vendre, Ventes, Moi — `BarreOnglets`), saisies au **compteur − / +** (`Compteur`), total et validation fixés en bas.
+  Onglet **Clients** : bascule Tous / **Prospects** (PVA sans fiche client) / **Clients** (encours, crédit disponible, dernier achat,
+  Appeler / Vendre ; fiche client `#client/<id>` avec factures et devis). PVA en cartes (Appeler / Y aller / Visiter, filtres À visiter · En rupture · Tournée). C'est **une seule page client** (navigation interne par `#`, bouton retour Android) qui lit tout dans
+  **IndexedDB** (`src/lib/terrain/base-locale.ts`, Dexie, une base par utilisateur). Aucune requête serveur n'est nécessaire hors ligne.
+  IndexedDB n'indexe pas les booléens : filtrer en JS (`enAttente`, `envoyee`).
+- **Service worker** `public/sw.js` (enregistré en production) : `/terrain` réseau d'abord puis cache ; `/_next/static` cache d'abord ;
+  tuiles de carte en cache limité. Manifeste `src/app/manifest.ts` (installable, démarre sur `/terrain`).
+- Saisies hors ligne → file `operations` (UUID générés sur le téléphone) → RPC **`synchroniser_terrain`** (lots de 50, chaque opération
+  isolée dans un sous-bloc : une erreur n'arrête pas le lot ; renvoi idempotent « deja »). Types : `pva`, `visite`, `photo`, `client`, `piece`.
+  Synchro au démarrage, au retour du réseau (`online`), toutes les 5 min et après chaque saisie (`src/lib/terrain/synchronisation.ts`).
+- **Un point de vente = un seul commercial** (pas deux commerciaux chez le même client) : trigger `controler_doublon_pva` (même téléphone,
+  ou même nom à moins de `gps_rayon_doublon_m` = 30 m chez un autre commercial → refus) ; le téléphone reçoit `pva_des_collegues()` et
+  prévient dès la saisie, même hors ligne (`src/lib/terrain/doublons.ts`, même règle) ; un refus à l'envoi retire la fiche locale et
+  s'affiche sur l'accueil. Le responsable répartit les portefeuilles (`/commercial/portefeuilles`, `reattribuer_pva` : PVA + client).
+- **Check-in GPS** : distance au PVA par PostGIS (`controler_checkin`) ; `dans_zone` = distance ≤ `gps_rayon_checkin_m` ET précision ≤
+  `gps_precision_max_m` ; visite hors zone enregistrée mais signalée ; un PVA sans position prend celle de sa 1re visite précise.
+  Même règle côté téléphone pour l'information immédiate (`src/lib/terrain/geo.ts`). Visites inaltérables.
+- **Devis et factures hors ligne** : numéro dans la **série du commercial** (`profils.code_serie`, ex. `FA-2026-C01-00012`), compteur local
+  jamais réutilisé, réaligné à chaque synchro (`dernier_numero_terrain`). Le serveur refuse un numéro hors série
+  (`controler_numero_terrain`) et un **prix différent de la grille** (`controler_prix_terrain`). Une pièce refusée reste visible
+  « Refusé » avec le motif. Le téléphone bloque une facture qui dépasserait le plafond de crédit connu.
+- Photos : compression JPEG ≤ 1 280 px (`src/lib/terrain/image.ts`) → Storage privé `photos-terrain/<id commercial>/<pva>/…`.
+- Responsable commercial (`/commercial`) : carte des PVA (couleur fixe par commercial, point creux = rupture), indicateurs (visites/jour,
+  hors zone, taux de rupture, nouveaux PVA, couverture quartiers/communes, CA par commercial vs objectif), visites et positions des check-ins
+  par jour, tournées (`tournees`, `tournee_etapes`) et objectifs mensuels (`objectifs_commerciaux`).
+- Carte : Leaflet (`src/components/carte/carte.tsx`, chargée côté navigateur via `CarteDynamique`), tuiles `NEXT_PUBLIC_TUILES_URL`
+  (OpenStreetMap par défaut ; prendre un fournisseur de tuiles en production).
+- Palette catégorielle partagée : `src/lib/graphiques/couleurs.ts` (jamais importer une constante depuis un fichier « use client » côté serveur).
+
+## 6 sexies. Tableau de bord Direction (étape 6)
+
+- `src/lib/direction/synthese.ts` assemble les indicateurs des modules (réutilise `chargerIndicateursVentes`, `chargerFiches`/`agreger`,
+  `chargerIndicateursCommerciaux`, `etat_stock`) pour la période ET la période précédente de même durée.
+- Marge brute = CA HT − coût matière des produits vendus (mouvements `vente` + `dotation` − `retour`, valorisés au CMP).
+- Alertes prioritaires : stock (rupture, sous seuil, couverture faible), fiches de production en alerte (veille et jour), impayés > 30 j,
+  taux de rupture terrain > 15 %. Triées : critiques d'abord.
+- Export PDF = impression du navigateur (CSS `@media print`, cartes masquées) ; rapport hebdomadaire `/direction/rapport`.
+
+## 6 septies. Achats et conteneurs (phase 2 – étape 1)
+
+- Listes modifiables : fournisseurs (devise habituelle), **types de frais d'approche** (fret, transit, douane, transport…), **types de documents**.
+- **Demande d'achat** (`DA-AAAA-NNNNN`) : émise par le magasin, la production, la maintenance ou les achats (`/<espace>/demandes`,
+  composant `MesDemandes`) ; le demandeur voit les siennes ; les achats approuvent ou refusent, puis la rattachent à un bon de commande.
+- **Bon de commande** : brouillon modifiable → `envoyer_bc` (numéro `BC-`, **taux USD du jour figé**, demandes liées « commandée »).
+  Lignes saisies en tonnes possible pour un article au kg (conversion `unites.ts`) ; montant de ligne calculé par la base (USD en centimes).
+- **Conteneur** : dates prévues et réelles (embarquement, port, dédouanement, livraison) ; **statut déduit des dates réelles**.
+  Frais d'approche en GNF ou USD (taux à la date du frais, `montant_gnf` calculé par la base).
+- **Coût de revient** (vue `couts_conteneurs`, fonctions pures `src/lib/metier/achats.ts`) = (marchandise au prorata du poids + frais)
+  ÷ **poids net déclaré** (packing list ; stable pendant une réception partielle) ; comparé au coût prévu (frais estimés du BC).
+- Réception : `receptionner_bobine_conteneur` (Magasin → Bobines, choix du conteneur) → lot au coût de revient complet, fournisseur du BC.
+- Transit (vue `transit`) : kg des conteneurs non livrés, affiché dans les tableaux de bord Magasin et Direction.
+- Documents (facture, BL, packing list…) : Storage privé `documents-achats/<objet>/<id>/…`, lien de téléchargement signé 5 min.
+
+## 6 octies. Logistique et livraison (phase 2 – étape 2)
+
+- Listes modifiables : **véhicules** (capacité en colis, contrôlée au chargement), **chauffeurs** (compte de connexion facultatif),
+  **types de dépenses de tournée** (carburant, péage…).
+- **Tournée** (`tournees_livraison`, `TL-AAAA-NNNNN` ; le nom `tournees` désigne les tournées de visite des commerciaux) :
+  planifiée → en cours → terminée (ou annulée, ce qui libère ses bons). Elle regroupe des **BL validés** (créés dans Ventes).
+  Fonctions atomiques : `affecter_livraison` (capacité), `retirer_livraison`, `demarrer_tournee` (km départ),
+  `enregistrer_remise`, `terminer_tournee` (toutes les remises saisies, km retour ≥ départ).
+- **Remise** (`/logistique/livraisons/[id]`, écran mobile) : livrée / partielle / refusée ; réceptionnaire + **signature au doigt**
+  obligatoires (sauf refus, motif obligatoire), photo compressée, position GPS. Preuves en Storage privé `preuves-livraison/<BL>/…`.
+  Les paquets rapportés font un mouvement « retour » et **restent à livrer** (`reste_a_livrer` déduit `paquets_retournes`) ;
+  si la facture est émise, la finance fait un avoir.
+- Un BL validé est **figé** pour les utilisateurs (trigger `livraison_figee`) : tournée et remise ne changent que par les fonctions.
+- Indicateurs (`src/lib/metier/logistique.ts`, testés) : livraisons réussies (livrées ÷ remises), taux de retour (paquets),
+  coût par colis livré, coût au km ; agrégation = sommes puis taux recalculés. Vue `tournees_livraison_etat`.
+- Alerte Direction : BL validés depuis plus de 2 jours et non remis.
+
+## 6 nonies. Qualité (phase 2 – étape 3)
+
+- Listes modifiables : **critères de contrôle** (étape réception / production / produit fini ; « mesure » avec tolérances min-max
+  ou « visuel »), **types de non-conformité**. Paramètre `tracabilite_fenetre_jours` (30).
+- **Lot de produits finis = fiche de production** : `fiches_production.code_lot` = `PFAAMMJJ-n` (trigger), affiché sur la fiche
+  pour marquer les colis.
+- **Contrôle** : sur une bobine (réception) ou une fiche ; la conformité d'une mesure est **recalculée par la base** (trigger
+  `mesure_conformite`, même règle que `mesureConforme` dans `src/lib/metier/qualite.ts`). `valider_controle` fige le contrôle ;
+  s'il est non conforme : NC ouverte automatiquement et **bobine bloquée** (ne sort plus du stock).
+  `decider_lot` : blocage / libération par la qualité, motif obligatoire (tracé dans les notes du lot).
+- **Non-conformité** (`NC-AAAA-NNNNN`) : déclarée par la qualité, la production, le magasin ou le responsable commercial
+  (réclamation client) via le composant partagé `SignalerNc` ; analyse (cause racine), actions correctives (responsable, échéance,
+  réalisée, efficace) ; `cloturer_nc` exige cause racine + actions toutes réalisées ; NC clôturée figée.
+- **Traçabilité** (`/qualite/tracabilite`) : bobine → fiches qui l'ont consommée (vue `tracabilite_bobines`) → livraisons
+  (`tracer_fiche`) ; lot PF → bobines consommées + livraisons. Côté clients c'est une **estimation** (même conditionnement livré
+  dans la fenêtre), car les ventes ne suivent pas les numéros de lot.
+- Indicateurs : conformité réception / production, NC ouvertes (critiques), délai moyen de clôture, actions en retard, bobines bloquées.
+
+## 6 decies. Maintenance (phase 2 – étape 4)
+
+- Équipements (liste modifiable, criticité A/B/C, ligne), pièces de rechange = **articles « pièce détachée »** du stock, associées
+  à un équipement (`equipement_pieces`, drapeau critique → vue `pieces_critiques_alerte`).
+- **Ordre de travail** (`interventions`, `OT-AAAA-NNNNN`) : curatif (panne), préventif, amélioration. La production signale une panne
+  (`/production/pannes`, composant `SignalerPanne`) ; seule la maintenance la traite. `terminer_intervention` exige début, fin,
+  travaux (et cause si curatif), sort les pièces du stock (mouvement « consommation », refus si stock insuffisant) et fait avancer
+  le plan préventif. OT terminé ou annulé = figé.
+- **Préventif** : `plans_preventifs` (fréquence en jours), vue `echeances_preventif` ; `generer_preventifs(horizon)` crée les OT
+  à échéance, sans doublon.
+- Fiabilité (`src/lib/metier/maintenance.ts`, testé) : temps requis = jours × `maintenance_heures_ouverture_jour` (16 h) ;
+  panne = curative avec arrêt machine ; MTBF = (requis − arrêts) ÷ pannes ; MTTR = arrêts ÷ pannes ; disponibilité = (requis − arrêts) ÷ requis.
+- Saisie date + heure : champs `datetime-local` en heure de Conakry (= UTC) → `lireDateHeure` / `versDateHeureLocale`.
+
+## 6 undecies. Finance (phase 3)
+
+- Listes modifiables : **comptes de trésorerie** (caisse / banque / mobile, devise, compte classe 5, solde et date d'ouverture),
+  **catégories de charges** (nature `stock` / `variable` / `fixe` / `investissement` + compte SYSCOHADA ; investissement = classe 2,
+  dette et trésorerie mais hors résultat de gestion), **charges fixes mensuelles** (`charges_recurrentes`).
+  Mode de paiement → compte de trésorerie (`modes_paiement.compte_id`). Comptes des journaux : paramètres `compta_compte_*`.
+- **Journal de trésorerie** `mouvements_tresorerie` : inaltérable (contre-passation), montant dans la devise du compte + contre-valeur GNF.
+  Alimenté automatiquement : encaissement client (trigger sur `paiements`), règlement fournisseur (`regler_facture_fournisseur`),
+  virement (`virement_interne`, deux mouvements) ; mouvements divers saisis (origine « autre »). Une caisse / un compte mobile
+  ne devient jamais négatif (trigger) ; une banque peut l'être (découvert).
+- **Factures fournisseurs** (`FF-AAAA-NNNNN`) : bénéficiaire avec ou sans fiche, catégorie, GNF ou USD (taux de la date de facture,
+  montants GNF calculés par la base), TVA ; figées dès le premier règlement. `generer_charges_mois` crée les factures des charges
+  fixes (idempotent : une par charge et par mois).
+- **Résultat de gestion** (`src/lib/metier/finance.ts`, testé) = CA HT − coût matière au CMP (`coutDesVentes`) − charges variables −
+  charges fixes ; les achats **stockés** n'y entrent pas (ils passent par le coût des ventes). Seuil de rentabilité = charges fixes ÷
+  taux de marge sur coûts variables. BFR = stocks + créances − dettes.
+- **Trésorerie prévisionnelle** (13 semaines) : soldes actuels + factures clients et fournisseurs à leur échéance (les retards tombent
+  en 1re semaine) + charges fixes non encore générées + commandes d'achat envoyées non facturées.
+- **Exports comptables** (`/finance/exports/<ventes|achats|tresorerie>?du=&au=`, route `GET`) : écritures `src/lib/metier/comptabilite.ts`
+  (testées), pièce déséquilibrée → export refusé. CSV « ; » : Journal ; Date ; N° pièce ; Compte ; Compte tiers ; Libellé ; Débit ; Crédit.
+- **Rapport hebdomadaire** : fonction SQL `rapport_hebdomadaire(du, au)` exécutable par le **seul rôle service** ; route
+  `/api/taches/rapport-hebdo` (Vercel Cron lundi 07:00, protégée par `CRON_SECRET`, exemptée par le proxy), envoi Resend.
+  Mise en forme pure et testée : `src/lib/rapports/hebdo.ts`. La clé secrète n'appelle que des fonctions dédiées, jamais les tables.
+- Interface : `Selection` se recrée quand `defaultValue` change (sinon une liste déroulante revenait à vide après une erreur de validation).
+
+## 6 duodecies. Ressources humaines
+
+- Rôle **`rh`** (migration séparée `20261018001900_role_rh.sql` : une valeur d'enum ne s'utilise pas dans la transaction qui l'ajoute).
+  Salaires **confidentiels** : RH (+ Direction) gèrent ; la Finance **lit** employés et bulletins pour payer ; les autres ne voient rien (RLS).
+- Listes modifiables (RH › Configuration) : **services** (`departements`), **fonctions**, **types de contrat** (durée déterminée),
+  **types d'absence** (`decompte_conges`, `payee`), **jours fériés**, **barème RTS** (`tranches_rts`, à valider avec le comptable).
+- **Employé** : matricule `EMP-NNNNN` (trigger), contrat, salaire de base GNF, CNSS, mode de paiement ; sortie = date + motif (inactif, gardé en historique).
+- **Absences** : jours **ouvrables** (lundi–samedi, fériés exclus : `jours_ouvrables()` SQL ↔ `joursOuvrables()` TS) ; demande → approuvée/refusée ;
+  un congé payé approuvé ne dépasse pas le **solde** (vue `soldes_conges` : mois complets × `rh_conges_jours_par_mois` − pris).
+- **Présences** : une feuille par jour (`presences`, statut présent / retard / absent / congé / repos + heures sup.), les absences approuvées proposées en « congé ».
+- **Paie** (`src/lib/metier/rh.ts`, testé) : brut = base + primes + HS (taux horaire × (1 + majoration)) − retenue d'absence non payée
+  (base ÷ `rh_jours_ouvrables_mois` × jours) ; CNSS = taux × min(brut, plafond) ; RTS = barème progressif sur (brut − CNSS salariale) ;
+  net = brut − CNSS − RTS − avances. « Préparer la paie » calcule les bulletins depuis présences et absences (primes/avances gardées) ;
+  `valider_paie` fige (trigger `bulletin_fige`). Bulletin imprimable avec montant en lettres ; export CSV de l'état de paie.
+
+## 6 terdecies. Objectifs mensuels (par service)
+
+- Chaque application a ses **objectifs mensuels** : table `objectifs_services` (service × indicateur × mois → valeur ; % stockés en fraction,
+  poids en kg saisis en tonnes), **fixés par la Direction (ou l'administrateur)**, lus par tous. Écran `/<espace>/objectifs` (menu
+  « Objectifs mensuels » : grille d'une année, une ligne par mois, bouton « Recopier »), composants `src/components/objectifs/`.
+- Catalogue des indicateurs par service : `OBJECTIFS` (`src/lib/objectifs/catalogue.ts`) — `cumul` (quantité : prorata des jours) ou
+  taux/niveau (moyenne pondérée), `hausseBonne: false` = objectif maximum (pertes, délais, coûts). Nouvel objectif = une entrée du
+  catalogue + son réel passé par la vue d'ensemble à `<CarteObjectifs espace du au reels={{ code: valeur }} />`.
+- Calculs purs et testés : `objectifSurPeriode`, `etatObjectif` (`src/lib/metier/objectifs.ts`).
+- Business plan : `objectifs_mensuels` (référence, plus modifiée dans l'interface) a été recopiée dans `objectifs_services` (Direction :
+  CA TTC, paquets, papier ; Ventes : CA TTC ; Production : paquets, papier). M1 supposé = **novembre 2026**, montants du fichier tels quels.
+
+## 6 quaterdecies. Coordination entre services
+
+- **Alertes** : menu « Alertes » de chaque application (`/<espace>/alertes`, `PageAlertes`) avec **pastille rouge** du nombre ; plus de bloc
+  d'alertes sur les vues d'ensemble. Contenu (`chargerAlertesEspace`, `src/lib/alertes/espaces.ts`) : lignes « À faire » réglées par
+  l'administrateur (`accueil_elements`, calculs `CALCULS` dans `src/lib/navigation/calculs.ts`), alertes de l'entreprise filtrées par
+  domaine (Direction : toutes), commandes à servir, livraisons signalées. Pastilles calculées sans bloquer (`chargerPastilles`, promesse
+  passée au menu, `use()`).
+- **Tâches entre services** (`taches`, vue `taches_etat` avec les noms) : un service demande à un autre ; à faire → en cours → faite
+  (compte rendu) ou annulée par l'auteur ; figée ensuite (trigger `controler_tache`). Menu « Tâches » (`/<espace>/taches`) avec pastille.
+  Accès à un espace côté SQL : `peut_acceder_espace()` (miroir de `espaces.ts`).
+- **Commandes clients** (`/<espace>/commandes` : Stocks, Production, Ventes, Logistique, Équipe commerciale) : fonction
+  `coordination_commandes()` (restes à livrer, stock PF, rythme réel, cadences, OF en cours) → `estimerCoordination` / `planifierCommandes`
+  (`src/lib/metier/coordination.ts`, testé) : stock réservé dans l'ordre d'arrivée, manque daté par le rythme réel des
+  `coordination_jours_reference` jours, sinon les OF, sinon la cadence théorique ; livraison = + `coordination_delai_livraison_jours`.
+  La Production lance un OF pré-rempli (`/production/ordres?conditionnement=&colis=#nouvel-ordre`).
+- Le **commercial passe des commandes depuis le téléphone** (série `CMD-AAAA-<code>-NNNNN`) et voit la date de livraison estimée.
+- **Confirmation de livraison** : après la remise (logistique), le commercial confirme sur son téléphone (« Le client a bien reçu » ou
+  « Signaler un problème », opération hors ligne `confirmation` → `confirmer_livraison`). Problème signalé = alerte critique Ventes,
+  Logistique, Équipe commerciale, Direction ; suivi dans « Commandes clients ».
+
+## 7. Seuils d'alerte (paramétrables)
+
+- Production : rendement < **95 %** du théorique ; perte > **5 %** ; arrêt > **30 min**.
+- Stock : seuil mini par article ; jours de couverture = stock ÷ consommation moyenne journalière.
+- Maintenance : pièces critiques sous le seuil.
+
+## 8. Rôles (chaque rôle ne voit QUE son interface)
+
+Connexion par **identifiant + mot de passe** (e-mail technique `identifiant@papel.local`, pas de SMS). Comptes créés uniquement par l'admin
+ou la Direction (inscription publique désactivée), via les fonctions SQL `creer_compte`, `changer_mot_de_passe_compte`, `activer_compte`
+(pas de clé secrète nécessaire). Un téléphone par commercial.
+
+1. Direction (PDG, DG) — accès total + tableau de bord global
+2. Achats et approvisionnement
+3. Magasin (magasinier)
+4. Production (chef de production, opérateurs)
+5. Maintenance (techniciens)
+6. Qualité (QHSE)
+7. Commercial terrain (PWA mobile) — ne voit que **ses** PVA, visites, commandes
+8. Responsable commercial — voit tous les commerciaux
+9. Logistique et livraison (chauffeurs)
+10. Comptabilité et finance
+11. Administrateur système — utilisateurs, rôles, paramètres
+12. Ressources humaines — personnel, présences, congés, paie (salaires confidentiels)
+
+- Droits appliqués **en base (RLS)**, pas seulement dans l'interface. Fonctions : `a_role(r)`, `a_un_role(...)` (inclut toujours la Direction), `est_admin()`, `est_actif()`.
+  Un compte désactivé perd tous ses droits. Seule la Direction attribue le rôle Direction.
+- Les rôles sont aussi copiés dans le jeton (claim `papel_roles`, hook `hook_jeton_acces`) pour les redirections du proxy ; l'autorité reste la table `utilisateur_roles`.
+- Espaces et rôles autorisés : `src/lib/auth/espaces.ts`. Chaque espace a un `layout.tsx` qui appelle `exigerEspace()`.
+- **Journal d'audit** de toutes les modifications (qui, quoi, quand, avant/après) : table `journal_audit` en ajout seul ;
+  toute nouvelle table métier doit appeler `select public.activer_audit('public.ma_table');` dans sa migration.
+
+## 9. Conventions de code
+
+- Montants : entiers (`bigint`) — GNF en unités, USD en **centimes**. Jamais de `float` pour l'argent.
+- Calculs métier critiques (rendement, unités, coûts, marges, dotations, devises) : fonctions pures dans `src/lib/metier/`, **testées** (Vitest).
+- Validation des formulaires avec Zod, messages d'erreur en français.
+- Identifiants UUID générés côté client pour tout ce qui peut être créé hors ligne (synchronisation idempotente).
+- Tests RLS en SQL (pgTAP, `supabase/tests/`), parcours critiques en Playwright (`e2e/`, écran mobile 360 px).
+- Server Actions : valider avec Zod, renvoyer un `EtatFormulaire` (`src/lib/formulaires/etat.ts`), traduire les erreurs SQL avec `messageErreurBase`.
+- Nombres saisis à la française (« 9 450 », « 0,05 ») : `lireNombre()` ; pourcentages saisis en % et stockés en fraction (5 → 0,05).
+- Interface : écran `/applications` (bannière de bienvenue + une carte par application) ; **menu latéral** `MenuLateral`
+  (`src/components/coque/menu-lateral.tsx` : application courante, menus avec icônes déduites du libellé, Configuration repliée,
+  carte utilisateur ; barre + panneau sur téléphone) avec les menus déclarés dans **`src/lib/navigation/menus.ts`** (un lien ou un groupe déroulant
+  « Opérations », « Configuration »…) — un nouvel écran s'ajoute là, pas dans le layout de l'espace.
+  Pages : `TitrePage` = barre de contrôle (fil d'Ariane `fil`, titre, boutons) ; document = `BarreEtapes` (+ `etapesStatut`) ;
+  listes = `BarreFiltres` + `Tableau` (fiches empilées « Colonne : valeur » sur téléphone, automatiquement) ; liens-boutons avec `classesBouton()`.
+- **Style** : fond doux `#eef0f5`, cartes blanches `rounded-2xl` + `ombre-carte` (utilitaire CSS), sans bordure ; vues d'ensemble avec
+  **`CarteHero`** (dégradé à la couleur du service, courbe en aire, 3 chiffres) et **`GraphiqueAnneau`** (répartition, palette validée) ;
+  période dans un bouton qui se déroule (`SelecteurPeriode` → `ChoixPeriode` : onglets Jour, Semaine, Mois, Année, Dates) ; tuiles `Indicateur` avec bulle d'icône (`IconeIndicateur`, déduite du libellé).
+- **Couleur par service** : `APPARENCE_APPLI` (applications.tsx) ; `ThemeAppli` redéfinit la gamme `papel-*` selon l'application courante
+  (toujours utiliser les classes `papel-*` pour la couleur d'accent). Les documents clients (`.imprimer-couleurs`) restent aux couleurs Papel.
+- **Pensé pour des débutants — « ne pas faire réfléchir »** (simplification du 17/10/2026 : « que mes collaborateurs aient envie de l'utiliser »).
+  Vue d'ensemble = **une seule page sans défilement inutile** : `TitrePage` avec, à droite, **les boutons d'action** (`<ActionsAppli espace=… />` :
+  1 bouton principal + 2 au plus, réglés par l'administrateur, données `accueil_elements` genre `action` ; sur téléphone le principal passe
+  en premier sur toute la largeur) → **filtre de date** → **4 à 8 indicateurs, sans doublon avec la carte du haut** → `<CarteObjectifs>`
+  (masquée s'il n'y a pas d'objectif) → au plus 1 ou 2 graphiques / tableaux utiles au travail du jour. Ce qui est une alerte va dans le menu
+  « Alertes », le détail dans les écrans du menu. Direction : CA + 8 chiffres clés (`IndicateursEssentiels`) ; les 5 blocs détaillés
+  (`BlocsIndicateurs`) restent dans le rapport de la semaine.
+  **Menus** (`menus.ts`) : à plat, vue d'ensemble → Alertes → le travail de tous les jours → coordination (commandes, tâches) ;
+  « Configuration » (roue dentée, repliée) pour les listes, objectifs mensuels et écrans rares. Pas d'entrée « Nouveau … » dans le menu
+  (bouton « + Nouveau » sur la liste ; écrans de création gardés dans `catalogueEcrans` pour les réglages). Les genres `etape` / `tache`
+  d'`accueil_elements` : `tache` alimente « Alertes », `etape` n'est plus affiché.
+- **Filtres des vues d'ensemble** (`SelecteurPeriode` avec `params`, `filtres`, `gammes`, `commerciaux`) : **un seul bouton de date qui se déroule** (`ChoixPeriode` : sous-filtres Jour, Semaine, Mois, Année, Dates, puis la liste des choix ; `?periode=&jour=&mois=&annee=`, `lirePeriode`) + **gamme de produits**
+  (table `produits`, archivées comprises) + **commercial** (rôle commercial terrain ; liste lisible par Direction, responsable commercial,
+  finance), dans l'adresse (`?periode=&produit=&commercial=`, `lireFiltresAnalyse`, options `chargerOptionsFiltres`).
+  Appliqués : Direction, Ventes, Équipe commerciale (gamme + commercial) ; Production, Magasin (gamme) ; Finance, Achats, Logistique,
+  Qualité, Maintenance, RH (période). Règles (`src/lib/metier/filtrage.ts`, testées) : commercial d'une pièce = celui de la pièce,
+  sinon celui du client ; gamme = lignes du produit, TTC et paiements au prorata du HT ; créances, échu, DSO et nouveaux clients ne se
+  découpent pas par gamme (« toutes gammes ») ; coût des ventes d'un commercial estimé au coût moyen du paquet par gamme
+  (`coutEstimeParGamme`) ; fiche de production mixte ramenée à un produit au prorata du poids de papier (`restreindreAuProduit`).
+  Les alertes « À traiter maintenant » restent globales.
+- **Indicateurs (KPI)** : `Indicateur` (`src/components/ui/indicateur.tsx`) avec `lien` (tuile cliquable vers le détail), `variation`
+  (`ecartRelatif` / `ecartPoints`, `hausseBonne: false` quand une hausse est mauvaise : pertes, DSO, impayés), `tendance` (mini-courbe
+  interactive `Tendance`, format par code `formatTendance` : jamais de fonction passée à un composant client), `ton` écrit
+  (« À surveiller », « Critique »), jamais la couleur seule. Rien de tout cela n'est dans le code : l'administrateur le règle dans **`/admin/reglages/<espace>`**
+  (`PageReglages`, Administration › Réglages des services ; `exigerAdministrateur()`). Le code ne fournit que le **catalogue** de ce qui peut se compter (`INDICATEURS`,
+  `src/lib/navigation/indicateurs.ts` ↔ `CALCULS` dans entree-appli), les icônes et la liste des écrans (`catalogueEcrans`).
+  Nouvel indicateur = une entrée dans `INDICATEURS` + son calcul dans `CALCULS`. Droits : `peut_regler_espace(espace)` = administrateur seulement (ni les services, ni la Direction).
+- **Seuils de calcul = paramètres** (table `parametres`), jamais des nombres en dur : lire avec `lireSeuils({ cle: defaut })`
+  (`src/lib/parametres.ts`). **Modifiables par l'administrateur seul** ; chaque catégorie est rattachée à un service (`espace_de_categorie` en SQL ↔
+  `CATEGORIES_PARAMETRES`) pour être présentée dans ses réglages ; tout est aussi dans `/admin/parametres`. Ex. : `alerte_impaye_jours`, `alerte_taux_rupture`,
+  `alerte_livraison_jours`, `terrain_jours_a_visiter` (envoyé au téléphone à la synchro).
+  « Configuration » est réduite à une roue dentée à droite de la barre. Champs de nombres → clavier numérique (`Champ`, d'après le nom du champ).
+- **Connexion Excel** (`/finance/excel`) : clés personnelles en lecture seule (`cles_export`, hachées SHA-256, révocables) ;
+  `/api/excel/<jeu>?cle=…&du=&au=` → CSV via `exporter_donnees` (jeux : `src/lib/excel/jeux.ts`). Exemptée par le proxy.
+- Performance : fonctions Vercel à **Paris (`cdg1`, vercel.json)**, comme la base ; session lue par `getClaims` (pas d'appel au serveur Auth).
+- Composants `src/components/ui`, zones tactiles ≥ 44 px sur téléphone (36 px sur ordinateur), police système (aucune police téléchargée),
+  couleur marque `papel-700` = #07524D, icônes `lucide-react`.
+- Comptabilité : le comptable suivra très probablement le **SYSCOHADA** ; prévoir des exports **Excel/CSV** compatibles (phase 3).
+
+## 10. Phases
+
+- **Phase 1 (MVP)** : auth et rôles, paramètres, stocks, production, application commerciale PVA (hors ligne + GPS), ventes simples, tableau de bord Direction.
+- **Phase 2** : achats et conteneurs, logistique, qualité, maintenance.
+- **Phase 3** : finance complète, trésorerie prévisionnelle, rapports automatiques, exports comptables.
