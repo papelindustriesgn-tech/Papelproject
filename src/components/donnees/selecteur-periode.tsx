@@ -2,14 +2,14 @@ import { X } from "lucide-react";
 import Link from "next/link";
 import { adresseFiltres, type FiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
 import { aujourdhui } from "@/lib/formulaires/dates";
-import { libelleMois, listeAnnees, listeMois, listeSemaines, PERIODES, type Periode } from "@/lib/formulaires/periode";
+import { libelleMois, listeAnnees, listeMois, listeSemaines, type Periode } from "@/lib/formulaires/periode";
 import { ChoixFiltre } from "./choix-filtre";
 import { ChoixPeriode } from "./choix-periode";
 import type { OptionFiltre } from "./filtres";
 
 /**
- * Barre de filtres des vues d'ensemble : UN filtre de date (liste déroulante Jour / Semaine / Mois / Année /
- * Dates choisies, puis le jour, la semaine, le mois ou l'année voulus) et, quand la page les prend en compte,
+ * Barre de filtres des vues d'ensemble : UN bouton de date qui se déroule (sous-filtres Jour / Semaine / Mois /
+ * Année / Dates) et, quand la page les prend en compte,
  * gamme de produits et commercial. Tout est dans l'adresse : on peut la partager.
  * Une liste vide (aucune gamme, ou commerciaux non visibles pour ce rôle) n'affiche pas son filtre.
  */
@@ -30,16 +30,18 @@ export function SelecteurPeriode({
   const actuels = Object.fromEntries(Object.entries(params).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
   const filtreActif = !!(filtres?.produit || filtres?.commercial);
   const jour = aujourdhui();
+  const jjmmaaaa = (d: string) => d.split("-").reverse().join("/");
+  // Texte du bouton de date : la période affichée, en clair.
   const libelle =
     periode.code === "mois"
       ? libelleMois(periode.du.slice(0, 7))
       : periode.code === "annee"
         ? `Année ${periode.du.slice(0, 4)}`
         : periode.code === "jour"
-          ? periode.du === jour ? "Aujourd'hui" : "Jour choisi"
+          ? periode.du === jour ? "Aujourd'hui" : `Le ${jjmmaaaa(periode.du)}`
           : periode.code === "semaine"
-            ? "Semaine du lundi"
-            : PERIODES.find((p) => p.code === periode.code)?.libelle;
+            ? `Semaine du ${jjmmaaaa(periode.du).slice(0, 5)}`
+            : `Du ${jjmmaaaa(periode.du)} au ${jjmmaaaa(periode.au)}`;
 
   return (
     <div className="mb-4 print:hidden">
@@ -49,8 +51,9 @@ export function SelecteurPeriode({
           code={periode.code}
           du={periode.du}
           au={periode.au}
+          libelle={libelle}
           aujourdhui={jour}
-          mois={listeMois(jour)}
+          mois={listeMois(jour).map((m) => ({ valeur: m.valeur, libelle: libelleMois(m.valeur) }))}
           semaines={listeSemaines(jour)}
           annees={listeAnnees(jour)}
         />
@@ -63,7 +66,7 @@ export function SelecteurPeriode({
         )}
       </div>
       <p className="mt-1.5 text-sm text-gray-500">
-        {libelle} · du {periode.du.split("-").reverse().join("/")} au {periode.au.split("-").reverse().join("/")}
+        Du {jjmmaaaa(periode.du)} au {jjmmaaaa(periode.au)}
       </p>
     </div>
   );

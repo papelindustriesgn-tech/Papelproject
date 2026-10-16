@@ -398,14 +398,14 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
   listes = `BarreFiltres` + `Tableau` (fiches empilées « Colonne : valeur » sur téléphone, automatiquement) ; liens-boutons avec `classesBouton()`.
 - **Style** : fond doux `#eef0f5`, cartes blanches `rounded-2xl` + `ombre-carte` (utilitaire CSS), sans bordure ; vues d'ensemble avec
   **`CarteHero`** (dégradé à la couleur du service, courbe en aire, 3 chiffres) et **`GraphiqueAnneau`** (répartition, palette validée) ;
-  période en pastilles (`SelecteurPeriode`) ; tuiles `Indicateur` avec bulle d'icône (`IconeIndicateur`, déduite du libellé).
+  période dans un bouton qui se déroule (`SelecteurPeriode` → `ChoixPeriode` : onglets Jour, Semaine, Mois, Année, Dates) ; tuiles `Indicateur` avec bulle d'icône (`IconeIndicateur`, déduite du libellé).
 - **Couleur par service** : `APPARENCE_APPLI` (applications.tsx) ; `ThemeAppli` redéfinit la gamme `papel-*` selon l'application courante
   (toujours utiliser les classes `papel-*` pour la couleur d'accent). Les documents clients (`.imprimer-couleurs`) restent aux couleurs Papel.
 - **Pensé pour des débutants — « ne pas faire réfléchir »**, et **réglé dans l'interface par l'administrateur seul** (décision de la direction) : à l'entrée de chaque application,
   ordre fixe des **vues d'ensemble** : `TitrePage` → **filtre de date** → **indicateurs** → **`<CarteObjectifs>`** → **`<RaccourcisAppli espace=… />`** (phrase d'accueil `accueil_espaces`,
   **un seul bouton principal** = 1er bouton actif, autres en petit, **parcours** numéroté) → graphiques et tableaux
   (`src/components/coque/entree-appli.tsx`, données `accueil_elements`, genres `action` / `etape` / `tache` ; les `tache` vont dans le menu « Alertes »).
-- **Filtres des vues d'ensemble** (`SelecteurPeriode` avec `params`, `filtres`, `gammes`, `commerciaux`) : **un seul filtre de date** (`ChoixPeriode` : liste Jour / Semaine / Mois / Année / Dates choisies, puis le jour, la semaine, le mois ou l'année ; `?periode=&jour=&mois=&annee=`, `lirePeriode`) + **gamme de produits**
+- **Filtres des vues d'ensemble** (`SelecteurPeriode` avec `params`, `filtres`, `gammes`, `commerciaux`) : **un seul bouton de date qui se déroule** (`ChoixPeriode` : sous-filtres Jour, Semaine, Mois, Année, Dates, puis la liste des choix ; `?periode=&jour=&mois=&annee=`, `lirePeriode`) + **gamme de produits**
   (table `produits`, archivées comprises) + **commercial** (rôle commercial terrain ; liste lisible par Direction, responsable commercial,
   finance), dans l'adresse (`?periode=&produit=&commercial=`, `lireFiltresAnalyse`, options `chargerOptionsFiltres`).
   Appliqués : Direction, Ventes, Équipe commerciale (gamme + commercial) ; Production, Magasin (gamme) ; Finance, Achats, Logistique,
