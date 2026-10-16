@@ -157,13 +157,13 @@ isOneToOne: false
                   Relationships: []
                 },"objectifs_mensuels": {
                   Row: {
-                    "id": string,"mois": string,"libelle": string,"production_kg": number,"paquets": number,"ca_ht_gnf": number,"couts_variables_gnf": number,"charges_fixes_gnf": number,"actif": boolean,"created_at": string,"updated_at": string
+                    "id": string,"mois": string,"libelle": string,"production_kg": number,"paquets": number,"ca_ttc_gnf": number,"couts_variables_gnf": number,"charges_fixes_gnf": number,"actif": boolean,"created_at": string,"updated_at": string
                   }
                   Insert: {
-                    "id"?: string,"mois": string,"libelle"?: string,"production_kg"?: number,"paquets"?: number,"ca_ht_gnf"?: number,"couts_variables_gnf"?: number,"charges_fixes_gnf"?: number,"actif"?: boolean,"created_at"?: string,"updated_at"?: string
+                    "id"?: string,"mois": string,"libelle"?: string,"production_kg"?: number,"paquets"?: number,"ca_ttc_gnf"?: number,"couts_variables_gnf"?: number,"charges_fixes_gnf"?: number,"actif"?: boolean,"created_at"?: string,"updated_at"?: string
                   }
                   Update: {
-                    "id"?: string,"mois"?: string,"libelle"?: string,"production_kg"?: number,"paquets"?: number,"ca_ht_gnf"?: number,"couts_variables_gnf"?: number,"charges_fixes_gnf"?: number,"actif"?: boolean,"created_at"?: string,"updated_at"?: string
+                    "id"?: string,"mois"?: string,"libelle"?: string,"production_kg"?: number,"paquets"?: number,"ca_ttc_gnf"?: number,"couts_variables_gnf"?: number,"charges_fixes_gnf"?: number,"actif"?: boolean,"created_at"?: string,"updated_at"?: string
                   }
                   Relationships: []
                 },"periodes_paie": {

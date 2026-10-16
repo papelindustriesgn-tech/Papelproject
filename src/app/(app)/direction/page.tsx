@@ -73,7 +73,7 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
         lignes={
           objectif
             ? [
-                { libelle: "Chiffre d'affaires HT", reel: s.ventes.caHtGnf, objectif: objectif.caHtGnf, format: gnf },
+                { libelle: "Chiffre d'affaires TTC", reel: s.ventes.caTtcGnf, objectif: objectif.caTtcGnf, format: gnf },
                 { libelle: "Paquets produits", reel: s.production.paquetsBons, objectif: objectif.paquets, format: (v) => `${nombre(v)} paquets` },
                 { libelle: "Papier transformé", reel: s.production.tonnesConsommees * 1000, objectif: objectif.productionKg, format: (v) => formaterPoids(kg(v)) },
               ]

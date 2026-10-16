@@ -63,7 +63,7 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
       <CarteObjectifs
         objectif={objectif}
         filtre={!!(filtres.produit || filtres.commercial)}
-        lignes={objectif ? [{ libelle: "Chiffre d'affaires HT", reel: v.caHtGnf, objectif: objectif.caHtGnf, format: gnf }] : []}
+        lignes={objectif ? [{ libelle: "Chiffre d'affaires TTC", reel: v.caTtcGnf, objectif: objectif.caTtcGnf, format: gnf }] : []}
       />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur libelle="Prix moyen HT" valeur={v.prixMoyenPaquetGnf === null ? "—" : `${gnf(v.prixMoyenPaquetGnf)} / paquet`} variation={{ ecart: ecartRelatif(v.prixMoyenPaquetGnf, prec.prixMoyenPaquetGnf) }} />

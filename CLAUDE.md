@@ -105,10 +105,9 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
 - Postes de coûts variables : pâte/bobines, films, sacs, boîtes, cartons, encres, transport, douane.
 - Charges fixes mensuelles saisies séparément (business plan : salaires 56,7 M, électricité 20 M et carburant 12 M réels,
   maintenance 11,34 M, marketing 11,34 M, administration 10,395 M GNF/mois ; amortissement 20 M non repris, ce n'est pas une dépense).
-- Coût rendu usine HT de la bobine (business plan) : pâte 960 USD/t + transport 1 043 USD/t + droits de douane 237 USD/t ≈ 2 240 USD/t.
-  La **TVA de 18 % payée au dédouanement est récupérable** (déduite de la TVA collectée) : ce n'est pas un coût. Sur les 70 000 USD de
-  « douane / fiscalité APIP » pour 100 t, 46 323 USD sont de la TVA (18 % × (valeur CAF + droits)) et 23 677 USD des droits.
-  Saisir la TVA d'import dans le champ TVA des factures fournisseurs (douane), jamais dans le montant HT.
+- Coût rendu usine de la bobine (business plan) : pâte 960 USD/t + transport 1 043 USD/t + douane / fiscalité APIP 700 USD/t ≈ 2 703 USD/t.
+- **Données du business plan reprises telles quelles** (décision de la direction) : aucune estimation ni retraitement (pas de
+  découpage TVA / droits des montants de douane tant que la déclaration n'est pas fournie).
 
 ## 6 bis. Stocks (étape 2)
 
@@ -317,11 +316,11 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
 
 ## 6 terdecies. Objectifs du business plan
 
-- Table `objectifs_mensuels` (un mois = une ligne : papier kg, paquets, CA HT, coûts variables, charges fixes), modifiable par la
+- Table `objectifs_mensuels` (un mois = une ligne : papier kg, paquets, **CA TTC**, coûts variables, charges fixes), modifiable par la
   Direction, la Finance et l'administrateur (Direction → Configuration → Objectifs ; liste générique `objectifs`), lue par tous.
 - Valeurs de départ (`donnees-initiales.sql`) : M1 supposé = **novembre 2026** ; lancement 25 / 35 / 40 t, puis 100 t/mois (an 1),
-  120 (an 2), 150 (an 3) ; CA HT = CA TTC du business plan ÷ 1,18 ; coûts variables HT = coûts du business plan ÷ 1,18 (tout est
-  importé : la TVA d'import porte sur toute la base) ; charges fixes 80 M GNF/mois. La démo ajoute les 3 derniers mois.
+  120 (an 2), 150 (an 3) ; **montants du fichier tels quels** (CA TTC, coûts variables, charges fixes 80 M GNF/mois) : le résultat visé
+  est celui du business plan. Le CA de l'objectif (TTC) est comparé au **CA TTC réel** des factures. La démo ajoute les 3 derniers mois.
 - Rapport à une période : `objectifPeriode` (`src/lib/metier/objectifs.ts`, testé) = part de chaque mois au prorata des jours.
   Affichage `CarteObjectifs` (barres d'avancement, % et statut écrits) : Direction (CA, paquets, papier), Ventes (CA), Production
   (paquets, papier). Objectifs globaux : avec un filtre gamme ou commercial, la carte invite à retirer le filtre.

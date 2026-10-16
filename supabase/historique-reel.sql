@@ -37,9 +37,8 @@ begin
   -- (coûts variables pour 100 t) ; montant réellement payé : 117 578 USD (1 107 586 644 GNF au taux de 9 420).
   insert into public.bons_commande (numero, fournisseur_id, date_commande, devise, taux_change, frais_estimes_gnf, statut, notes)
   values (public.prochain_numero('BC-2026-'), v_lu, '2026-01-13', 'USD', 9420,
-          -- Frais d'approche prévus (HT) : transport 104 340 USD à 9 550 + droits de douane 23 677 USD à 9 450
-          -- (la TVA d'import de 46 323 USD est récupérable : ce n'est pas un coût).
-          996447000 + 223746007, 'envoye',
+          -- Frais d'approche prévus (fichier) : transport 104 340 USD + douane / fiscalité APIP 70 000 USD, à 9 550.
+          996447000 + 668500000, 'envoye',
           'Proforma Lu260113-08. Payé 117 578 USD (1 107 586 644 GNF) le 16/04/2026. Lignes : quantités et prix du business plan.')
   returning id into v_bc;
   insert into public.lignes_bc (bc_id, article_id, quantite, prix_unitaire) values

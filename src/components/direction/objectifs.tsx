@@ -88,7 +88,7 @@ export function CarteObjectifs({
         ))}
       </ul>
       <p className="mt-3 text-sm text-gray-600">
-        Résultat visé sur la période : <strong className="text-gray-900">{gnf(objectif.resultatGnf)}</strong> (CA HT − coûts variables − charges fixes).
+        Résultat visé sur la période : <strong className="text-gray-900">{gnf(objectif.resultatGnf)}</strong> (CA TTC − coûts variables − charges fixes, comme dans le business plan).
         {objectif.couverture < 1 && ` Objectif connu pour ${nombre(objectif.couverture * 100, 0)} % des jours de la période.`}
       </p>
     </Carte>

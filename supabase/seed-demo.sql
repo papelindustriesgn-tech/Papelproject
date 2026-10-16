@@ -106,12 +106,12 @@ begin
   -- Les fonctions de vente contrôlent les droits : on agit au nom du compte de démonstration « finance ».
   perform set_config('request.jwt.claims', json_build_object('sub', '20000000-0000-0000-0000-000000000013', 'role', 'authenticated')::text, true);
 
-  -- 40 bobines reçues sur 60 jours (poids 950 à 1 290 kg). Coût rendu usine HT du business plan :
-  -- pâte 960 USD/t + transport 1 043 USD/t + droits de douane 237 USD/t (TVA d'import récupérable exclue) ≈ 21 170 GNF/kg.
+  -- 40 bobines reçues sur 60 jours (poids 950 à 1 290 kg). Coût rendu usine du business plan :
+  -- pâte 960 USD/t + transport 1 043 USD/t + douane 700 USD/t = 2 703 USD/t ≈ 25 550 GNF/kg.
   for j in 1..40 loop
     perform public.receptionner_bobine(
       '40000000-0000-0000-0000-000000000001', 'JB-2026-' || lpad(j::text, 4, '0'),
-      950 + (j * 37) % 340, 21000 + (j * 53) % 340,
+      950 + (j * 37) % 340, 25300 + (j * 53) % 500,
       '30000000-0000-0000-0000-000000000001', public.aujourdhui_conakry() - 62 + (j * 3) / 2,
       13, 2700, 1500, 3::smallint, '');
   end loop;
@@ -661,11 +661,11 @@ update public.presences set statut = 'conge' where employe_id = '80000000-0000-0
 -- (donnees-initiales.sql). Pour voir dès maintenant la comparaison réel / objectif, les 3 derniers mois
 -- reprennent le scénario de lancement (25, 35, 40 t). Un mois qui a déjà un objectif réel n'est pas touché.
 -- -----------------------------------------------------------------------------
-insert into public.objectifs_mensuels (mois, libelle, production_kg, paquets, ca_ht_gnf, couts_variables_gnf, charges_fixes_gnf)
+insert into public.objectifs_mensuels (mois, libelle, production_kg, paquets, ca_ttc_gnf, couts_variables_gnf, charges_fixes_gnf)
 select (date_trunc('month', public.aujourdhui_conakry()) - make_interval(months => v.decalage))::date, v.libelle, v.kg, v.paquets, v.ca, v.cv, 80000000
 from (values
-  (2, 'Démonstration – scénario M1', 25000, 251026, 776271299::bigint, 614425432::bigint),
-  (1, 'Démonstration – scénario M2', 35000, 351212, 1087610561, 860195604),
-  (0, 'Démonstration – scénario M3', 40000, 401492, 1242587907, 983080691)
+  (2, 'Démonstration – scénario M1', 25000, 251026, 916000133::bigint, 725022009::bigint),
+  (1, 'Démonstration – scénario M2', 35000, 351212, 1283380462, 1015030813),
+  (0, 'Démonstration – scénario M3', 40000, 401492, 1466253730, 1160035215)
 ) as v(decalage, libelle, kg, paquets, ca, cv)
 on conflict (mois) do nothing;
