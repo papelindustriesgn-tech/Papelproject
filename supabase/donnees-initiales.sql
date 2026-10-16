@@ -289,19 +289,22 @@ from (values
 -- -----------------------------------------------------------------------------
 -- Objectifs mensuels du business plan (Direction → Configuration → Objectifs du business plan).
 -- Mois 1 supposé = novembre 2026 (démarrage de l'usine à confirmer) : décaler les mois dans l'interface si besoin.
--- CA HT = CA TTC du business plan ÷ 1,18. Lancement M1–M3 : 25, 35, 40 t ; puis 100 t/mois (année 1),
--- 120 t/mois (année 2), 150 t/mois (année 3). Charges fixes retenues par le business plan : 80 000 000 GNF/mois.
+-- CA HT = CA TTC du business plan ÷ 1,18. Coûts variables HT : la TVA de 18 % payée au dédouanement est récupérable ;
+-- sur 70 000 USD de « douane / fiscalité APIP » pour 100 t, 46 323 USD sont de la TVA (18 % de la valeur CAF + droits),
+-- 23 677 USD des droits ; coûts variables HT = coûts du business plan − 442 386 311 GNF pour 100 t (soit ÷ 1,18).
+-- Lancement M1–M3 : 25, 35, 40 t ; puis 100 t/mois (année 1), 120 t/mois (année 2), 150 t/mois (année 3).
+-- Charges fixes retenues par le business plan : 80 000 000 GNF/mois.
 -- -----------------------------------------------------------------------------
 insert into public.objectifs_mensuels (mois, libelle, production_kg, paquets, ca_ht_gnf, couts_variables_gnf, charges_fixes_gnf) values
-  ('2026-11-01', 'M1 – lancement', 25000, 251026, 776271299, 725022009, 80000000),
-  ('2026-12-01', 'M2 – lancement', 35000, 351212, 1087610561, 1015030813, 80000000),
-  ('2027-01-01', 'M3 – lancement', 40000, 401492, 1242587907, 1160035215, 80000000);
+  ('2026-11-01', 'M1 – lancement', 25000, 251026, 776271299, 614425432, 80000000),
+  ('2026-12-01', 'M2 – lancement', 35000, 351212, 1087610561, 860195604, 80000000),
+  ('2027-01-01', 'M3 – lancement', 40000, 401492, 1242587907, 983080691, 80000000);
 insert into public.objectifs_mensuels (mois, libelle, production_kg, paquets, ca_ht_gnf, couts_variables_gnf, charges_fixes_gnf)
-select (date '2027-02-01' + make_interval(months => i))::date, 'Année 1 – M' || (i + 4), 100000, 1001860, 3113434191, 2900088037, 80000000
+select (date '2027-02-01' + make_interval(months => i))::date, 'Année 1 – M' || (i + 4), 100000, 1001860, 3113434191, 2457701727, 80000000
 from generate_series(0, 8) i
 union all
-select (date '2027-11-01' + make_interval(months => i))::date, 'Année 2', 120000, 1202232, 3736121030, 3480105645, 80000000
+select (date '2027-11-01' + make_interval(months => i))::date, 'Année 2', 120000, 1202232, 3736121030, 2949242072, 80000000
 from generate_series(0, 11) i
 union all
-select (date '2028-11-01' + make_interval(months => i))::date, 'Année 3', 150000, 1502790, 4670151287, 4350132056, 80000000
+select (date '2028-11-01' + make_interval(months => i))::date, 'Année 3', 150000, 1502790, 4670151287, 3686552590, 80000000
 from generate_series(0, 11) i;
