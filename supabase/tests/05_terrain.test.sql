@@ -56,11 +56,11 @@ insert into r values ('lot3', public.synchroniser_terrain(jsonb_build_array(
     'client_id', '92000000-0000-0000-0000-000000000001', 'date_piece', public.aujourdhui_conakry(),
     'lignes', jsonb_build_array(jsonb_build_object('conditionnement_id',
       (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50),
-      'quantite_colis', 2, 'prix_paquet_gnf', 3400))))
+      'quantite_colis', 2, 'prix_paquet_gnf', 2839))))
 )));
 select is((select jsonb_agg(e ->> 'statut') from jsonb_array_elements((select res from r where cle = 'lot3')) e), '["ok", "ok"]'::jsonb, 'Client et facture synchronisés');
 select is((select numero || ' ' || statut from public.pieces_vente where id = '93000000-0000-0000-0000-000000000001'), 'FA-2026-C01-00001 valide', 'Facture validée avec le numéro du téléphone');
-select is((select total_ttc_gnf from public.pieces_vente where id = '93000000-0000-0000-0000-000000000001'), 401200::bigint, 'Total : 100 paquets × 3 400 + TVA');
+select is((select total_ttc_gnf from public.pieces_vente where id = '93000000-0000-0000-0000-000000000001'), 335002::bigint, 'Total : 100 paquets × 2 839 + TVA');
 
 -- Numéro hors série et prix modifié : refusés, sans bloquer le reste du lot.
 insert into r values ('lot4', public.synchroniser_terrain(jsonb_build_array(
@@ -68,7 +68,7 @@ insert into r values ('lot4', public.synchroniser_terrain(jsonb_build_array(
     'id', '93000000-0000-0000-0000-000000000002', 'type_piece', 'facture', 'numero', 'FA-2026-C02-00001',
     'client_id', '92000000-0000-0000-0000-000000000001', 'date_piece', public.aujourdhui_conakry(),
     'lignes', jsonb_build_array(jsonb_build_object('conditionnement_id',
-      (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50), 'quantite_colis', 1, 'prix_paquet_gnf', 3400)))),
+      (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50), 'quantite_colis', 1, 'prix_paquet_gnf', 2839)))),
   jsonb_build_object('id', 'op7', 'type', 'piece', 'donnees', jsonb_build_object(
     'id', '93000000-0000-0000-0000-000000000003', 'type_piece', 'devis', 'numero', 'DEV-2026-C01-00001',
     'client_id', '92000000-0000-0000-0000-000000000001', 'date_piece', public.aujourdhui_conakry(),

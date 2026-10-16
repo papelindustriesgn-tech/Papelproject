@@ -92,7 +92,7 @@ select lives_ok(
   'La direction définit un nouveau prix'
 );
 select is(
-  (select date_fin from public.grille_prix where produit_id = '10000000-0000-0000-0000-000000000001' and niveau = 'papel' and prix_paquet_gnf = 3400),
+  (select date_fin from public.grille_prix where produit_id = '10000000-0000-0000-0000-000000000001' and niveau = 'papel' and prix_paquet_gnf = 2839),
   '2026-10-31'::date, 'L''ancien prix est clôturé la veille, pas écrasé'
 );
 select throws_ok(

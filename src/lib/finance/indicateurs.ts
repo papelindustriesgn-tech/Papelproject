@@ -38,10 +38,11 @@ export interface ResultatPeriode extends CompteResultat {
 /** Compte de résultat de gestion d'une période : ventes, coût matière au CMP, charges des factures fournisseurs (HT, hors achats stockés). */
 export async function chargerResultat(du: string, au: string, nbJours: number): Promise<ResultatPeriode> {
   const supabase = await clientServeur();
+  // Les achats stockés et les investissements n'entrent pas dans le résultat de gestion.
   const [ventes, cout, { data: factures }] = await Promise.all([
     chargerIndicateursVentes(du, au, nbJours),
     coutDesVentes(du, au),
-    supabase.from("factures_fournisseurs_etat").select("montant_ht_gnf, nature, categorie_libelle, compte_charge").neq("statut", "annulee").neq("nature", "stock").gte("date_facture", du).lte("date_facture", au).limit(20000),
+    supabase.from("factures_fournisseurs_etat").select("montant_ht_gnf, nature, categorie_libelle, compte_charge").neq("statut", "annulee").in("nature", ["variable", "fixe"]).gte("date_facture", du).lte("date_facture", au).limit(20000),
   ]);
   const parCategorie = new Map<string, { libelle: string; nature: string; compte: string; montantGnf: number }>();
   for (const f of factures ?? []) {

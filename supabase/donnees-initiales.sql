@@ -17,7 +17,7 @@ insert into public.parametres (cle, valeur, libelle, description, categorie, typ
   ('tva_taux', '0.18', 'Taux de TVA', 'Taux légal en Guinée : 18 %', 'ventes', 'pourcentage', null),
   ('taux_usd_gnf_defaut', '9450', 'Taux USD par défaut', 'Utilisé si aucun taux n''est saisi pour la date', 'devises', 'nombre', 'GNF / USD'),
   ('grammage_reference', '13', 'Grammage de référence', 'Par pli', 'production', 'nombre', 'g/m²'),
-  ('taux_perte_reference', '0.05', 'Pertes de production de référence', '', 'production', 'pourcentage', null),
+  ('taux_perte_reference', '0.03', 'Pertes de production de référence', 'Business plan : 3 % retirés une seule fois', 'production', 'pourcentage', null),
   ('seuil_rendement_min', '0.95', 'Alerte rendement faible', 'Alerte si rendement réel < ce % du théorique', 'production', 'pourcentage', null),
   ('seuil_perte_max', '0.05', 'Alerte perte élevée', 'Alerte si taux de perte > ce seuil', 'production', 'pourcentage', null),
   ('seuil_arret_minutes', '30', 'Alerte arrêt long', 'Alerte si un arrêt dépasse cette durée', 'production', 'entier', 'min'),
@@ -66,13 +66,15 @@ join (values
 -- Produits, conditionnements et prix
 -- -----------------------------------------------------------------------------
 insert into public.produits (id, code, libelle, nb_mouchoirs, plis, longueur_mm, largeur_mm, grammage_g_m2_pli, taux_perte_ref, ordre) values
-  ('10000000-0000-0000-0000-000000000001', 'PETIT100', 'Petit 100', 100, 3, 190, 126, 13, 0.05, 1),
-  ('10000000-0000-0000-0000-000000000002', 'GRAND100', 'Grand 100', 100, 3, 190, 197, 13, 0.05, 2);
+  ('10000000-0000-0000-0000-000000000001', 'PETIT100', 'Petit 100', 100, 3, 190, 126, 13, 0.03, 1),
+  ('10000000-0000-0000-0000-000000000002', 'GRAND100', 'Grand 100', 100, 3, 190, 197, 13, 0.03, 2);
+-- Pertes 3 % (business plan) : rendement théorique net Petit 10 389 paquets/t, Grand 6 645 paquets/t.
+-- Grand 134 (5 000 paquets/t, colis de 80) : non produit au lancement, à créer dans Admin le moment venu.
 
 insert into public.conditionnements (produit_id, libelle, paquets_par_colis, par_defaut) values
-  ('10000000-0000-0000-0000-000000000001', 'Colis de 50', 50, true),
+  ('10000000-0000-0000-0000-000000000001', 'Colis de 50', 50, false),
   ('10000000-0000-0000-0000-000000000001', 'Colis de 80', 80, false),
-  ('10000000-0000-0000-0000-000000000001', 'Colis de 100', 100, false),
+  ('10000000-0000-0000-0000-000000000001', 'Colis de 100', 100, true),  -- colisage du business plan
   ('10000000-0000-0000-0000-000000000002', 'Colis de 30', 30, true);
 
 -- Niveaux de prix (le niveau « papel » est créé par la migration).
@@ -81,11 +83,13 @@ insert into public.niveaux_prix (code, libelle, description, ordre) values
   ('semi_grossiste', 'Prix semi-grossiste', 'Prix de revente du semi-grossiste au détaillant', 2),
   ('detaillant', 'Prix public (détaillant)', 'Prix de vente du détaillant au consommateur', 3);
 
--- Prix au paquet HORS TAXES, identiques quel que soit le colis (communiqués par la direction).
+-- Prix au paquet HORS TAXES, identiques quel que soit le colis. Business plan : prix TTC (TVA 18 % comprise)
+-- Petit 100 = 3 350 GNF le paquet (335 000 le colis de 100), Grand 100 = 230 000 GNF le colis de 30 ;
+-- HT = TTC ÷ 1,18 arrondi au franc (colis TTC obtenus : 335 002 et 229 994 GNF, la TVA étant calculée sur le total HT).
 -- Prix conseillés du Grand 100 : non communiqués, à saisir dans Administration → Produits et prix.
 insert into public.grille_prix (produit_id, niveau, prix_paquet_gnf, date_debut, note) values
-  ('10000000-0000-0000-0000-000000000001', 'papel', 3400, '2026-01-01', null),
-  ('10000000-0000-0000-0000-000000000002', 'papel', 7666, '2026-01-01', null),
+  ('10000000-0000-0000-0000-000000000001', 'papel', 2839, '2026-01-01', 'Business plan : 3 350 GNF TTC le paquet'),
+  ('10000000-0000-0000-0000-000000000002', 'papel', 6497, '2026-01-01', 'Business plan : 230 000 GNF TTC le colis de 30'),
   ('10000000-0000-0000-0000-000000000001', 'grossiste', 3600, '2026-01-01', null),
   ('10000000-0000-0000-0000-000000000001', 'semi_grossiste', 4000, '2026-01-01', null),
   ('10000000-0000-0000-0000-000000000001', 'detaillant', 5000, '2026-01-01', null);
@@ -104,6 +108,30 @@ insert into public.categories_articles (famille, libelle) values
   ('emballage', 'Encres'),
   ('piece_detachee', 'Pièces mécaniques'),
   ('piece_detachee', 'Pièces électriques');
+
+-- Matières et emballages du business plan (coûts variables pour 100 t / mois). Le stock de sécurité de
+-- matière première visé est de 50 t. Unité de stock définitive : kg (bobines, films, sacs, encres), unité (boîtes, cartons).
+insert into public.articles (id, code, libelle, famille, categorie_id, unite, suivi_par_lot, seuil_alerte)
+select v.id::uuid, v.code, v.libelle, v.famille::public.famille_article,
+       (select id from public.categories_articles c where c.libelle = v.categorie),
+       v.unite::public.unite_stock, v.lot, v.seuil
+from (values
+  ('40000000-0000-0000-0000-000000000001', 'MP-BOB', 'Bobine jumbo pâte vierge 13 g/m²', 'matiere_premiere', 'Bobines jumbo', 'kg', true, 50000),
+  ('40000000-0000-0000-0000-000000000002', 'EMB-FILM', 'Film d''emballage individuel', 'emballage', 'Films', 'kg', false, 0),
+  ('40000000-0000-0000-0000-000000000011', 'EMB-SAC10', 'Sac d''emballage (lot de 10 paquets)', 'emballage', 'Sacs', 'kg', false, 0),
+  ('40000000-0000-0000-0000-000000000012', 'EMB-SAC100', 'Sac d''emballage (colis de 100)', 'emballage', 'Sacs', 'kg', false, 0),
+  ('40000000-0000-0000-0000-000000000013', 'EMB-BOITE', 'Boîte individuelle (Grand 100)', 'emballage', 'Boîtes', 'unite', false, 0),
+  ('40000000-0000-0000-0000-000000000014', 'EMB-CARTON', 'Carton de 30 boîtes', 'emballage', 'Cartons', 'unite', false, 0),
+  ('40000000-0000-0000-0000-000000000015', 'EMB-ENCRE-BL', 'Encre blanche', 'emballage', 'Encres', 'kg', false, 0),
+  ('40000000-0000-0000-0000-000000000016', 'EMB-ENCRE-CO', 'Encres de couleur', 'emballage', 'Encres', 'kg', false, 0)
+) as v(id, code, libelle, famille, categorie, unite, lot, seuil);
+
+-- Fournisseurs connus (business plan, onglet Investissements) : coordonnées à compléter dans Achats → Fournisseurs.
+insert into public.fournisseurs (id, nom, notes) values
+  ('30000000-0000-0000-0000-000000000011', 'Fournisseur Lu (machines et matières)', 'Proformas Lu250714-21 (machines à mouchoirs) et Lu260113-08 (matières premières et emballages). Raison sociale à compléter.'),
+  ('30000000-0000-0000-0000-000000000012', 'BETCOM AI', 'Construction du hangar de l''usine de Coyah.'),
+  ('30000000-0000-0000-0000-000000000013', 'RIFA', 'Dédouanement des 2 conteneurs de machines (réf. RIFA260604).')
+on conflict (nom) do nothing;
 
 -- -----------------------------------------------------------------------------
 -- Production : postes, équipes, ligne, causes d'arrêt (modifiables dans Production → Listes de référence).
@@ -213,7 +241,7 @@ insert into public.categories_charges (libelle, nature, compte_comptable, ordre)
   ('Matières premières et frais d''approche (stockés)', 'stock', '6021', 1),
   ('Emballages (stockés)', 'stock', '6081', 2),
   ('Pièces détachées (stockées)', 'stock', '6041', 3),
-  ('Énergie : électricité, carburant du groupe', 'variable', '6052', 10),
+  ('Énergie : électricité, carburant du groupe', 'fixe', '6052', 10),  -- charge fixe dans le business plan
   ('Transport et livraison', 'variable', '6181', 11),
   ('Entretien et réparations', 'variable', '6241', 12),
   ('Commissions et frais commerciaux', 'variable', '6324', 13),
@@ -225,7 +253,11 @@ insert into public.categories_charges (libelle, nature, compte_comptable, ordre)
   ('Honoraires (comptable, juriste)', 'fixe', '6324', 25),
   ('Impôts et taxes', 'fixe', '6411', 26),
   ('Frais bancaires', 'fixe', '6311', 27),
-  ('Autres charges', 'variable', '6588', 30)
+  ('Autres charges', 'variable', '6588', 30),
+  -- Investissements (immobilisations, hors résultat de gestion) : comptes de classe 2 indicatifs.
+  ('Investissements : terrains', 'investissement', '222', 40),
+  ('Investissements : constructions (hangar)', 'investissement', '231', 41),
+  ('Investissements : machines et matériel (transport et douane compris)', 'investissement', '241', 42)
 on conflict (libelle) do nothing;
 
 insert into public.parametres (cle, valeur, libelle, description, categorie, type_valeur, unite) values
@@ -237,3 +269,19 @@ insert into public.parametres (cle, valeur, libelle, description, categorie, typ
   ('compta_compte_virements', '"585"', 'Virements internes', 'Compte de liaison des virements de fonds', 'comptabilite', 'texte', null),
   ('compta_compte_divers', '"4711"', 'Compte d''attente', 'Contrepartie des mouvements de trésorerie divers non classés', 'comptabilite', 'texte', null)
 on conflict (cle) do nothing;
+
+-- -----------------------------------------------------------------------------
+-- Charges fixes mensuelles du business plan (générées chaque mois par Finance → Charges du mois).
+-- Électricité et carburant : montants réels fournis ; les autres : hypothèses du business plan.
+-- L'amortissement (20 000 000 GNF/mois) n'est pas une dépense payée : il n'est pas repris ici.
+-- -----------------------------------------------------------------------------
+insert into public.charges_recurrentes (libelle, categorie_id, tiers, montant_gnf, jour_echeance, date_debut)
+select v.libelle, (select id from public.categories_charges where libelle = v.categorie), v.tiers, v.montant, v.jour, '2026-11-01'
+from (values
+  ('Salaires et charges (production et support)', 'Salaires', 'Personnel', 56700000::bigint, 28::smallint),
+  ('Électricité de l''usine', 'Énergie : électricité, carburant du groupe', 'Électricité', 20000000, 10),
+  ('Carburant (essence)', 'Énergie : électricité, carburant du groupe', 'Station-service', 12000000, 10),
+  ('Maintenance : préventif et pièces', 'Entretien et réparations', 'Maintenance', 11340000, 10),
+  ('Marketing et animation commerciale', 'Commissions et frais commerciaux', 'Marketing', 11340000, 10),
+  ('Administration et divers (télécom, sécurité, fournitures)', 'Autres charges', 'Administration', 10395000, 10)
+) as v(libelle, categorie, tiers, montant, jour);

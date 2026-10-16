@@ -52,7 +52,7 @@ test("commercial hors ligne : PVA, check-in, facture numérotée, puis synchroni
   await page.getByRole("button", { name: "Plus (Colis — Petit 100 – Colis de 50)" }).click();
   await page.getByRole("button", { name: "Plus (Colis — Petit 100 – Colis de 50)" }).click();
   await expect(page.getByLabel("Colis — Petit 100 – Colis de 50", { exact: true })).toHaveValue("2");
-  await expect(page.getByText("401 200 GNF")).toBeVisible(); // 100 paquets × 3 400 + 18 %
+  await expect(page.getByText("335 002 GNF")).toBeVisible(); // 100 paquets × 2 839 + 18 %
   await page.getByRole("button", { name: "Valider la facture" }).click();
   await expect(page.getByText(/Document FA-\d{4}-C01-\d{5} validé/)).toBeVisible();
   const numero = (await page.getByText(/Document FA-\d{4}-C01-\d{5} validé/).innerText()).match(/FA-\d{4}-C01-\d{5}/)![0];

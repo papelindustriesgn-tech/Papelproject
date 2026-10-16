@@ -492,7 +492,7 @@ export const REFERENTIELS: Referentiel[] = [
     archivable: true,
     champs: [
       { nom: "libelle", libelle: "Catégorie", type: "texte", requis: true, max: 80 },
-      { nom: "nature", libelle: "Nature", type: "choix", requis: true, options: [{ valeur: "stock", libelle: "Achat stocké" }, { valeur: "variable", libelle: "Charge variable" }, { valeur: "fixe", libelle: "Charge fixe" }] },
+      { nom: "nature", libelle: "Nature", type: "choix", requis: true, options: [{ valeur: "stock", libelle: "Achat stocké" }, { valeur: "variable", libelle: "Charge variable" }, { valeur: "fixe", libelle: "Charge fixe" }, { valeur: "investissement", libelle: "Investissement (immobilisation)" }] },
       { nom: "compte_comptable", libelle: "Compte comptable", type: "texte", max: 12 },
       { nom: "ordre", libelle: "Ordre", type: "entier" },
     ],

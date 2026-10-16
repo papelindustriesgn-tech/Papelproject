@@ -32,13 +32,13 @@ test.describe("ventes", () => {
     await page.getByRole("link", { name: "+ Commande" }).click();
     await page.getByRole("button", { name: "Créer et ajouter les produits" }).click();
 
-    // 100 colis de 50 Petit 100 = 5 000 paquets × 3 400 GNF HT
+    // 100 colis de 50 Petit 100 = 5 000 paquets × 2 839 GNF HT
     await page.getByLabel("Produit et colis").selectOption({ label: "Petit 100 – Colis de 50" });
     await page.getByLabel("Colis", { exact: true }).fill("100");
     await page.getByRole("button", { name: "Ajouter" }).click();
     await expect(page.getByText("Ligne ajoutée.")).toBeVisible();
-    await expect(page.getByText("20 060 000 GNF")).toBeVisible(); // TTC = 17 000 000 + 18 %
-    await expect(page.getByText("Vingt-millions-soixante-mille francs guinéens")).toBeVisible();
+    await expect(page.getByText("16 750 100 GNF")).toBeVisible(); // TTC = 14 195 000 + 18 %
+    await expect(page.getByText("Seize-millions-sept-cent-cinquante-mille-cent francs guinéens")).toBeVisible();
     await page.getByRole("button", { name: "Valider la commande" }).click();
     await expect(page.getByRole("heading", { name: /^Commande CMD-\d{4}-\d{5}$/ })).toBeVisible();
 
@@ -53,14 +53,14 @@ test.describe("ventes", () => {
     await page.getByRole("button", { name: "Créer la facture" }).click();
     await page.getByRole("button", { name: "Valider la facture" }).click();
     await expect(page.getByRole("heading", { name: /^Facture FA-\d{4}-\d{5}$/ })).toBeVisible();
-    await expect(page.getByText(/Paiements — reste à payer : 20 060 000 GNF/)).toBeVisible();
+    await expect(page.getByText(/Paiements — reste à payer : 16 750 100 GNF/)).toBeVisible();
 
     // Paiement de la moitié → dotation : 5 000 × 50 % × 4 % = 100 paquets
-    await page.getByLabel("Montant (GNF)").fill("10 030 000");
+    await page.getByLabel("Montant (GNF)").fill("8 375 050");
     await page.getByLabel("Mode").selectOption({ label: "Orange Money" });
     await page.getByLabel(/Référence/).fill("OM-123456");
     await page.getByRole("button", { name: "Enregistrer le paiement" }).click();
-    await expect(page.getByText(/reste à payer : 10 030 000 GNF/)).toBeVisible();
+    await expect(page.getByText(/reste à payer : 8 375 050 GNF/)).toBeVisible();
     await expect(page.getByText("Petit 100 : 100 paquets dus, 0 remis")).toBeVisible();
 
     // Remise de la dotation : 2 colis de 50
@@ -71,7 +71,7 @@ test.describe("ventes", () => {
     // Document imprimable
     await page.getByRole("link", { name: "Imprimer / PDF" }).click();
     await expect(page.getByText("FACTURE", { exact: true })).toBeVisible();
-    await expect(page.getByText("Vingt-millions-soixante-mille francs guinéens")).toBeVisible();
+    await expect(page.getByText("Seize-millions-sept-cent-cinquante-mille-cent francs guinéens")).toBeVisible();
   });
 
   test("plafond de crédit dépassé : facture refusée", async ({ page }) => {

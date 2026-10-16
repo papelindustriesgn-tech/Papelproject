@@ -12,7 +12,7 @@ export default async function NouvelleFacture() {
     supabase.from("fournisseurs").select("id, nom").eq("actif", true).order("nom"),
     supabase.from("categories_charges").select("id, libelle, nature").eq("actif", true).order("ordre"),
   ]);
-  const natures: Record<string, string> = { stock: "stocké", variable: "variable", fixe: "fixe" };
+  const natures: Record<string, string> = { stock: "stocké", variable: "variable", fixe: "fixe", investissement: "investissement" };
   return (
     <>
       <TitrePage

@@ -17,6 +17,10 @@ describe("rendement théorique", () => {
     expect(rendementTheoriquePaquetsParTonne(PETIT, 0.05)).toBe(10175);
     expect(rendementTheoriquePaquetsParTonne(GRAND, 0.05)).toBe(6508);
   });
+  it("retrouve les rendements nets du business plan avec 3 % de pertes", () => {
+    expect(rendementTheoriquePaquetsParTonne(PETIT, 0.03)).toBe(10389);
+    expect(rendementTheoriquePaquetsParTonne(GRAND, 0.03)).toBe(6645);
+  });
   it("sans perte", () => {
     expect(rendementTheoriquePaquetsParTonne(PETIT, 0)).toBe(10711);
   });

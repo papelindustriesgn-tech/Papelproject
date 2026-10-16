@@ -27,7 +27,10 @@ Commandes : `npm run verifier` (types + lint + Vitest), `npm run test:db` (pgTAP
 - Écrans de liste : recherche + filtres dans l'URL (`BarreFiltres`), **export Excel** (`ExportCsv` : CSV « ; » + BOM).
 - On **archive** (`actif = false`) plutôt que supprimer ce qui a servi ; les historiques (prix, mouvements, audit) sont inaltérables.
 - Données : `supabase/donnees-initiales.sql` = configuration de départ (chargée aussi en production, puis modifiée dans l'interface) ;
-  `supabase/seed-demo.sql` = démonstration locale uniquement (comptes à mot de passe connu, stocks fictifs).
+  `supabase/historique-reel.sql` = historique réel du projet tiré du business plan (investissements, financement, commande de matières
+  en transit ; chargé aussi en production, une fois) ; `supabase/seed-demo.sql` = démonstration locale uniquement (comptes à mot de passe
+  connu, ventes, production et stocks fictifs). **Règle : le réel remplace la démo partout où il existe** (prix, coûts, articles, charges,
+  transit) ; la démo ne comble que ce qui n'existe pas encore (ventes, production, terrain, personnel).
 
 ## 1. Stack
 
@@ -60,22 +63,25 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 
 | Produit   | Mouchoirs | Plis | Format (mm) | Conditionnements (paquets / colis) | Rendement théorique | Prix Papel actuel |
 |-----------|-----------|------|-------------|------------------------------------|---------------------|-------------------|
-| Petit 100 | 100       | 3    | 190 × 126   | 50 (défaut), 80 ou 100 selon le client | 10 175 paquets/t | **3 400 GNF / paquet** |
-| Grand 100 | 100       | 3    | 190 × 197   | 30                                 | 6 508 paquets/t     | **7 666 GNF / paquet** |
+| Petit 100 | 100       | 3    | 190 × 126   | **100 (défaut)**, 50 ou 80 selon le client | 10 389 paquets/t | **2 839 GNF HT / paquet** (3 350 TTC) |
+| Grand 100 | 100       | 3    | 190 × 197   | 30                                 | 6 645 paquets/t     | **6 497 GNF HT / paquet** (230 000 TTC le colis de 30) |
+
+Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — prix **TTC** communiqués, saisis en HT = TTC ÷ 1,18 arrondi
+(colis TTC facturés : 335 002 et 229 994 GNF, la TVA étant calculée sur le total HT). Grand 134 : non produit au lancement.
 
 - **Le prix est fixé AU PAQUET, identique quelle que soit la taille du colis** (confirmé par la direction).
-  Prix du colis = prix du paquet × paquets du conditionnement (ex. Petit colis de 50 = 170 000 GNF HT ; Grand colis de 30 = 229 980 GNF HT).
+  Prix du colis = prix du paquet × paquets du conditionnement (ex. Petit colis de 100 = 283 900 GNF HT ; Grand colis de 30 = 194 910 GNF HT).
 - **Prix, TVA et paramètres commerciaux : saisis par la direction elle-même dans l'interface** (valeurs de départ ci-dessous, modifiables).
 - **Prix HORS TAXES ; TVA 18 % AJOUTÉE sur la facture** (paramètres `tva_applicable` = oui, `tva_taux` = 18 %), calculée sur le total HT
   avec un seul arrondi (`src/lib/metier/tva.ts`). À valider avec le comptable selon le régime fiscal de Papel.
 
-- Grammage de référence : **13 g/m² par pli**. Pertes de référence : **5 %**.
+- Grammage de référence : **13 g/m² par pli**. Pertes de référence : **3 %** (business plan ; le seuil d'alerte perte reste 5 %).
 - Formule du rendement théorique (vérifie les valeurs ci-dessus) :
   `poids_paquet_g = (L_m × l_m) × plis × grammage × nb_mouchoirs`
   `rendement_theorique = arrondi(1 000 000 g × (1 − taux_perte) ÷ poids_paquet_g)` (arrondi à l'entier le plus proche)
   Formule implémentée deux fois, à l'identique : `src/lib/metier/rendement.ts` et colonne générée `produits.rendement_theorique_paquets_t`.
-  - Petit : 0,190 × 0,126 × 3 × 13 × 100 = 93,366 g → 950 000 ÷ 93,366 = 10 174,98 → **10 175 paquets/t**
-  - Grand : 0,190 × 0,197 × 3 × 13 × 100 = 145,977 g → 950 000 ÷ 145,977 = 6 507,88 → **6 508 paquets/t**
+  - Petit : 0,190 × 0,126 × 3 × 13 × 100 = 93,366 g → 970 000 ÷ 93,366 = 10 389,2 → **10 389 paquets/t**
+  - Grand : 0,190 × 0,197 × 3 × 13 × 100 = 145,977 g → 970 000 ÷ 145,977 = 6 644,9 → **6 645 paquets/t**
 - Le système compare **toujours** le rendement RÉEL (paquets produits ÷ tonnes consommées) au théorique.
 - **Historique des prix conservé** : un prix a une date de début et une date de fin, jamais écrasé (table `grille_prix`, fonction `definir_prix`, contrainte anti-chevauchement, trigger d'immuabilité).
 
@@ -97,7 +103,9 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 
 - Coût matière réel = prix fournisseur + fret + transit + douane + transport jusqu'à l'usine + pertes.
 - Postes de coûts variables : pâte/bobines, films, sacs, boîtes, cartons, encres, transport, douane.
-- Charges fixes mensuelles saisies séparément.
+- Charges fixes mensuelles saisies séparément (business plan : salaires 56,7 M, électricité 20 M et carburant 12 M réels,
+  maintenance 11,34 M, marketing 11,34 M, administration 10,395 M GNF/mois ; amortissement 20 M non repris, ce n'est pas une dépense).
+- Coût rendu usine de la bobine (business plan) : pâte 960 USD/t + transport 1 043 USD/t + douane 700 USD/t ≈ 2 703 USD/t.
 
 ## 6 bis. Stocks (étape 2)
 
@@ -265,7 +273,8 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
 ## 6 undecies. Finance (phase 3)
 
 - Listes modifiables : **comptes de trésorerie** (caisse / banque / mobile, devise, compte classe 5, solde et date d'ouverture),
-  **catégories de charges** (nature `stock` / `variable` / `fixe` + compte SYSCOHADA), **charges fixes mensuelles** (`charges_recurrentes`).
+  **catégories de charges** (nature `stock` / `variable` / `fixe` / `investissement` + compte SYSCOHADA ; investissement = classe 2,
+  dette et trésorerie mais hors résultat de gestion), **charges fixes mensuelles** (`charges_recurrentes`).
   Mode de paiement → compte de trésorerie (`modes_paiement.compte_id`). Comptes des journaux : paramètres `compta_compte_*`.
 - **Journal de trésorerie** `mouvements_tresorerie` : inaltérable (contre-passation), montant dans la devise du compte + contre-valeur GNF.
   Alimenté automatiquement : encaissement client (trigger sur `paiements`), règlement fournisseur (`regler_facture_fournisseur`),

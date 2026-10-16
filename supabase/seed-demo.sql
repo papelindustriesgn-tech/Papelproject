@@ -51,6 +51,7 @@ drop table demo_comptes;
 -- Stocks de démonstration : fournisseurs, articles, 40 bobines reçues sur 60 jours,
 -- consommation/production/ventes sur les 30 derniers jours.
 -- -----------------------------------------------------------------------------
+-- Les articles réels (bobine jumbo, film, sacs, boîtes, cartons, encres) viennent de donnees-initiales.sql.
 insert into public.fournisseurs (id, nom, pays, contact) values
   ('30000000-0000-0000-0000-000000000001', 'Fournisseur pâte A (démo)', 'Chine', 'Service export'),
   ('30000000-0000-0000-0000-000000000002', 'Emballages Conakry (démo)', 'Guinée', 'Service commercial');
@@ -60,8 +61,6 @@ select v.id::uuid, v.code, v.libelle, v.famille::public.famille_article,
        (select id from public.categories_articles c where c.libelle = v.categorie),
        v.unite::public.unite_stock, v.lot, v.seuil
 from (values
-  ('40000000-0000-0000-0000-000000000001', 'MP-BOB-13', 'Bobine jumbo 13 g/m² – 3 plis', 'matiere_premiere', 'Bobines jumbo', 'kg', true, 8000),
-  ('40000000-0000-0000-0000-000000000002', 'EMB-FILM-P', 'Film flow-pack Petit 100', 'emballage', 'Films', 'kg', false, 150),
   ('40000000-0000-0000-0000-000000000003', 'EMB-FILM-G', 'Film flow-pack Grand 100', 'emballage', 'Films', 'kg', false, 100),
   ('40000000-0000-0000-0000-000000000004', 'EMB-SAC', 'Sac de colis', 'emballage', 'Sacs', 'unite', false, 1000),
   ('40000000-0000-0000-0000-000000000005', 'EMB-ENCRE', 'Encre d''impression', 'emballage', 'Encres', 'litre', false, 20)
@@ -107,18 +106,19 @@ begin
   -- Les fonctions de vente contrôlent les droits : on agit au nom du compte de démonstration « finance ».
   perform set_config('request.jwt.claims', json_build_object('sub', '20000000-0000-0000-0000-000000000013', 'role', 'authenticated')::text, true);
 
-  -- 40 bobines reçues sur 60 jours (poids 950 à 1 290 kg, coût réel rendu usine ≈ 13 500 GNF/kg).
+  -- 40 bobines reçues sur 60 jours (poids 950 à 1 290 kg). Coût rendu usine du business plan :
+  -- pâte 960 USD/t + transport 1 043 USD/t + douane 700 USD/t = 2 703 USD/t ≈ 25 550 GNF/kg.
   for j in 1..40 loop
     perform public.receptionner_bobine(
       '40000000-0000-0000-0000-000000000001', 'JB-2026-' || lpad(j::text, 4, '0'),
-      950 + (j * 37) % 340, 13200 + (j * 53) % 600,
+      950 + (j * 37) % 340, 25300 + (j * 53) % 500,
       '30000000-0000-0000-0000-000000000001', public.aujourdhui_conakry() - 62 + (j * 3) / 2,
       13, 2700, 1500, 3::smallint, '');
   end loop;
 
   -- Emballages : réceptions
   insert into public.mouvements_stock (date_operation, type, article_id, quantite, unite, cout_unitaire_gnf, motif) values
-    (public.aujourdhui_conakry() - 45, 'reception', '40000000-0000-0000-0000-000000000002', 900, 'kg', 32000, 'Stock initial'),
+    (public.aujourdhui_conakry() - 45, 'reception', '40000000-0000-0000-0000-000000000002', 900, 'kg', 15281, 'Stock initial'),  -- 1 617 USD/t
     (public.aujourdhui_conakry() - 45, 'reception', '40000000-0000-0000-0000-000000000003', 500, 'kg', 32000, 'Stock initial'),
     (public.aujourdhui_conakry() - 45, 'reception', '40000000-0000-0000-0000-000000000004', 9000, 'unite', 1500, 'Stock initial'),
     (public.aujourdhui_conakry() - 45, 'reception', '40000000-0000-0000-0000-000000000005', 60, 'litre', 85000, 'Stock initial');
@@ -142,7 +142,7 @@ begin
   insert into public.ordres_fabrication (id, campagne_id, conditionnement_id, ligne_id, quantite_colis, date_debut_prevue, date_fin_prevue, statut)
   values
     ('50000000-0000-0000-0000-000000000001', (select id from public.campagnes limit 1),
-     (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50),
+     (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 100),
      (select id from public.lignes_production limit 1), 6000, public.aujourdhui_conakry() - 30, public.aujourdhui_conakry() + 30, 'planifie'),
     ('50000000-0000-0000-0000-000000000002', (select id from public.campagnes limit 1),
      (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000002' and paquets_par_colis = 30),
@@ -190,7 +190,7 @@ begin
       else
         v_paq_petit := floor(v_kg_jour / 1000 * 10175 * v_facteur / 50) * 50;
         insert into public.fiche_productions (fiche_id, conditionnement_id, paquets, rebuts_kg)
-        values (v_fiche, (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50),
+        values (v_fiche, (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 100),
                 v_paq_petit, round(v_kg_jour * (0.02 + ((j * 5) % 6) / 100.0), 1));
         insert into public.fiche_consommations (fiche_id, article_id, quantite) values
           (v_fiche, '40000000-0000-0000-0000-000000000002', round(v_paq_petit * 0.0021, 1)),
@@ -342,7 +342,7 @@ begin
 end $$;
 
 -- -----------------------------------------------------------------------------
--- Achats de démonstration : un conteneur livré (bobines déjà en stock), un en mer, un au port, un bon en brouillon.
+-- Achats de démonstration : un bon livré (bobines déjà en stock) et un bon en brouillon.
 -- -----------------------------------------------------------------------------
 do $$
 declare
@@ -356,7 +356,7 @@ begin
   insert into public.bons_commande (id, numero, fournisseur_id, date_commande, devise, taux_change, incoterm, date_livraison_prevue, frais_estimes_gnf, statut)
   values (gen_random_uuid(), public.prochain_numero('BC-' || to_char(j, 'YYYY') || '-'), f, j - 110, 'USD', 9400, 'CFR Conakry', j - 60, 95000000, 'recu')
   returning id into v_bc;
-  insert into public.lignes_bc (bc_id, article_id, quantite, prix_unitaire) values (v_bc, bob, 44000, 1.13);
+  insert into public.lignes_bc (bc_id, article_id, quantite, prix_unitaire) values (v_bc, bob, 44000, 0.96);  -- 960 USD/t (business plan)
   insert into public.conteneurs (id, bc_id, reference, navire, poids_net_prevu_kg, date_embarquement_prevue, date_embarquement_reelle,
     date_arrivee_port_prevue, date_arrivee_port_reelle, date_dedouanement_prevue, date_dedouanement_reelle, date_livraison_prevue, date_livraison_reelle)
   values (gen_random_uuid(), v_bc, 'MSCU4410227', 'MSC Abidjan', 22000, j - 100, j - 98, j - 72, j - 70, j - 66, j - 64, j - 63, j - 62)
@@ -373,25 +373,14 @@ begin
   returning id into v_ct;
   update public.lots set conteneur_id = v_ct where numero_lot > 'JB-2026-0020' and conteneur_id is null and numero_lot like 'JB-2026-%';
 
-  -- BC 2 : 40 t, un conteneur en mer et un au port de Conakry.
-  insert into public.bons_commande (id, numero, fournisseur_id, date_commande, devise, taux_change, incoterm, date_livraison_prevue, frais_estimes_gnf, statut)
-  values (gen_random_uuid(), public.prochain_numero('BC-' || to_char(j, 'YYYY') || '-'), f, j - 40, 'USD', 9450, 'CFR Conakry', j + 12, 90000000, 'envoye')
-  returning id into v_bc;
-  insert into public.lignes_bc (bc_id, article_id, quantite, prix_unitaire) values (v_bc, bob, 40000, 1.15);
-  insert into public.conteneurs (bc_id, reference, navire, poids_net_prevu_kg, date_embarquement_prevue, date_embarquement_reelle, date_arrivee_port_prevue, date_dedouanement_prevue, date_livraison_prevue)
-  values (v_bc, 'MSCU5520119', 'Maersk Dakar', 20000, j - 25, j - 24, j + 4, j + 8, j + 10);
-  insert into public.conteneurs (id, bc_id, reference, navire, poids_net_prevu_kg, date_embarquement_prevue, date_embarquement_reelle, date_arrivee_port_prevue, date_arrivee_port_reelle, date_dedouanement_prevue, date_livraison_prevue)
-  values (gen_random_uuid(), v_bc, 'MSCU5520120', 'Maersk Dakar', 20000, j - 28, j - 27, j - 3, j - 2, j + 2, j + 4)
-  returning id into v_ct;
-  insert into public.frais_approche (conteneur_id, type_frais_id, date_frais, devise, montant, prestataire)
-  select v_ct, t.id, j - 2, 'USD', 190000, 'Armateur (démo)' from public.types_frais t where t.libelle = 'Fret maritime';
+  -- Le transit réel (commande Lu260113-08, 14 conteneurs) est chargé par historique-reel.sql.
 
   -- BC 3 : emballages en GNF, brouillon ; deux demandes d'achat.
   insert into public.bons_commande (fournisseur_id, date_commande, devise, statut, notes)
   values ('30000000-0000-0000-0000-000000000002', j, 'GNF', 'brouillon', 'Films et sacs pour le mois prochain')
   returning id into v_bc;
   insert into public.lignes_bc (bc_id, article_id, quantite, prix_unitaire) values
-    (v_bc, '40000000-0000-0000-0000-000000000002', 500, 32000), (v_bc, '40000000-0000-0000-0000-000000000004', 10000, 1500);
+    (v_bc, '40000000-0000-0000-0000-000000000002', 500, 15281), (v_bc, '40000000-0000-0000-0000-000000000004', 10000, 1500);
   insert into public.demandes_achat (article_id, quantite, date_besoin, motif, statut, demandeur_id, bc_id) values
     ('40000000-0000-0000-0000-000000000002', 500, j + 20, 'Stock de film bas', 'approuvee', '20000000-0000-0000-0000-000000000004', v_bc),
     ('40000000-0000-0000-0000-000000000005', 40, j + 30, 'Encre pour impression des sachets', 'soumise', '20000000-0000-0000-0000-000000000004', null);
@@ -555,30 +544,29 @@ declare
   v_f record;
 begin
   perform set_config('request.jwt.claims', json_build_object('sub', '20000000-0000-0000-0000-000000000013', 'role', 'authenticated')::text, true);
-  insert into public.charges_recurrentes (libelle, categorie_id, tiers, montant_gnf, jour_echeance, date_debut) values
-    ('Salaires du personnel', (select id from public.categories_charges where libelle = 'Salaires'), 'Personnel', 68000000, 28, date_trunc('month', public.aujourdhui_conakry() - 90)::date),
-    ('Charges sociales (CNSS)', (select id from public.categories_charges where libelle = 'Charges sociales'), 'CNSS', 12000000, 15, date_trunc('month', public.aujourdhui_conakry() - 90)::date),
-    ('Loyer du terrain de Coyah', (select id from public.categories_charges where libelle = 'Loyer'), 'Propriétaire', 15000000, 5, date_trunc('month', public.aujourdhui_conakry() - 90)::date),
-    ('Internet et téléphones', (select id from public.categories_charges where libelle = 'Télécommunications et internet'), 'Opérateur télécom', 2500000, 10, date_trunc('month', public.aujourdhui_conakry() - 90)::date);
+  -- Charges fixes réelles du business plan (donnees-initiales.sql) : on les fait démarrer 3 mois plus tôt
+  -- pour que la démonstration ait un historique de charges.
+  update public.charges_recurrentes set date_debut = date_trunc('month', public.aujourdhui_conakry() - 90)::date;
   for v_mois in select generate_series(date_trunc('month', public.aujourdhui_conakry() - 60), date_trunc('month', public.aujourdhui_conakry()), interval '1 month')::date loop
     perform public.generer_charges_mois(v_mois);
   end loop;
 
-  -- Variables : énergie (gasoil du groupe) et transport, chaque semaine.
+  -- Variables : transport des livraisons, chaque semaine (l'électricité et le carburant sont dans les charges fixes réelles).
   for v_mois in select generate_series(public.aujourdhui_conakry() - 56, public.aujourdhui_conakry() - 7, interval '7 days')::date loop
     insert into public.factures_fournisseurs (tiers, libelle, categorie_id, date_facture, date_echeance, montant_ht)
-    values ('Station Total Coyah', 'Gasoil groupe électrogène', (select id from public.categories_charges where libelle = 'Énergie : électricité, carburant du groupe'), v_mois, v_mois + 7, 9500000),
-           ('Transporteur local', 'Livraisons clients', (select id from public.categories_charges where libelle = 'Transport et livraison'), v_mois, v_mois + 15, 4200000);
+    values ('Transporteur local', 'Livraisons clients', (select id from public.categories_charges where libelle = 'Transport et livraison'), v_mois, v_mois + 15, 4200000);
   end loop;
 
   -- Bobines : factures des conteneurs livrés (en USD, stockées).
   insert into public.factures_fournisseurs (fournisseur_id, reference_fournisseur, libelle, categorie_id, date_facture, date_echeance, devise, montant_ht, bc_id)
   select b.fournisseur_id, 'INV-' || b.numero, 'Bobines – ' || b.numero, (select id from public.categories_charges where libelle like 'Matières premières%'),
          b.date_commande, b.date_commande + 60, 'USD', (select sum(l.montant_devise) from public.lignes_bc l where l.bc_id = b.id), b.id
-  from public.bons_commande b where b.statut <> 'brouillon' and b.devise = 'USD';
+  from public.bons_commande b where b.statut <> 'brouillon' and b.devise = 'USD' and b.fournisseur_id = '30000000-0000-0000-0000-000000000001';
 
   -- Règlements : tout ce qui est échu depuis plus de 10 jours est payé (banque), sauf les bobines (moitié payée).
-  for v_f in select * from public.factures_fournisseurs_etat where date_echeance < public.aujourdhui_conakry() - 10 and solde_gnf > 0 order by date_echeance loop
+  -- (les factures réelles du projet, chargées par historique-reel.sql, ne sont pas touchées).
+  for v_f in select * from public.factures_fournisseurs_etat where date_echeance < public.aujourdhui_conakry() - 10 and solde_gnf > 0
+             and reference_fournisseur not like 'Lu%' order by date_echeance loop
     perform public.regler_facture_fournisseur(v_f.id, (select id from public.comptes_tresorerie where libelle = 'Banque (GNF)'),
       case when v_f.nature = 'stock' then v_f.solde_gnf / 2 else v_f.solde_gnf end, v_f.date_echeance, 'VIR-' || v_f.numero);
   end loop;

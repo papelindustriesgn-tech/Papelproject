@@ -23,14 +23,14 @@ values ('70000000-0000-0000-0000-000000000001', 'Client test', (select id from p
 
 select pg_temp.connecter('finance');
 insert into public.pieces_vente (id, type_piece, client_id) values ('71000000-0000-0000-0000-000000000001', 'commande', '70000000-0000-0000-0000-000000000001');
--- 100 colis de 50 Petit 100 = 5 000 paquets au prix de la grille (3 400 GNF HT)
+-- 100 colis de 50 Petit 100 = 5 000 paquets au prix de la grille (2 839 GNF HT = 3 350 TTC)
 insert into public.lignes_piece (piece_id, conditionnement_id, quantite_colis, paquets, prix_paquet_gnf, montant_ht_gnf)
 values ('71000000-0000-0000-0000-000000000001',
         (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50), 100, 1, null, 0);
 select is((select paquets from public.lignes_piece where piece_id = '71000000-0000-0000-0000-000000000001'), 5000, 'Colis convertis en paquets');
-select is((select prix_paquet_gnf from public.lignes_piece where piece_id = '71000000-0000-0000-0000-000000000001'), 3400::bigint, 'Prix figé depuis la grille');
+select is((select prix_paquet_gnf from public.lignes_piece where piece_id = '71000000-0000-0000-0000-000000000001'), 2839::bigint, 'Prix figé depuis la grille');
 select matches(public.valider_piece('71000000-0000-0000-0000-000000000001'), '^CMD-\d{4}-\d{5}$', 'Numéro de commande attribué à la validation');
-select is((select total_tva_gnf from public.pieces_vente where id = '71000000-0000-0000-0000-000000000001'), 3060000::bigint, 'TVA 18 % sur 17 000 000 GNF HT');
+select is((select total_tva_gnf from public.pieces_vente where id = '71000000-0000-0000-0000-000000000001'), 2555100::bigint, 'TVA 18 % sur 14 195 000 GNF HT');
 select throws_ok($$ update public.lignes_piece set quantite_colis = 1 where piece_id = '71000000-0000-0000-0000-000000000001' $$, '22023', null, 'Pièce validée : lignes figées');
 
 -- Livraison : sortie de stock
@@ -49,14 +49,14 @@ select throws_ok($$ select public.preparer_livraison('71000000-0000-0000-0000-00
 insert into t select 'fa', public.transformer_piece('71000000-0000-0000-0000-000000000001', 'facture'), null;
 select matches(public.valider_piece((select id from t where cle = 'fa')), '^FA-\d{4}-\d{5}$', 'Facture numérotée');
 select throws_ok($$ select public.transformer_piece('71000000-0000-0000-0000-000000000001', 'facture') $$, '22023', null, 'Pas de double facturation');
-select is((select total_ttc_gnf from public.pieces_vente where id = (select id from t where cle = 'fa')), 20060000::bigint, 'Facture TTC = 20 060 000 GNF');
+select is((select total_ttc_gnf from public.pieces_vente where id = (select id from t where cle = 'fa')), 16750100::bigint, 'Facture TTC = 16 750 100 GNF');
 
 -- Paiement partiel → dotation au prorata de l'encaissé (30 % payé → 5 000 × 30 % × 4 % = 60 paquets)
-select lives_ok($$ select public.enregistrer_paiement((select id from t where cle = 'fa'), 6018000, (select id from public.modes_paiement where libelle = 'Espèces')) $$, 'Paiement partiel');
+select lives_ok($$ select public.enregistrer_paiement((select id from t where cle = 'fa'), 5025030, (select id from public.modes_paiement where libelle = 'Espèces')) $$, 'Paiement partiel');
 select is((select paquets_dus from public.dotations where facture_id = (select id from t where cle = 'fa')), 60, 'Dotation sur l''encaissé uniquement : 60 paquets');
 select throws_ok($$ select public.enregistrer_paiement((select id from t where cle = 'fa'), 99999999, (select id from public.modes_paiement where libelle = 'Espèces')) $$,
   '22023', null, 'Paiement supérieur au reste dû refusé');
-select lives_ok($$ select public.enregistrer_paiement((select id from t where cle = 'fa'), 14042000, (select id from public.modes_paiement where libelle = 'Espèces')) $$, 'Solde payé');
+select lives_ok($$ select public.enregistrer_paiement((select id from t where cle = 'fa'), 11725070, (select id from public.modes_paiement where libelle = 'Espèces')) $$, 'Solde payé');
 select is((select paquets_dus from public.dotations where facture_id = (select id from t where cle = 'fa')), 200, 'Facture payée : 4 % de 5 000 = 200 paquets');
 select is((select solde_gnf from public.factures_etat where id = (select id from t where cle = 'fa')), 0::bigint, 'Solde nul');
 select pg_temp.deconnecter();
