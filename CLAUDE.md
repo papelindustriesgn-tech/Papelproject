@@ -131,7 +131,9 @@ Unités : **tonne, kg, bobine jumbo, paquet, colis, carton, palette**. On ne les
   - taux de perte = rebuts kg ÷ papier kg ;
   - TRS = disponibilité × performance × qualité (rebuts convertis en paquets via le poids d'un paquet) ; non calculé sans cadence.
   - Agrégation sur une période = concaténation des fiches (pas de moyenne de pourcentages).
-- Périodes d'analyse et période précédente de même durée : `src/lib/formulaires/periode.ts`.
+- Périodes d'analyse et période précédente de même durée : `src/lib/formulaires/periode.ts` (jour, **semaine du lundi** comparée
+  aux mêmes jours de la semaine précédente, mois, année ; 7 j, 30 j, trimestre et dates libres dans « Autres dates »).
+  Courbes des cartes héros : `serieRegroupee` (par jour ≤ 5 semaines, par semaine ≤ 3 mois, par mois au-delà ; quantités seulement).
 - Graphiques : Recharts, palette catégorielle validée (`src/components/graphiques/production.tsx`), ordre de couleur fixe.
 
 ## 6 quater. Ventes (étape 4)
@@ -356,6 +358,15 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
   en rouge ; Direction : `ListeAlertes`) → période → **indicateurs** → **`<RaccourcisAppli espace=… />`** (phrase d'accueil `accueil_espaces`,
   **un seul bouton principal** = 1er bouton actif, autres en petit, **parcours** numéroté) → graphiques et tableaux
   (`src/components/coque/entree-appli.tsx`, données `accueil_elements`, genres `action` / `etape` / `tache`).
+- **Filtres des vues d'ensemble** (`SelecteurPeriode` avec `params`, `filtres`, `gammes`, `commerciaux`) : période + **gamme de produits**
+  (table `produits`, archivées comprises) + **commercial** (rôle commercial terrain ; liste lisible par Direction, responsable commercial,
+  finance), dans l'adresse (`?periode=&produit=&commercial=`, `lireFiltresAnalyse`, options `chargerOptionsFiltres`).
+  Appliqués : Direction, Ventes, Équipe commerciale (gamme + commercial) ; Production, Magasin (gamme) ; Finance, Achats, Logistique,
+  Qualité, Maintenance, RH (période). Règles (`src/lib/metier/filtrage.ts`, testées) : commercial d'une pièce = celui de la pièce,
+  sinon celui du client ; gamme = lignes du produit, TTC et paiements au prorata du HT ; créances, échu, DSO et nouveaux clients ne se
+  découpent pas par gamme (« toutes gammes ») ; coût des ventes d'un commercial estimé au coût moyen du paquet par gamme
+  (`coutEstimeParGamme`) ; fiche de production mixte ramenée à un produit au prorata du poids de papier (`restreindreAuProduit`).
+  Les alertes « À traiter maintenant » restent globales.
 - **Indicateurs (KPI)** : `Indicateur` (`src/components/ui/indicateur.tsx`) avec `lien` (tuile cliquable vers le détail), `variation`
   (`ecartRelatif` / `ecartPoints`, `hausseBonne: false` quand une hausse est mauvaise : pertes, DSO, impayés), `tendance` (mini-courbe
   interactive `Tendance`, format par code `formatTendance` : jamais de fonction passée à un composant client), `ton` écrit

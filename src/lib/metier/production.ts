@@ -122,3 +122,32 @@ export function repartirCoutMatiere(coutTotalGnf: number, lignes: { paquets: num
   const total = poids.reduce((s, p) => s + p, 0);
   return lignes.map((l, i) => (total > 0 && l.paquets > 0 ? Math.round(((coutTotalGnf * poids[i]) / total / l.paquets) * 100) / 100 : 0));
 }
+
+/**
+ * Part d'une fiche qui revient à un produit (filtre « gamme ») : au prorata du poids théorique de papier
+ * (paquets × poids d'un paquet), comme la répartition du coût matière à la validation.
+ */
+export function partDuProduit(lignes: Pick<LigneProduction, "produitId" | "paquets" | "poidsPaquetG">[], produitId: string): number {
+  const poids = (l: (typeof lignes)[number]) => l.paquets * l.poidsPaquetG;
+  const total = lignes.reduce((s, l) => s + poids(l), 0);
+  const produit = lignes.filter((l) => l.produitId === produitId).reduce((s, l) => s + poids(l), 0);
+  if (total > 0) return produit / total;
+  // Aucun paquet bon (fiche de rebuts seulement) : part égale entre les produits présents.
+  return lignes.length ? lignes.filter((l) => l.produitId === produitId).length / lignes.length : 0;
+}
+
+/**
+ * Fiche ramenée à un seul produit : ses lignes, et papier, durée et arrêts au prorata de sa part.
+ * Les ratios (rendement, perte, TRS) restent ainsi cohérents. Null si la fiche n'a pas produit ce produit.
+ */
+export function restreindreAuProduit<F extends { papierKg: number; dureePosteMin: number; lignes: LigneProduction[]; arrets: Arret[] }>(fiche: F, produitId: string): F | null {
+  if (!fiche.lignes.some((l) => l.produitId === produitId)) return null;
+  const part = partDuProduit(fiche.lignes, produitId);
+  return {
+    ...fiche,
+    papierKg: fiche.papierKg * part,
+    dureePosteMin: fiche.dureePosteMin * part,
+    lignes: fiche.lignes.filter((l) => l.produitId === produitId),
+    arrets: fiche.arrets.map((a) => ({ ...a, minutes: a.minutes * part })),
+  };
+}

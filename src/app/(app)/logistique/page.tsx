@@ -34,7 +34,7 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
     <>
       <TitrePage titre="Logistique" sousTitre="Tournées de livraison depuis l'usine de Coyah" />
       <UrgencesAppli espace="logistique" />
-      <SelecteurPeriode periode={periode} />
+      <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/logistique/tournees/nouvelle" libelle="Bons à planifier" valeur={nombre(aPlanifier ?? 0)} detail="Bons de livraison validés sans tournée" ton={(aPlanifier ?? 0) > 0 ? "alerte" : "normal"} />
         <Indicateur lien="/logistique/tournees" libelle="Tournées" valeur={nombre(b.nbTournees)} detail={`${nombre(b.nbLivraisons)} bons de livraison`} />

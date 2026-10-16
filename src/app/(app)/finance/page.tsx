@@ -40,7 +40,7 @@ export default async function TableauDeBordFinance({ searchParams }: PageProps<"
           ton={tension ? "danger" : "normal"}
         />
       </div>
-      <SelecteurPeriode periode={periode} />
+      <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/finance/resultat" libelle="Chiffre d'affaires HT" valeur={gnf(r.caHtGnf)} />
         <Indicateur lien="/finance/resultat" libelle="Marge brute" valeur={gnf(r.margeBruteGnf)} detail={r.caHtGnf ? `${pct(r.margeBruteGnf / r.caHtGnf)} du CA` : undefined} />

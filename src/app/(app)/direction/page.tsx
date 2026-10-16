@@ -13,7 +13,9 @@ import { Carte, TitrePage } from "@/components/ui";
 import { BoutonImprimer } from "@/components/ui/bouton-imprimer";
 import { chargerSynthese } from "@/lib/direction/synthese";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
-import { joursDeLaPeriode, resoudrePeriode } from "@/lib/formulaires/periode";
+import { lireFiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
+import { joursDeLaPeriode, resoudrePeriode, serieRegroupee } from "@/lib/formulaires/periode";
+import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { clientServeur } from "@/lib/supabase/serveur";
 
 export const metadata: Metadata = { title: "Tableau de bord" };
@@ -21,21 +23,23 @@ export const metadata: Metadata = { title: "Tableau de bord" };
 export default async function TableauDeBordDirection({ searchParams }: PageProps<"/direction">) {
   const sp = await searchParams;
   const periode = resoudrePeriode(lireParam(sp, "periode") ?? "mois", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
+  const filtres = lireFiltresAnalyse(sp);
   const supabase = await clientServeur();
-  const [s, { data: pva }] = await Promise.all([chargerSynthese(periode), supabase.from("pva_carte").select("id, nom, latitude, longitude, derniere_rupture, type_libelle, commercial_nom").eq("actif", true)]);
+  let requetePva = supabase.from("pva_carte").select("id, nom, latitude, longitude, derniere_rupture, type_libelle, commercial_nom").eq("actif", true);
+  if (filtres.commercial) requetePva = requetePva.eq("commercial_id", filtres.commercial);
+  const [s, { data: pva }, options] = await Promise.all([chargerSynthese(periode, filtres), requetePva, chargerOptionsFiltres()]);
+  const filtresTexte = decrireFiltres(filtres, options);
   const jours = joursDeLaPeriode(periode);
 
   return (
     <>
       <TitrePage
         titre="Tableau de bord"
-        sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)} · comparaison avec la période précédente de même durée`}
+        sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}${filtresTexte ? ` · ${filtresTexte}` : ""} · comparaison avec la période précédente`}
         action={<BoutonImprimer />}
       />
       <ListeAlertes alertes={s.alertes} />
-      <div className="print:hidden">
-        <SelecteurPeriode periode={periode} />
-      </div>
+      <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} commerciaux={options.commerciaux} />
       <div className="mb-5 grid gap-4 xl:grid-cols-3">
         <CarteHero
           className="xl:col-span-2"
@@ -46,11 +50,11 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
               Comparé à la période précédente <PastilleVariation v={{ ecart: ecartRelatif(s.ventes.caHtGnf, s.ventesPrec.caHtGnf) }} />
             </span>
           }
-          points={jours.map((d) => ({ date: d, valeur: s.ventes.caParJour.get(d) ?? 0 }))}
+          points={serieRegroupee(periode, (d) => s.ventes.caParJour.get(d) ?? 0)}
           format="gnf"
           lien="/ventes"
           stats={[
-            { libelle: "Marge brute", valeur: gnf(s.marge.margeGnf), detail: s.marge.taux === null ? undefined : `${Math.round(s.marge.taux * 1000) / 10} % du CA` },
+            { libelle: "Marge brute", valeur: gnf(s.marge.margeGnf), detail: s.marge.taux === null ? undefined : `${(Math.round(s.marge.taux * 1000) / 10).toLocaleString("fr-FR")} % du CA` },
             { libelle: "Trésorerie", valeur: gnf(s.finance.tresorerieGnf) },
             { libelle: "Production", valeur: `${s.production.paquetsBons.toLocaleString("fr-FR")} paquets` },
           ]}

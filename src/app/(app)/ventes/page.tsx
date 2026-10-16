@@ -7,7 +7,9 @@ import { GraphiqueAnneau } from "@/components/graphiques/hero";
 import { CarteHero } from "@/components/ui/carte-hero";
 import { ecartRelatif, Indicateur, PastilleVariation } from "@/components/ui/indicateur";
 import { aujourdhui } from "@/lib/formulaires/dates";
-import { joursDeLaPeriode, resoudrePeriode } from "@/lib/formulaires/periode";
+import { lireFiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
+import { resoudrePeriode, serieRegroupee } from "@/lib/formulaires/periode";
+import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { chargerIndicateursVentes } from "@/lib/ventes/indicateurs";
 
@@ -16,17 +18,22 @@ export const metadata: Metadata = { title: "Ventes" };
 export default async function TableauDeBordVentes({ searchParams }: PageProps<"/ventes">) {
   const sp = await searchParams;
   const periode = resoudrePeriode(lireParam(sp, "periode"), aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
-  const [v, prec] = await Promise.all([
-    chargerIndicateursVentes(periode.du, periode.au, periode.nbJours),
-    chargerIndicateursVentes(periode.precedente.du, periode.precedente.au, periode.nbJours),
+  const filtres = lireFiltresAnalyse(sp);
+  const [v, prec, options] = await Promise.all([
+    chargerIndicateursVentes(periode.du, periode.au, periode.nbJours, filtres),
+    chargerIndicateursVentes(periode.precedente.du, periode.precedente.au, periode.nbJours, filtres),
+    chargerOptionsFiltres(),
   ]);
-  const donnees = joursDeLaPeriode(periode).map((d) => ({ date: d, valeur: v.caParJour.get(d) ?? 0 }));
+  const filtresTexte = decrireFiltres(filtres, options);
+  // Créances, échu et nouveaux clients ne se découpent pas par gamme (ils sont par client).
+  const toutesGammes = filtres.produit ? " · toutes gammes" : "";
+  const donnees = serieRegroupee(periode, (d) => v.caParJour.get(d) ?? 0);
 
   return (
     <>
-      <TitrePage titre="Ventes" sousTitre="Facturation, encaissements et clients" />
+      <TitrePage titre="Ventes" sousTitre={filtresTexte ? `Filtré : ${filtresTexte}` : "Facturation, encaissements et clients"} />
       <UrgencesAppli espace="ventes" />
-      <SelecteurPeriode periode={periode} />
+      <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} commerciaux={options.commerciaux} />
       <div className="mb-4 grid gap-4 xl:grid-cols-3">
         <CarteHero
           className="xl:col-span-2"
@@ -43,7 +50,7 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
           stats={[
             { libelle: "Encaissé", valeur: gnf(v.encaisseGnf) },
             { libelle: "Volumes", valeur: `${nombre(v.paquets)} paquets`, detail: v.parProduit.map((p) => `${p.libelle} : ${nombre(p.colis)} colis`).join(" · ") },
-            { libelle: "Échu à relancer", valeur: gnf(v.echuGnf) },
+            { libelle: "Échu à relancer", valeur: gnf(v.echuGnf), detail: toutesGammes ? "Toutes gammes" : undefined },
           ]}
         />
         <Carte titre="Ventes par produit">
@@ -53,10 +60,10 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur libelle="Prix moyen HT" valeur={v.prixMoyenPaquetGnf === null ? "—" : `${gnf(v.prixMoyenPaquetGnf)} / paquet`} variation={{ ecart: ecartRelatif(v.prixMoyenPaquetGnf, prec.prixMoyenPaquetGnf) }} />
         <Indicateur libelle="Commandes" valeur={nombre(v.nbCommandes)} variation={{ ecart: ecartRelatif(v.nbCommandes, prec.nbCommandes) }} lien="/ventes/pieces?type=commande" />
-        <Indicateur libelle="Clients actifs" valeur={nombre(v.clientsActifs)} variation={{ ecart: ecartRelatif(v.clientsActifs, prec.clientsActifs) }} detail={`${v.nouveauxClients} nouveau(x) client(s)`} lien="/ventes/clients" />
-        <Indicateur libelle="Encaissements" valeur={gnf(v.encaisseGnf)} variation={{ ecart: ecartRelatif(v.encaisseGnf, prec.encaisseGnf) }} lien="/ventes/impayes" />
-        <Indicateur libelle="Créances clients" valeur={gnf(v.creancesGnf)} detail={`Dont échu : ${gnf(v.echuGnf)}`} ton={v.echuGnf > 0 ? "alerte" : "normal"} lien="/ventes/impayes" />
-        <Indicateur libelle="Délai moyen de paiement (DSO)" valeur={v.dso === null ? "—" : `${nombre(v.dso, 0)} jours`} variation={{ ecart: ecartRelatif(v.dso, prec.dso), hausseBonne: false }} detail="Créances ÷ CA TTC × jours de la période" lien="/ventes/impayes" />
+        <Indicateur libelle="Clients actifs" valeur={nombre(v.clientsActifs)} variation={{ ecart: ecartRelatif(v.clientsActifs, prec.clientsActifs) }} detail={`${v.nouveauxClients} nouveau(x) client(s)${toutesGammes}`} lien="/ventes/clients" />
+        <Indicateur libelle="Encaissements" valeur={gnf(v.encaisseGnf)} variation={{ ecart: ecartRelatif(v.encaisseGnf, prec.encaisseGnf) }} detail={filtres.produit ? "Part de la gamme, au prorata de chaque facture" : undefined} lien="/ventes/impayes" />
+        <Indicateur libelle="Créances clients" valeur={gnf(v.creancesGnf)} detail={`Dont échu : ${gnf(v.echuGnf)}${toutesGammes}`} ton={v.echuGnf > 0 ? "alerte" : "normal"} lien="/ventes/impayes" />
+        <Indicateur libelle="Délai moyen de paiement (DSO)" valeur={v.dso === null ? "—" : `${nombre(v.dso, 0)} jours`} variation={{ ecart: ecartRelatif(v.dso, prec.dso), hausseBonne: false }} detail={filtres.produit ? "Non calculé par gamme (créances par client)" : "Créances ÷ CA TTC × jours de la période"} lien="/ventes/impayes" />
       </div>
       <RaccourcisAppli espace="ventes" />
       <div className="grid gap-4 lg:grid-cols-2">

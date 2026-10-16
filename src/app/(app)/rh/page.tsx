@@ -11,20 +11,26 @@ import { libelleMois, nomComplet, STATUTS_PRESENCE } from "@/lib/rh/libelles";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 
+import { lireParam } from "@/components/donnees/filtres";
+import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
+import { joursDeLaPeriode, resoudrePeriode } from "@/lib/formulaires/periode";
+
 export const metadata: Metadata = { title: "Ressources humaines" };
 
-const jourMoins = (jour: string, n: number) => new Date(Date.parse(`${jour}T00:00:00Z`) - n * 86_400_000).toISOString().slice(0, 10);
 
-export default async function VueRh() {
+export default async function VueRh({ searchParams }: PageProps<"/rh">) {
+  const sp = await searchParams;
   const jour = aujourdhui();
-  const debut = jourMoins(jour, 29);
-  const debutPrec = jourMoins(jour, 59);
+  // Absentéisme sur la période choisie (30 derniers jours par défaut), comparé à la précédente.
+  const periodeChoisie = resoudrePeriode(lireParam(sp, "periode"), jour, lireParam(sp, "du"), lireParam(sp, "au"));
+  const debut = periodeChoisie.du;
+  const debutPrec = periodeChoisie.precedente.du;
   const supabase = await clientServeur();
   const { rh_alerte_fin_contrat_jours: n } = await lireSeuils({ rh_alerte_fin_contrat_jours: 30 });
   const limite = new Date(Date.parse(`${jour}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
   const [{ data: employes }, { data: pointages }, { data: absencesDuJour }, { count: demandes }, { data: periodes }] = await Promise.all([
     supabase.from("employes").select("id, matricule, nom, prenom, date_fin_contrat, departements(libelle), types_contrats(libelle)").eq("actif", true),
-    supabase.from("presences").select("employe_id, jour, statut").gte("jour", debutPrec).lte("jour", jour).limit(50000),
+    supabase.from("presences").select("employe_id, jour, statut").gte("jour", debutPrec).lte("jour", periodeChoisie.au).limit(50000),
     supabase.from("absences").select("employe_id").eq("statut", "approuvee").lte("du", jour).gte("au", jour),
     supabase.from("absences").select("id", { count: "exact", head: true }).eq("statut", "demandee"),
     supabase.from("periodes_paie").select("mois, statut").order("mois", { ascending: false }).limit(2),
@@ -34,11 +40,11 @@ export default async function VueRh() {
   const duJour = p.filter((x) => x.jour === jour);
   const presents = duJour.filter((x) => x.statut === "present" || x.statut === "retard").length;
   const absentsJour = duJour.filter((x) => x.statut === "absent");
-  const periode = p.filter((x) => x.jour >= debut);
-  const precedente = p.filter((x) => x.jour < debut);
+  const periode = p.filter((x) => x.jour >= debut && x.jour <= periodeChoisie.au);
+  const precedente = p.filter((x) => x.jour >= debutPrec && x.jour <= periodeChoisie.precedente.au);
   const taux = tauxAbsenteisme(periode);
   const tauxPrec = tauxAbsenteisme(precedente);
-  const jours = Array.from({ length: 30 }, (_, i) => jourMoins(jour, 29 - i));
+  const jours = joursDeLaPeriode(periodeChoisie);
   const parJour = new Map<string, { statut: string }[]>();
   for (const x of periode) parJour.set(x.jour, [...(parJour.get(x.jour) ?? []), x]);
   const echeances = actifs.filter((e) => e.date_fin_contrat && e.date_fin_contrat >= jour && e.date_fin_contrat <= limite).sort((a, b) => a.date_fin_contrat!.localeCompare(b.date_fin_contrat!));
@@ -54,6 +60,7 @@ export default async function VueRh() {
     <>
       <TitrePage titre="Ressources humaines" sousTitre={`${actifs.length} employé(s) actif(s)`} />
       <UrgencesAppli espace="rh" />
+      <SelecteurPeriode periode={periodeChoisie} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur libelle="Effectif actif" valeur={nombre(actifs.length)} detail={[...parService.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s, k]) => `${s} : ${k}`).join(" · ") || "—"} lien="/rh/employes" />
         <Indicateur
@@ -64,7 +71,7 @@ export default async function VueRh() {
           lien="/rh/presences"
         />
         <Indicateur
-          libelle="Absentéisme (30 jours)"
+          libelle="Absentéisme"
           valeur={pct(taux)}
           variation={{ ecart: ecartPoints(taux, tauxPrec), unite: "points", hausseBonne: false }}
           tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.has(d) ? tauxAbsenteisme(parJour.get(d)!) : null }))}

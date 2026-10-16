@@ -35,7 +35,7 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
     <>
       <TitrePage titre="Qualité" sousTitre="Contrôles, non-conformités et traçabilité" />
       <UrgencesAppli espace="qualite" />
-      <SelecteurPeriode periode={periode} />
+      <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/qualite/controles" libelle="Conformité à réception" valeur={pct(tauxConformite(c.filter((x) => x.etape === "reception")))} detail={`${c.filter((x) => x.etape === "reception").length} contrôle(s) de bobines`} />
         <Indicateur lien="/qualite/controles" libelle="Conformité en production" valeur={pct(tauxConformite(c.filter((x) => x.etape !== "reception")))} detail={`${c.filter((x) => x.etape !== "reception").length} contrôle(s)`} />

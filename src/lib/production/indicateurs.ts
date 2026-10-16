@@ -1,6 +1,6 @@
 import "server-only";
 import { alertesProduction, SEUILS_PRODUCTION_DEFAUT, type AlerteProduction, type SeuilsProduction } from "@/lib/metier/rendement";
-import { calculerIndicateursFiche, type Arret, type IndicateursFiche, type LigneProduction } from "@/lib/metier/production";
+import { calculerIndicateursFiche, restreindreAuProduit, type Arret, type IndicateursFiche, type LigneProduction } from "@/lib/metier/production";
 import { kg } from "@/lib/metier/unites";
 import { clientServeur } from "@/lib/supabase/serveur";
 
@@ -45,8 +45,11 @@ export async function seuilsProduction(): Promise<SeuilsProduction> {
   };
 }
 
-/** Charge les fiches (validées par défaut) d'une période et calcule leurs indicateurs et alertes. */
-export async function chargerFiches(options: { du: string; au: string; inclureBrouillons?: boolean; ids?: string[] }): Promise<ResultatFiche[]> {
+/**
+ * Charge les fiches (validées par défaut) d'une période et calcule leurs indicateurs et alertes.
+ * `produit` (filtre gamme) : seules les fiches de ce produit, ramenées à sa part (`restreindreAuProduit`).
+ */
+export async function chargerFiches(options: { du: string; au: string; inclureBrouillons?: boolean; ids?: string[]; produit?: string | null }): Promise<ResultatFiche[]> {
   const supabase = await clientServeur();
   let requete = supabase
     .from("fiches_production")
@@ -67,8 +70,8 @@ export async function chargerFiches(options: { du: string; au: string; inclureBr
   const [{ data }, { data: cadences }, seuils] = await Promise.all([requete, supabase.from("cadences_nominales").select("ligne_id, produit_id, paquets_minute"), seuilsProduction()]);
   const cadence = new Map((cadences ?? []).map((c) => [`${c.ligne_id}|${c.produit_id}`, Number(c.paquets_minute)]));
 
-  return (data ?? []).map((f) => {
-    const fiche: FicheDetaillee = {
+  return (data ?? []).flatMap((f) => {
+    const complete: FicheDetaillee = {
       id: f.id,
       date: f.date_production,
       statut: f.statut,
@@ -97,6 +100,8 @@ export async function chargerFiches(options: { du: string; au: string; inclureBr
         }),
       arrets: f.fiche_arrets.map((a) => ({ minutes: a.duree_min, planifie: a.causes_arret?.type_arret === "planifie", cause: a.causes_arret?.libelle ?? "?" })),
     };
+    const fiche = options.produit ? restreindreAuProduit(complete, options.produit) : complete;
+    if (!fiche) return [];
     const indicateurs = agreger([fiche]);
     const alertes = alertesProduction(
       {
@@ -106,7 +111,7 @@ export async function chargerFiches(options: { du: string; au: string; inclureBr
       },
       seuils,
     );
-    return { ...fiche, indicateurs, alertes };
+    return [{ ...fiche, indicateurs, alertes }];
   });
 }
 

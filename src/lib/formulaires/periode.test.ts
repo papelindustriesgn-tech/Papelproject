@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { joursDeLaPeriode, resoudrePeriode } from "./periode";
+import { joursDeLaPeriode, resoudrePeriode, serieRegroupee } from "./periode";
 
 describe("périodes d'analyse", () => {
   const auj = "2026-10-02";
@@ -7,6 +7,12 @@ describe("périodes d'analyse", () => {
     expect(resoudrePeriode("jour", auj)).toMatchObject({ du: auj, au: auj, nbJours: 1, precedente: { du: "2026-10-01", au: "2026-10-01" } });
     expect(resoudrePeriode("7j", auj)).toMatchObject({ du: "2026-09-26", au: auj, nbJours: 7, precedente: { du: "2026-09-19", au: "2026-09-25" } });
     expect(resoudrePeriode(undefined, auj)).toMatchObject({ code: "30j", du: "2026-09-03", nbJours: 30 });
+  });
+  it("semaine en cours, du lundi à aujourd'hui", () => {
+    // 2026-10-02 est un vendredi : semaine du lundi 28 septembre, comparée au lundi-vendredi précédent.
+    expect(resoudrePeriode("semaine", auj)).toMatchObject({ du: "2026-09-28", au: auj, nbJours: 5, precedente: { du: "2026-09-21", au: "2026-09-25" } });
+    expect(resoudrePeriode("semaine", "2026-09-28")).toMatchObject({ du: "2026-09-28", nbJours: 1 });
+    expect(resoudrePeriode("semaine", "2026-10-04")).toMatchObject({ du: "2026-09-28", nbJours: 7 });
   });
   it("mois, trimestre, année en cours", () => {
     expect(resoudrePeriode("mois", auj).du).toBe("2026-10-01");
@@ -19,5 +25,20 @@ describe("périodes d'analyse", () => {
   });
   it("jours d'une période, y compris un changement de mois", () => {
     expect(joursDeLaPeriode({ du: "2026-09-29", au: "2026-10-02" })).toEqual(["2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02"]);
+  });
+  it("courbe par jour, par semaine ou par mois selon la durée", () => {
+    const parJour = serieRegroupee({ du: "2026-10-01", au: "2026-10-03" }, (j) => (j === "2026-10-02" ? null : 1));
+    expect(parJour).toEqual([
+      { date: "2026-10-01", valeur: 1, axe: "01/10", libelle: "Le 01/10" },
+      { date: "2026-10-02", valeur: null, axe: "02/10", libelle: "Le 02/10" },
+      { date: "2026-10-03", valeur: 1, axe: "03/10", libelle: "Le 03/10" },
+    ]);
+    // 2026-08-01 → 2026-10-02 (63 jours) : semaines du lundi, la première commence le 27/07.
+    const semaines = serieRegroupee({ du: "2026-08-01", au: "2026-10-02" }, () => 1);
+    expect(semaines[0]).toMatchObject({ date: "2026-07-27", valeur: 2, libelle: "Semaine du 27/07" });
+    expect(semaines.reduce((s, p) => s + (p.valeur ?? 0), 0)).toBe(63);
+    const mois = serieRegroupee({ du: "2026-01-01", au: "2026-10-02" }, () => 1);
+    expect(mois).toHaveLength(10);
+    expect(mois[1]).toMatchObject({ date: "2026-02-01", valeur: 28, axe: "févr. 26", libelle: "Février 2026" });
   });
 });

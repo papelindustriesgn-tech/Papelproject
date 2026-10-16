@@ -1,15 +1,34 @@
 import "server-only";
 import { aujourdhui } from "@/lib/formulaires/dates";
+import { SANS_FILTRE, type FiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
+import { coutEstimeParGamme } from "@/lib/metier/filtrage";
 import { compteDeResultat, tresoreriePrevisionnelle, type CompteResultat, type Flux, type SemainePrevision } from "@/lib/metier/finance";
 import { clientServeur } from "@/lib/supabase/serveur";
-import { chargerIndicateursVentes } from "@/lib/ventes/indicateurs";
+import { chargerIndicateursVentes, type IndicateursVentes } from "@/lib/ventes/indicateurs";
 
-/** Coût de revient des produits sortis pour la vente ou offerts (dotation), moins les retours, sur une période. */
-export async function coutDesVentes(du: string, au: string): Promise<number> {
+/**
+ * Coût de revient des produits sortis pour la vente ou offerts (dotation), moins les retours, sur une période.
+ * Filtre gamme : sorties des articles de ce produit. Filtre commercial : estimation au coût moyen du paquet
+ * de chaque gamme × paquets facturés par le commercial (`ventes.parProduit`, déjà filtré), les sorties de stock
+ * ne portant pas le commercial.
+ */
+export async function coutDesVentes(du: string, au: string, filtres: FiltresAnalyse = SANS_FILTRE, ventes?: Pick<IndicateursVentes, "parProduit">): Promise<number> {
   const supabase = await clientServeur();
-  const { data } = await supabase.from("mouvements_stock").select("valeur_gnf").in("type", ["vente", "dotation", "retour"]).gte("date_operation", du).lte("date_operation", au).limit(50000);
+  const { data } = await supabase
+    .from("mouvements_stock")
+    .select("valeur_gnf, quantite, articles(produit_id, produits(libelle))")
+    .in("type", ["vente", "dotation", "retour"])
+    .gte("date_operation", du)
+    .lte("date_operation", au)
+    .limit(50000);
+  const lignes = (data ?? []).filter((m) => !filtres.produit || m.articles?.produit_id === filtres.produit);
+  if (filtres.commercial && ventes) {
+    // Sorties : quantité et valeur négatives ; on les remet en positif (paquets sortis, coût).
+    const sorties = lignes.map((m) => ({ gamme: m.articles?.produits?.libelle ?? "?", coutGnf: -Number(m.valeur_gnf ?? 0), paquets: -Number(m.quantite) }));
+    return Math.max(0, coutEstimeParGamme(sorties, ventes.parProduit.map((p) => ({ gamme: p.libelle, paquets: p.paquets }))));
+  }
   // Ventes et dotations : valeur négative (sortie) ; retours : valeur positive (entrée).
-  return Math.max(0, -(data ?? []).reduce((s, m) => s + Number(m.valeur_gnf ?? 0), 0));
+  return Math.max(0, -lignes.reduce((s, m) => s + Number(m.valeur_gnf ?? 0), 0));
 }
 
 export interface ResultatPeriode extends CompteResultat {

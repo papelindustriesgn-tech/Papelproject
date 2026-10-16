@@ -9,7 +9,9 @@ import { Carte as CarteUi, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { chargerIndicateursCommerciaux } from "@/lib/commercial/indicateurs";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
+import { lireFiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
 import { resoudrePeriode } from "@/lib/formulaires/periode";
+import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { pct } from "@/lib/production/affichage";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -19,14 +21,19 @@ export const metadata: Metadata = { title: "Équipe commerciale" };
 export default async function TableauDeBordCommercial({ searchParams }: PageProps<"/commercial">) {
   const sp = await searchParams;
   const periode = resoudrePeriode(lireParam(sp, "periode") ?? "7j", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
+  const filtres = lireFiltresAnalyse(sp);
   const supabase = await clientServeur();
-  const [ind, { data: pva }, seuils] = await Promise.all([
-    chargerIndicateursCommerciaux(periode.du, periode.au, periode.nbJours),
-    supabase.from("pva_carte").select("id, nom, commercial_id, commercial_nom, type_libelle, latitude, longitude, derniere_visite, derniere_rupture").eq("actif", true),
+  let requetePva = supabase.from("pva_carte").select("id, nom, commercial_id, commercial_nom, type_libelle, latitude, longitude, derniere_visite, derniere_rupture").eq("actif", true);
+  if (filtres.commercial) requetePva = requetePva.eq("commercial_id", filtres.commercial);
+  const [ind, { data: pva }, seuils, options] = await Promise.all([
+    chargerIndicateursCommerciaux(periode.du, periode.au, periode.nbJours, filtres),
+    requetePva,
     lireSeuils({ alerte_taux_rupture: 0.15, alerte_taux_hors_zone: 0.15 }),
+    chargerOptionsFiltres(),
   ]);
-  // Couleur fixe par commercial (ordre alphabétique stable), légende sous la carte.
-  const couleur = new Map(ind.parCommercial.map((c, i) => [c.id, COULEURS_SERIES[i % COULEURS_SERIES.length]]));
+  const filtresTexte = decrireFiltres(filtres, options);
+  // Couleur fixe par commercial (ordre alphabétique de toute l'équipe : un filtre ne repeint pas les autres).
+  const couleur = new Map(options.commerciaux.map((c, i) => [c.valeur, COULEURS_SERIES[i % COULEURS_SERIES.length]]));
   const points = (pva ?? [])
     .filter((p) => p.latitude !== null && p.longitude !== null)
     .map((p) => ({
@@ -41,9 +48,9 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
 
   return (
     <>
-      <TitrePage titre="Équipe commerciale" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}`} />
+      <TitrePage titre="Équipe commerciale" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}${filtresTexte ? ` · ${filtresTexte}` : ""}`} />
       <UrgencesAppli espace="commercial" />
-      <SelecteurPeriode periode={periode} />
+      <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} commerciaux={options.commerciaux} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/commercial/visites" libelle="Visites" valeur={nombre(ind.visites)} detail={`${nombre(ind.visitesParJour, 1)} par jour · ${ind.horsZone} hors zone`} ton={ind.visites && ind.horsZone / ind.visites > seuils.alerte_taux_hors_zone ? "alerte" : "normal"} />
         <Indicateur lien="/commercial/visites" libelle="Taux de rupture" valeur={pct(ind.tauxRupture)} detail={`${ind.ruptures} visite(s) avec rupture`} ton={(ind.tauxRupture ?? 0) > seuils.alerte_taux_rupture ? "alerte" : "normal"} />
@@ -80,6 +87,7 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
             </tr>
           ))}
         </Tableau>
+        {filtres.produit && <p className="mt-2 text-sm text-gray-600">Pièces et CA : lignes de la gamme choisie seulement ; les objectifs restent toutes gammes.</p>}
         <p className="mt-2 text-sm text-gray-600">Les objectifs du mois se comparent sur la période choisie ; choisissez « Ce mois » pour un suivi exact.</p>
       </CarteUi>
     </>

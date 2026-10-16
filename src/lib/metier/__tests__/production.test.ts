@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculerIndicateursFiche, dureePosteMinutes, repartirCoutMatiere } from "../production";
+import { calculerIndicateursFiche, dureePosteMinutes, partDuProduit, repartirCoutMatiere, restreindreAuProduit } from "../production";
 import { kg } from "../unites";
 
 const PETIT = { produitId: "petit", rendementTheoriquePaquetsT: 10175, poidsPaquetG: 93.366, cadencePaquetsMinute: 30 };
@@ -85,5 +85,32 @@ describe("coût de revient matière", () => {
   });
   it("ligne sans paquet : coût nul", () => {
     expect(repartirCoutMatiere(1000, [{ paquets: 0, poidsPaquetG: 93 }])).toEqual([0]);
+  });
+});
+
+describe("filtre gamme sur une fiche mixte", () => {
+  const fiche = {
+    papierKg: 200,
+    dureePosteMin: 480,
+    lignes: [
+      { ...PETIT, paquets: 1000, rebutsKg: 2 },
+      { ...GRAND, paquets: 0, rebutsKg: 1 },
+    ],
+    arrets: [{ minutes: 30, planifie: false }],
+  };
+  it("part au prorata du poids théorique de papier", () => {
+    const mixte = [
+      { ...PETIT, paquets: 1000 },
+      { ...GRAND, paquets: 1000 },
+    ];
+    expect(partDuProduit(mixte, "petit")).toBeCloseTo(93.366 / (93.366 + 145.977), 10);
+    expect(partDuProduit([{ ...PETIT, paquets: 0 }, { ...GRAND, paquets: 0 }], "grand")).toBe(0.5);
+  });
+  it("ramène la fiche au produit, et écarte une fiche sans ce produit", () => {
+    const petit = restreindreAuProduit(fiche, "petit")!;
+    expect(petit).toMatchObject({ papierKg: 200, dureePosteMin: 480, arrets: [{ minutes: 30 }] });
+    expect(petit.lignes).toHaveLength(1);
+    expect(restreindreAuProduit(fiche, "grand")).toMatchObject({ papierKg: 0, dureePosteMin: 0 });
+    expect(restreindreAuProduit(fiche, "autre")).toBeNull();
   });
 });

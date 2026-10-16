@@ -26,7 +26,7 @@ export function CarteHero({
   titre: string;
   valeur: ReactNode;
   sousTitre?: ReactNode;
-  points: { date: string; valeur: number | null }[];
+  points: { date: string; valeur: number | null; axe?: string; libelle?: string }[];
   format: FormatGraphique;
   stats: StatHero[];
   lien?: string;

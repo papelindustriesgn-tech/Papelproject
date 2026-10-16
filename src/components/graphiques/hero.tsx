@@ -17,8 +17,11 @@ function formater(v: number, f: FormatGraphique): string {
 }
 const jourCourt = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 
-/** Courbe blanche en aire, pour la carte héros (fond = couleur du service). */
-export function CourbeHero({ points, format }: { points: { date: string; valeur: number | null }[]; format: FormatGraphique }) {
+/**
+ * Courbe blanche en aire, pour la carte héros (fond = couleur du service).
+ * Un point peut porter ses étiquettes (`axe`, `libelle`) quand il regroupe une semaine ou un mois (`serieRegroupee`).
+ */
+export function CourbeHero({ points, format }: { points: { date: string; valeur: number | null; axe?: string; libelle?: string }[]; format: FormatGraphique }) {
   return (
     <ResponsiveContainer width="100%" height={170}>
       <AreaChart data={points} margin={{ top: 10, right: 6, bottom: 0, left: 6 }}>
@@ -28,14 +31,15 @@ export function CourbeHero({ points, format }: { points: { date: string; valeur:
             <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <XAxis dataKey="date" tickFormatter={jourCourt} tick={{ fill: "rgba(255,255,255,0.75)", fontSize: 12 }} axisLine={false} tickLine={false} minTickGap={24} />
+        <XAxis dataKey={(p: { date: string; axe?: string }) => p.axe ?? jourCourt(p.date)} tick={{ fill: "rgba(255,255,255,0.75)", fontSize: 12 }} axisLine={false} tickLine={false} minTickGap={24} />
         <Tooltip
           cursor={{ stroke: "rgba(255,255,255,0.6)", strokeWidth: 1 }}
           contentStyle={{ background: "#111827", border: "none", borderRadius: 12, color: "#fff", fontSize: 13 }}
           labelStyle={{ color: "#d1d5db" }}
           itemStyle={{ color: "#fff" }}
+          separator=""
           formatter={(v) => [formater(Number(v), format), ""]}
-          labelFormatter={(l) => `Le ${jourCourt(String(l))}`}
+          labelFormatter={(l, charge) => (charge?.[0]?.payload as { libelle?: string } | undefined)?.libelle ?? `Le ${String(l)}`}
         />
         <Area type="monotone" dataKey="valeur" stroke="#ffffff" strokeWidth={2.5} fill="url(#aire-hero)" connectNulls activeDot={{ r: 5, fill: "#fff", stroke: "rgba(0,0,0,0.25)" }} isAnimationActive={false} />
       </AreaChart>

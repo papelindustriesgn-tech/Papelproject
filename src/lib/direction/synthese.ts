@@ -1,5 +1,6 @@
 import "server-only";
 import { chargerIndicateursCommerciaux, type IndicateursCommerciaux } from "@/lib/commercial/indicateurs";
+import { SANS_FILTRE, type FiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
 import type { Periode } from "@/lib/formulaires/periode";
 import { chargerSituation, coutDesVentes, type SituationFinanciere } from "@/lib/finance/indicateurs";
 import { margeBrute } from "@/lib/metier/ventes";
@@ -36,7 +37,12 @@ export interface SyntheseDirection {
   seuils: { rendementMin: number; tauxPerteMax: number; couvertureJours: number; tauxRupture: number; impayeJours: number; impayeCritiqueJours: number; livraisonJours: number };
 }
 
-export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
+/**
+ * Synthèse de la Direction pour une période. Filtres gamme et commercial appliqués aux ventes, à la marge,
+ * à la production (gamme), à la distribution (commercial) et aux produits finis en stock (gamme) ;
+ * les alertes restent globales (une urgence se voit quel que soit le filtre).
+ */
+export async function chargerSynthese(p: Periode, filtres: FiltresAnalyse = SANS_FILTRE): Promise<SyntheseDirection> {
   const [seuilsLus, production] = await Promise.all([
     lireSeuils({ alerte_impaye_jours: 30, alerte_impaye_critique_jours: 60, alerte_taux_rupture: 0.15, alerte_livraison_jours: 2, stock_jours_couverture_alerte: 15 }),
     seuilsProduction(),
@@ -51,19 +57,23 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
     livraisonJours: seuilsLus.alerte_livraison_jours,
   };
   const supabase = await clientServeur();
+  const ventesP = chargerIndicateursVentes(p.du, p.au, p.nbJours, filtres);
+  const ventesPrecP = chargerIndicateursVentes(p.precedente.du, p.precedente.au, p.nbJours, filtres);
+  // Le coût des ventes d'un commercial s'estime à partir de ses paquets facturés : il attend alors les ventes.
+  const coutFiltre = (du: string, au: string, v: Promise<IndicateursVentes>) => (filtres.commercial ? v.then((x) => coutDesVentes(du, au, filtres, x)) : coutDesVentes(du, au, filtres));
   const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, alertesStock, factures, distribution, distributionPrec, pva, transit, enRetard, ncCritiques, piecesCritiques, finance] = await Promise.all([
-    chargerIndicateursVentes(p.du, p.au, p.nbJours),
-    chargerIndicateursVentes(p.precedente.du, p.precedente.au, p.nbJours),
-    chargerFiches({ du: p.du, au: p.au }),
-    chargerFiches({ du: p.precedente.du, au: p.precedente.au }),
-    coutDesVentes(p.du, p.au),
-    coutDesVentes(p.precedente.du, p.precedente.au),
-    supabase.from("etat_stock").select("famille, unite, quantite, valeur_gnf, conso_jour, libelle, paquets_par_colis").eq("actif", true),
+    ventesP,
+    ventesPrecP,
+    chargerFiches({ du: p.du, au: p.au, produit: filtres.produit }),
+    chargerFiches({ du: p.precedente.du, au: p.precedente.au, produit: filtres.produit }),
+    coutFiltre(p.du, p.au, ventesP),
+    coutFiltre(p.precedente.du, p.precedente.au, ventesPrecP),
+    supabase.from("etat_stock").select("famille, unite, quantite, valeur_gnf, conso_jour, libelle, paquets_par_colis, produit_id").eq("actif", true),
     supabase.from("alertes_stock").select("article_id, libelle, niveau_alerte, jours_couverture, famille"),
     supabase.from("factures_etat").select("id, numero, client_nom, solde_gnf, jours_retard").gt("solde_gnf", 0).gt("jours_retard", seuils.impayeJours).order("jours_retard", { ascending: false }).limit(10),
-    chargerIndicateursCommerciaux(p.du, p.au, p.nbJours),
-    chargerIndicateursCommerciaux(p.precedente.du, p.precedente.au, p.nbJours),
-    supabase.from("pva_carte").select("type_libelle, actif"),
+    chargerIndicateursCommerciaux(p.du, p.au, p.nbJours, filtres),
+    chargerIndicateursCommerciaux(p.precedente.du, p.precedente.au, p.nbJours, filtres),
+    supabase.from("pva_carte").select("type_libelle, actif, commercial_id"),
     supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
     // Bons de livraison validés depuis plus de N jours (paramètre) et toujours pas remis au client.
     supabase.from("livraisons").select("id", { count: "exact", head: true }).eq("statut", "validee").eq("statut_remise", "a_livrer").lt("date_livraison", joursAvant(p.au, seuils.livraisonJours)),
@@ -112,7 +122,7 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
   alertes.sort((a, b) => (a.gravite === b.gravite ? 0 : a.gravite === "critique" ? -1 : 1));
 
   const m = margeBrute(ventes.caHtGnf, cout);
-  const actifs = (pva.data ?? []).filter((x) => x.actif);
+  const actifs = (pva.data ?? []).filter((x) => x.actif && (!filtres.commercial || x.commercial_id === filtres.commercial));
   return {
     ventes,
     ventesPrec,
@@ -128,7 +138,7 @@ export async function chargerSynthese(p: Periode): Promise<SyntheseDirection> {
       conteneursTransit: Number(transit.data?.nb_conteneurs ?? 0),
       couvertureMpJours: consoMp > 0 ? kgMp / consoMp : null,
       valeurGnf: lignes.reduce((s, l) => s + Number(l.valeur_gnf), 0),
-      produitsFinis: lignes.filter((l) => l.famille === "produit_fini" && Number(l.quantite) > 0).map((l) => ({ libelle: l.libelle!, paquets: Number(l.quantite), paquetsParColis: l.paquets_par_colis })),
+      produitsFinis: lignes.filter((l) => l.famille === "produit_fini" && Number(l.quantite) > 0 && (!filtres.produit || l.produit_id === filtres.produit)).map((l) => ({ libelle: l.libelle!, paquets: Number(l.quantite), paquetsParColis: l.paquets_par_colis })),
     },
     distribution: {
       ...distribution,

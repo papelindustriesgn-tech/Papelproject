@@ -32,7 +32,7 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
     <>
       <TitrePage titre="Maintenance" sousTitre="Fiabilité du parc, ordres de travail et pièces de rechange" />
       <UrgencesAppli espace="maintenance" />
-      <SelecteurPeriode periode={periode} />
+      <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/maintenance/interventions" libelle="Pannes (arrêt machine)" valeur={nombre(g.nbPannes)} detail={`${minutes(g.heuresArret * 60)} d'arrêt au total`} />
         <Indicateur lien="/maintenance/equipements" libelle="Disponibilité" valeur={pct(g.disponibilite)} detail={`Sur ${nombre(g.heuresRequises)} h requises`} ton={g.disponibilite !== null && g.disponibilite < seuilDisponibilite ? "alerte" : "normal"} />

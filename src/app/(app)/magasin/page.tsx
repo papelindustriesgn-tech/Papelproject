@@ -3,7 +3,13 @@ import { lireSeuils } from "@/lib/parametres";
 import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
 import Link from "next/link";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
-import { Indicateur } from "@/components/ui/indicateur";
+import { ecartRelatif, Indicateur } from "@/components/ui/indicateur";
+import { lireParam } from "@/components/donnees/filtres";
+import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
+import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
+import { aujourdhui } from "@/lib/formulaires/dates";
+import { lireFiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
+import { resoudrePeriode } from "@/lib/formulaires/periode";
 import { formaterPoids, kg } from "@/lib/metier/unites";
 import { afficherStock, gnf, LIBELLES_FAMILLES, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -16,13 +22,28 @@ const NIVEAUX_ALERTE: Record<string, { libelle: string; ton: "erreur" | "alerte"
   couverture_faible: { libelle: "Couverture faible", ton: "alerte" },
 };
 
-export default async function TableauDeBordMagasin() {
+export default async function TableauDeBordMagasin({ searchParams }: PageProps<"/magasin">) {
+  const sp = await searchParams;
+  const periode = resoudrePeriode(lireParam(sp, "periode"), aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
+  const filtres = { ...lireFiltresAnalyse(sp), commercial: null };
   const supabase = await clientServeur();
-  const [{ data: etat }, { data: alertes }, { data: transit }] = await Promise.all([
+  // Mouvements de produits finis de la période (entrées de production, livraisons, dotations, retours).
+  const mouvementsPf = (du: string, au: string) =>
+    supabase.from("mouvements_stock").select("type, quantite, articles!inner(famille, produit_id)").eq("articles.famille", "produit_fini").in("type", ["production", "vente", "dotation", "retour"]).gte("date_operation", du).lte("date_operation", au).limit(50000);
+  const [{ data: etat }, { data: alertes }, { data: transit }, { data: mvts }, { data: mvtsPrec }, options] = await Promise.all([
     supabase.from("etat_stock").select("*").eq("actif", true),
     supabase.from("alertes_stock").select("article_id, code, libelle, unite, quantite, seuil_alerte, jours_couverture, paquets_par_colis, niveau_alerte"),
     supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
+    mouvementsPf(periode.du, periode.au),
+    mouvementsPf(periode.precedente.du, periode.precedente.au),
+    chargerOptionsFiltres(),
   ]);
+  const deLaGamme = (produitId: string | null | undefined) => !filtres.produit || produitId === filtres.produit;
+  const paquetsPar = (liste: typeof mvts, type: string) => Math.abs((liste ?? []).filter((m) => m.type === type && deLaGamme(m.articles?.produit_id)).reduce((t, m) => t + Number(m.quantite), 0));
+  const flux = (liste: typeof mvts) => ({ produits: paquetsPar(liste, "production"), livres: paquetsPar(liste, "vente") - paquetsPar(liste, "retour"), offerts: paquetsPar(liste, "dotation") });
+  const pfPeriode = flux(mvts);
+  const pfPrec = flux(mvtsPrec);
+  const gamme = decrireFiltres(filtres, options);
   const { stock_jours_couverture_alerte: seuilCouverture } = await lireSeuils({ stock_jours_couverture_alerte: 15 });
   const lignes = etat ?? [];
   const mp = lignes.filter((l) => l.famille === "matiere_premiere");
@@ -30,13 +51,14 @@ export default async function TableauDeBordMagasin() {
   const consoMpJour = mp.filter((l) => l.unite === "kg").reduce((s, l) => s + Number(l.conso_jour), 0);
   const couvertureMp = consoMpJour > 0 ? kgMp / consoMpJour : null;
   const valeurTotale = lignes.reduce((s, l) => s + Number(l.valeur_gnf), 0);
-  const pf = lignes.filter((l) => l.famille === "produit_fini" && Number(l.quantite) > 0);
+  const pf = lignes.filter((l) => l.famille === "produit_fini" && Number(l.quantite) > 0 && deLaGamme(l.produit_id));
   const nbBobines = mp.reduce((s, l) => s + Number(l.nb_lots_en_stock ?? 0), 0);
 
   return (
     <>
       <TitrePage titre="Stocks" sousTitre="Situation en temps réel — usine de Coyah" />
       <UrgencesAppli espace="magasin" />
+      <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/magasin/bobines" libelle="Matière première disponible" valeur={formaterPoids(kg(kgMp))} detail={`${nbBobines} bobine(s) en stock`} />
         <Indicateur
@@ -48,6 +70,11 @@ export default async function TableauDeBordMagasin() {
         />
         <Indicateur lien="/achats/conteneurs" libelle="Tonnes en transit" valeur={formaterPoids(kg(Number(transit?.kg_en_transit ?? 0)))} detail={`${transit?.nb_conteneurs ?? 0} conteneur(s) commandé(s), en mer ou au port`} />
         <Indicateur lien="/magasin/articles" libelle="Valeur du stock" valeur={gnf(valeurTotale)} detail="Au coût moyen pondéré" />
+      </div>
+      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <Indicateur lien="/magasin/mouvements" libelle={`Produits finis entrés${gamme ? ` · ${gamme}` : ""}`} valeur={`${nombre(pfPeriode.produits)} paquets`} variation={{ ecart: ecartRelatif(pfPeriode.produits, pfPrec.produits) }} detail="Entrées de production de la période" />
+        <Indicateur lien="/magasin/mouvements" libelle={`Livrés aux clients${gamme ? ` · ${gamme}` : ""}`} valeur={`${nombre(pfPeriode.livres)} paquets`} variation={{ ecart: ecartRelatif(pfPeriode.livres, pfPrec.livres) }} detail="Livraisons moins retours" />
+        <Indicateur lien="/magasin/mouvements" libelle={`Dotations remises${gamme ? ` · ${gamme}` : ""}`} valeur={`${nombre(pfPeriode.offerts)} paquets`} variation={{ ecart: ecartRelatif(pfPeriode.offerts, pfPrec.offerts) }} detail="Paquets offerts aux grossistes" />
       </div>
       <RaccourcisAppli espace="magasin" />
 
@@ -72,7 +99,7 @@ export default async function TableauDeBordMagasin() {
             <p className="text-gray-700">Aucune alerte de stock.</p>
           )}
         </Carte>
-        <Carte titre="Produits finis en stock">
+        <Carte titre={`Produits finis en stock${gamme ? ` · ${gamme}` : ""}`}>
           {pf.length ? (
             <Tableau entetes={["Article", "Stock", "Couverture"]}>
               {pf.map((l) => (

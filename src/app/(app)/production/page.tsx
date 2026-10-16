@@ -9,7 +9,9 @@ import { GraphiqueAnneau } from "@/components/graphiques/hero";
 import { CarteHero } from "@/components/ui/carte-hero";
 import { ecartPoints, ecartRelatif, Indicateur, jourCourt, PastilleVariation } from "@/components/ui/indicateur";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
-import { joursDeLaPeriode, resoudrePeriode } from "@/lib/formulaires/periode";
+import { lireFiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
+import { joursDeLaPeriode, resoudrePeriode, serieRegroupee } from "@/lib/formulaires/periode";
+import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { formaterPoids, kg, paquetsVersColis, type Paquets } from "@/lib/metier/unites";
 import { libelleAlerte, minutes, pct } from "@/lib/production/affichage";
 import { agreger, chargerFiches, regrouper, rendementReelParProduit, seuilsProduction } from "@/lib/production/indicateurs";
@@ -20,11 +22,14 @@ export const metadata: Metadata = { title: "Production" };
 export default async function TableauDeBordProduction({ searchParams }: PageProps<"/production">) {
   const sp = await searchParams;
   const periode = resoudrePeriode(lireParam(sp, "periode"), aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"));
-  const [fiches, precedentes, seuils] = await Promise.all([
-    chargerFiches({ du: periode.du, au: periode.au }),
-    chargerFiches({ du: periode.precedente.du, au: periode.precedente.au }),
+  const filtres = lireFiltresAnalyse(sp);
+  const [fiches, precedentes, seuils, options] = await Promise.all([
+    chargerFiches({ du: periode.du, au: periode.au, produit: filtres.produit }),
+    chargerFiches({ du: periode.precedente.du, au: periode.precedente.au, produit: filtres.produit }),
     seuilsProduction(),
+    chargerOptionsFiltres(),
   ]);
+  const gamme = decrireFiltres({ ...filtres, commercial: null }, options);
   const ind = agreger(fiches);
   const indPrec = agreger(precedentes);
 
@@ -74,9 +79,9 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
 
   return (
     <>
-      <TitrePage titre="Production" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)} · ${fiches.length} fiche(s) validée(s)`} />
+      <TitrePage titre="Production" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)} · ${fiches.length} fiche(s) validée(s)${gamme ? ` · ${gamme} (fiches mixtes au prorata du papier)` : ""}`} />
       <UrgencesAppli espace="production" />
-      <SelecteurPeriode periode={periode} />
+      <SelecteurPeriode periode={periode} params={sp} filtres={{ ...filtres, commercial: null }} gammes={options.produits} />
 
       <div className="mb-4 grid gap-4 xl:grid-cols-3">
         <CarteHero
@@ -88,7 +93,7 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
               {fiches.length} fiche(s) validée(s) <PastilleVariation v={{ ecart: ecartRelatif(ind.paquetsBons, indPrec.paquetsBons) }} />
             </span>
           }
-          points={jours.map((d) => ({ date: d, valeur: parJour.get(d)?.indicateurs.paquetsBons ?? null }))}
+          points={serieRegroupee(periode, (d) => parJour.get(d)?.indicateurs.paquetsBons ?? null)}
           format="nombre"
           lien="/production/fiches"
           stats={[
