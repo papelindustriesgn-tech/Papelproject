@@ -13,8 +13,8 @@ export function cx(...classes: (string | false | null | undefined)[]) {
 type VarianteBouton = "principal" | "secondaire" | "danger" | "discret";
 
 const STYLES_BOUTON: Record<VarianteBouton, string> = {
-  principal: "bg-papel-700 text-white hover:bg-papel-800 disabled:bg-papel-300",
-  secondaire: "bg-[#e7e9ed] text-gray-900 hover:bg-[#d8dadd]",
+  principal: "bg-papel-700 text-white shadow-sm hover:bg-papel-800 disabled:bg-papel-300",
+  secondaire: "bg-white text-gray-900 ring-1 ring-gray-200 hover:bg-gray-50",
   danger: "bg-red-700 text-white hover:bg-red-800",
   discret: "text-papel-700 hover:bg-papel-50",
 };
@@ -22,7 +22,7 @@ const STYLES_BOUTON: Record<VarianteBouton, string> = {
 /** Classes d'un bouton : aussi utilisables sur un lien (`<Link className={classesBouton()}>`). */
 export function classesBouton(variante: VarianteBouton = "principal", className?: string) {
   return cx(
-    "inline-flex min-h-11 items-center justify-center gap-1.5 rounded px-3.5 py-1.5 text-[0.95rem] font-medium transition disabled:cursor-not-allowed md:min-h-9",
+    "inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-4 py-1.5 text-[0.95rem] font-medium transition disabled:cursor-not-allowed md:min-h-10",
     STYLES_BOUTON[variante],
     className,
   );
@@ -36,13 +36,13 @@ export function Bouton({
   return <button className={classesBouton(variante, className)} {...props} />;
 }
 
-/** Bloc blanc (« feuille » Odoo) avec titre facultatif. */
+/** Carte blanche arrondie (ombre douce, sans bordure) avec titre facultatif. */
 export function Carte({ titre, action, children, className }: { titre?: ReactNode; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cx("min-w-0 rounded-md border border-gray-200 bg-white p-4", className)}>
+    <section className={cx("ombre-carte min-w-0 rounded-2xl bg-white p-4 md:p-5", className)}>
       {(titre || action) && (
-        <header className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-2">
-          {titre && <h2 className="text-[1.05rem] font-semibold text-gray-900">{titre}</h2>}
+        <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          {titre && <h2 className="text-[1.08rem] font-semibold text-gray-900">{titre}</h2>}
           {action}
         </header>
       )}
@@ -51,7 +51,7 @@ export function Carte({ titre, action, children, className }: { titre?: ReactNod
   );
 }
 
-const CLASSES_SAISIE = "min-h-11 w-full min-w-0 rounded border bg-white px-2.5 py-1.5 text-base md:min-h-9 md:text-[0.95rem]";
+const CLASSES_SAISIE = "min-h-11 w-full min-w-0 rounded-xl border bg-white px-3 py-1.5 text-base md:min-h-10 md:text-[0.95rem]";
 
 /** Champs de nombres (montants, quantités, poids…) : clavier numérique sur téléphone, sans changer la saisie à la française. */
 const NOMS_NUMERIQUES = /(montant|quantite|prix|colis|paquets|_kg|_mm|_gnf|_pct|^km_|^taux|plis|mouchoirs|seuil|valeur|duree|visites|nouveaux_pva|cout)/;
@@ -128,7 +128,7 @@ const STYLES_MESSAGE: Record<TonMessage, string> = {
 
 export function Message({ ton = "info", children }: { ton?: TonMessage; children: ReactNode }) {
   return (
-    <div role={ton === "erreur" ? "alert" : "status"} className={cx("rounded border px-3 py-2", STYLES_MESSAGE[ton])}>
+    <div role={ton === "erreur" ? "alert" : "status"} className={cx("rounded-xl border px-3.5 py-2.5", STYLES_MESSAGE[ton])}>
       {children}
     </div>
   );
@@ -166,18 +166,18 @@ export function Tableau({ entetes, children }: { entetes: ReactNode[]; children:
     return cloneElement(ligne, undefined, ...cellules);
   });
   return (
-    <div className="-mx-4 md:overflow-x-auto">
+    <div className="-mx-4 md:-mx-5 md:overflow-x-auto">
       <table className="tableau-liste w-full border-collapse text-left text-[0.95rem] md:min-w-max">
         <thead className="max-md:sr-only">
-          <tr className="border-y border-gray-200 bg-gray-50 text-gray-800">
+          <tr className="bg-gray-50/80 text-[0.82rem] uppercase tracking-wide text-gray-500">
             {entetes.map((e, i) => (
-              <th key={i} scope="col" className="whitespace-nowrap px-3 py-2 font-semibold first:pl-4 last:pr-4">
+              <th key={i} scope="col" className="whitespace-nowrap px-3 py-2.5 font-semibold first:pl-4 last:pr-4 md:first:pl-5 md:last:pr-5">
                 {e}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="md:divide-y md:divide-gray-100 md:[&>tr:hover]:bg-papel-50">{lignes}</tbody>
+        <tbody className="md:divide-y md:divide-gray-100 md:[&>tr:hover]:bg-papel-50/60">{lignes}</tbody>
       </table>
     </div>
   );
@@ -185,7 +185,7 @@ export function Tableau({ entetes, children }: { entetes: ReactNode[]; children:
 
 export function Cellule({ children, className, ...props }: { children: ReactNode; className?: string; "data-label"?: string }) {
   return (
-    <td className={cx("px-3 py-2 align-top first:pl-4 last:pr-4", className)} {...props}>
+    <td className={cx("px-3 py-2.5 align-top first:pl-4 last:pr-4 md:first:pl-5 md:last:pr-5", className)} {...props}>
       {children}
     </td>
   );
@@ -202,29 +202,29 @@ export interface ElementFil {
  */
 export function TitrePage({ titre, sousTitre, action, fil }: { titre: string; sousTitre?: string; action?: ReactNode; fil?: ElementFil[] }) {
   return (
-    <>
-      <div className="-mx-3 -mt-3 mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-gray-200 bg-white px-3 py-2.5 md:-mx-5 md:px-5 print:hidden">
-        <div className="min-w-0">
-          <h1 className="flex flex-wrap items-baseline gap-x-1.5 text-[1.2rem] leading-snug">
-            {fil?.map((f) => (
-              <span key={f.libelle} className="flex items-baseline gap-1.5">
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-x-4 gap-y-3 print:hidden">
+      <div className="min-w-0">
+        {fil && fil.length > 0 && (
+          <nav aria-label="Fil d'Ariane" className="mb-1 flex flex-wrap items-center gap-1.5 text-sm">
+            {fil.map((f) => (
+              <span key={f.libelle} className="flex items-center gap-1.5">
                 {f.href ? (
-                  <Link href={f.href} className="text-papel-700 hover:underline">
+                  <Link href={f.href} className="font-medium text-papel-700 hover:underline">
                     {f.libelle}
                   </Link>
                 ) : (
-                  <span className="text-gray-600">{f.libelle}</span>
+                  <span className="text-gray-500">{f.libelle}</span>
                 )}
-                <span className="text-gray-400">/</span>
+                <span className="text-gray-300">/</span>
               </span>
             ))}
-            <span className="font-semibold text-gray-900">{titre}</span>
-          </h1>
-          {sousTitre && <p className="text-sm text-gray-600">{sousTitre}</p>}
-        </div>
-        {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
+          </nav>
+        )}
+        <h1 className="text-[1.6rem] font-bold leading-tight tracking-tight text-gray-900 md:text-[1.75rem]">{titre}</h1>
+        {sousTitre && <p className="mt-0.5 text-[0.95rem] text-gray-500">{sousTitre}</p>}
       </div>
-      </>
+      {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
+    </div>
   );
 }
 

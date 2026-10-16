@@ -40,6 +40,9 @@ export function Tendance({ points, format = "nombre" }: { points: PointTendance[
     const precedent = i > 0 ? points[i - 1].valeur : null;
     d += `${precedent === null || i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(p.valeur).toFixed(1)} `;
   });
+  // Aire sous la courbe (seulement si la série n'a pas de trou, sinon la courbe suffit).
+  const complet = points.every((p) => p.valeur !== null && Number.isFinite(p.valeur));
+  const aire = complet ? `${d.trim()} L${x(points.length - 1).toFixed(1)},${H} L${x(0).toFixed(1)},${H} Z` : null;
   const dernier = [...points.keys()].reverse().find((i) => points[i].valeur !== null);
   const fmt = (v: number) => formater(v, format);
   const choisi = actif !== null ? points[actif] : null;
@@ -49,7 +52,7 @@ export function Tendance({ points, format = "nombre" }: { points: PointTendance[
       <svg
         viewBox={`0 0 ${L} ${H}`}
         preserveAspectRatio="none"
-        className="h-10 w-full touch-none overflow-visible text-papel-600"
+        className="h-12 w-full touch-none overflow-visible text-papel-600"
         role="img"
         aria-labelledby={`${id}-t`}
         onPointerMove={(e) => {
@@ -59,6 +62,14 @@ export function Tendance({ points, format = "nombre" }: { points: PointTendance[
         onPointerLeave={() => setActif(null)}
       >
         <title id={`${id}-t`}>{`Évolution : de ${fmt(valeurs[0])} à ${fmt(valeurs[valeurs.length - 1])}`}</title>
+        {/* Aire douce sous la courbe. */}
+        <defs>
+          <linearGradient id={`${id}-aire`} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="currentColor" stopOpacity={0.22} />
+            <stop offset="100%" stopColor="currentColor" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        {aire && <path d={aire} fill={`url(#${id}-aire)`} stroke="none" />}
         <path d={d} fill="none" stroke="currentColor" strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" opacity={0.85} />
         {actif !== null && <line x1={x(actif)} x2={x(actif)} y1={0} y2={H} stroke="#9ca3af" strokeWidth={1} vectorEffect="non-scaling-stroke" />}
         {dernier !== undefined && actif === null && <circle cx={x(dernier)} cy={y(points[dernier].valeur!)} r={3} fill="currentColor" stroke="white" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />}

@@ -5,7 +5,9 @@ import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { GraphiqueArrets, GraphiqueProduction, GraphiqueRendement } from "@/components/graphiques/production";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
-import { ecartPoints, ecartRelatif, Indicateur, jourCourt } from "@/components/ui/indicateur";
+import { GraphiqueAnneau } from "@/components/graphiques/hero";
+import { CarteHero } from "@/components/ui/carte-hero";
+import { ecartPoints, ecartRelatif, Indicateur, jourCourt, PastilleVariation } from "@/components/ui/indicateur";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
 import { joursDeLaPeriode, resoudrePeriode } from "@/lib/formulaires/periode";
 import { formaterPoids, kg, paquetsVersColis, type Paquets } from "@/lib/metier/unites";
@@ -76,6 +78,29 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
       <UrgencesAppli espace="production" />
       <SelecteurPeriode periode={periode} />
 
+      <div className="mb-4 grid gap-4 xl:grid-cols-3">
+        <CarteHero
+          className="xl:col-span-2"
+          titre="Production"
+          valeur={`${nombre(ind.paquetsBons)} paquets`}
+          sousTitre={
+            <span className="flex flex-wrap items-center gap-2">
+              {fiches.length} fiche(s) validée(s) <PastilleVariation v={{ ecart: ecartRelatif(ind.paquetsBons, indPrec.paquetsBons) }} />
+            </span>
+          }
+          points={jours.map((d) => ({ date: d, valeur: parJour.get(d)?.indicateurs.paquetsBons ?? null }))}
+          format="nombre"
+          lien="/production/fiches"
+          stats={[
+            { libelle: "Papier consommé", valeur: formaterPoids(kg(ind.tonnesConsommees * 1000)) },
+            { libelle: "Rendement / théorique", valeur: pct(ind.ratioRendement), detail: `Seuil ${pct(seuils.ratioRendementMin, 0)}` },
+            { libelle: "TRS", valeur: pct(ind.trs), detail: `Pertes ${pct(ind.tauxPerte)}` },
+          ]}
+        />
+        <Carte titre="Production par produit">
+          <GraphiqueAnneau donnees={produits.map((p) => ({ libelle: p, valeur: parProduit.get(p)!.paquets }))} format="nombre" libelleTotal="Paquets" />
+        </Carte>
+      </div>
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur
           libelle="Papier consommé"
@@ -83,14 +108,6 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
           variation={{ ecart: ecartRelatif(ind.tonnesConsommees, indPrec.tonnesConsommees) }}
           tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.has(d) ? parJour.get(d)!.indicateurs.tonnesConsommees * 1000 : null }))}
           formatTendance="kg"
-          lien="/production/fiches"
-        />
-        <Indicateur
-          libelle="Production"
-          valeur={`${nombre(ind.paquetsBons)} paquets`}
-          variation={{ ecart: ecartRelatif(ind.paquetsBons, indPrec.paquetsBons) }}
-          tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.get(d)?.indicateurs.paquetsBons ?? null }))}
-          detail={produits.map((p) => `${p} : ${nombre(parProduit.get(p)!.colis)} colis`).join(" · ") || "—"}
           lien="/production/fiches"
         />
         <Indicateur

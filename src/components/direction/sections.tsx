@@ -48,7 +48,7 @@ export function ListeAlertes({ alertes }: { alertes: Alerte[] }) {
             <li key={i}>
               <Link
                 href={a.lien}
-                className={`flex h-full items-start gap-3 rounded-xl border px-3 py-2.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${a.gravite === "critique" ? "border-red-200 bg-red-50 hover:border-red-400" : "border-amber-200 bg-amber-50/60 hover:border-amber-400"}`}
+                className={`ombre-carte flex h-full items-start gap-3 rounded-2xl px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-lg ${a.gravite === "critique" ? "bg-red-50 ring-1 ring-red-200" : "bg-amber-50 ring-1 ring-amber-200"}`}
               >
                 <span className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full ${a.gravite === "critique" ? "bg-red-600 text-white" : "bg-amber-400 text-amber-950"}`}>
                   {a.gravite === "critique" ? <CircleAlert size={18} aria-hidden /> : <AlertTriangle size={18} aria-hidden />}
@@ -65,7 +65,7 @@ export function ListeAlertes({ alertes }: { alertes: Alerte[] }) {
           ))}
         </ul>
       ) : (
-        <p className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 font-semibold text-green-800">
+        <p className="ombre-carte flex items-center gap-2 rounded-2xl bg-green-50 px-4 py-3 font-semibold text-green-800">
           <CheckCircle2 size={20} aria-hidden /> Aucune alerte : tout est sous contrôle.
         </p>
       )}

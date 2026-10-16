@@ -1,6 +1,7 @@
 import { AlertTriangle, ArrowDownRight, ArrowUpRight, ChevronRight, CircleAlert, Minus } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { IconeIndicateur } from "./icone-indicateur";
 import { Tendance, type FormatTendance, type PointTendance } from "./tendance";
 
 /** Évolution par rapport à la période précédente : `ecart` en % (fraction : 0,12 = +12 %) ou en points. */
@@ -36,7 +37,7 @@ export function PastilleVariation({ v }: { v: Variation }) {
 }
 
 /**
- * Tuile d'indicateur (KPI) : libellé, grande valeur, évolution, mini-courbe et précision.
+ * Tuile d'indicateur (KPI) : bulle d'icône, libellé, grand chiffre, évolution, mini-courbe et précision.
  * Cliquable (`lien`) pour ouvrir le détail. L'état (« À surveiller », « Critique ») est écrit, pas seulement coloré.
  */
 export function Indicateur({
@@ -58,34 +59,41 @@ export function Indicateur({
   tendance?: PointTendance[];
   formatTendance?: FormatTendance;
 }) {
-  const bord = ton === "danger" ? "border-red-300 bg-red-50/40" : ton === "alerte" ? "border-amber-300 bg-amber-50/40" : "border-gray-200 bg-white";
+  const bulle = ton === "danger" ? "bg-red-100 text-red-700" : ton === "alerte" ? "bg-amber-100 text-amber-800" : "bg-papel-100 text-papel-700";
   const contenu = (
     <>
-      <div className="flex items-start justify-between gap-2">
-        <div className="text-[0.85rem] font-medium leading-snug text-gray-600">{libelle}</div>
-        {ton === "danger" && (
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800">
-            <CircleAlert size={13} aria-hidden /> Critique
-          </span>
-        )}
-        {ton === "alerte" && (
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
-            <AlertTriangle size={13} aria-hidden /> À surveiller
-          </span>
-        )}
-      </div>
-      <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <span className="text-[1.75rem] font-semibold leading-tight tracking-tight text-gray-900">{valeur}</span>
-        {variation && <PastilleVariation v={variation} />}
+      <div className="flex items-start gap-3">
+        <span className={`flex size-11 shrink-0 items-center justify-center rounded-2xl ${bulle}`}>
+          <IconeIndicateur libelle={libelle} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-[0.88rem] font-medium leading-snug text-gray-500">{libelle}</div>
+            {ton === "danger" && (
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800">
+                <CircleAlert size={13} aria-hidden /> Critique
+              </span>
+            )}
+            {ton === "alerte" && (
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
+                <AlertTriangle size={13} aria-hidden /> À surveiller
+              </span>
+            )}
+          </div>
+          <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <span className="text-[1.7rem] font-bold leading-tight tracking-tight text-gray-900">{valeur}</span>
+            {variation && <PastilleVariation v={variation} />}
+          </div>
+        </div>
       </div>
       {tendance && <Tendance points={tendance} format={formatTendance} />}
-      {detail && <div className="mt-1.5 text-sm leading-snug text-gray-600">{detail}</div>}
+      {detail && <div className="mt-2 text-sm leading-snug text-gray-500">{detail}</div>}
     </>
   );
-  const classes = `group relative flex h-full flex-col rounded-xl border px-4 py-3 shadow-sm ${bord}`;
+  const classes = `ombre-carte group relative flex h-full flex-col rounded-2xl bg-white px-4 py-4 ${ton === "danger" ? "ring-1 ring-red-200" : ton === "alerte" ? "ring-1 ring-amber-200" : ""}`;
   if (!lien) return <div className={classes}>{contenu}</div>;
   return (
-    <Link href={lien} className={`${classes} transition hover:-translate-y-0.5 hover:border-papel-400 hover:shadow-md focus-visible:outline-2 focus-visible:outline-papel-600`}>
+    <Link href={lien} className={`${classes} transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-papel-600`}>
       {contenu}
       <span className="mt-auto flex items-center gap-0.5 pt-2 text-xs font-semibold text-papel-700 opacity-70 group-hover:opacity-100">
         Voir le détail <ChevronRight size={14} aria-hidden />

@@ -1,35 +1,46 @@
+import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IconeAppli } from "@/components/coque/applications";
+import { APPARENCE_APPLI, IconeAppli } from "@/components/coque/applications";
 import { espacesAccessibles } from "@/lib/auth/espaces";
 import { exigerConnexion } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Applications" };
 
-/** Écran d'accueil à la Odoo : une icône par application accessible. */
+/** Accueil : bannière de bienvenue et une carte par application accessible (couleur du service). */
 export default async function PageApplications() {
   const u = await exigerConnexion();
   const applis = espacesAccessibles(u.roles);
+  const date = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Conakry" }).format(new Date());
   return (
-    <div className="-mx-3 -mt-3 min-h-[calc(100vh-3rem)] bg-gradient-to-b from-papel-50 to-[#eef1f0] px-4 py-8 md:-mx-5 md:py-14">
-      <div className="mx-auto max-w-4xl">
-        <p className="mb-8 text-center text-gray-600">
-          Bonjour <span className="font-semibold text-gray-900">{u.prenom || u.nom}</span>, touchez votre application pour commencer.
-        </p>
-        <ul className="grid grid-cols-3 gap-x-2 gap-y-8 sm:grid-cols-4 md:grid-cols-6">
-          {applis.map((a) => (
-            <li key={a.code}>
-              <Link href={`/${a.code}`} className="group flex flex-col items-center gap-2 rounded-md p-2 text-center hover:bg-white/60" title={a.description}>
-                <span className="transition group-hover:-translate-y-0.5 group-hover:shadow-md">
-                  <IconeAppli code={a.code} taille={64} />
-                </span>
-                <span className="text-sm font-medium leading-tight text-gray-800">{a.libelle}</span>
-                <span className="hidden text-xs leading-tight text-gray-500 sm:block">{a.description}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <div className="mx-auto max-w-6xl">
+      <section className="relative mb-6 overflow-hidden rounded-3xl bg-linear-to-br from-[#063f3b] via-[#07524d] to-[#1f8a7d] p-6 text-white shadow-[0_18px_40px_-20px_#07524d] md:p-8">
+        <div className="pointer-events-none absolute -right-20 -top-24 size-80 rounded-full bg-white/10 blur-2xl" aria-hidden />
+        <div className="pointer-events-none absolute -bottom-24 left-1/3 size-64 rounded-full bg-white/5 blur-2xl" aria-hidden />
+        <p className="relative text-sm capitalize text-white/75">{date}</p>
+        <h1 className="relative mt-1 text-[1.9rem] font-bold leading-tight md:text-[2.3rem]">Bonjour {u.prenom || u.nom} 👋</h1>
+        <p className="relative mt-2 max-w-xl text-white/85">Touchez votre application pour commencer. Chaque service a sa couleur.</p>
+      </section>
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {applis.map((a) => (
+          <li key={a.code}>
+            <Link
+              href={`/${a.code}`}
+              className="ombre-carte group relative flex h-full flex-col gap-3 overflow-hidden rounded-2xl bg-white p-4 transition hover:-translate-y-1 hover:shadow-lg"
+            >
+              <span className="pointer-events-none absolute inset-x-0 top-0 h-1" style={{ background: APPARENCE_APPLI[a.code]?.couleur }} aria-hidden />
+              <span className="flex items-start justify-between">
+                <IconeAppli code={a.code} taille={52} />
+                <ArrowUpRight size={18} className="text-gray-300 transition group-hover:text-gray-600" aria-hidden />
+              </span>
+              <span>
+                <span className="block font-semibold leading-tight text-gray-900">{a.libelle}</span>
+                <span className="mt-1 block text-sm leading-snug text-gray-500">{a.description}</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

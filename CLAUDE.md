@@ -340,11 +340,15 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
 - Tests RLS en SQL (pgTAP, `supabase/tests/`), parcours critiques en Playwright (`e2e/`, écran mobile 360 px).
 - Server Actions : valider avec Zod, renvoyer un `EtatFormulaire` (`src/lib/formulaires/etat.ts`), traduire les erreurs SQL avec `messageErreurBase`.
 - Nombres saisis à la française (« 9 450 », « 0,05 ») : `lireNombre()` ; pourcentages saisis en % et stockés en fraction (5 → 0,05).
-- Interface **à la Odoo** : écran `/applications` (une icône par application, `src/components/coque/applications.tsx`) ; barre de navigation
-  `BarreNavigation` avec les menus de l'application courante, déclarés dans **`src/lib/navigation/menus.ts`** (un lien ou un groupe déroulant
+- Interface : écran `/applications` (bannière de bienvenue + une carte par application) ; **menu latéral** `MenuLateral`
+  (`src/components/coque/menu-lateral.tsx` : application courante, menus avec icônes déduites du libellé, Configuration repliée,
+  carte utilisateur ; barre + panneau sur téléphone) avec les menus déclarés dans **`src/lib/navigation/menus.ts`** (un lien ou un groupe déroulant
   « Opérations », « Configuration »…) — un nouvel écran s'ajoute là, pas dans le layout de l'espace.
   Pages : `TitrePage` = barre de contrôle (fil d'Ariane `fil`, titre, boutons) ; document = `BarreEtapes` (+ `etapesStatut`) ;
   listes = `BarreFiltres` + `Tableau` (fiches empilées « Colonne : valeur » sur téléphone, automatiquement) ; liens-boutons avec `classesBouton()`.
+- **Style** : fond doux `#eef0f5`, cartes blanches `rounded-2xl` + `ombre-carte` (utilitaire CSS), sans bordure ; vues d'ensemble avec
+  **`CarteHero`** (dégradé à la couleur du service, courbe en aire, 3 chiffres) et **`GraphiqueAnneau`** (répartition, palette validée) ;
+  période en pastilles (`SelecteurPeriode`) ; tuiles `Indicateur` avec bulle d'icône (`IconeIndicateur`, déduite du libellé).
 - **Couleur par service** : `APPARENCE_APPLI` (applications.tsx) ; `ThemeAppli` redéfinit la gamme `papel-*` selon l'application courante
   (toujours utiliser les classes `papel-*` pour la couleur d'accent). Les documents clients (`.imprimer-couleurs`) restent aux couleurs Papel.
 - **Pensé pour des débutants — « ne pas faire réfléchir »**, et **réglé dans l'interface par l'administrateur seul** (décision de la direction) : à l'entrée de chaque application,

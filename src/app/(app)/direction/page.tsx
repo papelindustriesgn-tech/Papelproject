@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import { GraphiqueAnneau } from "@/components/graphiques/hero";
+import { CarteHero } from "@/components/ui/carte-hero";
+import { ecartRelatif, PastilleVariation } from "@/components/ui/indicateur";
+import { gnf } from "@/lib/stocks/libelles";
 import { RaccourcisAppli } from "@/components/coque/entree-appli";
 import { CarteDynamique } from "@/components/carte/carte-dynamique";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { BlocsIndicateurs, ListeAlertes } from "@/components/direction/sections";
-import { GraphiqueBarresJour, GraphiqueRendement } from "@/components/graphiques/production";
+import { GraphiqueRendement } from "@/components/graphiques/production";
 import { Carte, TitrePage } from "@/components/ui";
 import { BoutonImprimer } from "@/components/ui/bouton-imprimer";
 import { chargerSynthese } from "@/lib/direction/synthese";
@@ -24,7 +28,7 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
   return (
     <>
       <TitrePage
-        titre="Tableau de bord Direction"
+        titre="Tableau de bord"
         sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)} · comparaison avec la période précédente de même durée`}
         action={<BoutonImprimer />}
       />
@@ -32,12 +36,32 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
       <div className="print:hidden">
         <SelecteurPeriode periode={periode} />
       </div>
+      <div className="mb-5 grid gap-4 xl:grid-cols-3">
+        <CarteHero
+          className="xl:col-span-2"
+          titre="Chiffre d'affaires HT"
+          valeur={gnf(s.ventes.caHtGnf)}
+          sousTitre={
+            <span className="flex flex-wrap items-center gap-2">
+              Comparé à la période précédente <PastilleVariation v={{ ecart: ecartRelatif(s.ventes.caHtGnf, s.ventesPrec.caHtGnf) }} />
+            </span>
+          }
+          points={jours.map((d) => ({ date: d, valeur: s.ventes.caParJour.get(d) ?? 0 }))}
+          format="gnf"
+          lien="/ventes"
+          stats={[
+            { libelle: "Marge brute", valeur: gnf(s.marge.margeGnf), detail: s.marge.taux === null ? undefined : `${Math.round(s.marge.taux * 1000) / 10} % du CA` },
+            { libelle: "Trésorerie", valeur: gnf(s.finance.tresorerieGnf) },
+            { libelle: "Production", valeur: `${s.production.paquetsBons.toLocaleString("fr-FR")} paquets` },
+          ]}
+        />
+        <Carte titre="Chiffre d'affaires par produit" className="break-inside-avoid">
+          <GraphiqueAnneau donnees={s.ventes.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="CA HT" />
+        </Carte>
+      </div>
       <BlocsIndicateurs s={s} jours={jours} />
       <RaccourcisAppli espace="direction" />
-      <div className="mb-5 grid gap-4 lg:grid-cols-2">
-        <Carte titre="Chiffre d'affaires HT par jour" className="break-inside-avoid">
-          <GraphiqueBarresJour donnees={jours.map((d) => ({ date: d, valeur: s.ventes.caParJour.get(d) ?? 0 }))} unite="GNF" />
-        </Carte>
+      <div className="mb-5 grid gap-4">
         <Carte titre="Rendement réel / théorique par jour" className="break-inside-avoid">
           <GraphiqueRendement
             donnees={jours.map((d) => {

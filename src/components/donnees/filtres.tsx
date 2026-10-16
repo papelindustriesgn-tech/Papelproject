@@ -33,7 +33,7 @@ export function BarreFiltres({
   action?: ReactNode;
 }) {
   const actifs = recherche || filtres.some((f) => valeurs[f.nom]);
-  const saisie = "min-h-11 rounded border border-gray-300 bg-white px-2.5 text-[0.95rem] md:min-h-9";
+  const saisie = "min-h-11 rounded-xl border border-gray-200 bg-white px-3 text-[0.95rem] md:min-h-10";
   return (
     <form className="mb-3 grid grid-cols-2 items-end gap-2 md:flex md:flex-wrap" role="search">
       <label className="col-span-2 flex min-w-56 flex-1 flex-col">

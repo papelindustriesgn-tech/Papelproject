@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
-import { GraphiqueBarresJour } from "@/components/graphiques/production";
 import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
-import { ecartRelatif, Indicateur, jourCourt } from "@/components/ui/indicateur";
-import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
+import { GraphiqueAnneau } from "@/components/graphiques/hero";
+import { CarteHero } from "@/components/ui/carte-hero";
+import { ecartRelatif, Indicateur, PastilleVariation } from "@/components/ui/indicateur";
+import { aujourdhui } from "@/lib/formulaires/dates";
 import { joursDeLaPeriode, resoudrePeriode } from "@/lib/formulaires/periode";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { chargerIndicateursVentes } from "@/lib/ventes/indicateurs";
@@ -23,20 +24,33 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
 
   return (
     <>
-      <TitrePage titre="Ventes" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}`} />
+      <TitrePage titre="Ventes" sousTitre="Facturation, encaissements et clients" />
       <UrgencesAppli espace="ventes" />
       <SelecteurPeriode periode={periode} />
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicateur
-          libelle="Chiffre d'affaires HT"
+      <div className="mb-4 grid gap-4 xl:grid-cols-3">
+        <CarteHero
+          className="xl:col-span-2"
+          titre="Chiffre d'affaires HT"
           valeur={gnf(v.caHtGnf)}
-          variation={{ ecart: ecartRelatif(v.caHtGnf, prec.caHtGnf) }}
-          tendance={donnees.map((d) => ({ libelle: jourCourt(d.date), valeur: d.valeur }))}
-          formatTendance="gnf"
-          detail={`${v.nbFactures} facture(s)`}
+          sousTitre={
+            <span className="flex flex-wrap items-center gap-2">
+              {v.nbFactures} facture(s) <PastilleVariation v={{ ecart: ecartRelatif(v.caHtGnf, prec.caHtGnf) }} />
+            </span>
+          }
+          points={donnees}
+          format="gnf"
           lien="/ventes/pieces?type=facture"
+          stats={[
+            { libelle: "Encaissé", valeur: gnf(v.encaisseGnf) },
+            { libelle: "Volumes", valeur: `${nombre(v.paquets)} paquets`, detail: v.parProduit.map((p) => `${p.libelle} : ${nombre(p.colis)} colis`).join(" · ") },
+            { libelle: "Échu à relancer", valeur: gnf(v.echuGnf) },
+          ]}
         />
-        <Indicateur libelle="Volumes vendus" valeur={`${nombre(v.paquets)} paquets`} variation={{ ecart: ecartRelatif(v.paquets, prec.paquets) }} detail={v.parProduit.map((p) => `${p.libelle} : ${nombre(p.colis)} colis`).join(" · ") || "—"} lien="/ventes/pieces?type=facture" />
+        <Carte titre="Ventes par produit">
+          <GraphiqueAnneau donnees={v.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="CA HT" />
+        </Carte>
+      </div>
+      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur libelle="Prix moyen HT" valeur={v.prixMoyenPaquetGnf === null ? "—" : `${gnf(v.prixMoyenPaquetGnf)} / paquet`} variation={{ ecart: ecartRelatif(v.prixMoyenPaquetGnf, prec.prixMoyenPaquetGnf) }} />
         <Indicateur libelle="Commandes" valeur={nombre(v.nbCommandes)} variation={{ ecart: ecartRelatif(v.nbCommandes, prec.nbCommandes) }} lien="/ventes/pieces?type=commande" />
         <Indicateur libelle="Clients actifs" valeur={nombre(v.clientsActifs)} variation={{ ecart: ecartRelatif(v.clientsActifs, prec.clientsActifs) }} detail={`${v.nouveauxClients} nouveau(x) client(s)`} lien="/ventes/clients" />
@@ -46,10 +60,7 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
       </div>
       <RaccourcisAppli espace="ventes" />
       <div className="grid gap-4 lg:grid-cols-2">
-        <Carte titre="Chiffre d'affaires HT par jour">
-          <GraphiqueBarresJour donnees={donnees} unite="GNF" />
-        </Carte>
-        <Carte titre="Ventes par produit">
+        <Carte titre="Détail par produit">
           <Tableau entetes={["Produit", "Paquets", "Colis", "CA HT"]}>
             {v.parProduit.map((p) => (
               <tr key={p.libelle}>
@@ -61,7 +72,7 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
             ))}
           </Tableau>
         </Carte>
-        <Carte titre="Meilleurs clients de la période" className="lg:col-span-2">
+        <Carte titre="Meilleurs clients de la période">
           <Tableau entetes={["Client", "CA HT", "Part"]}>
             {v.topClients.map((c) => (
               <tr key={c.nom}>

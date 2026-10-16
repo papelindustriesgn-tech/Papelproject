@@ -178,7 +178,7 @@ export async function UrgencesAppli({ espace }: { espace: string }) {
             <li key={t.id}>
               <Link
                 href={t.ecran}
-                className={`flex h-full min-h-16 items-center gap-3 rounded-xl border px-3 py-2 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${t.urgent ? "border-red-200 bg-red-50 hover:border-red-400" : "border-gray-200 bg-white hover:border-papel-400"}`}
+                className={`ombre-carte flex h-full min-h-16 items-center gap-3 rounded-2xl px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-lg ${t.urgent ? "bg-red-50 ring-1 ring-red-200" : "bg-white"}`}
               >
                 <span className={`flex h-11 min-w-11 shrink-0 items-center justify-center rounded-full px-2 text-lg font-bold ${t.urgent ? "bg-red-600 text-white" : "bg-papel-100 text-papel-800"}`}>{t.nombre}</span>
                 <span className="min-w-0 flex-1">
@@ -195,7 +195,7 @@ export async function UrgencesAppli({ espace }: { espace: string }) {
           ))}
         </ul>
       ) : (
-        <p className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-3 font-semibold text-green-800">
+        <p className="ombre-carte flex items-center gap-2 rounded-2xl bg-green-50 px-4 py-3 font-semibold text-green-800">
           <CheckCircle2 size={20} /> {aDesTaches ? "Rien en attente : tout est à jour." : "Aucune ligne « À traiter » choisie : réglez cette page."}
         </p>
       )}
@@ -213,7 +213,7 @@ export async function RaccourcisAppli({ espace }: { espace: string }) {
   if (!principale && !etapes.length && !promesse) return null;
   const IconePrincipale = principale ? (ICONES[principale.icone] ?? FileText) : FileText;
   return (
-    <section aria-label="Que voulez-vous faire ?" className="mb-4 flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-3 shadow-sm print:hidden md:p-4">
+    <section aria-label="Que voulez-vous faire ?" className="ombre-carte mb-4 flex flex-col gap-3 rounded-2xl bg-white p-4 print:hidden md:p-5">
       <div>
         <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Que voulez-vous faire ?</h2>
         {promesse && <p className="mt-0.5 text-gray-700">{promesse}</p>}
@@ -222,7 +222,7 @@ export async function RaccourcisAppli({ espace }: { espace: string }) {
         <div className="flex flex-col gap-2 md:flex-row md:items-stretch">
           <Link
             href={principale.ecran}
-            className="flex min-h-16 items-center gap-3 rounded-xl bg-papel-700 px-4 py-3 text-white shadow-sm transition hover:bg-papel-800 active:scale-[0.99] md:min-w-80"
+            className="flex min-h-16 items-center gap-3 rounded-2xl bg-linear-to-br from-papel-700 to-papel-500 px-4 py-3 text-white shadow-md transition hover:brightness-110 active:scale-[0.99] md:min-w-80"
           >
             <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-white/15">
               <IconePrincipale size={24} />
@@ -242,7 +242,7 @@ export async function RaccourcisAppli({ espace }: { espace: string }) {
                     <Link
                       href={a.ecran}
                       title={a.description}
-                      className="flex h-full min-h-12 items-center gap-2 rounded-xl border border-papel-200 bg-white px-3 py-2 font-semibold leading-tight text-gray-900 hover:border-papel-500 hover:bg-papel-50 active:scale-[0.98]"
+                      className="flex h-full min-h-12 items-center gap-2 rounded-2xl bg-gray-50 px-3 py-2 font-semibold leading-tight text-gray-900 ring-1 ring-gray-100 hover:bg-papel-50 hover:ring-papel-200 active:scale-[0.98]"
                     >
                       <Icone size={18} className="shrink-0 text-papel-700" />
                       <span className="min-w-0 [hyphens:auto]" lang="fr">
