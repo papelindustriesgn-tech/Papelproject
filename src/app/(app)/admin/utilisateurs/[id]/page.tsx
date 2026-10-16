@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { Badge, Bouton, Carte, TitrePage } from "@/components/ui";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { changerActivation } from "../actions";
-import { FormulaireCodeSerie, FormulaireMotDePasse, FormulaireRoles } from "./formulaires";
+import { FormulaireCodeSerie, FormulaireIdentite, FormulaireMotDePasse, FormulaireRoles } from "./formulaires";
 
 export default async function PageUtilisateur({ params }: PageProps<"/admin/utilisateurs/[id]">) {
   const { id } = await params;
@@ -23,6 +23,9 @@ export default async function PageUtilisateur({ params }: PageProps<"/admin/util
         action={p.actif ? <Badge ton="succes">Actif</Badge> : <Badge ton="erreur">Désactivé</Badge>}
       />
       <div className="grid gap-4 lg:grid-cols-2">
+        <Carte titre="Nom et téléphone">
+          <FormulaireIdentite utilisateurId={p.id} nom={p.nom} prenom={p.prenom} telephone={p.telephone ?? ""} />
+        </Carte>
         <Carte titre="Rôles">
           <FormulaireRoles utilisateurId={p.id} roles={p.utilisateur_roles.map((r) => r.role)} />
         </Carte>

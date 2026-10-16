@@ -21,6 +21,7 @@ export interface EntreeMenu {
 export const MENUS: Record<string, EntreeMenu[]> = {
   direction: [
     { libelle: "Tableau de bord", href: "/direction" },
+    { libelle: "Alertes", href: "/direction/alertes" },
     { libelle: "Rapport hebdomadaire", href: "/direction/rapport" },
     { libelle: "Configuration", enfants: [{ href: "/direction/listes/objectifs", libelle: "Objectifs du business plan" }] },
   ],
@@ -162,6 +163,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
     { libelle: "Configuration", enfants: [{ href: "/rh/listes", libelle: "Services, fonctions, contrats, absences, fériés, barème RTS" }] },
   ],
   admin: [
+    { libelle: "Mise en route", href: "/admin/mise-en-route" },
     { libelle: "Utilisateurs", href: "/admin/utilisateurs" },
     { libelle: "Réglages des services", href: "/admin/reglages", adminSeulement: true },
     { libelle: "Paramètres", href: "/admin/parametres" },

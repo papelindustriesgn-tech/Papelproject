@@ -4,19 +4,14 @@ import { SANS_FILTRE, type FiltresAnalyse } from "@/lib/formulaires/filtres-anal
 import type { Periode } from "@/lib/formulaires/periode";
 import { chargerSituation, coutDesVentes, type SituationFinanciere } from "@/lib/finance/indicateurs";
 import { margeBrute } from "@/lib/metier/ventes";
-import { libelleAlerte } from "@/lib/production/affichage";
 import { agreger, chargerFiches, seuilsProduction } from "@/lib/production/indicateurs";
 import type { IndicateursFiche } from "@/lib/metier/production";
 import { chargerIndicateursVentes, type IndicateursVentes } from "@/lib/ventes/indicateurs";
 import { lireSeuils } from "@/lib/parametres";
 import { clientServeur } from "@/lib/supabase/serveur";
+import { chargerAlertes, type Alerte } from "./alertes";
 
-export interface Alerte {
-  gravite: "critique" | "importante";
-  domaine: "Stock" | "Production" | "Ventes" | "Distribution" | "Logistique" | "Qualité" | "Maintenance";
-  message: string;
-  lien: string;
-}
+export type { Alerte } from "./alertes";
 
 export interface SyntheseDirection {
   ventes: IndicateursVentes;
@@ -61,7 +56,7 @@ export async function chargerSynthese(p: Periode, filtres: FiltresAnalyse = SANS
   const ventesPrecP = chargerIndicateursVentes(p.precedente.du, p.precedente.au, p.nbJours, filtres);
   // Le coût des ventes d'un commercial s'estime à partir de ses paquets facturés : il attend alors les ventes.
   const coutFiltre = (du: string, au: string, v: Promise<IndicateursVentes>) => (filtres.commercial ? v.then((x) => coutDesVentes(du, au, filtres, x)) : coutDesVentes(du, au, filtres));
-  const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, alertesStock, factures, distribution, distributionPrec, pva, transit, enRetard, ncCritiques, piecesCritiques, finance] = await Promise.all([
+  const [ventes, ventesPrec, fiches, fichesPrec, cout, coutPrec, etat, distribution, distributionPrec, pva, transit, finance] = await Promise.all([
     ventesP,
     ventesPrecP,
     chargerFiches({ du: p.du, au: p.au, produit: filtres.produit }),
@@ -69,16 +64,10 @@ export async function chargerSynthese(p: Periode, filtres: FiltresAnalyse = SANS
     coutFiltre(p.du, p.au, ventesP),
     coutFiltre(p.precedente.du, p.precedente.au, ventesPrecP),
     supabase.from("etat_stock").select("famille, unite, quantite, valeur_gnf, conso_jour, libelle, paquets_par_colis, produit_id").eq("actif", true),
-    supabase.from("alertes_stock").select("article_id, libelle, niveau_alerte, jours_couverture, famille"),
-    supabase.from("factures_etat").select("id, numero, client_nom, solde_gnf, jours_retard").gt("solde_gnf", 0).gt("jours_retard", seuils.impayeJours).order("jours_retard", { ascending: false }).limit(10),
     chargerIndicateursCommerciaux(p.du, p.au, p.nbJours, filtres),
     chargerIndicateursCommerciaux(p.precedente.du, p.precedente.au, p.nbJours, filtres),
     supabase.from("pva_carte").select("type_libelle, actif, commercial_id"),
     supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
-    // Bons de livraison validés depuis plus de N jours (paramètre) et toujours pas remis au client.
-    supabase.from("livraisons").select("id", { count: "exact", head: true }).eq("statut", "validee").eq("statut_remise", "a_livrer").lt("date_livraison", joursAvant(p.au, seuils.livraisonJours)),
-    supabase.from("non_conformites").select("id, numero, description").eq("gravite", "critique").neq("statut", "cloturee"),
-    supabase.from("pieces_critiques_alerte").select("article_id, libelle, equipements"),
     chargerSituation(),
   ]);
 
@@ -94,32 +83,8 @@ export async function chargerSynthese(p: Periode, filtres: FiltresAnalyse = SANS
   const kgMp = mp.reduce((s, l) => s + Number(l.quantite), 0);
   const consoMp = mp.reduce((s, l) => s + Number(l.conso_jour), 0);
 
-  // Alertes prioritaires du jour
-  const alertes: Alerte[] = [];
-  for (const a of alertesStock.data ?? []) {
-    alertes.push({
-      gravite: a.niveau_alerte === "couverture_faible" ? "importante" : "critique",
-      domaine: "Stock",
-      message:
-        a.niveau_alerte === "rupture" ? `Rupture de stock : ${a.libelle}` : a.niveau_alerte === "sous_seuil" ? `${a.libelle} sous le seuil d'alerte` : `${a.libelle} : ${Number(a.jours_couverture ?? 0).toLocaleString("fr-FR")} jours de couverture`,
-      lien: `/magasin/articles/${a.article_id}`,
-    });
-  }
-  // Production d'hier et du dernier jour de la période (fiches validées) en alerte
-  const derniers = fiches.filter((f) => f.date >= hier(p.au));
-  for (const f of derniers.filter((x) => x.alertes.length))
-    alertes.push({ gravite: f.alertes.some((a) => a.type === "arret_long") ? "critique" : "importante", domaine: "Production", message: `${f.poste} du ${f.date.split("-").reverse().join("/")} : ${f.alertes.map(libelleAlerte).join(", ")}`, lien: `/production/fiches/${f.id}` });
-  for (const fa of factures.data ?? [])
-    alertes.push({ gravite: Number(fa.jours_retard) > seuils.impayeCritiqueJours ? "critique" : "importante", domaine: "Ventes", message: `Impayé ${fa.numero} – ${fa.client_nom} : ${Number(fa.solde_gnf).toLocaleString("fr-FR")} GNF, ${fa.jours_retard} j de retard`, lien: `/ventes/pieces/${fa.id}` });
-  if ((distribution.tauxRupture ?? 0) > seuils.tauxRupture)
-    alertes.push({ gravite: "importante", domaine: "Distribution", message: `Taux de rupture chez les points de vente : ${Math.round((distribution.tauxRupture ?? 0) * 100)} %`, lien: "/commercial" });
-  if ((enRetard.count ?? 0) > 0)
-    alertes.push({ gravite: "importante", domaine: "Logistique", message: `${enRetard.count} bon(s) de livraison validé(s) depuis plus de ${seuils.livraisonJours} jour(s) et non remis au client`, lien: "/logistique" });
-  for (const n of ncCritiques.data ?? [])
-    alertes.push({ gravite: "critique", domaine: "Qualité", message: `Non-conformité critique ${n.numero} : ${n.description}`, lien: `/qualite/non-conformites/${n.id}` });
-  for (const pc of piecesCritiques.data ?? [])
-    alertes.push({ gravite: "importante", domaine: "Maintenance", message: `Pièce critique sous le seuil : ${pc.libelle} (${pc.equipements})`, lien: "/maintenance" });
-  alertes.sort((a, b) => (a.gravite === b.gravite ? 0 : a.gravite === "critique" ? -1 : 1));
+  // Alertes prioritaires (globales), taux de rupture de la période affichée.
+  const alertes: Alerte[] = await chargerAlertes(p.au, filtres.commercial ? undefined : distribution.tauxRupture);
 
   const m = margeBrute(ventes.caHtGnf, cout);
   const actifs = (pva.data ?? []).filter((x) => x.actif && (!filtres.commercial || x.commercial_id === filtres.commercial));
@@ -151,15 +116,4 @@ export async function chargerSynthese(p: Periode, filtres: FiltresAnalyse = SANS
     seuils,
     rendementParJour: new Map([...parJour.entries()].map(([d, fs]) => [d, agreger(fs).ratioRendement])),
   };
-}
-
-function hier(iso: string): string {
-  const d = new Date(`${iso}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() - 1);
-  return d.toISOString().slice(0, 10);
-}
-
-/** Date ISO située `jours` jours avant `iso`. */
-function joursAvant(iso: string, jours: number): string {
-  return new Date(Date.parse(`${iso}T00:00:00Z`) - jours * 86_400_000).toISOString().slice(0, 10);
 }

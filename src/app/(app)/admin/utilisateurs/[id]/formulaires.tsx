@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Bouton, Champ, Message } from "@/components/ui";
 import { ETAT_INITIAL } from "@/lib/formulaires/etat";
-import { definirCodeSerie, modifierRoles, reinitialiserMotDePasse } from "../actions";
+import { definirCodeSerie, modifierIdentite, modifierRoles, reinitialiserMotDePasse } from "../actions";
 import { CasesRoles } from "../cases-roles";
 
 export function FormulaireRoles({ utilisateurId, roles }: { utilisateurId: string; roles: string[] }) {
@@ -14,6 +14,23 @@ export function FormulaireRoles({ utilisateurId, roles }: { utilisateurId: strin
       <CasesRoles coches={roles} erreur={etat.erreurs?._} />
       <Bouton type="submit" disabled={enCours} className="self-start">
         Enregistrer les rôles
+      </Bouton>
+    </form>
+  );
+}
+
+export function FormulaireIdentite({ utilisateurId, nom, prenom, telephone }: { utilisateurId: string; nom: string; prenom: string; telephone: string }) {
+  const [etat, action, enCours] = useActionState(modifierIdentite.bind(null, utilisateurId), ETAT_INITIAL);
+  return (
+    <form action={action} className="flex flex-col gap-3">
+      {etat.message && <Message ton={etat.ok ? "succes" : "erreur"}>{etat.message}</Message>}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Champ libelle="Prénom" name="prenom" defaultValue={etat.valeurs?.prenom ?? prenom} erreur={etat.erreurs?.prenom} />
+        <Champ libelle="Nom" name="nom" required defaultValue={etat.valeurs?.nom ?? nom} erreur={etat.erreurs?.nom} />
+      </div>
+      <Champ libelle="Téléphone" name="telephone" type="tel" defaultValue={etat.valeurs?.telephone ?? telephone} erreur={etat.erreurs?.telephone} />
+      <Bouton type="submit" variante="secondaire" disabled={enCours} className="self-start">
+        Enregistrer
       </Bouton>
     </form>
   );

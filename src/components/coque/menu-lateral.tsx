@@ -3,6 +3,7 @@
 import {
   AlertTriangle,
   ArrowLeftRight,
+  Bell,
   BarChart3,
   Boxes,
   CalendarCheck,
@@ -25,6 +26,7 @@ import {
   Menu,
   Package,
   Receipt,
+  Rocket,
   Route,
   ScanSearch,
   Settings,
@@ -50,6 +52,8 @@ interface AppliNav {
 /** Icône d'une entrée de menu, déduite de son libellé (aucune liste à tenir à jour ailleurs). */
 const ICONES_MENU: [RegExp, LucideIcon][] = [
   [/vue d'ensemble|tableau de bord/i, LayoutDashboard],
+  [/^alertes$/i, Bell],
+  [/mise en route/i, Rocket],
   [/rapport/i, FileText],
   [/carte/i, IconeCarte],
   [/portefeuille|clients?|employ|utilisateur/i, Users],
@@ -93,8 +97,11 @@ export function MenuLateral({
   applis,
   utilisateur,
   deconnexion,
+  badges = {},
 }: {
   applis: AppliNav[];
+  /** Nombre affiché en pastille rouge à côté d'un lien (ex. alertes de la Direction). */
+  badges?: Record<string, number>;
   utilisateur: { nomComplet: string; initiales: string; roles: string; estAdmin: boolean };
   deconnexion: (fd: FormData) => Promise<void>;
 }) {
@@ -125,6 +132,11 @@ export function MenuLateral({
       >
         {!retrait && <IconeMenu libelle={libelle} size={18} className={actif ? "text-white" : "text-gray-400"} />}
         <span className="truncate">{libelle}</span>
+        {(badges[href] ?? 0) > 0 && (
+          <span className="ml-auto rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white" aria-label={`${badges[href]} à traiter`}>
+            {badges[href]}
+          </span>
+        )}
       </Link>
     );
   };

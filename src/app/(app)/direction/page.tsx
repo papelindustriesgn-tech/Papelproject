@@ -10,7 +10,7 @@ import { RaccourcisAppli } from "@/components/coque/entree-appli";
 import { CarteDynamique } from "@/components/carte/carte-dynamique";
 import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
-import { BlocsIndicateurs, ListeAlertes } from "@/components/direction/sections";
+import { BlocsIndicateurs, ResumeAlertes } from "@/components/direction/sections";
 import { GraphiqueRendement } from "@/components/graphiques/production";
 import { Carte, TitrePage } from "@/components/ui";
 import { BoutonImprimer } from "@/components/ui/bouton-imprimer";
@@ -41,7 +41,7 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
         sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}${filtresTexte ? ` · ${filtresTexte}` : ""} · comparaison avec la période précédente`}
         action={<BoutonImprimer />}
       />
-      <ListeAlertes alertes={s.alertes} />
+      <ResumeAlertes alertes={s.alertes} />
       <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} commerciaux={options.commerciaux} />
       <div className="mb-5 grid gap-4 xl:grid-cols-3">
         <CarteHero

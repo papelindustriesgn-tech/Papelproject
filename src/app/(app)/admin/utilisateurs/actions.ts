@@ -105,6 +105,26 @@ export async function reinitialiserMotDePasse(utilisateurId: string, _e: EtatFor
   return { ok: true, message: "Mot de passe modifié. Communiquez-le à l'utilisateur en main propre." };
 }
 
+const schemaIdentite = z.object({
+  nom: z.string().trim().min(1, "Le nom est obligatoire.").max(80),
+  prenom: z.string().trim().max(80),
+  telephone: z.string().trim().max(30),
+});
+
+/** Nom, prénom et téléphone d'un compte (l'identifiant de connexion, lui, ne change pas). */
+export async function modifierIdentite(utilisateurId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
+  await verifierGestionnaire();
+  const valeurs = valeursFormulaire(fd);
+  const lecture = schemaIdentite.safeParse(valeurs);
+  if (!lecture.success) return { erreurs: erreursZod(lecture.error), valeurs };
+  const supabase = await clientServeur();
+  const { error } = await supabase.from("profils").update(lecture.data).eq("id", utilisateurId);
+  if (error) return { message: messageErreurBase(error), valeurs };
+  revalidatePath(`/admin/utilisateurs/${utilisateurId}`);
+  revalidatePath("/", "layout");
+  return { ok: true, message: "Nom enregistré." };
+}
+
 /** Série de numérotation des devis et factures créés hors ligne par un commercial (ex. « C01 »). */
 export async function definirCodeSerie(utilisateurId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
   await verifierGestionnaire();
