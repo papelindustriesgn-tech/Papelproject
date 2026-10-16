@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { lireSeuils } from "@/lib/parametres";
-import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { ActionsAppli } from "@/components/coque/entree-appli";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { EtapesConteneur } from "@/components/achats/etapes";
@@ -41,7 +41,7 @@ export default async function TableauDeBordAchats({ searchParams }: PageProps<"/
 
   return (
     <>
-      <TitrePage titre="Achats et approvisionnement" />
+      <TitrePage titre="Achats et approvisionnement" action={<ActionsAppli espace="achats" />} />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/achats/conteneurs" libelle="En transit" valeur={formaterPoids(kg(Number(transit?.kg_en_transit ?? 0)))} detail={`${transit?.nb_conteneurs ?? 0} conteneur(s) non livré(s)`} />
@@ -55,7 +55,6 @@ export default async function TableauDeBordAchats({ searchParams }: PageProps<"/
         au={periode.au}
         reels={{ cout_tonne: coutTonne, ecart_prevu: ecartPrix(coutTotal, prevuTotal), delai_fournisseur: delais.length ? delais.reduce((s, d) => s + d, 0) / delais.length : null }}
       />
-      <RaccourcisAppli espace="achats" />
       {(demandes ?? 0) > 0 && (
         <p className="mb-4">
           <Link href="/achats/demandes" className="font-semibold text-papel-700 underline">

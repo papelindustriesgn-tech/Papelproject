@@ -223,7 +223,7 @@ export function TitrePage({ titre, sousTitre, action, fil }: { titre: string; so
         <h1 className="text-[1.6rem] font-bold leading-tight tracking-tight text-gray-900 md:text-[1.75rem]">{titre}</h1>
         {sousTitre && <p className="mt-0.5 text-[0.95rem] text-gray-500">{sousTitre}</p>}
       </div>
-      {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
+      {action && <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">{action}</div>}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ExportCsv } from "@/components/donnees/export-csv";
 import { BarreFiltres, lireParam } from "@/components/donnees/filtres";
-import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
+import { Badge, Carte, Cellule, classesBouton, Tableau, TitrePage } from "@/components/ui";
 import { formaterDate } from "@/lib/formulaires/dates";
 import { STATUTS_TOURNEE } from "@/lib/logistique/libelles";
 import { gnf, nombre } from "@/lib/stocks/libelles";
@@ -22,7 +22,7 @@ export default async function PageTournees({ searchParams }: PageProps<"/logisti
   const lignes = data ?? [];
   return (
     <>
-      <TitrePage titre="Tournées" />
+      <TitrePage titre="Tournées" action={<Link href="/logistique/tournees/nouvelle" className={classesBouton("principal")}>+ Nouvelle tournée</Link>} />
       <Carte>
         <BarreFiltres
           recherche={q}

@@ -401,10 +401,17 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
   période dans un bouton qui se déroule (`SelecteurPeriode` → `ChoixPeriode` : onglets Jour, Semaine, Mois, Année, Dates) ; tuiles `Indicateur` avec bulle d'icône (`IconeIndicateur`, déduite du libellé).
 - **Couleur par service** : `APPARENCE_APPLI` (applications.tsx) ; `ThemeAppli` redéfinit la gamme `papel-*` selon l'application courante
   (toujours utiliser les classes `papel-*` pour la couleur d'accent). Les documents clients (`.imprimer-couleurs`) restent aux couleurs Papel.
-- **Pensé pour des débutants — « ne pas faire réfléchir »**, et **réglé dans l'interface par l'administrateur seul** (décision de la direction) : à l'entrée de chaque application,
-  ordre fixe des **vues d'ensemble** : `TitrePage` → **filtre de date** → **indicateurs** → **`<CarteObjectifs>`** → **`<RaccourcisAppli espace=… />`** (phrase d'accueil `accueil_espaces`,
-  **un seul bouton principal** = 1er bouton actif, autres en petit, **parcours** numéroté) → graphiques et tableaux
-  (`src/components/coque/entree-appli.tsx`, données `accueil_elements`, genres `action` / `etape` / `tache` ; les `tache` vont dans le menu « Alertes »).
+- **Pensé pour des débutants — « ne pas faire réfléchir »** (simplification du 17/10/2026 : « que mes collaborateurs aient envie de l'utiliser »).
+  Vue d'ensemble = **une seule page sans défilement inutile** : `TitrePage` avec, à droite, **les boutons d'action** (`<ActionsAppli espace=… />` :
+  1 bouton principal + 2 au plus, réglés par l'administrateur, données `accueil_elements` genre `action` ; sur téléphone le principal passe
+  en premier sur toute la largeur) → **filtre de date** → **4 à 8 indicateurs, sans doublon avec la carte du haut** → `<CarteObjectifs>`
+  (masquée s'il n'y a pas d'objectif) → au plus 1 ou 2 graphiques / tableaux utiles au travail du jour. Ce qui est une alerte va dans le menu
+  « Alertes », le détail dans les écrans du menu. Direction : CA + 8 chiffres clés (`IndicateursEssentiels`) ; les 5 blocs détaillés
+  (`BlocsIndicateurs`) restent dans le rapport de la semaine.
+  **Menus** (`menus.ts`) : à plat, vue d'ensemble → Alertes → le travail de tous les jours → coordination (commandes, tâches) ;
+  « Configuration » (roue dentée, repliée) pour les listes, objectifs mensuels et écrans rares. Pas d'entrée « Nouveau … » dans le menu
+  (bouton « + Nouveau » sur la liste ; écrans de création gardés dans `catalogueEcrans` pour les réglages). Les genres `etape` / `tache`
+  d'`accueil_elements` : `tache` alimente « Alertes », `etape` n'est plus affiché.
 - **Filtres des vues d'ensemble** (`SelecteurPeriode` avec `params`, `filtres`, `gammes`, `commerciaux`) : **un seul bouton de date qui se déroule** (`ChoixPeriode` : sous-filtres Jour, Semaine, Mois, Année, Dates, puis la liste des choix ; `?periode=&jour=&mois=&annee=`, `lirePeriode`) + **gamme de produits**
   (table `produits`, archivées comprises) + **commercial** (rôle commercial terrain ; liste lisible par Direction, responsable commercial,
   finance), dans l'adresse (`?periode=&produit=&commercial=`, `lireFiltresAnalyse`, options `chargerOptionsFiltres`).

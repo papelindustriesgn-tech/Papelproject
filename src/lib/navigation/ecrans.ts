@@ -10,8 +10,14 @@ const ECRANS_SUPPLEMENTAIRES: Record<string, { href: string; libelle: string }[]
     { href: "/ventes/clients/nouveau", libelle: "Nouveau client" },
     { href: "/ventes/pieces?type=facture&statut=brouillon", libelle: "Factures en brouillon" },
   ],
-  production: [{ href: "/production/fiches?statut=brouillon", libelle: "Fiches à valider" }],
+  production: [
+    { href: "/production/fiches/nouvelle", libelle: "Nouvelle fiche de poste" },
+    { href: "/production/fiches?statut=brouillon", libelle: "Fiches à valider" },
+  ],
+  magasin: [{ href: "/magasin/mouvements/nouveau", libelle: "Nouvelle entrée ou sortie" }],
+  achats: [{ href: "/achats/commandes/nouveau", libelle: "Nouveau bon de commande" }],
   logistique: [
+    { href: "/logistique/tournees/nouvelle", libelle: "Nouvelle tournée" },
     { href: "/logistique/tournees?statut=planifiee", libelle: "Tournées planifiées" },
     { href: "/logistique/tournees?statut=en_cours", libelle: "Tournées en cours" },
   ],
@@ -23,7 +29,10 @@ const ECRANS_SUPPLEMENTAIRES: Record<string, { href: string; libelle: string }[]
     { href: "/maintenance/interventions?statut=demandee", libelle: "Ordres de travail demandés" },
     { href: "/maintenance/interventions?statut=en_cours", libelle: "Ordres de travail en cours" },
   ],
-  finance: [{ href: "/finance/fournisseurs?etat=en_retard", libelle: "Factures fournisseurs en retard" }],
+  finance: [
+    { href: "/finance/fournisseurs/nouvelle", libelle: "Nouvelle facture fournisseur" },
+    { href: "/finance/fournisseurs?etat=en_retard", libelle: "Factures fournisseurs en retard" },
+  ],
   rh: [
     { href: "/rh/employes/nouveau", libelle: "Nouvel employé" },
     { href: "/rh/absences?statut=demandee", libelle: "Demandes à décider" },

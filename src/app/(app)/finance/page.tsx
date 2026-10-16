@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
-import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { ActionsAppli } from "@/components/coque/entree-appli";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -8,7 +8,7 @@ import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
 import { chargerPrevisionnel, chargerResultat, chargerSituation } from "@/lib/finance/indicateurs";
-import { bfrGnf, pointMortJours, premiereTensionTresorerie, seuilRentabiliteGnf } from "@/lib/metier/finance";
+import { pointMortJours, premiereTensionTresorerie, seuilRentabiliteGnf } from "@/lib/metier/finance";
 import { formaterMontant } from "@/lib/metier/devises";
 import { pct } from "@/lib/production/affichage";
 import { gnf } from "@/lib/stocks/libelles";
@@ -26,12 +26,11 @@ export default async function TableauDeBordFinance({ searchParams }: PageProps<"
 
   return (
     <>
-      <TitrePage titre="Finance" sousTitre="Trésorerie, créances, dettes et résultat de gestion" />
+      <TitrePage titre="Finance" sousTitre="Trésorerie, créances, dettes et résultat de gestion" action={<ActionsAppli espace="finance" />} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/finance/tresorerie" libelle="Trésorerie disponible" valeur={gnf(s.tresorerieGnf)} detail="Tous comptes (USD au taux du jour)" ton={s.tresorerieGnf < 0 ? "danger" : "normal"} />
         <Indicateur lien="/ventes/impayes" libelle="Créances clients" valeur={gnf(s.creancesGnf)} detail={`dont échu : ${gnf(s.creancesEchuesGnf)}`} ton={s.creancesEchuesGnf > 0 ? "alerte" : "normal"} />
         <Indicateur lien="/finance/fournisseurs" libelle="Dettes fournisseurs" valeur={gnf(s.dettesGnf)} detail={`dont échu : ${gnf(s.dettesEchuesGnf)}`} ton={s.dettesEchuesGnf > 0 ? "alerte" : "normal"} />
-        <Indicateur libelle="BFR" valeur={gnf(bfrGnf(s.stocksGnf, s.creancesGnf, s.dettesGnf))} detail={`Stocks ${gnf(s.stocksGnf)} + créances − dettes`} />
         <Indicateur
           libelle="Trésorerie dans 13 semaines"
           valeur={gnf(fin13)}
@@ -52,7 +51,6 @@ export default async function TableauDeBordFinance({ searchParams }: PageProps<"
         au={periode.au}
         reels={{ ca_ht: r.caHtGnf, marge_brute: r.margeBruteGnf, resultat: r.resultatGnf }}
       />
-      <RaccourcisAppli espace="finance" />
       <Carte titre="Comptes de trésorerie" action={<Link href="/finance/tresorerie" className="font-semibold text-papel-700 underline">Journal</Link>}>
         <Tableau entetes={["Compte", "Solde", "En GNF"]}>
           {s.comptes.map((c) => (

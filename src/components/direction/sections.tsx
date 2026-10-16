@@ -24,7 +24,43 @@ function Section({ titre, lien, children }: { titre: string; lien?: string; chil
   );
 }
 
-/** Les cinq blocs d'indicateurs du tableau de bord (réutilisés par le rapport hebdomadaire). */
+/**
+ * Les 8 chiffres clés du tableau de bord (ce que le CA, la marge, la trésorerie et la production du haut ne disent pas) :
+ * argent qui rentre, retards de paiement, commandes, usine, stock, terrain. Chaque tuile ouvre l'application concernée.
+ */
+export function IndicateursEssentiels({ s }: { s: SyntheseDirection }) {
+  const v = s.ventes;
+  const vp = s.ventesPrec;
+  const p = s.production;
+  const pp = s.productionPrec;
+  const pf = s.stock.produitsFinis.reduce((t, x) => t + x.paquets, 0);
+  return (
+    <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <Indicateur libelle="Encaissements" valeur={gnf(v.encaisseGnf)} variation={{ ecart: ecartRelatif(v.encaisseGnf, vp.encaisseGnf) }} lien="/ventes/impayes" />
+      <Indicateur libelle="Impayés (échus)" valeur={gnf(v.echuGnf)} detail={`Créances totales : ${gnf(v.creancesGnf)}`} ton={v.echuGnf > 0 ? "alerte" : "normal"} lien="/ventes/impayes" />
+      <Indicateur libelle="Commandes" valeur={nombre(v.nbCommandes)} variation={{ ecart: ecartRelatif(v.nbCommandes, vp.nbCommandes) }} detail={`${nombre(v.paquets)} paquets vendus`} lien="/ventes/commandes" />
+      <Indicateur libelle="Produits finis en stock" valeur={`${nombre(pf)} paquets`} lien="/magasin/articles" />
+      <Indicateur
+        libelle="Rendement réel / théorique"
+        valeur={pct(p.ratioRendement)}
+        variation={{ ecart: ecartPoints(p.ratioRendement, pp.ratioRendement), unite: "points" }}
+        ton={p.ratioRendement !== null && p.ratioRendement < s.seuils.rendementMin ? "danger" : "normal"}
+        lien="/production"
+      />
+      <Indicateur libelle="Pertes" valeur={pct(p.tauxPerte)} variation={{ ecart: ecartPoints(p.tauxPerte, pp.tauxPerte), unite: "points", hausseBonne: false }} ton={(p.tauxPerte ?? 0) > s.seuils.tauxPerteMax ? "danger" : "normal"} lien="/production" />
+      <Indicateur
+        libelle="Matière première"
+        valeur={s.stock.couvertureMpJours === null ? formaterPoids(kg(s.stock.kgMp)) : `${nombre(s.stock.couvertureMpJours, 0)} jours`}
+        detail={`${formaterPoids(kg(s.stock.kgMp))} en stock · ${formaterPoids(kg(s.stock.kgTransit))} en route`}
+        ton={s.stock.couvertureMpJours !== null && s.stock.couvertureMpJours < s.seuils.couvertureJours ? "alerte" : "normal"}
+        lien="/magasin"
+      />
+      <Indicateur libelle="Ruptures chez les points de vente" valeur={pct(s.distribution.tauxRupture)} variation={{ ecart: ecartPoints(s.distribution.tauxRupture, s.distributionPrec.tauxRupture), unite: "points", hausseBonne: false }} detail={`${nombre(s.distribution.pvaActifs)} points de vente`} ton={(s.distribution.tauxRupture ?? 0) > s.seuils.tauxRupture ? "alerte" : "normal"} lien="/commercial" />
+    </div>
+  );
+}
+
+/** Les cinq blocs d'indicateurs détaillés du rapport de la semaine. */
 export function BlocsIndicateurs({ s, jours = [] }: { s: SyntheseDirection; jours?: string[] }) {
   const v = s.ventes;
   const vp = s.ventesPrec;

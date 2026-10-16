@@ -12,6 +12,7 @@ import {
   Circle,
   ClipboardCheck,
   ClipboardList,
+  Disc3,
   Container,
   Factory,
   FileSpreadsheet,
@@ -59,6 +60,15 @@ const ICONES_MENU: [RegExp, LucideIcon][] = [
   [/^objectifs/i, Target],
   [/mise en route/i, Rocket],
   [/rapport/i, FileText],
+  [/entrées|mouvement/i, ArrowLeftRight],
+  [/bobine/i, Disc3],
+  [/inventaire|fiches de poste/i, ClipboardList],
+  [/ordres de fabrication/i, Factory],
+  [/panne/i, Wrench],
+  [/devis/i, FileText],
+  [/impayé/i, Wallet],
+  [/commandes à livrer/i, Truck],
+  [/prévision/i, BarChart3],
   [/carte/i, IconeCarte],
   [/portefeuille|clients?|employ|utilisateur/i, Users],
   [/visite/i, MapPin],
@@ -66,7 +76,7 @@ const ICONES_MENU: [RegExp, LucideIcon][] = [
   [/réclamation|non-conformit|signalement/i, AlertTriangle],
   [/opérations|mouvement/i, ArrowLeftRight],
   [/produits|articles/i, Package],
-  [/commandes|achats/i, ShoppingCart],
+  [/commandes|achats|demandes/i, ShoppingCart],
   [/facturation|factures/i, Receipt],
   [/conteneur/i, Ship],
   [/contrôle/i, ClipboardCheck],
@@ -121,7 +131,8 @@ export function MenuLateral({
   // L'application terrain a sa propre interface plein écran (en-tête et onglets en bas).
   if (code === "terrain") return null;
 
-  const menu = (MENUS[code] ?? []).filter((e) => !e.adminSeulement || utilisateur.estAdmin);
+  const visible = (e: { adminSeulement?: boolean }) => !e.adminSeulement || utilisateur.estAdmin;
+  const menu = (MENUS[code] ?? []).filter(visible).map((e) => (e.enfants ? { ...e, enfants: e.enfants.filter(visible) } : e));
   const principal = menu.filter((e) => e.libelle !== "Configuration");
   const configuration = menu.find((e) => e.libelle === "Configuration");
 

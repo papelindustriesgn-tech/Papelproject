@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { lireSeuils } from "@/lib/parametres";
-import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { ActionsAppli } from "@/components/coque/entree-appli";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { CarteDynamique } from "@/components/carte/carte-dynamique";
@@ -47,7 +47,7 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
 
   return (
     <>
-      <TitrePage titre="Équipe commerciale" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}${filtresTexte ? ` · ${filtresTexte}` : ""}`} />
+      <TitrePage titre="Équipe commerciale" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}${filtresTexte ? ` · ${filtresTexte}` : ""}`} action={<ActionsAppli espace="commercial" />} />
       <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} commerciaux={options.commerciaux} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/commercial/visites" libelle="Visites" valeur={nombre(ind.visites)} detail={`${nombre(ind.visitesParJour, 1)} par jour · ${ind.horsZone} hors zone`} ton={ind.visites && ind.horsZone / ind.visites > seuils.alerte_taux_hors_zone ? "alerte" : "normal"} />
@@ -62,7 +62,6 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
         filtre={!!(filtres.produit || filtres.commercial)}
         reels={{ visites: ind.visites, nouveaux_pva: ind.nouveauxPva, taux_rupture: ind.tauxRupture, quartiers_couverts: ind.quartiersCouverts }}
       />
-      <RaccourcisAppli espace="commercial" />
       <CarteUi titre="Carte des points de vente" className="mb-4">
         <CarteDynamique points={points} hauteur={420} />
         <ul className="mt-2 flex flex-wrap gap-3 text-sm" aria-label="Légende">

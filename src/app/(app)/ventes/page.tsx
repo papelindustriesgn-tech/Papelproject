@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { ActionsAppli } from "@/components/coque/entree-appli";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
@@ -31,7 +31,7 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
 
   return (
     <>
-      <TitrePage titre="Ventes" sousTitre={filtresTexte ? `Filtré : ${filtresTexte}` : "Facturation, encaissements et clients"} />
+      <TitrePage titre="Ventes" sousTitre={filtresTexte ? `Filtré : ${filtresTexte}` : "Facturation, encaissements et clients"} action={<ActionsAppli espace="ventes" />} />
       <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} commerciaux={options.commerciaux} />
       <div className="mb-4 grid gap-4 xl:grid-cols-3">
         <CarteHero
@@ -56,13 +56,11 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
           <GraphiqueAnneau donnees={v.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="CA HT" />
         </Carte>
       </div>
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <Indicateur libelle="Prix moyen HT" valeur={v.prixMoyenPaquetGnf === null ? "—" : `${gnf(v.prixMoyenPaquetGnf)} / paquet`} variation={{ ecart: ecartRelatif(v.prixMoyenPaquetGnf, prec.prixMoyenPaquetGnf) }} />
+      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Commandes" valeur={nombre(v.nbCommandes)} variation={{ ecart: ecartRelatif(v.nbCommandes, prec.nbCommandes) }} lien="/ventes/pieces?type=commande" />
         <Indicateur libelle="Clients actifs" valeur={nombre(v.clientsActifs)} variation={{ ecart: ecartRelatif(v.clientsActifs, prec.clientsActifs) }} detail={`${v.nouveauxClients} nouveau(x) client(s)${toutesGammes}`} lien="/ventes/clients" />
-        <Indicateur libelle="Encaissements" valeur={gnf(v.encaisseGnf)} variation={{ ecart: ecartRelatif(v.encaisseGnf, prec.encaisseGnf) }} detail={filtres.produit ? "Part de la gamme, au prorata de chaque facture" : undefined} lien="/ventes/impayes" />
         <Indicateur libelle="Créances clients" valeur={gnf(v.creancesGnf)} detail={`Dont échu : ${gnf(v.echuGnf)}${toutesGammes}`} ton={v.echuGnf > 0 ? "alerte" : "normal"} lien="/ventes/impayes" />
-        <Indicateur libelle="Délai moyen de paiement (DSO)" valeur={v.dso === null ? "—" : `${nombre(v.dso, 0)} jours`} variation={{ ecart: ecartRelatif(v.dso, prec.dso), hausseBonne: false }} detail={filtres.produit ? "Non calculé par gamme (créances par client)" : "Créances ÷ CA TTC × jours de la période"} lien="/ventes/impayes" />
+        <Indicateur libelle="Délai moyen de paiement (DSO)" valeur={v.dso === null ? "—" : `${nombre(v.dso, 0)} jours`} variation={{ ecart: ecartRelatif(v.dso, prec.dso), hausseBonne: false }} detail={filtres.produit ? "Non calculé par gamme (créances par client)" : undefined} lien="/ventes/impayes" />
       </div>
       <CarteObjectifs
         espace="ventes"
@@ -71,20 +69,7 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
         filtre={!!(filtres.produit || filtres.commercial)}
         reels={{ ca_ttc: v.caTtcGnf, paquets_vendus: v.paquets, commandes: v.nbCommandes, nouveaux_clients: v.nouveauxClients, encaissements: v.encaisseGnf, dso: v.dso }}
       />
-      <RaccourcisAppli espace="ventes" />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Carte titre="Détail par produit">
-          <Tableau entetes={["Produit", "Paquets", "Colis", "CA HT"]}>
-            {v.parProduit.map((p) => (
-              <tr key={p.libelle}>
-                <Cellule className="font-semibold">{p.libelle}</Cellule>
-                <Cellule>{nombre(p.paquets)}</Cellule>
-                <Cellule>{nombre(p.colis)}</Cellule>
-                <Cellule>{gnf(p.caHtGnf)}</Cellule>
-              </tr>
-            ))}
-          </Tableau>
-        </Carte>
+      <div className="grid gap-4">
         <Carte titre="Meilleurs clients de la période">
           <Tableau entetes={["Client", "CA HT", "Part"]}>
             {v.topClients.map((c) => (

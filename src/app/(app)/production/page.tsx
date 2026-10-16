@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
-import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { ActionsAppli } from "@/components/coque/entree-appli";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
-import Link from "next/link";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { GraphiqueArrets, GraphiqueProduction, GraphiqueRendement } from "@/components/graphiques/production";
-import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
+import { Carte, TitrePage } from "@/components/ui";
 import { GraphiqueAnneau } from "@/components/graphiques/hero";
 import { CarteHero } from "@/components/ui/carte-hero";
 import { ecartPoints, ecartRelatif, Indicateur, jourCourt, PastilleVariation } from "@/components/ui/indicateur";
-import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
+import { aujourdhui } from "@/lib/formulaires/dates";
 import { lireFiltresAnalyse, lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { joursDeLaPeriode, serieRegroupee } from "@/lib/formulaires/periode";
 import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { formaterPoids, kg, paquetsVersColis, type Paquets } from "@/lib/metier/unites";
-import { libelleAlerte, minutes, pct } from "@/lib/production/affichage";
-import { agreger, chargerFiches, regrouper, rendementReelParProduit, seuilsProduction } from "@/lib/production/indicateurs";
+import { minutes, pct } from "@/lib/production/affichage";
+import { agreger, chargerFiches, regrouper, seuilsProduction } from "@/lib/production/indicateurs";
 import { nombre } from "@/lib/stocks/libelles";
 
 export const metadata: Metadata = { title: "Production" };
@@ -55,31 +54,9 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
   for (const f of fiches) for (const a of f.arrets) if (!a.planifie) arretsParCause.set(a.cause, (arretsParCause.get(a.cause) ?? 0) + a.minutes);
   const donneesArrets = [...arretsParCause.entries()].map(([cause, m]) => ({ cause, minutes: m })).sort((a, b) => b.minutes - a.minutes);
 
-  const parPoste = regrouper(fiches, (f) => `${String(f.posteOrdre).padStart(2, "0")}|${f.poste}`).sort((a, b) => a.cle.localeCompare(b.cle));
-  const parEquipe = regrouper(fiches, (f) => f.equipe ?? "Non précisée").sort((a, b) => a.cle.localeCompare(b.cle));
-  const rendementsProduits = rendementReelParProduit(fiches);
-  const fichesEnAlerte = fiches.filter((f) => f.alertes.length).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 15);
-
-  const tableauGroupes = (groupes: typeof parPoste, libelle: (cle: string) => string) => (
-    <Tableau entetes={["", "Fiches", "Papier", "Paquets", "Rendement", "Perte", "Arrêts", "TRS"]}>
-      {groupes.map((g) => (
-        <tr key={g.cle}>
-          <Cellule className="font-semibold">{libelle(g.cle)}</Cellule>
-          <Cellule>{g.fiches.length}</Cellule>
-          <Cellule>{formaterPoids(kg(g.indicateurs.tonnesConsommees * 1000))}</Cellule>
-          <Cellule>{nombre(g.indicateurs.paquetsBons)}</Cellule>
-          <Cellule>{pct(g.indicateurs.ratioRendement)}</Cellule>
-          <Cellule>{pct(g.indicateurs.tauxPerte)}</Cellule>
-          <Cellule>{minutes(g.indicateurs.minutesArretNonPlanifie)}</Cellule>
-          <Cellule>{pct(g.indicateurs.trs)}</Cellule>
-        </tr>
-      ))}
-    </Tableau>
-  );
-
   return (
     <>
-      <TitrePage titre="Production" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)} · ${fiches.length} fiche(s) validée(s)${gamme ? ` · ${gamme} (fiches mixtes au prorata du papier)` : ""}`} />
+      <TitrePage titre="Production" sousTitre={gamme ? `Filtré : ${gamme} (fiches mixtes au prorata du papier)` : "Ce que l'usine a produit et comment"} action={<ActionsAppli espace="production" />} />
       <SelecteurPeriode periode={periode} params={sp} filtres={{ ...filtres, commercial: null }} gammes={options.produits} />
 
       <div className="mb-4 grid gap-4 xl:grid-cols-3">
@@ -107,14 +84,6 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
       </div>
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur
-          libelle="Papier consommé"
-          valeur={formaterPoids(kg(ind.tonnesConsommees * 1000))}
-          variation={{ ecart: ecartRelatif(ind.tonnesConsommees, indPrec.tonnesConsommees) }}
-          tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.has(d) ? parJour.get(d)!.indicateurs.tonnesConsommees * 1000 : null }))}
-          formatTendance="kg"
-          lien="/production/fiches"
-        />
-        <Indicateur
           libelle="Rendement réel / théorique"
           valeur={pct(ind.ratioRendement)}
           variation={{ ecart: ecartPoints(ind.ratioRendement, indPrec.ratioRendement), unite: "points" }}
@@ -141,12 +110,6 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
           detail={`Disponibilité : ${pct(ind.disponibilite)}`}
           lien="/production/pannes"
         />
-        <Indicateur
-          libelle="TRS (OEE)"
-          valeur={pct(ind.trs)}
-          variation={{ ecart: ecartPoints(ind.trs, indPrec.trs), unite: "points" }}
-          detail={ind.trs === null ? "Renseignez les cadences nominales" : `Perf. ${pct(ind.performance, 0)} · Qualité ${pct(ind.qualite, 0)}`}
-        />
       </div>
       <CarteObjectifs
         espace="production"
@@ -155,23 +118,6 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
         filtre={!!filtres.produit}
         reels={{ paquets_produits: ind.paquetsBons, papier_kg: ind.tonnesConsommees * 1000, rendement: ind.ratioRendement, taux_perte: ind.tauxPerte, trs: ind.trs }}
       />
-      <RaccourcisAppli espace="production" />
-
-      <Carte titre="Rendement réel par produit" className="mb-4">
-        <Tableau entetes={["Produit", "Rendement réel", "Théorique", "Réel / théorique"]}>
-          {rendementsProduits.map((r) => (
-            <tr key={r.produitId}>
-              <Cellule className="font-semibold">{r.libelle}</Cellule>
-              <Cellule>{r.rendementReel === null ? "—" : `${nombre(r.rendementReel)} paquets/t`}</Cellule>
-              <Cellule>{nombre(r.theorique)} paquets/t</Cellule>
-              <Cellule className={r.rendementReel !== null && r.rendementReel / r.theorique < seuils.ratioRendementMin ? "font-bold text-red-700" : ""}>
-                {r.rendementReel === null ? "—" : pct(r.rendementReel / r.theorique)}
-              </Cellule>
-            </tr>
-          ))}
-        </Tableau>
-        <p className="mt-2 text-sm text-gray-600">Calculé sur les fiches qui n&apos;ont fabriqué que ce produit.</p>
-      </Carte>
 
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
         <Carte titre="Rendement réel / théorique par jour">
@@ -182,38 +128,12 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
         </Carte>
       </div>
 
-      <div className="mb-4 grid gap-4 lg:grid-cols-2">
+      <div className="mb-4 grid gap-4">
         <Carte titre="Temps d'arrêt non planifié par cause">
           {donneesArrets.length ? <GraphiqueArrets donnees={donneesArrets} /> : <p className="text-gray-700">Aucun arrêt non planifié.</p>}
         </Carte>
-        <Carte titre={`Fiches en alerte (${fiches.filter((f) => f.alertes.length).length})`}>
-          {fichesEnAlerte.length ? (
-            <ul className="divide-y divide-gray-100">
-              {fichesEnAlerte.map((f) => (
-                <li key={f.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                  <Link href={`/production/fiches/${f.id}`} className="font-medium text-papel-700 hover:underline">
-                    {formaterDate(f.date)} – {f.poste}
-                  </Link>
-                  <span className="flex flex-wrap gap-1">
-                    {f.alertes.map((a, i) => (
-                      <Badge key={i} ton="erreur">
-                        {libelleAlerte(a)}
-                      </Badge>
-                    ))}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-700">Aucune alerte sur la période.</p>
-          )}
-        </Carte>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Carte titre="Par poste">{tableauGroupes(parPoste, (c) => c.split("|")[1])}</Carte>
-        <Carte titre="Par équipe">{tableauGroupes(parEquipe, (c) => c)}</Carte>
-      </div>
     </>
   );
 }

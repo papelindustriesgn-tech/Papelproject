@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { lireSeuils } from "@/lib/parametres";
-import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { ActionsAppli } from "@/components/coque/entree-appli";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
-import { aujourdhui, formaterDate, formaterDateHeure } from "@/lib/formulaires/dates";
+import { aujourdhui, formaterDateHeure } from "@/lib/formulaires/dates";
 import { chargerIndicateursMaintenance } from "@/lib/maintenance/indicateurs";
 import { PRIORITES, STATUTS_INTERVENTION } from "@/lib/maintenance/libelles";
 import { minutes, pct } from "@/lib/production/affichage";
@@ -30,15 +30,12 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
   const g = ind.global;
   return (
     <>
-      <TitrePage titre="Maintenance" sousTitre="Fiabilité du parc, ordres de travail et pièces de rechange" />
+      <TitrePage titre="Maintenance" sousTitre="Pannes, réparations et entretien des machines" action={<ActionsAppli espace="maintenance" />} />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/maintenance/interventions" libelle="Pannes (arrêt machine)" valeur={nombre(g.nbPannes)} detail={`${minutes(g.heuresArret * 60)} d'arrêt au total`} />
         <Indicateur lien="/maintenance/equipements" libelle="Disponibilité" valeur={pct(g.disponibilite)} detail={`Sur ${nombre(g.heuresRequises)} h requises`} ton={g.disponibilite !== null && g.disponibilite < seuilDisponibilite ? "alerte" : "normal"} />
-        <Indicateur libelle="MTBF" valeur={g.mtbfHeures === null ? "—" : `${nombre(g.mtbfHeures, 0)} h`} detail="Temps moyen entre deux pannes" />
-        <Indicateur libelle="MTTR" valeur={g.mttrMinutes === null ? "—" : minutes(g.mttrMinutes)} detail="Temps moyen de réparation" />
-        <Indicateur lien="/maintenance/interventions" libelle="Coût de maintenance" valeur={gnf(ind.coutTotalGnf)} detail="Main-d'œuvre, prestataires, pièces" />
-        <Indicateur lien="/maintenance/preventif" libelle="Part du préventif" valeur={pct(ind.partPreventif)} detail={`${ind.nbInterventions} intervention(s) terminée(s)`} />
+        <Indicateur libelle="Temps moyen de réparation" valeur={g.mttrMinutes === null ? "—" : minutes(g.mttrMinutes)} detail={`Coût de la période : ${gnf(ind.coutTotalGnf)}`} />
         <Indicateur lien="/maintenance/preventif" libelle="Préventifs en retard" valeur={nombre(retards?.length ?? 0)} ton={(retards?.length ?? 0) > 0 ? "alerte" : "normal"} />
         <Indicateur lien="/maintenance/equipements" libelle="Pièces critiques en alerte" valeur={nombre(pieces?.length ?? 0)} ton={(pieces?.length ?? 0) > 0 ? "danger" : "normal"} />
       </div>
@@ -48,7 +45,6 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
         au={periode.au}
         reels={{ disponibilite: g.disponibilite, mttr: g.mttrMinutes, part_preventif: ind.partPreventif, cout_maintenance: ind.coutTotalGnf }}
       />
-      <RaccourcisAppli espace="maintenance" />
       <div className="flex flex-col gap-4">
         <Carte titre={`Ordres de travail ouverts (${ouverts?.length ?? 0})`}>
           <Tableau entetes={["OT", "Équipement", "Description", "Priorité", "Signalé", "Statut"]}>
@@ -60,50 +56,6 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
                 <Cellule><Badge ton={PRIORITES[o.priorite!].ton}>{PRIORITES[o.priorite!].libelle}</Badge></Cellule>
                 <Cellule className="whitespace-nowrap">{formaterDateHeure(o.signale_le!)}</Cellule>
                 <Cellule><Badge ton={STATUTS_INTERVENTION[o.statut!].ton}>{STATUTS_INTERVENTION[o.statut!].libelle}</Badge></Cellule>
-              </tr>
-            ))}
-          </Tableau>
-        </Carte>
-        {retards && retards.length > 0 && (
-          <Carte titre="Préventifs en retard">
-            <Tableau entetes={["Équipement", "Opération", "Échéance", "Retard"]}>
-              {retards.map((r) => (
-                <tr key={r.id}>
-                  <Cellule>{r.equipement_code}</Cellule>
-                  <Cellule>{r.libelle}</Cellule>
-                  <Cellule>{formaterDate(r.prochaine_echeance)}</Cellule>
-                  <Cellule className="font-semibold text-red-700">{-Number(r.jours_restants)} j</Cellule>
-                </tr>
-              ))}
-            </Tableau>
-          </Carte>
-        )}
-        {pieces && pieces.length > 0 && (
-          <Carte titre="Pièces critiques sous le seuil">
-            <Tableau entetes={["Pièce", "Stock", "Seuil", "Équipements"]}>
-              {pieces.map((p) => (
-                <tr key={p.article_id}>
-                  <Cellule>{p.code} – {p.libelle}</Cellule>
-                  <Cellule className="font-semibold text-red-700">{nombre(p.quantite)}</Cellule>
-                  <Cellule>{nombre(p.seuil_alerte)}</Cellule>
-                  <Cellule>{p.equipements}</Cellule>
-                </tr>
-              ))}
-            </Tableau>
-            <p className="mt-2 text-sm text-gray-700">Demandez le réapprovisionnement au service achats (Magasin → Demandes d&apos;achat).</p>
-          </Carte>
-        )}
-        <Carte titre="Fiabilité par équipement">
-          <Tableau entetes={["Équipement", "Criticité", "Pannes", "MTBF", "MTTR", "Disponibilité", "Coût"]}>
-            {ind.parEquipement.map((e) => (
-              <tr key={e.id}>
-                <Cellule><Link href={`/maintenance/equipements/${e.id}`} className="font-medium text-papel-700 hover:underline">{e.code}</Link> {e.libelle}</Cellule>
-                <Cellule>{e.criticite}</Cellule>
-                <Cellule>{e.fiabilite.nbPannes}</Cellule>
-                <Cellule>{e.fiabilite.mtbfHeures === null ? "—" : `${nombre(e.fiabilite.mtbfHeures, 0)} h`}</Cellule>
-                <Cellule>{e.fiabilite.mttrMinutes === null ? "—" : minutes(e.fiabilite.mttrMinutes)}</Cellule>
-                <Cellule>{pct(e.fiabilite.disponibilite)}</Cellule>
-                <Cellule>{gnf(e.coutGnf)}</Cellule>
               </tr>
             ))}
           </Tableau>

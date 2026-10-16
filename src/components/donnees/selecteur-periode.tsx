@@ -65,9 +65,6 @@ export function SelecteurPeriode({
           </Link>
         )}
       </div>
-      <p className="mt-1.5 text-sm text-gray-500">
-        Du {jjmmaaaa(periode.du)} au {jjmmaaaa(periode.au)}
-      </p>
     </div>
   );
 }

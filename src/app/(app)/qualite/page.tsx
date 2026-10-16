@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
-import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { ActionsAppli } from "@/components/coque/entree-appli";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -33,7 +33,7 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
 
   return (
     <>
-      <TitrePage titre="Qualité" sousTitre="Contrôles, non-conformités et traçabilité" />
+      <TitrePage titre="Qualité" sousTitre="Contrôles, non-conformités et traçabilité" action={<ActionsAppli espace="qualite" />} />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/qualite/controles" libelle="Conformité à réception" valeur={pct(tauxConformite(c.filter((x) => x.etape === "reception")))} detail={`${c.filter((x) => x.etape === "reception").length} contrôle(s) de bobines`} />
@@ -51,7 +51,6 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
           delai_cloture: delaiMoyenClotureJours(ncPeriode ?? []),
         }}
       />
-      <RaccourcisAppli espace="qualite" />
       <div className="flex flex-col gap-4">
         <Carte titre={`Non-conformités à traiter (${ouvertes?.length ?? 0})`}>
           <Tableau entetes={["Numéro", "Date", "Origine", "Gravité", "Description", "Statut"]}>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { lireSeuils } from "@/lib/parametres";
-import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { ActionsAppli } from "@/components/coque/entree-appli";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -10,7 +10,7 @@ import { Indicateur } from "@/components/ui/indicateur";
 import { aujourdhui } from "@/lib/formulaires/dates";
 import { chargerBilanLogistique } from "@/lib/logistique/indicateurs";
 import { STATUTS_TOURNEE } from "@/lib/logistique/libelles";
-import { coutAuKm, coutParColis, tauxLivraisonReussie, tauxRetour } from "@/lib/metier/logistique";
+import { coutParColis, tauxLivraisonReussie, tauxRetour } from "@/lib/metier/logistique";
 import { pct } from "@/lib/production/affichage";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -32,16 +32,13 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
 
   return (
     <>
-      <TitrePage titre="Logistique" sousTitre="Tournées de livraison depuis l'usine de Coyah" />
+      <TitrePage titre="Logistique" sousTitre="Tournées de livraison depuis l'usine de Coyah" action={<ActionsAppli espace="logistique" />} />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/logistique/tournees/nouvelle" libelle="Bons à planifier" valeur={nombre(aPlanifier ?? 0)} detail="Bons de livraison validés sans tournée" ton={(aPlanifier ?? 0) > 0 ? "alerte" : "normal"} />
-        <Indicateur lien="/logistique/tournees" libelle="Tournées" valeur={nombre(b.nbTournees)} detail={`${nombre(b.nbLivraisons)} bons de livraison`} />
         <Indicateur lien="/logistique/tournees" libelle="Livraisons réussies" valeur={pct(reussite)} detail={`${b.nbPartielles} partielle(s) · ${b.nbRefusees} refus`} ton={reussite !== null && reussite < seuilReussite ? "alerte" : "normal"} />
         <Indicateur lien="/logistique/tournees" libelle="Colis livrés" valeur={nombre(b.colisLivres)} detail={`Retours : ${pct(tauxRetour(b))} des paquets chargés`} />
-        <Indicateur libelle="Dépenses de tournée" valeur={gnf(b.depensesGnf)} />
-        <Indicateur libelle="Coût par colis livré" valeur={coutParColis(b.depensesGnf, b.colisLivres) === null ? "—" : gnf(coutParColis(b.depensesGnf, b.colisLivres))} />
-        <Indicateur libelle="Kilomètres" valeur={b.kmParcourus === null ? "—" : `${nombre(b.kmParcourus)} km`} detail={coutAuKm(b.depensesGnf, b.kmParcourus) === null ? undefined : `${gnf(coutAuKm(b.depensesGnf, b.kmParcourus))} / km`} />
+        <Indicateur libelle="Coût par colis livré" valeur={coutParColis(b.depensesGnf, b.colisLivres) === null ? "—" : gnf(coutParColis(b.depensesGnf, b.colisLivres))} detail={`${nombre(b.nbTournees)} tournée(s) · dépenses ${gnf(b.depensesGnf)}${b.kmParcourus === null ? "" : ` · ${nombre(b.kmParcourus)} km`}`} />
       </div>
       <CarteObjectifs
         espace="logistique"
@@ -49,7 +46,6 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
         au={periode.au}
         reels={{ colis_livres: b.colisLivres, taux_reussite: reussite, cout_par_colis: coutParColis(b.depensesGnf, b.colisLivres) }}
       />
-      <RaccourcisAppli espace="logistique" />
       <Carte titre="Tournées du jour et en cours">
         {duJour && duJour.length > 0 ? (
           <Tableau entetes={["Tournée", "Véhicule", "Chauffeur", "Bons", "Colis", "Statut"]}>

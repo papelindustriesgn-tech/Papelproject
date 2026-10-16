@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import Link from "next/link";
-import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { ActionsAppli } from "@/components/coque/entree-appli";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { ecartPoints, ecartRelatif, Indicateur, jourCourt } from "@/components/ui/indicateur";
@@ -59,7 +59,7 @@ export default async function VueRh({ searchParams }: PageProps<"/rh">) {
 
   return (
     <>
-      <TitrePage titre="Ressources humaines" sousTitre={`${actifs.length} employé(s) actif(s)`} />
+      <TitrePage titre="Ressources humaines" sousTitre={`${actifs.length} employé(s) actif(s)`} action={<ActionsAppli espace="rh" />} />
       <SelecteurPeriode periode={periodeChoisie} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur libelle="Effectif actif" valeur={nombre(actifs.length)} detail={[...parService.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s, k]) => `${s} : ${k}`).join(" · ") || "—"} lien="/rh/employes" />
@@ -95,7 +95,6 @@ export default async function VueRh({ searchParams }: PageProps<"/rh">) {
         au={periodeChoisie.au}
         reels={{ absenteisme: taux, cout_salarial: moisPaie[0] ? cout(moisPaie[0]) : null }}
       />
-      <RaccourcisAppli espace="rh" />
       <div className="grid gap-4 lg:grid-cols-2">
         <Carte titre={`Absents aujourd'hui (${absentsJour.length})`}>
           {absentsJour.length ? (

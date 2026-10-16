@@ -35,21 +35,13 @@ export async function CarteObjectifs({
   );
   const action = (
     <Link href={`/${espace}/objectifs`} className="text-sm font-semibold text-papel-700 hover:underline">
-      {lignes.length ? "Voir les objectifs" : "Fixer les objectifs"}
+      Voir les objectifs
     </Link>
   );
-  if (filtre)
-    return (
-      <Carte titre={titre} action={action} className="mb-4">
-        <p className="text-gray-600">Les objectifs portent sur toute l&apos;entreprise : retirez le filtre gamme ou commercial pour comparer le réel à l&apos;objectif.</p>
-      </Carte>
-    );
-  if (!lignes.length)
-    return (
-      <Carte titre={titre} action={action} className="mb-4">
-        <p className="text-gray-600">Aucun objectif fixé pour cette période.</p>
-      </Carte>
-    );
+  // Objectifs globaux : avec un filtre gamme ou commercial, la comparaison n'aurait pas de sens.
+  if (filtre) return null;
+  // Pas d'objectif fixé pour la période : rien à montrer (on ne charge pas la page d'une carte vide).
+  if (!lignes.length) return null;
   const couverture = Math.min(...lignes.map((d) => objectifs.get(d.code)!.couverture));
 
   return (

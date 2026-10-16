@@ -1,9 +1,7 @@
 import {
   AlertTriangle,
   ArrowLeftRight,
-  ArrowRight,
   CalendarDays,
-  ChevronRight,
   ClipboardCheck,
   ClipboardList,
   Download,
@@ -93,74 +91,30 @@ const chargerEntree = cache(async (espace: string) => {
 });
 
 /**
- * Bas de la vue d'ensemble, pour ne pas faire réfléchir : phrase d'accueil, UN bouton principal (le 1er),
- * les autres en petit, et le parcours étape par étape. Réglé par l'administrateur.
+ * Boutons d'action d'une vue d'ensemble, en haut à droite du titre : ce que le service fait le plus souvent,
+ * en un clic. Le 1er bouton (réglé par l'administrateur, Réglages des services) est mis en avant, 2 autres au plus.
  */
-export async function RaccourcisAppli({ espace }: { espace: string }) {
-  const { promesse, actions, etapes } = await chargerEntree(espace);
+export async function ActionsAppli({ espace }: { espace: string }) {
+  const { actions } = await chargerEntree(espace);
   const [principale, ...autres] = actions;
-  if (!principale && !etapes.length && !promesse) return null;
-  const IconePrincipale = principale ? (ICONES[principale.icone] ?? FileText) : FileText;
+  if (!principale) return null;
+  const IconePrincipale = ICONES[principale.icone] ?? FileText;
+  // Téléphone : bouton principal en premier sur toute la largeur, les autres côte à côte ; ordinateur : en ligne, principal à droite.
   return (
-    <section aria-label="Que voulez-vous faire ?" className="ombre-carte mb-4 flex flex-col gap-3 rounded-2xl bg-white p-4 print:hidden md:p-5">
-      <div>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Que voulez-vous faire ?</h2>
-        {promesse && <p className="mt-0.5 text-gray-700">{promesse}</p>}
-      </div>
-      {principale && (
-        <div className="flex flex-col gap-2 md:flex-row md:items-stretch">
-          <Link
-            href={principale.ecran}
-            className="flex min-h-16 items-center gap-3 rounded-2xl bg-linear-to-br from-papel-700 to-papel-500 px-4 py-3 text-white shadow-md transition hover:brightness-110 active:scale-[0.99] md:min-w-80"
-          >
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-white/15">
-              <IconePrincipale size={24} />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-lg font-bold leading-tight">{principale.libelle}</span>
-              {principale.description && <span className="block text-sm text-white/80">{principale.description}</span>}
-            </span>
-            <ArrowRight size={22} className="shrink-0" />
+    <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+      {autres.slice(0, 2).map((a) => {
+        const Icone = ICONES[a.icone] ?? FileText;
+        return (
+          <Link key={a.id} href={a.ecran} title={a.description} className="ombre-carte flex min-h-11 items-center gap-2 rounded-xl bg-white px-3 text-sm font-semibold leading-tight text-gray-800 hover:bg-papel-50 md:min-h-10">
+            <Icone size={17} className="shrink-0 text-papel-700" aria-hidden />
+            {a.libelle}
           </Link>
-          {autres.length > 0 && (
-            <ul className="grid grid-cols-2 gap-2 md:flex md:flex-1 md:flex-wrap" aria-label="Autres actions">
-              {autres.map((a) => {
-                const Icone = ICONES[a.icone] ?? FileText;
-                return (
-                  <li key={a.id} className="md:flex-1">
-                    <Link
-                      href={a.ecran}
-                      title={a.description}
-                      className="flex h-full min-h-12 items-center gap-2 rounded-2xl bg-gray-50 px-3 py-2 font-semibold leading-tight text-gray-900 ring-1 ring-gray-100 hover:bg-papel-50 hover:ring-papel-200 active:scale-[0.98]"
-                    >
-                      <Icone size={18} className="shrink-0 text-papel-700" />
-                      <span className="min-w-0 [hyphens:auto]" lang="fr">
-                        {a.libelle}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      )}
-      {etapes.length > 0 && (
-        <nav aria-label="Comment ça marche" className="-mx-3 overflow-x-auto px-3 md:mx-0 md:px-0">
-          <ol className="flex w-max items-center gap-1 text-sm">
-            <li className="mr-1 font-semibold uppercase tracking-wide text-gray-500">Comment ça marche :</li>
-            {etapes.map((e, i) => (
-              <li key={e.id} className="flex items-center gap-1">
-                {i > 0 && <ChevronRight size={16} className="text-gray-400" />}
-                <Link href={e.ecran} className="flex min-h-9 items-center gap-1.5 rounded-full bg-papel-50 px-3 font-semibold text-papel-800 hover:bg-papel-100">
-                  <span className="flex size-5 items-center justify-center rounded-full bg-papel-700 text-xs text-white">{i + 1}</span>
-                  {e.libelle}
-                </Link>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      )}
-    </section>
+        );
+      })}
+      <Link href={principale.ecran} title={principale.description} className="order-first col-span-2 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-papel-700 px-4 text-base font-bold text-white shadow-md hover:bg-papel-800 sm:order-last sm:min-h-10 sm:text-sm">
+        <IconePrincipale size={18} className="shrink-0" aria-hidden />
+        {principale.libelle}
+      </Link>
+    </div>
   );
 }

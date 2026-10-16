@@ -1,45 +1,47 @@
 import type { Metadata } from "next";
-import { GraphiqueAnneau } from "@/components/graphiques/hero";
-import { CarteHero } from "@/components/ui/carte-hero";
-import { ecartRelatif, PastilleVariation } from "@/components/ui/indicateur";
-import { gnf } from "@/lib/stocks/libelles";
-import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
-import { RaccourcisAppli } from "@/components/coque/entree-appli";
-import { CarteDynamique } from "@/components/carte/carte-dynamique";
+import { ActionsAppli } from "@/components/coque/entree-appli";
+import { IndicateursEssentiels } from "@/components/direction/sections";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
-import { BlocsIndicateurs } from "@/components/direction/sections";
-import { GraphiqueRendement } from "@/components/graphiques/production";
+import { GraphiqueAnneau } from "@/components/graphiques/hero";
+import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { Carte, TitrePage } from "@/components/ui";
 import { BoutonImprimer } from "@/components/ui/bouton-imprimer";
+import { CarteHero } from "@/components/ui/carte-hero";
+import { ecartRelatif, PastilleVariation } from "@/components/ui/indicateur";
 import { chargerSynthese } from "@/lib/direction/synthese";
-import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
-import { lireFiltresAnalyse, lirePeriode } from "@/lib/formulaires/filtres-analyse";
-import { joursDeLaPeriode, serieRegroupee } from "@/lib/formulaires/periode";
 import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
-import { clientServeur } from "@/lib/supabase/serveur";
+import { aujourdhui } from "@/lib/formulaires/dates";
+import { lireFiltresAnalyse, lirePeriode } from "@/lib/formulaires/filtres-analyse";
+import { serieRegroupee } from "@/lib/formulaires/periode";
+import { gnf } from "@/lib/stocks/libelles";
 
 export const metadata: Metadata = { title: "Tableau de bord" };
 
+/**
+ * Tableau de bord de la Direction : l'essentiel de l'usine sur un écran (chiffre d'affaires, 8 chiffres clés,
+ * objectifs). Le détail est dans chaque application (liens des tuiles) et dans le rapport de la semaine.
+ */
 export default async function TableauDeBordDirection({ searchParams }: PageProps<"/direction">) {
   const sp = await searchParams;
   const periode = lirePeriode(sp, aujourdhui());
   const filtres = lireFiltresAnalyse(sp);
-  const supabase = await clientServeur();
-  let requetePva = supabase.from("pva_carte").select("id, nom, latitude, longitude, derniere_rupture, type_libelle, commercial_nom").eq("actif", true);
-  if (filtres.commercial) requetePva = requetePva.eq("commercial_id", filtres.commercial);
-  const [s, { data: pva }, options] = await Promise.all([chargerSynthese(periode, filtres), requetePva, chargerOptionsFiltres()]);
+  const [s, options] = await Promise.all([chargerSynthese(periode, filtres), chargerOptionsFiltres()]);
   const filtresTexte = decrireFiltres(filtres, options);
-  const jours = joursDeLaPeriode(periode);
 
   return (
     <>
       <TitrePage
         titre="Tableau de bord"
-        sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}${filtresTexte ? ` · ${filtresTexte}` : ""} · comparaison avec la période précédente`}
-        action={<BoutonImprimer />}
+        sousTitre={filtresTexte ? `Filtré : ${filtresTexte}` : "Toute l'usine en un coup d'œil"}
+        action={
+          <>
+            <BoutonImprimer />
+            <ActionsAppli espace="direction" />
+          </>
+        }
       />
       <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} commerciaux={options.commerciaux} />
-      <div className="mb-5 grid gap-4 xl:grid-cols-3">
+      <div className="mb-4 grid gap-4 xl:grid-cols-3">
         <CarteHero
           className="xl:col-span-2"
           titre="Chiffre d'affaires HT"
@@ -62,7 +64,7 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
           <GraphiqueAnneau donnees={s.ventes.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="CA HT" />
         </Carte>
       </div>
-      <BlocsIndicateurs s={s} jours={jours} />
+      <IndicateursEssentiels s={s} />
       <CarteObjectifs
         espace="direction"
         du={periode.du}
@@ -76,35 +78,6 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
           encaissements: s.ventes.encaisseGnf,
         }}
       />
-      <RaccourcisAppli espace="direction" />
-      <div className="mb-5 grid gap-4">
-        <Carte titre="Rendement réel / théorique par jour" className="break-inside-avoid">
-          <GraphiqueRendement
-            donnees={jours.map((d) => {
-              const r = s.rendementParJour.get(d);
-              return { date: d, ratio: r === undefined || r === null ? null : Math.round(r * 1000) / 10 };
-            })}
-            seuilPct={s.seuils.rendementMin * 100}
-          />
-        </Carte>
-      </div>
-      <Carte titre="Couverture des points de vente" className="break-inside-avoid">
-        <CarteDynamique
-          hauteur={380}
-          points={(pva ?? [])
-            .filter((p) => p.latitude !== null)
-            .map((p) => ({
-              id: p.id!,
-              latitude: p.latitude!,
-              longitude: p.longitude!,
-              libelle: p.nom!,
-              detail: `${p.type_libelle} · ${p.commercial_nom}${p.derniere_rupture ? " · RUPTURE" : ""}`,
-              couleur: p.derniere_rupture ? "#e34948" : "#2a78d6",
-              creux: !!p.derniere_rupture,
-            }))}
-        />
-        <p className="mt-2 text-sm text-gray-600">Bleu : point de vente approvisionné · Rouge creux : rupture constatée à la dernière visite.</p>
-      </Carte>
     </>
   );
 }
