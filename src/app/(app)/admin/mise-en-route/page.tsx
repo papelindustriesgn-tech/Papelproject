@@ -36,7 +36,7 @@ export default async function MiseEnRoute() {
     supabase.from("employes").select("id", compter),
     supabase.from("vehicules").select("id", compter),
     supabase.from("equipements").select("id", compter),
-    supabase.from("objectifs_mensuels").select("mois").eq("actif", true).order("mois").limit(1).maybeSingle(),
+    supabase.from("objectifs_services").select("mois").order("mois").limit(1).maybeSingle(),
   ]);
   const n = (r: { count: number | null }) => r.count ?? 0;
   const infosEntreprise = (entreprise.data ?? []).every((p) => String(p.valeur ?? "").replace(/"/g, "").trim() !== "");
@@ -82,8 +82,8 @@ export default async function MiseEnRoute() {
       etapes: [
         {
           titre: "Date de démarrage des objectifs",
-          detail: premierMois ? `Les objectifs du business plan commencent en ${premierMois} : décalez-les si l'usine démarre plus tard.` : "Saisissez vos objectifs mensuels.",
-          lien: "/direction/listes/objectifs",
+          detail: premierMois ? `Les objectifs mensuels commencent en ${premierMois} : décalez-les si l'usine démarre plus tard.` : "Saisissez vos objectifs mensuels.",
+          lien: "/direction/objectifs",
           etat: "a_verifier",
         },
         { titre: "Seuils d'alerte et pages d'accueil", detail: "Réglez ce que chaque service voit en premier et quand une alerte se déclenche.", lien: "/admin/reglages", etat: "a_verifier" },

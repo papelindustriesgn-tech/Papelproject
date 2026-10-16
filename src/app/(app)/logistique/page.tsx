@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
+import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { lireSeuils } from "@/lib/parametres";
-import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
+import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
-import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { aujourdhui } from "@/lib/formulaires/dates";
-import { resoudrePeriode } from "@/lib/formulaires/periode";
 import { chargerBilanLogistique } from "@/lib/logistique/indicateurs";
 import { STATUTS_TOURNEE } from "@/lib/logistique/libelles";
 import { coutAuKm, coutParColis, tauxLivraisonReussie, tauxRetour } from "@/lib/metier/logistique";
@@ -20,7 +20,7 @@ export const metadata: Metadata = { title: "Logistique" };
 export default async function TableauDeBordLogistique({ searchParams }: PageProps<"/logistique">) {
   const sp = await searchParams;
   const jour = aujourdhui();
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "30j", jour, lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
+  const periode = lirePeriode(sp, jour);
   const supabase = await clientServeur();
   const [b, { data: duJour }, { count: aPlanifier }] = await Promise.all([
     chargerBilanLogistique(periode.du, periode.au),
@@ -33,7 +33,6 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
   return (
     <>
       <TitrePage titre="Logistique" sousTitre="Tournées de livraison depuis l'usine de Coyah" />
-      <UrgencesAppli espace="logistique" />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/logistique/tournees/nouvelle" libelle="Bons à planifier" valeur={nombre(aPlanifier ?? 0)} detail="Bons de livraison validés sans tournée" ton={(aPlanifier ?? 0) > 0 ? "alerte" : "normal"} />
@@ -44,6 +43,12 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
         <Indicateur libelle="Coût par colis livré" valeur={coutParColis(b.depensesGnf, b.colisLivres) === null ? "—" : gnf(coutParColis(b.depensesGnf, b.colisLivres))} />
         <Indicateur libelle="Kilomètres" valeur={b.kmParcourus === null ? "—" : `${nombre(b.kmParcourus)} km`} detail={coutAuKm(b.depensesGnf, b.kmParcourus) === null ? undefined : `${gnf(coutAuKm(b.depensesGnf, b.kmParcourus))} / km`} />
       </div>
+      <CarteObjectifs
+        espace="logistique"
+        du={periode.du}
+        au={periode.au}
+        reels={{ colis_livres: b.colisLivres, taux_reussite: reussite, cout_par_colis: coutParColis(b.depensesGnf, b.colisLivres) }}
+      />
       <RaccourcisAppli espace="logistique" />
       <Carte titre="Tournées du jour et en cours">
         {duJour && duJour.length > 0 ? (

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { lireSeuils } from "@/lib/parametres";
-import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
+import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { EtapesConteneur } from "@/components/achats/etapes";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
@@ -12,9 +14,7 @@ import { pct } from "@/lib/production/affichage";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 
-import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
-import { resoudrePeriode } from "@/lib/formulaires/periode";
 
 export const metadata: Metadata = { title: "Achats" };
 
@@ -22,7 +22,7 @@ export default async function TableauDeBordAchats({ searchParams }: PageProps<"/
   const sp = await searchParams;
   const jour = aujourdhui();
   // Les conteneurs arrivent rarement : l'année en cours par défaut.
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "annee", jour, lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
+  const periode = lirePeriode(sp, jour, "annee");
   const supabase = await clientServeur();
   const [{ data: couts }, { data: transit }, { data: conteneurs }, { count: demandes }] = await Promise.all([
     supabase.from("couts_conteneurs").select("*"),
@@ -42,7 +42,6 @@ export default async function TableauDeBordAchats({ searchParams }: PageProps<"/
   return (
     <>
       <TitrePage titre="Achats et approvisionnement" />
-      <UrgencesAppli espace="achats" />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/achats/conteneurs" libelle="En transit" valeur={formaterPoids(kg(Number(transit?.kg_en_transit ?? 0)))} detail={`${transit?.nb_conteneurs ?? 0} conteneur(s) non livré(s)`} />
@@ -50,6 +49,12 @@ export default async function TableauDeBordAchats({ searchParams }: PageProps<"/
         <Indicateur lien="/achats/conteneurs" libelle="Écart réel / prévu" valeur={pct(ecartPrix(coutTotal, prevuTotal))} ton={(ecartPrix(coutTotal, prevuTotal) ?? 0) > seuilEcart ? "alerte" : "normal"} detail="Coût complet réel vs prix commandé + frais estimés" />
         <Indicateur lien="/achats/commandes" libelle="Délai moyen fournisseur" valeur={delais.length ? `${nombre(delais.reduce((s, d) => s + d, 0) / delais.length, 0)} jours` : "—"} detail="De la commande à la livraison à l'usine" />
       </div>
+      <CarteObjectifs
+        espace="achats"
+        du={periode.du}
+        au={periode.au}
+        reels={{ cout_tonne: coutTonne, ecart_prevu: ecartPrix(coutTotal, prevuTotal), delai_fournisseur: delais.length ? delais.reduce((s, d) => s + d, 0) / delais.length : null }}
+      />
       <RaccourcisAppli espace="achats" />
       {(demandes ?? 0) > 0 && (
         <p className="mb-4">

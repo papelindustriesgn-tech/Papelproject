@@ -25,25 +25,20 @@ export type Database = {
           Tables: {
             "absences": {
                   Row: {
-                    "id": string,"employe_id": string,"type_absence_id": string,"du": string,"au": string,"nb_jours": number,"motif": string,"statut": string,"decide_par": string | null,"decide_le": string | null,"created_by": string | null,"created_at": string
+                    "au": string,"created_at": string,"created_by": string | null,"decide_le": string | null,"decide_par": string | null,"du": string,"employe_id": string,"id": string,"motif": string,"nb_jours": number,"statut": string,"type_absence_id": string
                   }
                   Insert: {
-                    "id"?: string,"employe_id": string,"type_absence_id": string,"du": string,"au": string,"nb_jours"?: number,"motif"?: string,"statut"?: string,"decide_par"?: string | null,"decide_le"?: string | null,"created_by"?: string | null,"created_at"?: string
+                    "au": string,"created_at"?: string,"created_by"?: string | null,"decide_le"?: string | null,"decide_par"?: string | null,"du": string,"employe_id": string,"id"?: string,"motif"?: string,"nb_jours"?: number,"statut"?: string,"type_absence_id": string
                   }
                   Update: {
-                    "id"?: string,"employe_id"?: string,"type_absence_id"?: string,"du"?: string,"au"?: string,"nb_jours"?: number,"motif"?: string,"statut"?: string,"decide_par"?: string | null,"decide_le"?: string | null,"created_by"?: string | null,"created_at"?: string
+                    "au"?: string,"created_at"?: string,"created_by"?: string | null,"decide_le"?: string | null,"decide_par"?: string | null,"du"?: string,"employe_id"?: string,"id"?: string,"motif"?: string,"nb_jours"?: number,"statut"?: string,"type_absence_id"?: string
                   }
-                  Relationships: [{
-      foreignKeyName: "absences_employe_id_fkey"
-      columns: ["employe_id"]
+                  Relationships: [
+                    {
+      foreignKeyName: "absences_created_by_fkey"
+      columns: ["created_by"]
 isOneToOne: false
-      referencedRelation: "employes"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "absences_type_absence_id_fkey"
-      columns: ["type_absence_id"]
-isOneToOne: false
-      referencedRelation: "types_absences"
+      referencedRelation: "profils"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "absences_decide_par_fkey"
@@ -52,193 +47,25 @@ isOneToOne: false
       referencedRelation: "profils"
       referencedColumns: ["id"]
     },{
-      foreignKeyName: "absences_created_by_fkey"
-      columns: ["created_by"]
-isOneToOne: false
-      referencedRelation: "profils"
-      referencedColumns: ["id"]
-    }]
-                },"bulletins": {
-                  Row: {
-                    "id": string,"mois": string,"employe_id": string,"salaire_base_gnf": number,"primes_gnf": number,"heures_sup": number,"montant_heures_sup_gnf": number,"jours_absence_non_payee": number,"retenue_absences_gnf": number,"avances_gnf": number,"brut_gnf": number,"cnss_salarie_gnf": number,"cnss_employeur_gnf": number,"rts_gnf": number,"net_gnf": number
-                  }
-                  Insert: {
-                    "id"?: string,"mois": string,"employe_id": string,"salaire_base_gnf": number,"primes_gnf"?: number,"heures_sup"?: number,"montant_heures_sup_gnf"?: number,"jours_absence_non_payee"?: number,"retenue_absences_gnf"?: number,"avances_gnf"?: number,"brut_gnf": number,"cnss_salarie_gnf": number,"cnss_employeur_gnf": number,"rts_gnf": number,"net_gnf": number
-                  }
-                  Update: {
-                    "id"?: string,"mois"?: string,"employe_id"?: string,"salaire_base_gnf"?: number,"primes_gnf"?: number,"heures_sup"?: number,"montant_heures_sup_gnf"?: number,"jours_absence_non_payee"?: number,"retenue_absences_gnf"?: number,"avances_gnf"?: number,"brut_gnf"?: number,"cnss_salarie_gnf"?: number,"cnss_employeur_gnf"?: number,"rts_gnf"?: number,"net_gnf"?: number
-                  }
-                  Relationships: [{
-      foreignKeyName: "bulletins_employe_id_fkey"
+      foreignKeyName: "absences_employe_id_fkey"
       columns: ["employe_id"]
 isOneToOne: false
       referencedRelation: "employes"
       referencedColumns: ["id"]
     },{
-      foreignKeyName: "bulletins_mois_fkey"
-      columns: ["mois"]
-isOneToOne: false
-      referencedRelation: "periodes_paie"
-      referencedColumns: ["mois"]
-    }]
-                },"departements": {
-                  Row: {
-                    "id": string,"libelle": string,"ordre": number,"actif": boolean
-                  }
-                  Insert: {
-                    "id"?: string,"libelle": string,"ordre"?: number,"actif"?: boolean
-                  }
-                  Update: {
-                    "id"?: string,"libelle"?: string,"ordre"?: number,"actif"?: boolean
-                  }
-                  Relationships: []
-                },"employes": {
-                  Row: {
-                    "id": string,"matricule": string | null,"nom": string,"prenom": string,"sexe": string | null,"date_naissance": string | null,"telephone": string,"adresse": string,"departement_id": string | null,"fonction_id": string | null,"type_contrat_id": string | null,"date_embauche": string,"date_fin_contrat": string | null,"salaire_base_gnf": number,"numero_cnss": string,"mode_paiement": string,"compte_paiement": string,"profil_id": string | null,"actif": boolean,"date_sortie": string | null,"motif_sortie": string,"notes": string,"created_at": string
-                  }
-                  Insert: {
-                    "id"?: string,"matricule"?: string | null,"nom": string,"prenom"?: string,"sexe"?: string | null,"date_naissance"?: string | null,"telephone"?: string,"adresse"?: string,"departement_id"?: string | null,"fonction_id"?: string | null,"type_contrat_id"?: string | null,"date_embauche": string,"date_fin_contrat"?: string | null,"salaire_base_gnf"?: number,"numero_cnss"?: string,"mode_paiement"?: string,"compte_paiement"?: string,"profil_id"?: string | null,"actif"?: boolean,"date_sortie"?: string | null,"motif_sortie"?: string,"notes"?: string,"created_at"?: string
-                  }
-                  Update: {
-                    "id"?: string,"matricule"?: string | null,"nom"?: string,"prenom"?: string,"sexe"?: string | null,"date_naissance"?: string | null,"telephone"?: string,"adresse"?: string,"departement_id"?: string | null,"fonction_id"?: string | null,"type_contrat_id"?: string | null,"date_embauche"?: string,"date_fin_contrat"?: string | null,"salaire_base_gnf"?: number,"numero_cnss"?: string,"mode_paiement"?: string,"compte_paiement"?: string,"profil_id"?: string | null,"actif"?: boolean,"date_sortie"?: string | null,"motif_sortie"?: string,"notes"?: string,"created_at"?: string
-                  }
-                  Relationships: [{
-      foreignKeyName: "employes_departement_id_fkey"
-      columns: ["departement_id"]
-isOneToOne: false
-      referencedRelation: "departements"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "employes_fonction_id_fkey"
-      columns: ["fonction_id"]
-isOneToOne: false
-      referencedRelation: "fonctions"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "employes_type_contrat_id_fkey"
-      columns: ["type_contrat_id"]
-isOneToOne: false
-      referencedRelation: "types_contrats"
-      referencedColumns: ["id"]
-    },{
-      foreignKeyName: "employes_profil_id_fkey"
-      columns: ["profil_id"]
-isOneToOne: true
-      referencedRelation: "profils"
-      referencedColumns: ["id"]
-    }]
-                },"fonctions": {
-                  Row: {
-                    "id": string,"libelle": string,"departement_id": string | null,"actif": boolean
-                  }
-                  Insert: {
-                    "id"?: string,"libelle": string,"departement_id"?: string | null,"actif"?: boolean
-                  }
-                  Update: {
-                    "id"?: string,"libelle"?: string,"departement_id"?: string | null,"actif"?: boolean
-                  }
-                  Relationships: [{
-      foreignKeyName: "fonctions_departement_id_fkey"
-      columns: ["departement_id"]
-isOneToOne: false
-      referencedRelation: "departements"
-      referencedColumns: ["id"]
-    }]
-                },"jours_feries": {
-                  Row: {
-                    "id": string,"jour": string,"libelle": string
-                  }
-                  Insert: {
-                    "id"?: string,"jour": string,"libelle": string
-                  }
-                  Update: {
-                    "id"?: string,"jour"?: string,"libelle"?: string
-                  }
-                  Relationships: []
-                },"objectifs_mensuels": {
-                  Row: {
-                    "id": string,"mois": string,"libelle": string,"production_kg": number,"paquets": number,"ca_ttc_gnf": number,"couts_variables_gnf": number,"charges_fixes_gnf": number,"actif": boolean,"created_at": string,"updated_at": string
-                  }
-                  Insert: {
-                    "id"?: string,"mois": string,"libelle"?: string,"production_kg"?: number,"paquets"?: number,"ca_ttc_gnf"?: number,"couts_variables_gnf"?: number,"charges_fixes_gnf"?: number,"actif"?: boolean,"created_at"?: string,"updated_at"?: string
-                  }
-                  Update: {
-                    "id"?: string,"mois"?: string,"libelle"?: string,"production_kg"?: number,"paquets"?: number,"ca_ttc_gnf"?: number,"couts_variables_gnf"?: number,"charges_fixes_gnf"?: number,"actif"?: boolean,"created_at"?: string,"updated_at"?: string
-                  }
-                  Relationships: []
-                },"periodes_paie": {
-                  Row: {
-                    "mois": string,"statut": string,"valide_par": string | null,"valide_le": string | null
-                  }
-                  Insert: {
-                    "mois": string,"statut"?: string,"valide_par"?: string | null,"valide_le"?: string | null
-                  }
-                  Update: {
-                    "mois"?: string,"statut"?: string,"valide_par"?: string | null,"valide_le"?: string | null
-                  }
-                  Relationships: [{
-      foreignKeyName: "periodes_paie_valide_par_fkey"
-      columns: ["valide_par"]
-isOneToOne: false
-      referencedRelation: "profils"
-      referencedColumns: ["id"]
-    }]
-                },"presences": {
-                  Row: {
-                    "employe_id": string,"jour": string,"statut": string,"heures_sup": number,"note": string,"saisi_par": string | null,"saisi_le": string
-                  }
-                  Insert: {
-                    "employe_id": string,"jour": string,"statut": string,"heures_sup"?: number,"note"?: string,"saisi_par"?: string | null,"saisi_le"?: string
-                  }
-                  Update: {
-                    "employe_id"?: string,"jour"?: string,"statut"?: string,"heures_sup"?: number,"note"?: string,"saisi_par"?: string | null,"saisi_le"?: string
-                  }
-                  Relationships: [{
-      foreignKeyName: "presences_employe_id_fkey"
+      foreignKeyName: "absences_employe_id_fkey"
       columns: ["employe_id"]
 isOneToOne: false
-      referencedRelation: "employes"
-      referencedColumns: ["id"]
+      referencedRelation: "soldes_conges"
+      referencedColumns: ["employe_id"]
     },{
-      foreignKeyName: "presences_saisi_par_fkey"
-      columns: ["saisi_par"]
+      foreignKeyName: "absences_type_absence_id_fkey"
+      columns: ["type_absence_id"]
 isOneToOne: false
-      referencedRelation: "profils"
+      referencedRelation: "types_absences"
       referencedColumns: ["id"]
-    }]
-                },"tranches_rts": {
-                  Row: {
-                    "id": string,"de_gnf": number,"taux": number
-                  }
-                  Insert: {
-                    "id"?: string,"de_gnf": number,"taux": number
-                  }
-                  Update: {
-                    "id"?: string,"de_gnf"?: number,"taux"?: number
-                  }
-                  Relationships: []
-                },"types_absences": {
-                  Row: {
-                    "id": string,"libelle": string,"decompte_conges": boolean,"payee": boolean,"ordre": number,"actif": boolean
-                  }
-                  Insert: {
-                    "id"?: string,"libelle": string,"decompte_conges"?: boolean,"payee"?: boolean,"ordre"?: number,"actif"?: boolean
-                  }
-                  Update: {
-                    "id"?: string,"libelle"?: string,"decompte_conges"?: boolean,"payee"?: boolean,"ordre"?: number,"actif"?: boolean
-                  }
-                  Relationships: []
-                },"types_contrats": {
-                  Row: {
-                    "id": string,"libelle": string,"duree_determinee": boolean,"ordre": number,"actif": boolean
-                  }
-                  Insert: {
-                    "id"?: string,"libelle": string,"duree_determinee"?: boolean,"ordre"?: number,"actif"?: boolean
-                  }
-                  Update: {
-                    "id"?: string,"libelle"?: string,"duree_determinee"?: boolean,"ordre"?: number,"actif"?: boolean
-                  }
-                  Relationships: []
+    }
+                  ]
                 },"accueil_elements": {
                   Row: {
                     "actif": boolean,"created_at": string,"description": string,"ecran": string,"espace": string,"genre": string,"icone": string,"id": string,"indicateur": string | null,"libelle": string,"ordre": number,"seuil": number,"urgent": boolean
@@ -249,7 +76,9 @@ isOneToOne: false
                   Update: {
                     "actif"?: boolean,"created_at"?: string,"description"?: string,"ecran"?: string,"espace"?: string,"genre"?: string,"icone"?: string,"id"?: string,"indicateur"?: string | null,"libelle"?: string,"ordre"?: number,"seuil"?: number,"urgent"?: boolean
                   }
-                  Relationships: []
+                  Relationships: [
+                    
+                  ]
                 },"accueil_espaces": {
                   Row: {
                     "espace": string,"promesse": string,"updated_at": string,"updated_by": string | null
@@ -260,7 +89,15 @@ isOneToOne: false
                   Update: {
                     "espace"?: string,"promesse"?: string,"updated_at"?: string,"updated_by"?: string | null
                   }
-                  Relationships: []
+                  Relationships: [
+                    {
+      foreignKeyName: "accueil_espaces_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"actions_correctives": {
                   Row: {
                     "commentaire": string,"created_at": string,"description": string,"echeance": string | null,"efficace": boolean | null,"id": string,"nc_id": string,"realisee_le": string | null,"responsable": string
@@ -352,6 +189,37 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "fournisseurs"
       referencedColumns: ["id"]
+    }
+                  ]
+                },"bulletins": {
+                  Row: {
+                    "avances_gnf": number,"brut_gnf": number,"cnss_employeur_gnf": number,"cnss_salarie_gnf": number,"employe_id": string,"heures_sup": number,"id": string,"jours_absence_non_payee": number,"mois": string,"montant_heures_sup_gnf": number,"net_gnf": number,"primes_gnf": number,"retenue_absences_gnf": number,"rts_gnf": number,"salaire_base_gnf": number
+                  }
+                  Insert: {
+                    "avances_gnf"?: number,"brut_gnf": number,"cnss_employeur_gnf": number,"cnss_salarie_gnf": number,"employe_id": string,"heures_sup"?: number,"id"?: string,"jours_absence_non_payee"?: number,"mois": string,"montant_heures_sup_gnf"?: number,"net_gnf": number,"primes_gnf"?: number,"retenue_absences_gnf"?: number,"rts_gnf": number,"salaire_base_gnf": number
+                  }
+                  Update: {
+                    "avances_gnf"?: number,"brut_gnf"?: number,"cnss_employeur_gnf"?: number,"cnss_salarie_gnf"?: number,"employe_id"?: string,"heures_sup"?: number,"id"?: string,"jours_absence_non_payee"?: number,"mois"?: string,"montant_heures_sup_gnf"?: number,"net_gnf"?: number,"primes_gnf"?: number,"retenue_absences_gnf"?: number,"rts_gnf"?: number,"salaire_base_gnf"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "bulletins_employe_id_fkey"
+      columns: ["employe_id"]
+isOneToOne: false
+      referencedRelation: "employes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "bulletins_employe_id_fkey"
+      columns: ["employe_id"]
+isOneToOne: false
+      referencedRelation: "soldes_conges"
+      referencedColumns: ["employe_id"]
+    },{
+      foreignKeyName: "bulletins_mois_fkey"
+      columns: ["mois"]
+isOneToOne: false
+      referencedRelation: "periodes_paie"
+      referencedColumns: ["mois"]
     }
                   ]
                 },"cadences_nominales": {
@@ -468,17 +336,6 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"cles_export": {
-                  Row: {
-                    "actif": boolean,"cle_hash": string,"created_at": string,"cree_par": string | null,"debut_cle": string,"derniere_utilisation": string | null,"id": string,"libelle": string
-                  }
-                  Insert: {
-                    "actif"?: boolean,"cle_hash": string,"created_at"?: string,"cree_par"?: string | null,"debut_cle": string,"derniere_utilisation"?: string | null,"id"?: string,"libelle": string
-                  }
-                  Update: {
-                    "actif"?: boolean,"cle_hash"?: string,"created_at"?: string,"cree_par"?: string | null,"debut_cle"?: string,"derniere_utilisation"?: string | null,"id"?: string,"libelle"?: string
-                  }
-                  Relationships: []
                 },"chauffeurs": {
                   Row: {
                     "actif": boolean,"created_at": string,"id": string,"nom": string,"permis": string,"profil_id": string | null,"telephone": string
@@ -494,6 +351,25 @@ isOneToOne: false
       foreignKeyName: "chauffeurs_profil_id_fkey"
       columns: ["profil_id"]
 isOneToOne: true
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"cles_export": {
+                  Row: {
+                    "actif": boolean,"cle_hash": string,"created_at": string,"cree_par": string | null,"debut_cle": string,"derniere_utilisation": string | null,"id": string,"libelle": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"cle_hash": string,"created_at"?: string,"cree_par"?: string | null,"debut_cle": string,"derniere_utilisation"?: string | null,"id"?: string,"libelle": string
+                  }
+                  Update: {
+                    "actif"?: boolean,"cle_hash"?: string,"created_at"?: string,"cree_par"?: string | null,"debut_cle"?: string,"derniere_utilisation"?: string | null,"id"?: string,"libelle"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "cles_export_cree_par_fkey"
+      columns: ["cree_par"]
+isOneToOne: false
       referencedRelation: "profils"
       referencedColumns: ["id"]
     }
@@ -747,6 +623,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"departements": {
+                  Row: {
+                    "actif": boolean,"id": string,"libelle": string,"ordre": number
+                  }
+                  Insert: {
+                    "actif"?: boolean,"id"?: string,"libelle": string,"ordre"?: number
+                  }
+                  Update: {
+                    "actif"?: boolean,"id"?: string,"libelle"?: string,"ordre"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"depenses_tournee": {
                   Row: {
                     "created_at": string,"id": string,"montant_gnf": number,"reference": string,"tournee_id": string,"type_id": string
@@ -843,6 +732,43 @@ isOneToOne: false
       columns: ["produit_id"]
 isOneToOne: false
       referencedRelation: "produits"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"employes": {
+                  Row: {
+                    "actif": boolean,"adresse": string,"compte_paiement": string,"created_at": string,"date_embauche": string,"date_fin_contrat": string | null,"date_naissance": string | null,"date_sortie": string | null,"departement_id": string | null,"fonction_id": string | null,"id": string,"matricule": string | null,"mode_paiement": string,"motif_sortie": string,"nom": string,"notes": string,"numero_cnss": string,"prenom": string,"profil_id": string | null,"salaire_base_gnf": number,"sexe": string | null,"telephone": string,"type_contrat_id": string | null
+                  }
+                  Insert: {
+                    "actif"?: boolean,"adresse"?: string,"compte_paiement"?: string,"created_at"?: string,"date_embauche": string,"date_fin_contrat"?: string | null,"date_naissance"?: string | null,"date_sortie"?: string | null,"departement_id"?: string | null,"fonction_id"?: string | null,"id"?: string,"matricule"?: string | null,"mode_paiement"?: string,"motif_sortie"?: string,"nom": string,"notes"?: string,"numero_cnss"?: string,"prenom"?: string,"profil_id"?: string | null,"salaire_base_gnf"?: number,"sexe"?: string | null,"telephone"?: string,"type_contrat_id"?: string | null
+                  }
+                  Update: {
+                    "actif"?: boolean,"adresse"?: string,"compte_paiement"?: string,"created_at"?: string,"date_embauche"?: string,"date_fin_contrat"?: string | null,"date_naissance"?: string | null,"date_sortie"?: string | null,"departement_id"?: string | null,"fonction_id"?: string | null,"id"?: string,"matricule"?: string | null,"mode_paiement"?: string,"motif_sortie"?: string,"nom"?: string,"notes"?: string,"numero_cnss"?: string,"prenom"?: string,"profil_id"?: string | null,"salaire_base_gnf"?: number,"sexe"?: string | null,"telephone"?: string,"type_contrat_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "employes_departement_id_fkey"
+      columns: ["departement_id"]
+isOneToOne: false
+      referencedRelation: "departements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "employes_fonction_id_fkey"
+      columns: ["fonction_id"]
+isOneToOne: false
+      referencedRelation: "fonctions"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "employes_profil_id_fkey"
+      columns: ["profil_id"]
+isOneToOne: true
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "employes_type_contrat_id_fkey"
+      columns: ["type_contrat_id"]
+isOneToOne: false
+      referencedRelation: "types_contrats"
       referencedColumns: ["id"]
     }
                   ]
@@ -1215,6 +1141,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"fonctions": {
+                  Row: {
+                    "actif": boolean,"departement_id": string | null,"id": string,"libelle": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"departement_id"?: string | null,"id"?: string,"libelle": string
+                  }
+                  Update: {
+                    "actif"?: boolean,"departement_id"?: string | null,"id"?: string,"libelle"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "fonctions_departement_id_fkey"
+      columns: ["departement_id"]
+isOneToOne: false
+      referencedRelation: "departements"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"fournisseurs": {
                   Row: {
                     "actif": boolean,"contact": string,"created_at": string,"devise": string,"email": string,"id": string,"nom": string,"notes": string,"pays": string,"telephone": string,"updated_at": string
@@ -1487,6 +1432,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"jours_feries": {
+                  Row: {
+                    "id": string,"jour": string,"libelle": string
+                  }
+                  Insert: {
+                    "id"?: string,"jour": string,"libelle": string
+                  }
+                  Update: {
+                    "id"?: string,"jour"?: string,"libelle"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"lignes_bc": {
                   Row: {
                     "article_id": string,"bc_id": string,"id": string,"montant_devise": number,"prix_unitaire": number,"quantite": number
@@ -1613,13 +1571,13 @@ isOneToOne: false
                   ]
                 },"livraisons": {
                   Row: {
-                    "commande_id": string,"commentaire_remise": string,"created_at": string,"created_by": string | null,"date_livraison": string,"id": string,"latitude": number | null,"longitude": number | null,"notes": string,"numero": string | null,"ordre": number,"photo_chemin": string | null,"precision_m": number | null,"receptionnaire": string,"remis_par": string | null,"remise_le": string | null,"signature_chemin": string | null,"statut": string,"statut_remise": string,"tournee_id": string | null,"valide_le": string | null,"valide_par": string | null
+                    "commande_id": string,"commentaire_remise": string,"confirmation": string | null,"confirmation_note": string,"confirmee_le": string | null,"confirmee_par": string | null,"created_at": string,"created_by": string | null,"date_livraison": string,"id": string,"latitude": number | null,"longitude": number | null,"notes": string,"numero": string | null,"ordre": number,"photo_chemin": string | null,"precision_m": number | null,"receptionnaire": string,"remis_par": string | null,"remise_le": string | null,"signature_chemin": string | null,"statut": string,"statut_remise": string,"tournee_id": string | null,"valide_le": string | null,"valide_par": string | null
                   }
                   Insert: {
-                    "commande_id": string,"commentaire_remise"?: string,"created_at"?: string,"created_by"?: string | null,"date_livraison"?: string,"id"?: string,"latitude"?: number | null,"longitude"?: number | null,"notes"?: string,"numero"?: string | null,"ordre"?: number,"photo_chemin"?: string | null,"precision_m"?: number | null,"receptionnaire"?: string,"remis_par"?: string | null,"remise_le"?: string | null,"signature_chemin"?: string | null,"statut"?: string,"statut_remise"?: string,"tournee_id"?: string | null,"valide_le"?: string | null,"valide_par"?: string | null
+                    "commande_id": string,"commentaire_remise"?: string,"confirmation"?: string | null,"confirmation_note"?: string,"confirmee_le"?: string | null,"confirmee_par"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_livraison"?: string,"id"?: string,"latitude"?: number | null,"longitude"?: number | null,"notes"?: string,"numero"?: string | null,"ordre"?: number,"photo_chemin"?: string | null,"precision_m"?: number | null,"receptionnaire"?: string,"remis_par"?: string | null,"remise_le"?: string | null,"signature_chemin"?: string | null,"statut"?: string,"statut_remise"?: string,"tournee_id"?: string | null,"valide_le"?: string | null,"valide_par"?: string | null
                   }
                   Update: {
-                    "commande_id"?: string,"commentaire_remise"?: string,"created_at"?: string,"created_by"?: string | null,"date_livraison"?: string,"id"?: string,"latitude"?: number | null,"longitude"?: number | null,"notes"?: string,"numero"?: string | null,"ordre"?: number,"photo_chemin"?: string | null,"precision_m"?: number | null,"receptionnaire"?: string,"remis_par"?: string | null,"remise_le"?: string | null,"signature_chemin"?: string | null,"statut"?: string,"statut_remise"?: string,"tournee_id"?: string | null,"valide_le"?: string | null,"valide_par"?: string | null
+                    "commande_id"?: string,"commentaire_remise"?: string,"confirmation"?: string | null,"confirmation_note"?: string,"confirmee_le"?: string | null,"confirmee_par"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_livraison"?: string,"id"?: string,"latitude"?: number | null,"longitude"?: number | null,"notes"?: string,"numero"?: string | null,"ordre"?: number,"photo_chemin"?: string | null,"precision_m"?: number | null,"receptionnaire"?: string,"remis_par"?: string | null,"remise_le"?: string | null,"signature_chemin"?: string | null,"statut"?: string,"statut_remise"?: string,"tournee_id"?: string | null,"valide_le"?: string | null,"valide_par"?: string | null
                   }
                   Relationships: [
                     {
@@ -1633,6 +1591,12 @@ isOneToOne: false
       columns: ["commande_id"]
 isOneToOne: false
       referencedRelation: "pieces_vente"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "livraisons_confirmee_par_fkey"
+      columns: ["confirmee_par"]
+isOneToOne: false
+      referencedRelation: "profils"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "livraisons_created_by_fkey"
@@ -2017,6 +1981,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"objectifs_mensuels": {
+                  Row: {
+                    "actif": boolean,"ca_ttc_gnf": number,"charges_fixes_gnf": number,"couts_variables_gnf": number,"created_at": string,"id": string,"libelle": string,"mois": string,"paquets": number,"production_kg": number,"updated_at": string
+                  }
+                  Insert: {
+                    "actif"?: boolean,"ca_ttc_gnf"?: number,"charges_fixes_gnf"?: number,"couts_variables_gnf"?: number,"created_at"?: string,"id"?: string,"libelle"?: string,"mois": string,"paquets"?: number,"production_kg"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "actif"?: boolean,"ca_ttc_gnf"?: number,"charges_fixes_gnf"?: number,"couts_variables_gnf"?: number,"created_at"?: string,"id"?: string,"libelle"?: string,"mois"?: string,"paquets"?: number,"production_kg"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"objectifs_services": {
+                  Row: {
+                    "created_at": string,"espace": string,"id": string,"indicateur": string,"mois": string,"updated_at": string,"updated_by": string | null,"valeur": number
+                  }
+                  Insert: {
+                    "created_at"?: string,"espace": string,"id"?: string,"indicateur": string,"mois": string,"updated_at"?: string,"updated_by"?: string | null,"valeur": number
+                  }
+                  Update: {
+                    "created_at"?: string,"espace"?: string,"id"?: string,"indicateur"?: string,"mois"?: string,"updated_at"?: string,"updated_by"?: string | null,"valeur"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "objectifs_services_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"operateurs": {
                   Row: {
                     "actif": boolean,"created_at": string,"equipe_id": string | null,"id": string,"matricule": string,"nom": string,"prenom": string
@@ -2135,6 +2131,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"periodes_paie": {
+                  Row: {
+                    "mois": string,"statut": string,"valide_le": string | null,"valide_par": string | null
+                  }
+                  Insert: {
+                    "mois": string,"statut"?: string,"valide_le"?: string | null,"valide_par"?: string | null
+                  }
+                  Update: {
+                    "mois"?: string,"statut"?: string,"valide_le"?: string | null,"valide_par"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "periodes_paie_valide_par_fkey"
+      columns: ["valide_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"pieces_vente": {
                   Row: {
                     "client_id": string,"commercial_id": string | null,"created_at": string,"created_by": string | null,"date_echeance": string | null,"date_piece": string,"id": string,"notes": string,"numero": string | null,"origine_id": string | null,"statut": Database["public"]['Enums']["statut_piece"],"total_ht_gnf": number,"total_ttc_gnf": number,"total_tva_gnf": number,"tva_taux": number,"type_piece": Database["public"]['Enums']["type_piece"],"updated_at": string,"valide_le": string | null,"valide_par": string | null
@@ -2221,6 +2236,37 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"presences": {
+                  Row: {
+                    "employe_id": string,"heures_sup": number,"jour": string,"note": string,"saisi_le": string,"saisi_par": string | null,"statut": string
+                  }
+                  Insert: {
+                    "employe_id": string,"heures_sup"?: number,"jour": string,"note"?: string,"saisi_le"?: string,"saisi_par"?: string | null,"statut": string
+                  }
+                  Update: {
+                    "employe_id"?: string,"heures_sup"?: number,"jour"?: string,"note"?: string,"saisi_le"?: string,"saisi_par"?: string | null,"statut"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "presences_employe_id_fkey"
+      columns: ["employe_id"]
+isOneToOne: false
+      referencedRelation: "employes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "presences_employe_id_fkey"
+      columns: ["employe_id"]
+isOneToOne: false
+      referencedRelation: "soldes_conges"
+      referencedColumns: ["employe_id"]
+    },{
+      foreignKeyName: "presences_saisi_par_fkey"
+      columns: ["saisi_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"produits": {
                   Row: {
@@ -2490,6 +2536,37 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"taches": {
+                  Row: {
+                    "compte_rendu": string,"created_at": string,"cree_par": string | null,"description": string,"echeance": string | null,"espace_destinataire": string,"espace_emetteur": string,"id": string,"lien": string,"priorite": string,"pris_par": string | null,"statut": string,"termine_le": string | null,"termine_par": string | null,"titre": string,"updated_at": string
+                  }
+                  Insert: {
+                    "compte_rendu"?: string,"created_at"?: string,"cree_par"?: string | null,"description"?: string,"echeance"?: string | null,"espace_destinataire": string,"espace_emetteur": string,"id"?: string,"lien"?: string,"priorite"?: string,"pris_par"?: string | null,"statut"?: string,"termine_le"?: string | null,"termine_par"?: string | null,"titre": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "compte_rendu"?: string,"created_at"?: string,"cree_par"?: string | null,"description"?: string,"echeance"?: string | null,"espace_destinataire"?: string,"espace_emetteur"?: string,"id"?: string,"lien"?: string,"priorite"?: string,"pris_par"?: string | null,"statut"?: string,"termine_le"?: string | null,"termine_par"?: string | null,"titre"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "taches_cree_par_fkey"
+      columns: ["cree_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "taches_pris_par_fkey"
+      columns: ["pris_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "taches_termine_par_fkey"
+      columns: ["termine_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"taux_change": {
                   Row: {
                     "created_at": string,"date_effet": string,"devise": string,"id": string,"note": string | null,"saisi_par": string | null,"taux_gnf": number
@@ -2596,6 +2673,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"tranches_rts": {
+                  Row: {
+                    "de_gnf": number,"id": string,"taux": number
+                  }
+                  Insert: {
+                    "de_gnf": number,"id"?: string,"taux": number
+                  }
+                  Update: {
+                    "de_gnf"?: number,"id"?: string,"taux"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"types_absences": {
+                  Row: {
+                    "actif": boolean,"decompte_conges": boolean,"id": string,"libelle": string,"ordre": number,"payee": boolean
+                  }
+                  Insert: {
+                    "actif"?: boolean,"decompte_conges"?: boolean,"id"?: string,"libelle": string,"ordre"?: number,"payee"?: boolean
+                  }
+                  Update: {
+                    "actif"?: boolean,"decompte_conges"?: boolean,"id"?: string,"libelle"?: string,"ordre"?: number,"payee"?: boolean
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"types_clients": {
                   Row: {
                     "actif": boolean,"created_at": string,"dotation": boolean,"id": string,"libelle": string,"niveau_prix": string,"ordre": number
@@ -2614,6 +2717,19 @@ isOneToOne: false
       referencedRelation: "niveaux_prix"
       referencedColumns: ["code"]
     }
+                  ]
+                },"types_contrats": {
+                  Row: {
+                    "actif": boolean,"duree_determinee": boolean,"id": string,"libelle": string,"ordre": number
+                  }
+                  Insert: {
+                    "actif"?: boolean,"duree_determinee"?: boolean,"id"?: string,"libelle": string,"ordre"?: number
+                  }
+                  Update: {
+                    "actif"?: boolean,"duree_determinee"?: boolean,"id"?: string,"libelle"?: string,"ordre"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"types_depenses_tournee": {
                   Row: {
@@ -3291,11 +3407,6 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"soldes_conges": {
-                  Row: {
-                    "employe_id": string | null,"acquis": number | null,"pris": number | null,"solde": number | null
-                  }
-                  Relationships: []
                 },"soldes_clients": {
                   Row: {
                     "client_id": string | null,"code": string | null,"commercial_id": string | null,"condition_paiement": string | null,"echu_gnf": number | null,"encours_gnf": number | null,"nom": string | null,"plafond_credit_gnf": number | null,"retard_max_jours": number | null
@@ -3309,6 +3420,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"soldes_conges": {
+                  Row: {
+                    "acquis": number | null,"employe_id": string | null,"pris": number | null,"solde": number | null
+                  }
+                  Insert: {
+                           "acquis"?: never,"employe_id"?: string | null,"pris"?: never,"solde"?: never
+                         }
+                        Update: {
+                           "acquis"?: never,"employe_id"?: string | null,"pris"?: never,"solde"?: never
+                         }
+                        Relationships: [
+                    
+                  ]
                 },"soldes_tresorerie": {
                   Row: {
                     "actif": boolean | null,"compte_comptable": string | null,"date_solde_initial": string | null,"devise": string | null,"id": string | null,"libelle": string | null,"ordre": number | null,"solde": number | null,"solde_initial": number | null,"taux_actuel": number | null,"type_compte": string | null
@@ -3321,6 +3445,37 @@ isOneToOne: false
                          }
                         Relationships: [
                     
+                  ]
+                },"taches_etat": {
+                  Row: {
+                    "compte_rendu": string | null,"created_at": string | null,"cree_par": string | null,"cree_par_nom": string | null,"description": string | null,"echeance": string | null,"espace_destinataire": string | null,"espace_emetteur": string | null,"id": string | null,"lien": string | null,"priorite": string | null,"pris_par": string | null,"pris_par_nom": string | null,"statut": string | null,"termine_le": string | null,"termine_par": string | null,"termine_par_nom": string | null,"titre": string | null,"updated_at": string | null
+                  }
+                  Insert: {
+                           "compte_rendu"?: string | null,"created_at"?: string | null,"cree_par"?: string | null,"cree_par_nom"?: never,"description"?: string | null,"echeance"?: string | null,"espace_destinataire"?: string | null,"espace_emetteur"?: string | null,"id"?: string | null,"lien"?: string | null,"priorite"?: string | null,"pris_par"?: string | null,"pris_par_nom"?: never,"statut"?: string | null,"termine_le"?: string | null,"termine_par"?: string | null,"termine_par_nom"?: never,"titre"?: string | null,"updated_at"?: string | null
+                         }
+                        Update: {
+                           "compte_rendu"?: string | null,"created_at"?: string | null,"cree_par"?: string | null,"cree_par_nom"?: never,"description"?: string | null,"echeance"?: string | null,"espace_destinataire"?: string | null,"espace_emetteur"?: string | null,"id"?: string | null,"lien"?: string | null,"priorite"?: string | null,"pris_par"?: string | null,"pris_par_nom"?: never,"statut"?: string | null,"termine_le"?: string | null,"termine_par"?: string | null,"termine_par_nom"?: never,"titre"?: string | null,"updated_at"?: string | null
+                         }
+                        Relationships: [
+                    {
+      foreignKeyName: "taches_cree_par_fkey"
+      columns: ["cree_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "taches_pris_par_fkey"
+      columns: ["pris_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "taches_termine_par_fkey"
+      columns: ["termine_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"tournees_livraison_etat": {
                   Row: {
@@ -3413,11 +3568,11 @@ isOneToOne: false
 "a_un_role":
 { Args: { "roles": (Database["public"]['Enums']["role_code"])[] }; Returns: boolean
                            },
-"activer_compte":
-{ Args: { "p_actif": boolean,"p_utilisateur": string }; Returns: undefined
-                           },
 "activer_audit":
 { Args: { "p_cle"?: string,"p_table": unknown }; Returns: undefined
+                           },
+"activer_compte":
+{ Args: { "p_actif": boolean,"p_utilisateur": string }; Returns: undefined
                            },
 "affecter_livraison":
 { Args: { "p_livraison": string,"p_tournee": string }; Returns: undefined
@@ -3431,14 +3586,29 @@ isOneToOne: false
 "calculer_dotation_facture":
 { Args: { "p_facture": string }; Returns: undefined
                            },
+"changer_mot_de_passe_compte":
+{ Args: { "p_mot_de_passe": string,"p_utilisateur": string }; Returns: undefined
+                           },
 "cloturer_nc":
 { Args: { "p_nc": string }; Returns: undefined
+                           },
+"confirmer_livraison":
+{ Args: { "p_confirmation": string,"p_livraison": string,"p_note"?: string }; Returns: string
                            },
 "controler_solde_compte":
 { Args: { "p_compte": string }; Returns: undefined
                            },
 "convertir_pour_compte":
 { Args: { "p_compte": string,"p_date": string,"p_montant_gnf": number }; Returns: Record<string, unknown>
+                           },
+"coordination_commandes":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"creer_cle_export":
+{ Args: { "p_libelle": string }; Returns: string
+                           },
+"creer_compte":
+{ Args: { "p_identifiant": string,"p_mot_de_passe": string,"p_nom": string,"p_prenom": string,"p_roles": (Database["public"]['Enums']["role_code"])[],"p_telephone": string }; Returns: string
                            },
 "creer_produit":
 { Args: { "p_code": string,"p_date_prix"?: string,"p_grammage": number,"p_largeur_mm": number,"p_libelle": string,"p_longueur_mm": number,"p_nb_mouchoirs": number,"p_paquets_par_colis": number,"p_plis": number,"p_prix_paquet_gnf"?: number,"p_taux_perte": number }; Returns: string
@@ -3464,6 +3634,9 @@ isOneToOne: false
 "envoyer_bc":
 { Args: { "p_bc": string }; Returns: string
                            },
+"espace_de_categorie":
+{ Args: { "p_categorie": string }; Returns: string
+                           },
 "est_actif":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
@@ -3472,6 +3645,9 @@ isOneToOne: false
                            },
 "exiger_logistique":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"exporter_donnees":
+{ Args: { "p_au": string,"p_cle": string,"p_du": string,"p_jeu": string }; Returns: Json
                            },
 "generer_charges_mois":
 { Args: { "p_mois": string }; Returns: number
@@ -3482,35 +3658,17 @@ isOneToOne: false
 "hook_jeton_acces":
 { Args: { "event": Json }; Returns: Json
                            },
-"changer_mot_de_passe_compte":
-{ Args: { "p_mot_de_passe": string,"p_utilisateur": string }; Returns: undefined
-                           },
-"creer_compte":
-{ Args: { "p_identifiant": string,"p_mot_de_passe": string,"p_nom": string,"p_prenom": string,"p_roles": (Database["public"]['Enums']["role_code"])[],"p_telephone": string }; Returns: string
-                           },
-"creer_cle_export":
-{ Args: { "p_libelle": string }; Returns: string
-                           },
-"exporter_donnees":
-{ Args: { "p_au": string,"p_cle": string,"p_du": string,"p_jeu": string }; Returns: Json
-                           },
-"pva_des_collegues":
-{ Args: Record<PropertyKey, never>; Returns: { "commercial": string,"latitude": number,"longitude": number,"nom": string,"telephone": string }[]
-                           },
-"valider_paie":
-{ Args: { "p_mois": string }; Returns: undefined
-                           },
 "jours_ouvrables":
-{ Args: { "p_du": string,"p_au": string }; Returns: number
-                           },
-"peut_regler_espace":
-{ Args: { "p_espace": string }; Returns: boolean
-                           },
-"reattribuer_pva":
-{ Args: { "p_commercial": string,"p_pva": string }; Returns: undefined
+{ Args: { "p_au": string,"p_du": string }; Returns: number
                            },
 "mes_roles":
 { Args: Record<PropertyKey, never>; Returns: (Database["public"]['Enums']["role_code"])[]
+                           },
+"nom_normalise":
+{ Args: { "p": string }; Returns: string
+                           },
+"nom_profil":
+{ Args: { "p_id": string }; Returns: string
                            },
 "nombre_fr":
 { Args: { "n": number }; Returns: string
@@ -3521,11 +3679,17 @@ isOneToOne: false
 "parametre_num":
 { Args: { "p_cle": string,"p_defaut": number }; Returns: number
                            },
-"peut_gerer_comptes":
-{ Args: { "p_roles"?: (Database["public"]['Enums']["role_code"])[] }; Returns: boolean
+"peut_acceder_espace":
+{ Args: { "p_espace": string }; Returns: boolean
                            },
 "peut_ecrire_piece":
 { Args: { "p_piece": string }; Returns: boolean
+                           },
+"peut_gerer_comptes":
+{ Args: { "p_roles"?: (Database["public"]['Enums']["role_code"])[] }; Returns: boolean
+                           },
+"peut_regler_espace":
+{ Args: { "p_espace": string }; Returns: boolean
                            },
 "preparer_livraison":
 { Args: { "p_commande": string }; Returns: string
@@ -3536,8 +3700,16 @@ isOneToOne: false
 "prochain_numero":
 { Args: { "p_prefixe": string }; Returns: string
                            },
+"pva_des_collegues":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "commercial": string,"latitude": number,"longitude": number,"nom": string,"telephone": string
+            }[]
+                           },
 "rapport_hebdomadaire":
 { Args: { "p_au": string,"p_du": string }; Returns: Json
+                           },
+"reattribuer_pva":
+{ Args: { "p_commercial": string,"p_pva": string }; Returns: undefined
                            },
 "receptionner_bobine":
 { Args: { "p_article": string,"p_cout_kg_gnf": number,"p_date"?: string,"p_diametre_mm"?: number,"p_fournisseur"?: string,"p_grammage"?: number,"p_largeur_mm"?: number,"p_notes"?: string,"p_numero_lot": string,"p_plis"?: number,"p_poids_kg": number }; Returns: string
@@ -3559,6 +3731,9 @@ isOneToOne: false
                            },
 "taux_a_la_date":
 { Args: { "p_date": string,"p_devise": string }; Returns: number
+                           },
+"telephone_normalise":
+{ Args: { "p": string }; Returns: string
                            },
 "terminer_intervention":
 { Args: { "p_intervention": string }; Returns: undefined
@@ -3591,6 +3766,9 @@ isOneToOne: false
                            },
 "valider_livraison":
 { Args: { "p_livraison": string }; Returns: string
+                           },
+"valider_paie":
+{ Args: { "p_mois": string }; Returns: undefined
                            },
 "valider_piece":
 { Args: { "p_piece": string }; Returns: string

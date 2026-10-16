@@ -5,7 +5,7 @@ import { ThemeAppli } from "@/components/coque/theme-appli";
 import { espacesAccessibles, LIBELLES_ROLES } from "@/lib/auth/espaces";
 import { exigerConnexion } from "@/lib/auth/session";
 import { seDeconnecter } from "@/app/connexion/actions";
-import { chargerAlertes } from "@/lib/direction/alertes";
+import { chargerPastilles } from "@/lib/alertes/espaces";
 
 /** Coque commune à toutes les applications : menu latéral (barre en haut sur téléphone), contenu sur fond doux. */
 export default async function CoqueApplication({ children }: LayoutProps<"/">) {
@@ -13,8 +13,8 @@ export default async function CoqueApplication({ children }: LayoutProps<"/">) {
   const applis = espacesAccessibles(u.roles).map((e) => ({ code: e.code, libelle: e.libelle }));
   const nomComplet = `${u.prenom} ${u.nom}`.trim();
   const initiales = ((u.prenom[0] ?? "") + (u.nom[0] ?? "")).toUpperCase() || "?";
-  // Nombre d'alertes dans le menu de la Direction (pastille rouge à côté de « Alertes »).
-  const badges: Record<string, number> = u.roles.includes("direction") ? { "/direction/alertes": (await chargerAlertes()).length } : {};
+  // Pastilles rouges du menu (alertes et tâches reçues de chaque application) : calculées sans bloquer l'affichage.
+  const badges = chargerPastilles(applis.map((a) => a.code)).catch(() => ({}));
 
   return (
     <ThemeAppli>

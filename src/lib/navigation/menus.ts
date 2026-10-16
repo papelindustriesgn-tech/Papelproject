@@ -22,11 +22,16 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   direction: [
     { libelle: "Tableau de bord", href: "/direction" },
     { libelle: "Alertes", href: "/direction/alertes" },
+    { libelle: "Tâches", href: "/direction/taches" },
+    { libelle: "Objectifs mensuels", href: "/direction/objectifs" },
     { libelle: "Rapport hebdomadaire", href: "/direction/rapport" },
-    { libelle: "Configuration", enfants: [{ href: "/direction/listes/objectifs", libelle: "Objectifs du business plan" }] },
   ],
   magasin: [
     { libelle: "Vue d'ensemble", href: "/magasin" },
+    { libelle: "Alertes", href: "/magasin/alertes" },
+    { libelle: "Tâches", href: "/magasin/taches" },
+    { libelle: "Commandes clients", href: "/magasin/commandes" },
+    { libelle: "Objectifs mensuels", href: "/magasin/objectifs" },
     {
       libelle: "Opérations",
       enfants: [
@@ -48,6 +53,10 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   ],
   production: [
     { libelle: "Vue d'ensemble", href: "/production" },
+    { libelle: "Alertes", href: "/production/alertes" },
+    { libelle: "Tâches", href: "/production/taches" },
+    { libelle: "Commandes clients", href: "/production/commandes" },
+    { libelle: "Objectifs mensuels", href: "/production/objectifs" },
     {
       libelle: "Opérations",
       enfants: [
@@ -68,6 +77,10 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   ],
   ventes: [
     { libelle: "Vue d'ensemble", href: "/ventes" },
+    { libelle: "Alertes", href: "/ventes/alertes" },
+    { libelle: "Tâches", href: "/ventes/taches" },
+    { libelle: "Commandes clients", href: "/ventes/commandes" },
+    { libelle: "Objectifs mensuels", href: "/ventes/objectifs" },
     {
       libelle: "Commandes",
       enfants: [
@@ -89,6 +102,10 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   ],
   commercial: [
     { libelle: "Carte et indicateurs", href: "/commercial" },
+    { libelle: "Alertes", href: "/commercial/alertes" },
+    { libelle: "Tâches", href: "/commercial/taches" },
+    { libelle: "Commandes clients", href: "/commercial/commandes" },
+    { libelle: "Objectifs mensuels", href: "/commercial/objectifs" },
     { libelle: "Portefeuilles", href: "/commercial/portefeuilles" },
     { libelle: "Visites", href: "/commercial/visites" },
     { libelle: "Tournées et objectifs", href: "/commercial/planification" },
@@ -97,6 +114,9 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   ],
   achats: [
     { libelle: "Vue d'ensemble", href: "/achats" },
+    { libelle: "Alertes", href: "/achats/alertes" },
+    { libelle: "Tâches", href: "/achats/taches" },
+    { libelle: "Objectifs mensuels", href: "/achats/objectifs" },
     {
       libelle: "Achats",
       enfants: [
@@ -110,6 +130,10 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   ],
   logistique: [
     { libelle: "Vue d'ensemble", href: "/logistique" },
+    { libelle: "Alertes", href: "/logistique/alertes" },
+    { libelle: "Tâches", href: "/logistique/taches" },
+    { libelle: "Commandes clients", href: "/logistique/commandes" },
+    { libelle: "Objectifs mensuels", href: "/logistique/objectifs" },
     {
       libelle: "Tournées",
       enfants: [
@@ -121,6 +145,9 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   ],
   qualite: [
     { libelle: "Vue d'ensemble", href: "/qualite" },
+    { libelle: "Alertes", href: "/qualite/alertes" },
+    { libelle: "Tâches", href: "/qualite/taches" },
+    { libelle: "Objectifs mensuels", href: "/qualite/objectifs" },
     { libelle: "Contrôles", href: "/qualite/controles" },
     { libelle: "Non-conformités", href: "/qualite/non-conformites" },
     { libelle: "Traçabilité", href: "/qualite/tracabilite" },
@@ -128,6 +155,9 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   ],
   maintenance: [
     { libelle: "Vue d'ensemble", href: "/maintenance" },
+    { libelle: "Alertes", href: "/maintenance/alertes" },
+    { libelle: "Tâches", href: "/maintenance/taches" },
+    { libelle: "Objectifs mensuels", href: "/maintenance/objectifs" },
     { libelle: "Ordres de travail", href: "/maintenance/interventions" },
     { libelle: "Préventif", href: "/maintenance/preventif" },
     { libelle: "Équipements", href: "/maintenance/equipements" },
@@ -135,6 +165,9 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   ],
   finance: [
     { libelle: "Vue d'ensemble", href: "/finance" },
+    { libelle: "Alertes", href: "/finance/alertes" },
+    { libelle: "Tâches", href: "/finance/taches" },
+    { libelle: "Objectifs mensuels", href: "/finance/objectifs" },
     { libelle: "Trésorerie", href: "/finance/tresorerie" },
     {
       libelle: "Fournisseurs",
@@ -152,10 +185,13 @@ export const MENUS: Record<string, EntreeMenu[]> = {
         { href: "/finance/excel", libelle: "Connexion Excel" },
       ],
     },
-    { libelle: "Configuration", enfants: [{ href: "/finance/listes", libelle: "Comptes, catégories, charges fixes, objectifs" }] },
+    { libelle: "Configuration", enfants: [{ href: "/finance/listes", libelle: "Comptes, catégories, charges fixes" }] },
   ],
   rh: [
     { libelle: "Vue d'ensemble", href: "/rh" },
+    { libelle: "Alertes", href: "/rh/alertes" },
+    { libelle: "Tâches", href: "/rh/taches" },
+    { libelle: "Objectifs mensuels", href: "/rh/objectifs" },
     { libelle: "Employés", href: "/rh/employes" },
     { libelle: "Présences", href: "/rh/presences" },
     { libelle: "Congés et absences", href: "/rh/absences" },
@@ -164,6 +200,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   ],
   admin: [
     { libelle: "Mise en route", href: "/admin/mise-en-route" },
+    { libelle: "Tâches", href: "/admin/taches" },
     { libelle: "Utilisateurs", href: "/admin/utilisateurs" },
     { libelle: "Réglages des services", href: "/admin/reglages", adminSeulement: true },
     { libelle: "Paramètres", href: "/admin/parametres" },

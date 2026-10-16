@@ -19,6 +19,7 @@ import {
   Landmark,
   LayoutDashboard,
   LayoutGrid,
+  ListChecks,
   LogOut,
   type LucideIcon,
   Map as IconeCarte,
@@ -31,6 +32,7 @@ import {
   ScanSearch,
   Settings,
   ShoppingCart,
+  Target,
   Ship,
   Truck,
   Users,
@@ -40,7 +42,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { createElement, useState } from "react";
+import { createElement, Suspense, use, useState } from "react";
 import { lienActif, MENUS, type EntreeMenu } from "@/lib/navigation/menus";
 import { IconeAppli } from "./applications";
 
@@ -53,6 +55,8 @@ interface AppliNav {
 const ICONES_MENU: [RegExp, LucideIcon][] = [
   [/vue d'ensemble|tableau de bord/i, LayoutDashboard],
   [/^alertes$/i, Bell],
+  [/^tâches$/i, ListChecks],
+  [/^objectifs/i, Target],
   [/mise en route/i, Rocket],
   [/rapport/i, FileText],
   [/carte/i, IconeCarte],
@@ -97,11 +101,14 @@ export function MenuLateral({
   applis,
   utilisateur,
   deconnexion,
-  badges = {},
+  badges,
 }: {
   applis: AppliNav[];
-  /** Nombre affiché en pastille rouge à côté d'un lien (ex. alertes de la Direction). */
-  badges?: Record<string, number>;
+  /**
+   * Nombres affichés en pastille rouge à côté d'un lien (alertes, tâches reçues), par adresse du lien.
+   * Promesse : le menu s'affiche tout de suite, les pastilles arrivent dès qu'elles sont calculées.
+   */
+  badges?: Promise<Record<string, number>>;
   utilisateur: { nomComplet: string; initiales: string; roles: string; estAdmin: boolean };
   deconnexion: (fd: FormData) => Promise<void>;
 }) {
@@ -132,10 +139,10 @@ export function MenuLateral({
       >
         {!retrait && <IconeMenu libelle={libelle} size={18} className={actif ? "text-white" : "text-gray-400"} />}
         <span className="truncate">{libelle}</span>
-        {(badges[href] ?? 0) > 0 && (
-          <span className="ml-auto rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white" aria-label={`${badges[href]} à traiter`}>
-            {badges[href]}
-          </span>
+        {badges && (
+          <Suspense fallback={null}>
+            <Pastille badges={badges} href={href} />
+          </Suspense>
         )}
       </Link>
     );
@@ -213,8 +220,13 @@ export function MenuLateral({
 
       {/* Téléphone et tablette : barre en haut + panneau. */}
       <header className="sticky top-0 z-[1100] flex h-14 items-center gap-2 bg-papel-700 px-2 text-white shadow lg:hidden print:hidden">
-        <button type="button" onClick={() => setOuvert(true)} className="flex size-11 items-center justify-center rounded-xl hover:bg-white/10" aria-label="Ouvrir le menu" aria-expanded={ouvert}>
+        <button type="button" onClick={() => setOuvert(true)} className="relative flex size-11 items-center justify-center rounded-xl hover:bg-white/10" aria-label="Ouvrir le menu" aria-expanded={ouvert}>
           <Menu size={22} />
+          {badges && appli && (
+            <Suspense fallback={null}>
+              <PastilleTotale badges={badges} code={appli.code} />
+            </Suspense>
+          )}
         </button>
         <Link href={appli ? `/${appli.code}` : "/applications"} className="flex min-w-0 flex-1 items-center gap-2 font-semibold">
           {appli && <IconeAppli code={appli.code} taille={28} contour />}
@@ -236,5 +248,28 @@ export function MenuLateral({
         </div>
       )}
     </>
+  );
+}
+
+/** Pastille rouge d'un lien du menu (rien si zéro). */
+function Pastille({ badges, href }: { badges: Promise<Record<string, number>>; href: string }) {
+  const n = use(badges)[href] ?? 0;
+  if (!n) return null;
+  return (
+    <span className="ml-auto rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white" aria-label={`${n} à traiter`}>
+      {n}
+    </span>
+  );
+}
+
+/** Sur téléphone : total des pastilles de l'application courante, sur le bouton du menu. */
+function PastilleTotale({ badges, code }: { badges: Promise<Record<string, number>>; code: string }) {
+  const b = use(badges);
+  const n = (b[`/${code}/alertes`] ?? 0) + (b[`/${code}/taches`] ?? 0);
+  if (!n) return null;
+  return (
+    <span className="absolute -right-0.5 -top-0.5 min-w-5 rounded-full bg-red-600 px-1 text-center text-[0.7rem] font-bold leading-5 text-white ring-2 ring-papel-700" aria-label={`${n} à traiter`}>
+      {n}
+    </span>
   );
 }

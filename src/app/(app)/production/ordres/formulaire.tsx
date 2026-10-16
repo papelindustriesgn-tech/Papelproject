@@ -7,9 +7,22 @@ import { creerOrdre } from "../actions";
 
 type Option = { id: string; libelle: string };
 
-export function FormulaireOrdre({ conditionnements, campagnes, lignes, dateDuJour }: { conditionnements: Option[]; campagnes: Option[]; lignes: Option[]; dateDuJour: string }) {
+/** `prerempli` : produit, quantité et note proposés depuis les commandes clients à servir (Production › Commandes clients). */
+export function FormulaireOrdre({
+  conditionnements,
+  campagnes,
+  lignes,
+  dateDuJour,
+  prerempli = {},
+}: {
+  conditionnements: Option[];
+  campagnes: Option[];
+  lignes: Option[];
+  dateDuJour: string;
+  prerempli?: Record<string, string>;
+}) {
   const [etat, action, enCours] = useActionState(creerOrdre, ETAT_INITIAL);
-  const v = etat.ok ? {} : (etat.valeurs ?? {});
+  const v = etat.ok ? {} : (etat.valeurs ?? prerempli);
   const e = etat.erreurs ?? {};
   const liste = (o: Option[]) => o.map((x) => <option key={x.id} value={x.id}>{x.libelle}</option>);
   return (

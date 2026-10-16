@@ -1,8 +1,8 @@
-import { AlertTriangle, CheckCircle2, ChevronRight, CircleAlert } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ecartPoints, ecartRelatif, Indicateur, jourCourt } from "@/components/ui/indicateur";
-import type { Alerte, SyntheseDirection } from "@/lib/direction/synthese";
+import type { SyntheseDirection } from "@/lib/direction/synthese";
 import { formaterPoids, formaterStockProduitFini, kg, type Paquets } from "@/lib/metier/unites";
 import { bfrGnf } from "@/lib/metier/finance";
 import { minutes, pct } from "@/lib/production/affichage";
@@ -20,110 +20,6 @@ function Section({ titre, lien, children }: { titre: string; lien?: string; chil
         )}
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{children}</div>
-    </section>
-  );
-}
-
-/** Alertes prioritaires : en tête de page, critiques d'abord, chaque ligne ouvre l'écran où agir. */
-export function ListeAlertes({ alertes, tout = false }: { alertes: Alerte[]; tout?: boolean }) {
-  const critiques = alertes.filter((a) => a.gravite === "critique").length;
-  return (
-    <section aria-label="À traiter maintenant" className="mb-5 break-inside-avoid">
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">À traiter maintenant</h2>
-        {critiques > 0 && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
-            <CircleAlert size={13} aria-hidden /> {critiques} critique(s)
-          </span>
-        )}
-        {alertes.length - critiques > 0 && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900">
-            <AlertTriangle size={13} aria-hidden /> {alertes.length - critiques} importante(s)
-          </span>
-        )}
-      </div>
-      {alertes.length ? (
-        <ul className="grid gap-2 md:grid-cols-2">
-          {(tout ? alertes : alertes.slice(0, 12)).map((a, i) => (
-            <li key={i}>
-              <Link
-                href={a.lien}
-                className={`ombre-carte flex h-full items-start gap-3 rounded-2xl px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-lg ${a.gravite === "critique" ? "bg-red-50 ring-1 ring-red-200" : "bg-amber-50 ring-1 ring-amber-200"}`}
-              >
-                <span className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full ${a.gravite === "critique" ? "bg-red-600 text-white" : "bg-amber-400 text-amber-950"}`}>
-                  {a.gravite === "critique" ? <CircleAlert size={18} aria-hidden /> : <AlertTriangle size={18} aria-hidden />}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className={`block text-xs font-bold uppercase tracking-wide ${a.gravite === "critique" ? "text-red-700" : "text-amber-800"}`}>
-                    {a.gravite === "critique" ? "Critique" : "Important"} · {a.domaine}
-                  </span>
-                  <span className="block font-medium leading-snug text-gray-900">{a.message}</span>
-                </span>
-                <ChevronRight size={18} className="mt-1 shrink-0 text-gray-400" aria-hidden />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="ombre-carte flex items-center gap-2 rounded-2xl bg-green-50 px-4 py-3 font-semibold text-green-800">
-          <CheckCircle2 size={20} aria-hidden /> Aucune alerte : tout est sous contrôle.
-        </p>
-      )}
-      {!tout && alertes.length > 12 && <p className="mt-2 text-sm text-gray-600">… et {alertes.length - 12} autre(s) alerte(s).</p>}
-    </section>
-  );
-}
-
-/**
- * Résumé des alertes en tête du tableau de bord : compteurs, les 3 plus graves sur une ligne chacune,
- * et un bouton vers la page « Alertes » (aussi dans le menu, avec le nombre). Reste court sur téléphone.
- */
-export function ResumeAlertes({ alertes, lien = "/direction/alertes" }: { alertes: Alerte[]; lien?: string }) {
-  const critiques = alertes.filter((a) => a.gravite === "critique").length;
-  if (!alertes.length)
-    return (
-      <p className="ombre-carte mb-5 flex items-center gap-2 rounded-2xl bg-green-50 px-4 py-3 font-semibold text-green-800">
-        <CheckCircle2 size={20} aria-hidden /> Aucune alerte : tout est sous contrôle.
-      </p>
-    );
-  return (
-    <section aria-label="À traiter maintenant" className="ombre-carte mb-5 rounded-2xl bg-white p-3 md:p-4 print:hidden">
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">À traiter maintenant</h2>
-        {critiques > 0 && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
-            <CircleAlert size={13} aria-hidden /> {critiques} critique(s)
-          </span>
-        )}
-        {alertes.length - critiques > 0 && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900">
-            <AlertTriangle size={13} aria-hidden /> {alertes.length - critiques} importante(s)
-          </span>
-        )}
-      </div>
-      <ul className="divide-y divide-gray-100">
-        {alertes.slice(0, 3).map((a, i) => (
-          <li key={i}>
-            <Link href={a.lien} className="flex min-h-11 items-center gap-2.5 py-2 text-[0.95rem] hover:bg-gray-50">
-              {a.gravite === "critique" ? (
-                <CircleAlert size={18} className="shrink-0 text-red-600" aria-label="Critique" />
-              ) : (
-                <AlertTriangle size={18} className="shrink-0 text-amber-600" aria-label="Important" />
-              )}
-              <span className="min-w-0 flex-1 truncate text-gray-900">
-                <span className="font-semibold text-gray-500">{a.domaine} · </span>
-                {a.message}
-              </span>
-              <ChevronRight size={16} className="shrink-0 text-gray-400" aria-hidden />
-            </Link>
-          </li>
-        ))}
-      </ul>
-      {alertes.length > 3 && (
-        <Link href={lien} className="mt-2 flex min-h-11 items-center justify-center rounded-xl bg-gray-50 text-sm font-semibold text-papel-700 hover:bg-gray-100">
-          Voir les {alertes.length} alertes
-        </Link>
-      )}
     </section>
   );
 }

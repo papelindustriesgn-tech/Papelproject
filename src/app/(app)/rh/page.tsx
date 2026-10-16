@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import Link from "next/link";
-import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
+import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { ecartPoints, ecartRelatif, Indicateur, jourCourt } from "@/components/ui/indicateur";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
@@ -11,9 +13,8 @@ import { libelleMois, nomComplet, STATUTS_PRESENCE } from "@/lib/rh/libelles";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 
-import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
-import { joursDeLaPeriode, resoudrePeriode } from "@/lib/formulaires/periode";
+import { joursDeLaPeriode } from "@/lib/formulaires/periode";
 
 export const metadata: Metadata = { title: "Ressources humaines" };
 
@@ -22,7 +23,7 @@ export default async function VueRh({ searchParams }: PageProps<"/rh">) {
   const sp = await searchParams;
   const jour = aujourdhui();
   // Absentéisme sur la période choisie (30 derniers jours par défaut), comparé à la précédente.
-  const periodeChoisie = resoudrePeriode(lireParam(sp, "periode"), jour, lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
+  const periodeChoisie = lirePeriode(sp, jour);
   const debut = periodeChoisie.du;
   const debutPrec = periodeChoisie.precedente.du;
   const supabase = await clientServeur();
@@ -59,7 +60,6 @@ export default async function VueRh({ searchParams }: PageProps<"/rh">) {
   return (
     <>
       <TitrePage titre="Ressources humaines" sousTitre={`${actifs.length} employé(s) actif(s)`} />
-      <UrgencesAppli espace="rh" />
       <SelecteurPeriode periode={periodeChoisie} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur libelle="Effectif actif" valeur={nombre(actifs.length)} detail={[...parService.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s, k]) => `${s} : ${k}`).join(" · ") || "—"} lien="/rh/employes" />
@@ -89,6 +89,12 @@ export default async function VueRh({ searchParams }: PageProps<"/rh">) {
           lien={moisPaie[0] ? `/rh/paie/${moisPaie[0].slice(0, 7)}` : "/rh/paie"}
         />
       </div>
+      <CarteObjectifs
+        espace="rh"
+        du={periodeChoisie.du}
+        au={periodeChoisie.au}
+        reels={{ absenteisme: taux, cout_salarial: moisPaie[0] ? cout(moisPaie[0]) : null }}
+      />
       <RaccourcisAppli espace="rh" />
       <div className="grid gap-4 lg:grid-cols-2">
         <Carte titre={`Absents aujourd'hui (${absentsJour.length})`}>

@@ -17,3 +17,8 @@ export function formaterDateHeure(d: string | Date): string {
 }
 
 export const schemaDateIso = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Date métier (AAAA-MM-JJ, Africa/Conakry) d'il y a `jours` jours. */
+export function ilYA(jours: number): string {
+  return new Date(Date.parse(`${aujourdhui()}T00:00:00Z`) - jours * 86_400_000).toISOString().slice(0, 10);
+}

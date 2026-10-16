@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
+import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { lireSeuils } from "@/lib/parametres";
-import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
+import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
-import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { aujourdhui, formaterDate, formaterDateHeure } from "@/lib/formulaires/dates";
-import { resoudrePeriode } from "@/lib/formulaires/periode";
 import { chargerIndicateursMaintenance } from "@/lib/maintenance/indicateurs";
 import { PRIORITES, STATUTS_INTERVENTION } from "@/lib/maintenance/libelles";
 import { minutes, pct } from "@/lib/production/affichage";
@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: "Maintenance" };
 
 export default async function TableauDeBordMaintenance({ searchParams }: PageProps<"/maintenance">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "30j", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
+  const periode = lirePeriode(sp, aujourdhui());
   const supabase = await clientServeur();
   const [ind, { data: ouverts }, { data: retards }, { data: pieces }] = await Promise.all([
     chargerIndicateursMaintenance(periode),
@@ -31,7 +31,6 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
   return (
     <>
       <TitrePage titre="Maintenance" sousTitre="Fiabilité du parc, ordres de travail et pièces de rechange" />
-      <UrgencesAppli espace="maintenance" />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/maintenance/interventions" libelle="Pannes (arrêt machine)" valeur={nombre(g.nbPannes)} detail={`${minutes(g.heuresArret * 60)} d'arrêt au total`} />
@@ -43,6 +42,12 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
         <Indicateur lien="/maintenance/preventif" libelle="Préventifs en retard" valeur={nombre(retards?.length ?? 0)} ton={(retards?.length ?? 0) > 0 ? "alerte" : "normal"} />
         <Indicateur lien="/maintenance/equipements" libelle="Pièces critiques en alerte" valeur={nombre(pieces?.length ?? 0)} ton={(pieces?.length ?? 0) > 0 ? "danger" : "normal"} />
       </div>
+      <CarteObjectifs
+        espace="maintenance"
+        du={periode.du}
+        au={periode.au}
+        reels={{ disponibilite: g.disponibilite, mttr: g.mttrMinutes, part_preventif: ind.partPreventif, cout_maintenance: ind.coutTotalGnf }}
+      />
       <RaccourcisAppli espace="maintenance" />
       <div className="flex flex-col gap-4">
         <Carte titre={`Ordres de travail ouverts (${ouverts?.length ?? 0})`}>

@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { aujourdhui, formaterDate, formaterDateHeure } from "@/lib/formulaires/dates";
-import { resoudrePeriode } from "@/lib/formulaires/periode";
+import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { chargerIndicateursMaintenance } from "@/lib/maintenance/indicateurs";
 import { STATUTS_INTERVENTION, TYPES_INTERVENTION } from "@/lib/maintenance/libelles";
 import { minutes, pct } from "@/lib/production/affichage";
@@ -17,7 +16,7 @@ import { FormulaireAssocierPiece } from "./formulaire";
 export default async function PageEquipement({ params, searchParams }: PageProps<"/maintenance/equipements/[id]">) {
   const { id } = await params;
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "trimestre", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
+  const periode = lirePeriode(sp, aujourdhui(), "annee");
   const supabase = await clientServeur();
   const [{ data: e }, ind, { data: historique }, { data: pieces }, { data: plans }, { data: catalogue }] = await Promise.all([
     supabase.from("equipements").select("*, lignes_production(libelle)").eq("id", id).maybeSingle(),

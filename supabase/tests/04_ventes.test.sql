@@ -23,10 +23,10 @@ values ('70000000-0000-0000-0000-000000000001', 'Client test', (select id from p
 
 select pg_temp.connecter('finance');
 insert into public.pieces_vente (id, type_piece, client_id) values ('71000000-0000-0000-0000-000000000001', 'commande', '70000000-0000-0000-0000-000000000001');
--- 100 colis de 50 Petit 100 = 5 000 paquets au prix de la grille (2 839 GNF HT = 3 350 TTC)
+-- 50 colis de 100 Petit 100 = 5 000 paquets au prix de la grille (2 839 GNF HT = 3 350 TTC)
 insert into public.lignes_piece (piece_id, conditionnement_id, quantite_colis, paquets, prix_paquet_gnf, montant_ht_gnf)
 values ('71000000-0000-0000-0000-000000000001',
-        (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50), 100, 1, null, 0);
+        (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 100), 50, 1, null, 0);
 select is((select paquets from public.lignes_piece where piece_id = '71000000-0000-0000-0000-000000000001'), 5000, 'Colis convertis en paquets');
 select is((select prix_paquet_gnf from public.lignes_piece where piece_id = '71000000-0000-0000-0000-000000000001'), 2839::bigint, 'Prix figé depuis la grille');
 select matches(public.valider_piece('71000000-0000-0000-0000-000000000001'), '^CMD-\d{4}-\d{5}$', 'Numéro de commande attribué à la validation');
@@ -37,11 +37,11 @@ select throws_ok($$ update public.lignes_piece set quantite_colis = 1 where piec
 create temporary table t (cle text primary key, id uuid, n bigint);
 grant all on t to authenticated;
 insert into t select 'stock_avant', null, quantite from public.stocks_articles s join public.articles a on a.id = s.article_id
-  where a.conditionnement_id = (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50);
+  where a.conditionnement_id = (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 100);
 insert into t select 'liv', public.preparer_livraison('71000000-0000-0000-0000-000000000001'), null;
 select matches(public.valider_livraison((select id from t where cle = 'liv')), '^BL-', 'Bon de livraison validé');
 select is((select quantite from public.stocks_articles s join public.articles a on a.id = s.article_id
-           where a.conditionnement_id = (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 50)),
+           where a.conditionnement_id = (select id from public.conditionnements where produit_id = '10000000-0000-0000-0000-000000000001' and paquets_par_colis = 100)),
           ((select n from t where cle = 'stock_avant') - 5000)::numeric, 'Stock de produits finis diminué de 5 000 paquets');
 select throws_ok($$ select public.preparer_livraison('71000000-0000-0000-0000-000000000001') $$, '22023', null, 'Commande entièrement livrée : pas de nouvelle livraison');
 

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
+import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
+import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
-import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
-import { resoudrePeriode } from "@/lib/formulaires/periode";
 import { actionsEnRetard, delaiMoyenClotureJours, tauxConformite } from "@/lib/metier/qualite";
 import { pct } from "@/lib/production/affichage";
 import { GRAVITES_NC, ORIGINES_NC, STATUTS_NC } from "@/lib/qualite/libelles";
@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: "Qualité" };
 export default async function TableauDeBordQualite({ searchParams }: PageProps<"/qualite">) {
   const sp = await searchParams;
   const jour = aujourdhui();
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "30j", jour, lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
+  const periode = lirePeriode(sp, jour);
   const supabase = await clientServeur();
   const [{ data: controles }, { data: ncPeriode }, { data: ouvertes }, { data: actions }, { data: bloquees }] = await Promise.all([
     supabase.from("controles_qualite").select("etape, resultat").gte("date_controle", periode.du).lte("date_controle", periode.au).limit(5000),
@@ -34,7 +34,6 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
   return (
     <>
       <TitrePage titre="Qualité" sousTitre="Contrôles, non-conformités et traçabilité" />
-      <UrgencesAppli espace="qualite" />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/qualite/controles" libelle="Conformité à réception" valeur={pct(tauxConformite(c.filter((x) => x.etape === "reception")))} detail={`${c.filter((x) => x.etape === "reception").length} contrôle(s) de bobines`} />
@@ -42,6 +41,16 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
         <Indicateur lien="/qualite/non-conformites?statut=ouverte" libelle="Non-conformités ouvertes" valeur={nombre(ouvertes?.length ?? 0)} detail={`${critiques} critique(s) · ${ncPeriode?.length ?? 0} déclarée(s) sur la période`} ton={critiques > 0 ? "danger" : (ouvertes?.length ?? 0) > 0 ? "alerte" : "normal"} />
         <Indicateur lien="/qualite/non-conformites" libelle="Délai moyen de clôture" valeur={delaiMoyenClotureJours(ncPeriode ?? []) === null ? "—" : `${nombre(delaiMoyenClotureJours(ncPeriode ?? []), 1)} j`} detail={`Réclamations clients : ${(ncPeriode ?? []).filter((n) => n.origine === "client").length}`} />
       </div>
+      <CarteObjectifs
+        espace="qualite"
+        du={periode.du}
+        au={periode.au}
+        reels={{
+          conformite_reception: tauxConformite(c.filter((x) => x.etape === "reception")),
+          conformite_production: tauxConformite(c.filter((x) => x.etape !== "reception")),
+          delai_cloture: delaiMoyenClotureJours(ncPeriode ?? []),
+        }}
+      />
       <RaccourcisAppli espace="qualite" />
       <div className="flex flex-col gap-4">
         <Carte titre={`Non-conformités à traiter (${ouvertes?.length ?? 0})`}>

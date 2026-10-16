@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { lireParam } from "@/components/donnees/filtres";
-import { BlocsIndicateurs, ListeAlertes } from "@/components/direction/sections";
+import { ListeAlertes } from "@/components/alertes/liste-alertes";
+import { BlocsIndicateurs } from "@/components/direction/sections";
 import { BoutonImprimer } from "@/components/ui/bouton-imprimer";
 import { chargerSynthese } from "@/lib/direction/synthese";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";

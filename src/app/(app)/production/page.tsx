@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
+import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
-import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { GraphiqueArrets, GraphiqueProduction, GraphiqueRendement } from "@/components/graphiques/production";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
@@ -9,21 +9,19 @@ import { GraphiqueAnneau } from "@/components/graphiques/hero";
 import { CarteHero } from "@/components/ui/carte-hero";
 import { ecartPoints, ecartRelatif, Indicateur, jourCourt, PastilleVariation } from "@/components/ui/indicateur";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
-import { lireFiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
-import { joursDeLaPeriode, resoudrePeriode, serieRegroupee } from "@/lib/formulaires/periode";
+import { lireFiltresAnalyse, lirePeriode } from "@/lib/formulaires/filtres-analyse";
+import { joursDeLaPeriode, serieRegroupee } from "@/lib/formulaires/periode";
 import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { formaterPoids, kg, paquetsVersColis, type Paquets } from "@/lib/metier/unites";
 import { libelleAlerte, minutes, pct } from "@/lib/production/affichage";
 import { agreger, chargerFiches, regrouper, rendementReelParProduit, seuilsProduction } from "@/lib/production/indicateurs";
 import { nombre } from "@/lib/stocks/libelles";
-import { CarteObjectifs } from "@/components/direction/objectifs";
-import { chargerObjectif } from "@/lib/objectifs/charger";
 
 export const metadata: Metadata = { title: "Production" };
 
 export default async function TableauDeBordProduction({ searchParams }: PageProps<"/production">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode"), aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
+  const periode = lirePeriode(sp, aujourdhui());
   const filtres = lireFiltresAnalyse(sp);
   const [fiches, precedentes, seuils, options] = await Promise.all([
     chargerFiches({ du: periode.du, au: periode.au, produit: filtres.produit }),
@@ -31,7 +29,6 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
     seuilsProduction(),
     chargerOptionsFiltres(),
   ]);
-  const objectif = await chargerObjectif(periode.du, periode.au);
   const gamme = decrireFiltres({ ...filtres, commercial: null }, options);
   const ind = agreger(fiches);
   const indPrec = agreger(precedentes);
@@ -83,7 +80,6 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
   return (
     <>
       <TitrePage titre="Production" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)} · ${fiches.length} fiche(s) validée(s)${gamme ? ` · ${gamme} (fiches mixtes au prorata du papier)` : ""}`} />
-      <UrgencesAppli espace="production" />
       <SelecteurPeriode periode={periode} params={sp} filtres={{ ...filtres, commercial: null }} gammes={options.produits} />
 
       <div className="mb-4 grid gap-4 xl:grid-cols-3">
@@ -109,18 +105,6 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
           <GraphiqueAnneau donnees={produits.map((p) => ({ libelle: p, valeur: parProduit.get(p)!.paquets }))} format="nombre" libelleTotal="Paquets" />
         </Carte>
       </div>
-      <CarteObjectifs
-        objectif={objectif}
-        filtre={!!filtres.produit}
-        lignes={
-          objectif
-            ? [
-                { libelle: "Paquets produits", reel: ind.paquetsBons, objectif: objectif.paquets, format: (v) => `${nombre(v)} paquets` },
-                { libelle: "Papier transformé", reel: ind.tonnesConsommees * 1000, objectif: objectif.productionKg, format: (v) => formaterPoids(kg(v)) },
-              ]
-            : []
-        }
-      />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur
           libelle="Papier consommé"
@@ -164,6 +148,13 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
           detail={ind.trs === null ? "Renseignez les cadences nominales" : `Perf. ${pct(ind.performance, 0)} · Qualité ${pct(ind.qualite, 0)}`}
         />
       </div>
+      <CarteObjectifs
+        espace="production"
+        du={periode.du}
+        au={periode.au}
+        filtre={!!filtres.produit}
+        reels={{ paquets_produits: ind.paquetsBons, papier_kg: ind.tonnesConsommees * 1000, rendement: ind.ratioRendement, taux_perte: ind.tauxPerte, trs: ind.trs }}
+      />
       <RaccourcisAppli espace="production" />
 
       <Carte titre="Rendement réel par produit" className="mb-4">

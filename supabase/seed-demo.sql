@@ -669,3 +669,14 @@ from (values
   (0, 'Démonstration – scénario M3', 40000, 401492, 1466253730, 1160035215)
 ) as v(decalage, libelle, kg, paquets, ca, cv)
 on conflict (mois) do nothing;
+
+-- Objectifs mensuels des services (Direction, Ventes, Production) repris du business plan (même règle que la migration 20261020002400).
+insert into public.objectifs_services (espace, indicateur, mois, valeur)
+select x.espace, x.indicateur, o.mois, x.valeur
+from public.objectifs_mensuels o
+cross join lateral (values
+  ('direction', 'ca_ttc', o.ca_ttc_gnf::numeric), ('direction', 'paquets_produits', o.paquets::numeric), ('direction', 'papier_kg', o.production_kg),
+  ('ventes', 'ca_ttc', o.ca_ttc_gnf::numeric), ('production', 'paquets_produits', o.paquets::numeric), ('production', 'papier_kg', o.production_kg)
+) as x(espace, indicateur, valeur)
+where o.actif and x.valeur > 0
+on conflict (espace, indicateur, mois) do nothing;

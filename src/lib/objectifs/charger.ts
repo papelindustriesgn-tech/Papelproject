@@ -1,27 +1,26 @@
 import "server-only";
 import { cache } from "react";
-import { objectifPeriode, type ObjectifPeriode } from "@/lib/metier/objectifs";
+import { objectifSurPeriode, type ObjectifSurPeriode } from "@/lib/metier/objectifs";
 import { clientServeur } from "@/lib/supabase/serveur";
+import { OBJECTIFS } from "./catalogue";
 
-/** Objectif du business plan pour la période [du, au] (mois au prorata des jours) ; null s'il n'y en a pas. */
-export const chargerObjectif = cache(async (du: string, au: string): Promise<ObjectifPeriode | null> => {
+/**
+ * Objectifs mensuels d'un service rapportés à la période [du, au] : un objectif par indicateur qui en a un
+ * (quantités au prorata des jours, taux en moyenne pondérée).
+ */
+export const chargerObjectifsEspace = cache(async (espace: string, du: string, au: string): Promise<Map<string, ObjectifSurPeriode>> => {
   const supabase = await clientServeur();
   const { data } = await supabase
-    .from("objectifs_mensuels")
-    .select("mois, production_kg, paquets, ca_ttc_gnf, couts_variables_gnf, charges_fixes_gnf")
-    .eq("actif", true)
+    .from("objectifs_services")
+    .select("indicateur, mois, valeur")
+    .eq("espace", espace)
     .gte("mois", `${du.slice(0, 7)}-01`)
     .lte("mois", au);
-  return objectifPeriode(
-    (data ?? []).map((o) => ({
-      mois: o.mois,
-      productionKg: Number(o.production_kg),
-      paquets: o.paquets,
-      caTtcGnf: Number(o.ca_ttc_gnf),
-      coutsVariablesGnf: Number(o.couts_variables_gnf),
-      chargesFixesGnf: Number(o.charges_fixes_gnf),
-    })),
-    du,
-    au,
-  );
+  const resultat = new Map<string, ObjectifSurPeriode>();
+  for (const def of OBJECTIFS[espace] ?? []) {
+    const valeurs = (data ?? []).filter((o) => o.indicateur === def.code).map((o) => ({ mois: o.mois, valeur: Number(o.valeur) }));
+    const o = objectifSurPeriode(valeurs, du, au, def.cumul);
+    if (o) resultat.set(def.code, o);
+  }
+  return resultat;
 });

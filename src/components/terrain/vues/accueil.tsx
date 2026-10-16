@@ -5,6 +5,7 @@ import { FilePlus2, MapPin, Navigation, PlusCircle, Receipt, RefreshCw, Store } 
 import { ecrireMeta, lireMeta } from "@/lib/terrain/base-locale";
 import { aujourdhuiConakry, Chiffre, dateHeure, gnfCourt, Progression, Tuile } from "../communs";
 import { useTerrain } from "../contexte";
+import { LivraisonsAConfirmer } from "./livraisons";
 
 export interface Objectifs {
   visites: number;
@@ -123,6 +124,8 @@ export function VueAccueil() {
         <p className="rounded-2xl border border-red-300 bg-red-50 p-3 text-red-900">Votre série de numérotation n&apos;est pas définie : vous ne pouvez pas encore faire de factures. Contactez l&apos;administrateur.</p>
       )}
 
+      <LivraisonsAConfirmer />
+
       {/* Chiffres du jour */}
       <section aria-label="Aujourd'hui">
         <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">Aujourd&apos;hui</h2>
@@ -164,8 +167,8 @@ export function VueAccueil() {
       <div className="grid grid-cols-2 gap-2">
         <Tuile libelle="Prospects et clients" detail={`${donnees.nbPva} points de vente`} onClick={() => aller("pva")} icone={<Store size={22} />} />
         <Tuile libelle="Nouveau PVA" detail="Avec position GPS" onClick={() => aller("pva-nouveau")} icone={<PlusCircle size={22} />} />
-        <Tuile libelle="Facture / devis" detail="Même sans réseau" onClick={() => aller("document-nouveau")} icone={<FilePlus2 size={22} />} />
-        <Tuile libelle="Mes ventes" detail="Devis et factures" onClick={() => aller("documents")} icone={<Receipt size={22} />} />
+        <Tuile libelle="Facture, commande, devis" detail="Même sans réseau" onClick={() => aller("document-nouveau")} icone={<FilePlus2 size={22} />} />
+        <Tuile libelle="Mes ventes" detail="Et dates de livraison" onClick={() => aller("documents")} icone={<Receipt size={22} />} />
       </div>
 
       {/* Tournée */}

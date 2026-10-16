@@ -107,7 +107,7 @@ export interface LignePieceLocale {
 
 export interface PieceLocale {
   id: string;
-  typePiece: "devis" | "facture";
+  typePiece: "devis" | "commande" | "facture";
   numero: string;
   clientId: string;
   datePiece: string;
@@ -120,9 +120,30 @@ export interface PieceLocale {
   /** en_attente → synchronisee ; rejetee si le serveur a refusé (message dans « erreur »). */
   etat: "en_attente" | "synchronisee" | "rejetee";
   erreur?: string;
+  /** Commande : date de livraison estimée par l'usine (stock, production), reçue à la synchronisation. */
+  livraisonEstimee?: string | null;
+  /** Commande : reste à livrer (false = entièrement livrée). */
+  resteALivrer?: boolean;
 }
 
-export type TypeOperation = "pva" | "visite" | "photo" | "client" | "piece";
+/** Bon de livraison d'une commande du commercial, à confirmer une fois remis au client. */
+export interface LivraisonLocale {
+  id: string;
+  numero: string;
+  commandeId: string;
+  commandeNumero: string;
+  clientId: string;
+  /** a_livrer, livree, partielle, refusee (saisi par la logistique). */
+  statutRemise: string;
+  remiseLe: string | null;
+  receptionnaire: string;
+  commentaire: string;
+  confirmation: "conforme" | "probleme" | null;
+  /** Confirmation saisie sur le téléphone, pas encore envoyée. */
+  enAttente: boolean;
+}
+
+export type TypeOperation = "pva" | "visite" | "photo" | "client" | "piece" | "confirmation";
 
 export interface Operation {
   id: string;
@@ -154,6 +175,7 @@ export class BaseTerrain extends Dexie {
   clients!: EntityTable<ClientLocal, "id">;
   visites!: EntityTable<VisiteLocale, "id">;
   pieces!: EntityTable<PieceLocale, "id">;
+  livraisons!: EntityTable<LivraisonLocale, "id">;
   operations!: EntityTable<Operation, "id">;
   photos!: EntityTable<PhotoLocale, "id">;
 
@@ -176,6 +198,8 @@ export class BaseTerrain extends Dexie {
       operations: "id, creeLe",
       photos: "id, pvaId",
     });
+    // Version 2 : livraisons des commandes du commercial (confirmation de la remise au client).
+    this.version(2).stores({ livraisons: "id, commandeId" });
   }
 }
 

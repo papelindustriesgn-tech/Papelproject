@@ -146,7 +146,7 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
   - Agrégation sur une période = concaténation des fiches (pas de moyenne de pourcentages).
 - Périodes d'analyse et période précédente de même durée : `src/lib/formulaires/periode.ts` (jour, **semaine du lundi** comparée
   aux mêmes jours de la semaine précédente, **mois choisi dans une liste déroulante** (`?periode=mois&mois=AAAA-MM`, `listeMois`,
-  composant `ChoixMois` ; un mois passé est complet, comparé aux mêmes jours du mois précédent), année ; 7 j, 30 j, trimestre et
+  composant `ChoixPeriode` ; un mois passé est complet, comparé aux mêmes jours du mois précédent), année ; 7 j, 30 j, trimestre et
   dates libres dans « Autres dates »).
   Courbes des cartes héros : `serieRegroupee` (par jour ≤ 5 semaines, par semaine ≤ 3 mois, par mois au-delà ; quantités seulement).
 - Graphiques : Recharts, palette catégorielle validée (`src/components/graphiques/production.tsx`), ordre de couleur fixe.
@@ -317,16 +317,37 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
   net = brut − CNSS − RTS − avances. « Préparer la paie » calcule les bulletins depuis présences et absences (primes/avances gardées) ;
   `valider_paie` fige (trigger `bulletin_fige`). Bulletin imprimable avec montant en lettres ; export CSV de l'état de paie.
 
-## 6 terdecies. Objectifs du business plan
+## 6 terdecies. Objectifs mensuels (par service)
 
-- Table `objectifs_mensuels` (un mois = une ligne : papier kg, paquets, **CA TTC**, coûts variables, charges fixes), modifiable par la
-  Direction, la Finance et l'administrateur (Direction → Configuration → Objectifs ; liste générique `objectifs`), lue par tous.
-- Valeurs de départ (`donnees-initiales.sql`) : M1 supposé = **novembre 2026** ; lancement 25 / 35 / 40 t, puis 100 t/mois (an 1),
-  120 (an 2), 150 (an 3) ; **montants du fichier tels quels** (CA TTC, coûts variables, charges fixes 80 M GNF/mois) : le résultat visé
-  est celui du business plan. Le CA de l'objectif (TTC) est comparé au **CA TTC réel** des factures. La démo ajoute les 3 derniers mois.
-- Rapport à une période : `objectifPeriode` (`src/lib/metier/objectifs.ts`, testé) = part de chaque mois au prorata des jours.
-  Affichage `CarteObjectifs` (barres d'avancement, % et statut écrits) : Direction (CA, paquets, papier), Ventes (CA), Production
-  (paquets, papier). Objectifs globaux : avec un filtre gamme ou commercial, la carte invite à retirer le filtre.
+- Chaque application a ses **objectifs mensuels** : table `objectifs_services` (service × indicateur × mois → valeur ; % stockés en fraction,
+  poids en kg saisis en tonnes), **fixés par la Direction (ou l'administrateur)**, lus par tous. Écran `/<espace>/objectifs` (menu
+  « Objectifs mensuels » : grille d'une année, une ligne par mois, bouton « Recopier »), composants `src/components/objectifs/`.
+- Catalogue des indicateurs par service : `OBJECTIFS` (`src/lib/objectifs/catalogue.ts`) — `cumul` (quantité : prorata des jours) ou
+  taux/niveau (moyenne pondérée), `hausseBonne: false` = objectif maximum (pertes, délais, coûts). Nouvel objectif = une entrée du
+  catalogue + son réel passé par la vue d'ensemble à `<CarteObjectifs espace du au reels={{ code: valeur }} />`.
+- Calculs purs et testés : `objectifSurPeriode`, `etatObjectif` (`src/lib/metier/objectifs.ts`).
+- Business plan : `objectifs_mensuels` (référence, plus modifiée dans l'interface) a été recopiée dans `objectifs_services` (Direction :
+  CA TTC, paquets, papier ; Ventes : CA TTC ; Production : paquets, papier). M1 supposé = **novembre 2026**, montants du fichier tels quels.
+
+## 6 quaterdecies. Coordination entre services
+
+- **Alertes** : menu « Alertes » de chaque application (`/<espace>/alertes`, `PageAlertes`) avec **pastille rouge** du nombre ; plus de bloc
+  d'alertes sur les vues d'ensemble. Contenu (`chargerAlertesEspace`, `src/lib/alertes/espaces.ts`) : lignes « À faire » réglées par
+  l'administrateur (`accueil_elements`, calculs `CALCULS` dans `src/lib/navigation/calculs.ts`), alertes de l'entreprise filtrées par
+  domaine (Direction : toutes), commandes à servir, livraisons signalées. Pastilles calculées sans bloquer (`chargerPastilles`, promesse
+  passée au menu, `use()`).
+- **Tâches entre services** (`taches`, vue `taches_etat` avec les noms) : un service demande à un autre ; à faire → en cours → faite
+  (compte rendu) ou annulée par l'auteur ; figée ensuite (trigger `controler_tache`). Menu « Tâches » (`/<espace>/taches`) avec pastille.
+  Accès à un espace côté SQL : `peut_acceder_espace()` (miroir de `espaces.ts`).
+- **Commandes clients** (`/<espace>/commandes` : Stocks, Production, Ventes, Logistique, Équipe commerciale) : fonction
+  `coordination_commandes()` (restes à livrer, stock PF, rythme réel, cadences, OF en cours) → `estimerCoordination` / `planifierCommandes`
+  (`src/lib/metier/coordination.ts`, testé) : stock réservé dans l'ordre d'arrivée, manque daté par le rythme réel des
+  `coordination_jours_reference` jours, sinon les OF, sinon la cadence théorique ; livraison = + `coordination_delai_livraison_jours`.
+  La Production lance un OF pré-rempli (`/production/ordres?conditionnement=&colis=#nouvel-ordre`).
+- Le **commercial passe des commandes depuis le téléphone** (série `CMD-AAAA-<code>-NNNNN`) et voit la date de livraison estimée.
+- **Confirmation de livraison** : après la remise (logistique), le commercial confirme sur son téléphone (« Le client a bien reçu » ou
+  « Signaler un problème », opération hors ligne `confirmation` → `confirmer_livraison`). Problème signalé = alerte critique Ventes,
+  Logistique, Équipe commerciale, Direction ; suivi dans « Commandes clients ».
 
 ## 7. Seuils d'alerte (paramétrables)
 
@@ -381,11 +402,10 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
 - **Couleur par service** : `APPARENCE_APPLI` (applications.tsx) ; `ThemeAppli` redéfinit la gamme `papel-*` selon l'application courante
   (toujours utiliser les classes `papel-*` pour la couleur d'accent). Les documents clients (`.imprimer-couleurs`) restent aux couleurs Papel.
 - **Pensé pour des débutants — « ne pas faire réfléchir »**, et **réglé dans l'interface par l'administrateur seul** (décision de la direction) : à l'entrée de chaque application,
-  ordre fixe des **vues d'ensemble** : `TitrePage` → **`<UrgencesAppli espace=… />`** (« À traiter maintenant », cartes cliquables, urgent
-  en rouge ; Direction : `ListeAlertes`) → période → **indicateurs** → **`<RaccourcisAppli espace=… />`** (phrase d'accueil `accueil_espaces`,
+  ordre fixe des **vues d'ensemble** : `TitrePage` → **filtre de date** → **indicateurs** → **`<CarteObjectifs>`** → **`<RaccourcisAppli espace=… />`** (phrase d'accueil `accueil_espaces`,
   **un seul bouton principal** = 1er bouton actif, autres en petit, **parcours** numéroté) → graphiques et tableaux
-  (`src/components/coque/entree-appli.tsx`, données `accueil_elements`, genres `action` / `etape` / `tache`).
-- **Filtres des vues d'ensemble** (`SelecteurPeriode` avec `params`, `filtres`, `gammes`, `commerciaux`) : période + **gamme de produits**
+  (`src/components/coque/entree-appli.tsx`, données `accueil_elements`, genres `action` / `etape` / `tache` ; les `tache` vont dans le menu « Alertes »).
+- **Filtres des vues d'ensemble** (`SelecteurPeriode` avec `params`, `filtres`, `gammes`, `commerciaux`) : **un seul filtre de date** (`ChoixPeriode` : liste Jour / Semaine / Mois / Année / Dates choisies, puis le jour, la semaine, le mois ou l'année ; `?periode=&jour=&mois=&annee=`, `lirePeriode`) + **gamme de produits**
   (table `produits`, archivées comprises) + **commercial** (rôle commercial terrain ; liste lisible par Direction, responsable commercial,
   finance), dans l'adresse (`?periode=&produit=&commercial=`, `lireFiltresAnalyse`, options `chargerOptionsFiltres`).
   Appliqués : Direction, Ventes, Équipe commerciale (gamme + commercial) ; Production, Magasin (gamme) ; Finance, Achats, Logistique,

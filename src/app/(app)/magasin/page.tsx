@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
 import { lireSeuils } from "@/lib/parametres";
-import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
+import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { ecartRelatif, Indicateur } from "@/components/ui/indicateur";
-import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { aujourdhui } from "@/lib/formulaires/dates";
-import { lireFiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
-import { resoudrePeriode } from "@/lib/formulaires/periode";
+import { lireFiltresAnalyse, lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { formaterPoids, kg } from "@/lib/metier/unites";
 import { afficherStock, gnf, LIBELLES_FAMILLES, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -24,7 +23,7 @@ const NIVEAUX_ALERTE: Record<string, { libelle: string; ton: "erreur" | "alerte"
 
 export default async function TableauDeBordMagasin({ searchParams }: PageProps<"/magasin">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode"), aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
+  const periode = lirePeriode(sp, aujourdhui());
   const filtres = { ...lireFiltresAnalyse(sp), commercial: null };
   const supabase = await clientServeur();
   // Mouvements de produits finis de la période (entrées de production, livraisons, dotations, retours).
@@ -57,7 +56,6 @@ export default async function TableauDeBordMagasin({ searchParams }: PageProps<"
   return (
     <>
       <TitrePage titre="Stocks" sousTitre="Situation en temps réel — usine de Coyah" />
-      <UrgencesAppli espace="magasin" />
       <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/magasin/bobines" libelle="Matière première disponible" valeur={formaterPoids(kg(kgMp))} detail={`${nbBobines} bobine(s) en stock`} />
@@ -76,6 +74,13 @@ export default async function TableauDeBordMagasin({ searchParams }: PageProps<"
         <Indicateur lien="/magasin/mouvements" libelle={`Livrés aux clients${gamme ? ` · ${gamme}` : ""}`} valeur={`${nombre(pfPeriode.livres)} paquets`} variation={{ ecart: ecartRelatif(pfPeriode.livres, pfPrec.livres) }} detail="Livraisons moins retours" />
         <Indicateur lien="/magasin/mouvements" libelle={`Dotations remises${gamme ? ` · ${gamme}` : ""}`} valeur={`${nombre(pfPeriode.offerts)} paquets`} variation={{ ecart: ecartRelatif(pfPeriode.offerts, pfPrec.offerts) }} detail="Paquets offerts aux grossistes" />
       </div>
+      <CarteObjectifs
+        espace="magasin"
+        du={periode.du}
+        au={periode.au}
+        filtre={!!filtres.produit}
+        reels={{ paquets_livres: pfPeriode.livres, couverture_mp: couvertureMp, valeur_stock: valeurTotale }}
+      />
       <RaccourcisAppli espace="magasin" />
 
       <div className="grid gap-4 lg:grid-cols-2">

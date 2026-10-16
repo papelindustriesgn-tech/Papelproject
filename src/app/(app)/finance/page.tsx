@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
+import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
+import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
-import { lireParam } from "@/components/donnees/filtres";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
-import { resoudrePeriode } from "@/lib/formulaires/periode";
 import { chargerPrevisionnel, chargerResultat, chargerSituation } from "@/lib/finance/indicateurs";
 import { bfrGnf, pointMortJours, premiereTensionTresorerie, seuilRentabiliteGnf } from "@/lib/metier/finance";
 import { formaterMontant } from "@/lib/metier/devises";
@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Finance" };
 
 export default async function TableauDeBordFinance({ searchParams }: PageProps<"/finance">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "mois", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
+  const periode = lirePeriode(sp, aujourdhui());
   const [s, r, prev] = await Promise.all([chargerSituation(), chargerResultat(periode.du, periode.au, periode.nbJours), chargerPrevisionnel(13)]);
   const seuil = seuilRentabiliteGnf(r.chargesFixesGnf, r.tauxMcv);
   const pm = pointMortJours(seuil, r.caHtGnf, periode.nbJours);
@@ -27,7 +27,6 @@ export default async function TableauDeBordFinance({ searchParams }: PageProps<"
   return (
     <>
       <TitrePage titre="Finance" sousTitre="Trésorerie, créances, dettes et résultat de gestion" />
-      <UrgencesAppli espace="finance" />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/finance/tresorerie" libelle="Trésorerie disponible" valeur={gnf(s.tresorerieGnf)} detail="Tous comptes (USD au taux du jour)" ton={s.tresorerieGnf < 0 ? "danger" : "normal"} />
         <Indicateur lien="/ventes/impayes" libelle="Créances clients" valeur={gnf(s.creancesGnf)} detail={`dont échu : ${gnf(s.creancesEchuesGnf)}`} ton={s.creancesEchuesGnf > 0 ? "alerte" : "normal"} />
@@ -47,6 +46,12 @@ export default async function TableauDeBordFinance({ searchParams }: PageProps<"
         <Indicateur lien="/finance/resultat" libelle="Résultat d'exploitation" valeur={gnf(r.resultatGnf)} detail={`${pct(r.tauxResultat)} du CA`} ton={r.resultatGnf < 0 ? "danger" : "normal"} />
         <Indicateur lien="/finance/resultat" libelle="Seuil de rentabilité" valeur={seuil === null ? "—" : gnf(seuil)} detail={pm ? `Atteint au jour ${pm} de la période` : seuil === null ? "Marge sur coûts variables négative" : "Non atteint sur la période"} ton={pm ? "normal" : "alerte"} />
       </div>
+      <CarteObjectifs
+        espace="finance"
+        du={periode.du}
+        au={periode.au}
+        reels={{ ca_ht: r.caHtGnf, marge_brute: r.margeBruteGnf, resultat: r.resultatGnf }}
+      />
       <RaccourcisAppli espace="finance" />
       <Carte titre="Comptes de trésorerie" action={<Link href="/finance/tresorerie" className="font-semibold text-papel-700 underline">Journal</Link>}>
         <Tableau entetes={["Compte", "Solde", "En GNF"]}>

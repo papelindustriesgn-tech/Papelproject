@@ -94,8 +94,10 @@ export default async function PageOrdres({ searchParams }: PageProps<"/productio
         </Tableau>
         {!lignesOf.length && <p className="py-4 text-gray-700">Aucun ordre.</p>}
       </Carte>
+      <div id="nouvel-ordre" className="scroll-mt-20">
       <Carte titre="Nouvel ordre de fabrication">
         <FormulaireOrdre
+          prerempli={{ conditionnement_id: lireParam(sp, "conditionnement") ?? "", quantite_colis: lireParam(sp, "colis") ?? "", notes: lireParam(sp, "note") ?? "" }}
           dateDuJour={aujourdhui()}
           conditionnements={(conditionnements ?? [])
             .filter((c) => c.produits?.actif)
@@ -105,6 +107,7 @@ export default async function PageOrdres({ searchParams }: PageProps<"/productio
           lignes={lignes ?? []}
         />
       </Carte>
+      </div>
     </>
   );
 }

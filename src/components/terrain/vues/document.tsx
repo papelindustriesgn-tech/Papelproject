@@ -8,12 +8,12 @@ import { colis as enColis, colisVersPaquets, formaterStockProduitFini, paquets a
 import { montantEnLettresGnf } from "@/lib/metier/ventes";
 import { ecrireMeta, lireMeta, mettreEnFile, type LignePieceLocale, type PieceLocale } from "@/lib/terrain/base-locale";
 import { formaterNumero, prefixeSerie, prochainCompteur } from "@/lib/terrain/numerotation";
-import { aujourdhuiConakry, Compteur, EnTeteVue, gnf, Vide } from "../communs";
+import { aujourdhuiConakry, Compteur, dateCourte, EnTeteVue, gnf, PIECES, Vide } from "../communs";
 import { useTerrain } from "../contexte";
 
 const champ = "min-h-12 w-full rounded-xl border border-gray-300 bg-white px-3";
 
-/** Création d'un devis ou d'une facture sur le téléphone, même sans réseau : client, quantités en − / +, total toujours visible. */
+/** Création d'un devis, d'une commande ou d'une facture sur le téléphone, même sans réseau : client, quantités en − / +, total toujours visible. */
 export function VueNouveauDocument({ clientInitial }: { clientInitial?: string }) {
   const { base, aller, enLigne, lancerSynchronisation } = useTerrain();
   const donnees = useLiveQuery(async () => ({
@@ -25,7 +25,7 @@ export function VueNouveauDocument({ clientInitial }: { clientInitial?: string }
     tva: await lireMeta(base, "tva", { applicable: true, taux: 0.18 }),
     profil: await lireMeta<{ codeSerie: string | null }>(base, "profil", { codeSerie: null }),
   }), [base]);
-  const [typePiece, setTypePiece] = useState<"devis" | "facture">("facture");
+  const [typePiece, setTypePiece] = useState<"devis" | "commande" | "facture">("facture");
   const [clientId, setClientId] = useState(clientInitial ?? "");
   const [rechercheClient, setRechercheClient] = useState("");
   /** Quantités saisies par conditionnement : colis complets + paquets en plus. */
@@ -106,14 +106,19 @@ export function VueNouveauDocument({ clientInitial }: { clientInitial?: string }
 
   return (
     <div className="flex flex-col gap-3 pb-48">
-      <EnTeteVue titre={typePiece === "facture" ? "Nouvelle facture" : "Nouveau devis"} />
-      <div className="grid grid-cols-2 gap-1 rounded-2xl bg-gray-200 p-1" role="group" aria-label="Type de document">
-        {(["facture", "devis"] as const).map((t) => (
+      <EnTeteVue titre={PIECES[typePiece].nouveau} />
+      <div className="grid grid-cols-3 gap-1 rounded-2xl bg-gray-200 p-1" role="group" aria-label="Type de document">
+        {(["facture", "commande", "devis"] as const).map((t) => (
           <button key={t} type="button" aria-pressed={typePiece === t} onClick={() => setTypePiece(t)} className={`min-h-11 rounded-xl font-bold ${typePiece === t ? "bg-white text-papel-800 shadow" : "text-gray-600"}`}>
-            {t === "facture" ? "Facture" : "Devis"}
+            {PIECES[t].nom}
           </button>
         ))}
       </div>
+      {typePiece === "commande" && (
+        <p className="rounded-2xl bg-sky-50 p-3 text-sm text-sky-900">
+          La commande part au bureau : le magasin et la production la voient pour préparer les colis. La date de livraison estimée s&apos;affiche dans « Mes ventes » après la synchronisation.
+        </p>
+      )}
 
       {/* 1. Client */}
       <section className="rounded-2xl border border-gray-200 bg-white p-3">
@@ -210,7 +215,7 @@ export function VueNouveauDocument({ clientInitial }: { clientInitial?: string }
           </div>
           <p className="-mt-1 mb-2 text-right text-xs text-gray-500">dont TVA {gnf(totaux.tvaGnf)} · HT {gnf(totaux.totalHtGnf)}</p>
           <button type="button" onClick={() => void valider()} disabled={enCours} className="min-h-14 w-full rounded-2xl bg-papel-700 text-lg font-bold text-white disabled:bg-papel-300">
-            Valider {typePiece === "facture" ? "la facture" : "le devis"}
+            Valider {PIECES[typePiece].le}
           </button>
         </div>
       </div>
@@ -238,7 +243,7 @@ export function VueDocument({ id, nouveau }: { id: string; nouveau?: string | nu
     const c = donnees.conditionnements.find((x) => x.id === cid);
     return c ? `Mouchoirs ${donnees.produits.find((p) => p.id === c.produitId)?.libelle} – ${c.libelle}` : "";
   };
-  const titre = piece.typePiece === "facture" ? "FACTURE" : "DEVIS";
+  const titre = PIECES[piece.typePiece].titre;
 
   const partager = async () => {
     const texte = `${titre} ${piece.numero} – ${donnees.entreprise.nom}\nClient : ${client?.nom ?? ""}\nTotal TTC : ${gnf(piece.totalTtcGnf)}\n(${montantEnLettresGnf(piece.totalTtcGnf)})`;
@@ -249,9 +254,14 @@ export function VueDocument({ id, nouveau }: { id: string; nouveau?: string | nu
   return (
     <div className="flex flex-col gap-3">
       <div className="print:hidden">
-        <EnTeteVue titre={`${piece.typePiece === "facture" ? "Facture" : "Devis"} ${piece.numero}`} retour="documents" />
+        <EnTeteVue titre={`${PIECES[piece.typePiece].nom} ${piece.numero}`} retour="documents" />
         {nouveau && <p role="status" className="mb-2 rounded-lg border border-green-300 bg-green-50 p-3 text-green-900">✓ Document {nouveau} validé. Vous pouvez l&apos;imprimer ou le partager.</p>}
         {piece.etat === "en_attente" && <p className="rounded-lg border border-amber-300 bg-amber-50 p-2 text-amber-900">En attente d&apos;envoi au bureau (partira au retour du réseau).</p>}
+        {piece.typePiece === "commande" && piece.etat === "synchronisee" && (
+          <p className="rounded-lg border border-sky-300 bg-sky-50 p-2 text-sky-900">
+            {piece.resteALivrer === false ? "Commande livrée." : piece.livraisonEstimee ? `Livraison estimée : ${dateCourte(piece.livraisonEstimee)}.` : "Date de livraison à fixer par l'usine."}
+          </p>
+        )}
         {piece.etat === "rejetee" && <p role="alert" className="rounded-lg border border-red-300 bg-red-50 p-2 text-red-900">Refusé par le bureau : {piece.erreur}. Ne remettez pas ce document au client ; contactez votre responsable.</p>}
         <div className="mt-2 grid grid-cols-2 gap-2">
           <button type="button" onClick={() => window.print()} className="min-h-12 rounded-2xl bg-papel-700 font-bold text-white">Imprimer / PDF</button>
@@ -310,10 +320,10 @@ export function VueDocument({ id, nouveau }: { id: string; nouveau?: string | nu
   );
 }
 
-/** Mes ventes : devis et factures regroupés par jour, avec le total et l'état d'envoi. */
+/** Mes ventes : devis, commandes et factures regroupés par jour, avec le total et l'état d'envoi. */
 export function VueDocuments() {
   const { base, aller } = useTerrain();
-  const [type, setType] = useState<"tous" | "facture" | "devis">("tous");
+  const [type, setType] = useState<"tous" | "facture" | "commande" | "devis">("tous");
   const donnees = useLiveQuery(async () => ({
     pieces: (await base.pieces.toArray()).sort((a, b) => b.numero.localeCompare(a.numero)),
     clients: await base.clients.toArray(),
@@ -339,10 +349,10 @@ export function VueDocuments() {
           </ul>
         </div>
       )}
-      <div className="grid grid-cols-3 gap-1 rounded-2xl bg-gray-200 p-1" role="group" aria-label="Type">
-        {(["tous", "facture", "devis"] as const).map((t) => (
+      <div className="grid grid-cols-4 gap-1 rounded-2xl bg-gray-200 p-1" role="group" aria-label="Type">
+        {(["tous", "facture", "commande", "devis"] as const).map((t) => (
           <button key={t} type="button" aria-pressed={type === t} onClick={() => setType(t)} className={`min-h-10 rounded-xl text-sm font-bold ${type === t ? "bg-white text-papel-800 shadow" : "text-gray-600"}`}>
-            {t === "tous" ? "Tout" : t === "facture" ? "Factures" : "Devis"}
+            {t === "tous" ? "Tout" : PIECES[t].pluriel}
           </button>
         ))}
       </div>
@@ -359,12 +369,15 @@ export function VueDocuments() {
               {duJour.map((p) => (
                 <li key={p.id}>
                   <button type="button" onClick={() => aller(`document/${p.id}`)} className="flex min-h-16 w-full items-center gap-3 px-3 py-2 text-left active:bg-gray-50">
-                    <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${p.typePiece === "facture" ? "bg-papel-100 text-papel-800" : "bg-gray-100 text-gray-700"}`}>
-                      {p.typePiece === "facture" ? "FA" : "DEV"}
+                    <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${p.typePiece === "facture" ? "bg-papel-100 text-papel-800" : p.typePiece === "commande" ? "bg-sky-100 text-sky-800" : "bg-gray-100 text-gray-700"}`}>
+                      {PIECES[p.typePiece].court}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-semibold">{nomClient(p.clientId)}</span>
                       <span className="block font-mono text-xs text-gray-500">{p.numero}</span>
+                      {p.typePiece === "commande" && p.etat === "synchronisee" && p.resteALivrer !== false && (
+                        <span className="block text-xs font-semibold text-sky-800">{p.livraisonEstimee ? `Livraison estimée : ${dateCourte(p.livraisonEstimee)}` : "Livraison à planifier"}</span>
+                      )}
                     </span>
                     <span className="shrink-0 text-right">
                       <span className="block font-bold">{gnf(p.totalTtcGnf)}</span>

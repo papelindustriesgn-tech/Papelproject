@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { joursDeLaPeriode, libelleMois, listeMois, resoudrePeriode, serieRegroupee } from "./periode";
+import { joursDeLaPeriode, libelleMois, listeAnnees, listeMois, listeSemaines, resoudrePeriode, serieRegroupee } from "./periode";
 
 describe("périodes d'analyse", () => {
   const auj = "2026-10-02";
@@ -58,5 +58,28 @@ describe("périodes d'analyse", () => {
       { valeur: "2025-12", libelle: "Déc. 2025" },
     ]);
     expect(libelleMois("2026-08")).toBe("Août 2026");
+  });
+  it("jour, semaine et année choisis dans le filtre de date", () => {
+    expect(resoudrePeriode("jour", auj, undefined, undefined, undefined, { jour: "2026-09-15" })).toMatchObject({ du: "2026-09-15", au: "2026-09-15", precedente: { du: "2026-09-14", au: "2026-09-14" } });
+    // Semaine passée : du lundi au dimanche, comparée à la semaine d'avant.
+    expect(resoudrePeriode("semaine", auj, undefined, undefined, undefined, { jour: "2026-09-16" })).toMatchObject({ du: "2026-09-14", au: "2026-09-20", nbJours: 7, precedente: { du: "2026-09-07", au: "2026-09-13" } });
+    // Année passée complète ; année en cours comparée aux mêmes jours de l'année précédente.
+    expect(resoudrePeriode("annee", auj, undefined, undefined, undefined, { annee: "2025" })).toMatchObject({ du: "2025-01-01", au: "2025-12-31", nbJours: 365, precedente: { du: "2024-01-01", au: "2024-12-31" } });
+    expect(resoudrePeriode("annee", auj).precedente).toEqual({ du: "2025-01-01", au: "2025-10-02" });
+    expect(resoudrePeriode("annee", "2028-02-29").precedente).toEqual({ du: "2027-01-01", au: "2027-02-28" });
+    // Jamais dans le futur.
+    expect(resoudrePeriode("jour", auj, undefined, undefined, undefined, { jour: "2027-01-01" }).du).toBe(auj);
+    expect(resoudrePeriode("annee", auj, undefined, undefined, undefined, { annee: "2030" }).du).toBe("2026-01-01");
+  });
+  it("listes des semaines et des années", () => {
+    expect(listeSemaines("2026-01-07", 3)).toEqual([
+      { valeur: "2026-01-05", libelle: "Cette semaine" },
+      { valeur: "2025-12-29", libelle: "Sem. du 29/12/25" },
+      { valeur: "2025-12-22", libelle: "Sem. du 22/12/25" },
+    ]);
+    expect(listeAnnees("2026-10-02")).toEqual([
+      { valeur: "2026", libelle: "2026" },
+      { valeur: "2025", libelle: "2025" },
+    ]);
   });
 });

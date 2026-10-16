@@ -2,11 +2,13 @@
  * Synchronisation de l'application terrain :
  * 1. envoi des photos en attente (Supabase Storage), puis
  * 2. envoi de la file d'opérations (RPC `synchroniser_terrain`, idempotente, par lots de 50),
- * 3. récupération des données à jour (référentiels, PVA, clients, visites, pièces, tournée, objectifs),
+ * 3. récupération des données à jour (référentiels, PVA, clients, visites, pièces, livraisons à confirmer,
+ *    date de livraison estimée des commandes, tournée, objectifs),
  * 4. réalignement des compteurs de numérotation.
  * Ne fait rien sans réseau ; relancée automatiquement au retour du réseau et périodiquement.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { estimerCoordination, type Brut } from "@/lib/coordination/estimer";
 import { prixEnVigueur } from "@/lib/metier/prix";
 import type { Database, Json } from "@/lib/supabase/types";
 import { ecrireMeta, lireMeta, mettreEnFile, type BaseTerrain, type PieceLocale } from "./base-locale";
@@ -66,6 +68,10 @@ async function envoyerOperations(base: BaseTerrain, supabase: Client): Promise<{
           await ecrireMeta(base, "pvaRefuses", [...refus, { nom: String(op.donnees.nom ?? ""), message, date: new Date().toISOString() }].slice(-10));
           await base.pva.delete(String(op.donnees.id));
           await base.operations.delete(op.id);
+        } else if (op.type === "confirmation") {
+          // Confirmation refusée (ex. livraison pas encore remise) : on la retire et la livraison redevient à confirmer.
+          await base.livraisons.update(String(op.donnees.livraison_id), { enAttente: false, confirmation: null });
+          await base.operations.delete(op.id);
         } else {
           await base.operations.update(op.id, { essais: op.essais + 1, erreur: message });
         }
@@ -92,12 +98,22 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
     supabase.from("clients").select("id, code, nom, type_client_id, condition_paiement, plafond_credit_gnf, responsable, telephone, adresse, quartier_id").eq("commercial_id", utilisateurId).eq("actif", true),
     supabase.from("soldes_clients").select("client_id, encours_gnf"),
     supabase.from("visites_carte").select("*").eq("commercial_id", utilisateurId).gte("checkin_at", il_y_a_45j),
-    supabase.from("pieces_vente").select("id, type_piece, numero, client_id, date_piece, statut, total_ht_gnf, total_tva_gnf, total_ttc_gnf, tva_taux, notes, lignes_piece(conditionnement_id, quantite_colis, paquets_vrac, paquets, prix_paquet_gnf, montant_ht_gnf)").eq("commercial_id", utilisateurId).in("type_piece", ["devis", "facture"]).eq("statut", "valide").gte("date_piece", il_y_a_90j),
+    supabase.from("pieces_vente").select("id, type_piece, numero, client_id, date_piece, statut, total_ht_gnf, total_tva_gnf, total_ttc_gnf, tva_taux, notes, lignes_piece(conditionnement_id, quantite_colis, paquets_vrac, paquets, prix_paquet_gnf, montant_ht_gnf)").eq("commercial_id", utilisateurId).in("type_piece", ["devis", "commande", "facture"]).eq("statut", "valide").gte("date_piece", il_y_a_90j),
     supabase.from("tournees").select("date_tournee, tournee_etapes(pva_id, ordre)").eq("commercial_id", utilisateurId).eq("date_tournee", jour).maybeSingle(),
     supabase.from("objectifs_commerciaux").select("visites, nouveaux_pva, ca_ht_gnf, colis").eq("commercial_id", utilisateurId).eq("mois", `${jour.slice(0, 7)}-01`).maybeSingle(),
   ]);
   // Points de vente des collègues (pour prévenir un doublon dès la saisie, même hors ligne).
-  const collegues = await supabase.rpc("pva_des_collegues");
+  const [collegues, livraisons, coordination] = await Promise.all([
+    supabase.rpc("pva_des_collegues"),
+    supabase
+      .from("livraisons")
+      .select("id, numero, commande_id, statut_remise, remise_le, receptionnaire, commentaire_remise, confirmation, pieces_vente!livraisons_commande_id_fkey(numero, client_id)")
+      .eq("statut", "validee")
+      .gte("date_livraison", il_y_a_90j),
+    supabase.rpc("coordination_commandes"),
+  ]);
+  // Date de livraison estimée de chaque commande encore à livrer (même calcul que l'écran « Commandes clients »).
+  const estimees = new Map(coordination.error || !coordination.data ? [] : estimerCoordination(coordination.data as unknown as Brut).commandes.map((c) => [c.id, c.dateLivraison] as const));
   const erreur = [produits, conditionnements, grille, types, pva, clients, visites, pieces].find((r) => r.error);
   if (erreur?.error) throw new Error(erreur.error.message);
 
@@ -138,6 +154,20 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
     await ecrireMeta(base, "objectifs", objectifs.data ?? null);
   });
 
+  await base.transaction("rw", [base.livraisons], async () => {
+    if (livraisons.error) return;
+    // Les confirmations saisies sur le téléphone et pas encore envoyées gardent leur version locale.
+    const locales = new Set((await base.livraisons.toArray()).filter((l) => l.enAttente).map((l) => l.id));
+    await base.livraisons.filter((l) => !l.enAttente).delete();
+    await base.livraisons.bulkPut(
+      (livraisons.data ?? []).filter((l) => !locales.has(l.id)).map((l) => ({
+        id: l.id, numero: l.numero ?? "", commandeId: l.commande_id, commandeNumero: l.pieces_vente?.numero ?? "", clientId: l.pieces_vente?.client_id ?? "",
+        statutRemise: l.statut_remise, remiseLe: l.remise_le, receptionnaire: l.receptionnaire, commentaire: l.commentaire_remise,
+        confirmation: (l.confirmation as "conforme" | "probleme" | null) ?? null, enAttente: false,
+      })),
+    );
+  });
+
   await base.transaction("rw", [base.pva, base.clients, base.visites, base.pieces], async () => {
     const pvaServeur = (pva.data ?? []).filter((x) => !enAttente.has(x.id!));
     await base.pva.filter((x) => !x.enAttente).delete();
@@ -173,6 +203,7 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
       id: p.id, typePiece: p.type_piece as "devis" | "facture", numero: p.numero ?? "", clientId: p.client_id, datePiece: p.date_piece,
       lignes: p.lignes_piece.map((l) => ({ conditionnementId: l.conditionnement_id, quantiteColis: l.quantite_colis, paquetsVrac: l.paquets_vrac, paquets: l.paquets, prixPaquetGnf: l.prix_paquet_gnf, montantHtGnf: l.montant_ht_gnf })),
       totalHtGnf: p.total_ht_gnf, tvaGnf: p.total_tva_gnf, totalTtcGnf: p.total_ttc_gnf, tauxTva: Number(p.tva_taux), notes: p.notes, etat: "synchronisee",
+      ...(p.type_piece === "commande" && !coordination.error ? { resteALivrer: estimees.has(p.id), livraisonEstimee: estimees.get(p.id) ?? null } : {}),
     }));
     await base.pieces.filter((p) => p.etat === "synchronisee").delete();
     await base.pieces.bulkPut(piecesServeur);
@@ -184,7 +215,7 @@ async function realignerCompteurs(base: BaseTerrain, supabase: Client): Promise<
   const profil = await lireMeta<{ codeSerie: string | null }>(base, "profil", { codeSerie: null });
   if (!profil.codeSerie) return;
   const annee = Number(aujourdhui().slice(0, 4));
-  for (const type of ["devis", "facture"] as const) {
+  for (const type of ["devis", "commande", "facture"] as const) {
     const prefixe = prefixeSerie(type, annee, profil.codeSerie);
     const { data } = await supabase.rpc("dernier_numero_terrain", { p_prefixe: prefixe });
     const cle = `compteur:${prefixe}`;

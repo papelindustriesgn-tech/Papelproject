@@ -180,3 +180,13 @@ export const numeroInternational = (tel: string) => {
   const chiffres = tel.replace(/[^\d+]/g, "");
   return chiffres.startsWith("+") ? chiffres : `+224${chiffres}`;
 };
+
+/** Libellés d'un type de pièce faite sur le téléphone. */
+export const PIECES: Record<"devis" | "commande" | "facture", { court: string; nom: string; pluriel: string; le: string; titre: string; nouveau: string }> = {
+  facture: { court: "FA", nom: "Facture", pluriel: "Factures", le: "la facture", titre: "FACTURE", nouveau: "Nouvelle facture" },
+  commande: { court: "CMD", nom: "Commande", pluriel: "Commandes", le: "la commande", titre: "BON DE COMMANDE", nouveau: "Nouvelle commande" },
+  devis: { court: "DEV", nom: "Devis", pluriel: "Devis", le: "le devis", titre: "DEVIS", nouveau: "Nouveau devis" },
+};
+
+/** Date courte lisible (« lun. 12 oct. »). */
+export const dateCourte = (iso: string) => new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(`${iso}T00:00:00Z`));

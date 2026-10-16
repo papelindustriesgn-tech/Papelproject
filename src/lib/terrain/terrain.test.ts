@@ -38,6 +38,7 @@ describe("numérotation hors ligne", () => {
   it("série du commercial", () => {
     expect(formaterNumero(prefixeSerie("facture", 2026, "C01"), 12)).toBe("FA-2026-C01-00012");
     expect(formaterNumero(prefixeSerie("devis", 2026, "C03"), 1)).toBe("DEV-2026-C03-00001");
+    expect(formaterNumero(prefixeSerie("commande", 2026, "C02"), 7)).toBe("CMD-2026-C02-00007");
   });
   it("le compteur ne recule jamais (téléphone réinstallé)", () => {
     expect(prochainCompteur(0, 41)).toBe(42);

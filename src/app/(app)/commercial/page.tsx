@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { lireSeuils } from "@/lib/parametres";
-import { RaccourcisAppli, UrgencesAppli } from "@/components/coque/entree-appli";
-import { lireParam } from "@/components/donnees/filtres";
+import { RaccourcisAppli } from "@/components/coque/entree-appli";
+import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { CarteDynamique } from "@/components/carte/carte-dynamique";
 import { COULEURS_SERIES } from "@/lib/graphiques/couleurs";
@@ -9,8 +9,7 @@ import { Carte as CarteUi, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { chargerIndicateursCommerciaux } from "@/lib/commercial/indicateurs";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
-import { lireFiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
-import { resoudrePeriode } from "@/lib/formulaires/periode";
+import { lireFiltresAnalyse, lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { pct } from "@/lib/production/affichage";
 import { gnf, nombre } from "@/lib/stocks/libelles";
@@ -20,7 +19,7 @@ export const metadata: Metadata = { title: "Équipe commerciale" };
 
 export default async function TableauDeBordCommercial({ searchParams }: PageProps<"/commercial">) {
   const sp = await searchParams;
-  const periode = resoudrePeriode(lireParam(sp, "periode") ?? "7j", aujourdhui(), lireParam(sp, "du"), lireParam(sp, "au"), lireParam(sp, "mois"));
+  const periode = lirePeriode(sp, aujourdhui(), "semaine");
   const filtres = lireFiltresAnalyse(sp);
   const supabase = await clientServeur();
   let requetePva = supabase.from("pva_carte").select("id, nom, commercial_id, commercial_nom, type_libelle, latitude, longitude, derniere_visite, derniere_rupture").eq("actif", true);
@@ -49,7 +48,6 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
   return (
     <>
       <TitrePage titre="Équipe commerciale" sousTitre={`Du ${formaterDate(periode.du)} au ${formaterDate(periode.au)}${filtresTexte ? ` · ${filtresTexte}` : ""}`} />
-      <UrgencesAppli espace="commercial" />
       <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} commerciaux={options.commerciaux} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/commercial/visites" libelle="Visites" valeur={nombre(ind.visites)} detail={`${nombre(ind.visitesParJour, 1)} par jour · ${ind.horsZone} hors zone`} ton={ind.visites && ind.horsZone / ind.visites > seuils.alerte_taux_hors_zone ? "alerte" : "normal"} />
@@ -57,6 +55,13 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
         <Indicateur lien="/commercial/portefeuilles" libelle="Points de vente" valeur={nombre(ind.pvaActifs)} detail={`${ind.nouveauxPva} nouveau(x) sur la période`} />
         <Indicateur lien="/commercial/portefeuilles" libelle="Couverture géographique" valeur={`${ind.quartiersCouverts} / ${ind.quartiersTotal} quartiers`} detail={`${ind.communesCouvertes} commune(s) couverte(s)`} />
       </div>
+      <CarteObjectifs
+        espace="commercial"
+        du={periode.du}
+        au={periode.au}
+        filtre={!!(filtres.produit || filtres.commercial)}
+        reels={{ visites: ind.visites, nouveaux_pva: ind.nouveauxPva, taux_rupture: ind.tauxRupture, quartiers_couverts: ind.quartiersCouverts }}
+      />
       <RaccourcisAppli espace="commercial" />
       <CarteUi titre="Carte des points de vente" className="mb-4">
         <CarteDynamique points={points} hauteur={420} />
