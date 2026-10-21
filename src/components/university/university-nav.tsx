@@ -2,7 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CreditCard, FileSpreadsheet, GraduationCap, Inbox, LayoutDashboard, Landmark, Megaphone } from "lucide-react";
+import {
+  CreditCard,
+  FileSpreadsheet,
+  GraduationCap,
+  History,
+  Inbox,
+  LayoutDashboard,
+  Landmark,
+  Megaphone,
+  Users,
+} from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const ALL = [
@@ -13,17 +23,19 @@ const ALL = [
   { href: "/universite/imports", label: "Listes d'étudiants", short: "Listes", icon: FileSpreadsheet },
   { href: "/universite/carte", label: "Carte de l'université", short: "Carte", icon: CreditCard },
   { href: "/universite/etablissement", label: "Établissement & connexion", short: "Fiche", icon: Landmark },
+  { href: "/universite/equipe", label: "Équipe & droits", short: "Équipe", icon: Users },
+  { href: "/universite/historique", label: "Historique", short: "Historique", icon: History },
 ];
 
 const isActive = (pathname: string, href: string) =>
   href === "/universite" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
-export function UniversitySidebar({ pending }: { pending: number }) {
+export function UniversitySidebar({ pending, allowed }: { pending: number; allowed: string[] }) {
   const pathname = usePathname();
   return (
     <nav aria-label="Portail université">
       <ul className="space-y-1">
-        {ALL.map(({ href, label, icon: Icon }) => {
+        {ALL.filter((i) => allowed.includes(i.href)).map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
             <li key={href}>
@@ -49,18 +61,17 @@ export function UniversitySidebar({ pending }: { pending: number }) {
   );
 }
 
-// Mobile : Accueil, Demandes, Étudiants, Annonces, Listes (carte et fiche depuis le tableau de bord)
-const MOBILE = [ALL[0], ALL[1], ALL[2], ALL[3], ALL[4]];
-
-export function UniversityBottomNav({ pending }: { pending: number }) {
+// Mobile : jusqu'à 5 rubriques autorisées pour le rôle (les autres depuis le tableau de bord ou le menu)
+export function UniversityBottomNav({ pending, allowed }: { pending: number; allowed: string[] }) {
   const pathname = usePathname();
+  const items = ALL.filter((i) => allowed.includes(i.href)).slice(0, 5);
   return (
     <nav
       aria-label="Navigation université"
       className="pb-safe border-line/80 fixed inset-x-0 bottom-0 z-40 border-t bg-white/95 backdrop-blur-lg lg:hidden"
     >
-      <ul className="mx-auto grid h-16 max-w-lg grid-cols-5">
-        {MOBILE.map(({ href, short, icon: Icon }) => {
+      <ul className="mx-auto grid h-16 max-w-lg" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
+        {items.map(({ href, short, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
             <li key={href}>

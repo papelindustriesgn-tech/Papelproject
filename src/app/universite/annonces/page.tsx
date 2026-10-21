@@ -1,5 +1,6 @@
 import { Megaphone } from "lucide-react";
-import { requireUniversity } from "@/lib/university";
+import { requireUniversity, universityCan } from "@/lib/university";
+import { RestrictedNotice } from "@/components/university/restricted-notice";
 import { createClient } from "@/lib/supabase/server";
 import { timeAgo } from "@/lib/format";
 import { AnnouncementForm } from "./announcement-form";
@@ -8,6 +9,7 @@ export const metadata = { title: "Annonces aux étudiants" };
 
 export default async function AnnouncementsPage() {
   const { university } = await requireUniversity();
+  if (!universityCan(university, "announce")) return <RestrictedNotice university={university} title="Annonces aux étudiants" />;
   const supabase = await createClient();
   const [{ data: uni }, { data: history }, { data: reach }] = await Promise.all([
     supabase.from("universities").select("faculties").eq("id", university.id).single(),

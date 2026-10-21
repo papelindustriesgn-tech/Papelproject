@@ -17,11 +17,13 @@ export default async function PartnerLayout({ children }: { children: React.Reac
   return (
     <div className="flex min-h-dvh">
       <aside className="border-line sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r bg-white px-4 py-6 lg:flex">
-        <Link href="/partenaire" className="mb-2 px-2">
+        <Link href={partner.role === "cashier" ? "/partenaire/scanner" : "/partenaire"} className="mb-2 px-2">
           <Logo />
         </Link>
-        <p className="text-brand-700 mb-6 px-2 text-xs font-bold tracking-wide uppercase">Espace partenaire</p>
-        <PartnerSidebar />
+        <p className="text-brand-700 mb-6 px-2 text-xs font-bold tracking-wide uppercase">
+          {partner.role === "cashier" ? "Caisse partenaire" : "Espace partenaire"}
+        </p>
+        <PartnerSidebar cashier={partner.role === "cashier"} />
         <div className="mt-auto space-y-2 px-1">
           {profile.role !== "partner" && (
             <Link href="/accueil" className="text-muted hover:text-ink block px-2 text-sm font-semibold">
@@ -38,7 +40,11 @@ export default async function PartnerLayout({ children }: { children: React.Reac
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="border-line sticky top-0 z-30 border-b bg-white/90 backdrop-blur">
           <div className="mx-auto flex h-14 max-w-5xl items-center gap-3 px-4">
-            <Link href="/partenaire" className="lg:hidden" aria-label="Accueil partenaire">
+            <Link
+              href={partner.role === "cashier" ? "/partenaire/scanner" : "/partenaire"}
+              className="lg:hidden"
+              aria-label="Accueil partenaire"
+            >
               <Logo className="[&_span]:text-xl [&_svg]:size-7" />
             </Link>
             <PartnerSwitcher partners={partners.map((p) => ({ id: p.id, name: p.name }))} current={partner.id} />
@@ -52,7 +58,7 @@ export default async function PartnerLayout({ children }: { children: React.Reac
         </header>
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-28 lg:pb-12">{children}</main>
       </div>
-      <PartnerBottomNav />
+      <PartnerBottomNav cashier={partner.role === "cashier"} />
     </div>
   );
 }

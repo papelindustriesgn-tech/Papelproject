@@ -8,7 +8,7 @@ import { CustomerList, type Customer } from "./customer-list";
 export const metadata = { title: "Fidélité & clients" };
 
 export default async function LoyaltyPage() {
-  const { partner } = await requirePartner();
+  const { partner } = await requirePartner({ manager: true });
   const supabase = await createClient();
   const [{ data: program }, { data: customers }] = await Promise.all([
     supabase.from("loyalty_programs").select("stamps_required, reward, is_active").eq("partner_id", partner.id).maybeSingle(),

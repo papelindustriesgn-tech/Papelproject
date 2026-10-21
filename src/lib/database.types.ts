@@ -1089,16 +1089,19 @@ export type Database = {
         Row: {
           created_at: string;
           partner_id: string;
+          role: string;
           user_id: string;
         };
         Insert: {
           created_at?: string;
           partner_id: string;
+          role?: string;
           user_id: string;
         };
         Update: {
           created_at?: string;
           partner_id?: string;
+          role?: string;
           user_id?: string;
         };
         Relationships: [
@@ -2252,20 +2255,33 @@ export type Database = {
       university_members: {
         Row: {
           created_at: string;
+          invited_by: string | null;
+          role: string;
           university_id: number;
           user_id: string;
         };
         Insert: {
           created_at?: string;
+          invited_by?: string | null;
+          role?: string;
           university_id: number;
           user_id: string;
         };
         Update: {
           created_at?: string;
+          invited_by?: string | null;
+          role?: string;
           university_id?: number;
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "university_members_invited_by_fkey";
+            columns: ["invited_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "university_members_university_id_fkey";
             columns: ["university_id"];
@@ -2417,13 +2433,16 @@ export type Database = {
       expire_enrollments: { Args: Record<PropertyKey, never>; Returns: number };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_approved: { Args: Record<PropertyKey, never>; Returns: boolean };
+      is_partner_manager: { Args: { p_partner: string }; Returns: boolean };
       is_partner_member: { Args: { p_partner: string }; Returns: boolean };
       is_university_member: { Args: { p_university: number }; Returns: boolean };
+      is_university_workspace_member: { Args: { p_university: number }; Returns: boolean };
       loyalty_add_visit: { Args: { p_amount: number; p_partner: string; p_student: string }; Returns: Json };
       loyalty_status: { Args: { p_partner: string; p_student: string; p_unlocked?: boolean }; Returns: Json };
       new_promo_code: { Args: Record<PropertyKey, never>; Returns: string };
       next_uny_id: { Args: { p_country: string }; Returns: string };
       partner_gift_loyalty: { Args: { p_card: string; p_kind: string; p_partner: string }; Returns: Json };
+      partner_gift_loyalty_impl: { Args: { p_card: string; p_kind: string; p_partner: string }; Returns: Json };
       partner_job_applications: {
         Args: { p_job: string };
         Returns: {
@@ -2452,6 +2471,22 @@ export type Database = {
         Returns: Json;
       };
       partner_top_customers: {
+        Args: { p_limit?: number; p_partner: string };
+        Returns: {
+          avatar_url: string;
+          card_id: string;
+          first_name: string;
+          last_initial: string;
+          last_visit_at: string;
+          rewards_available: number;
+          rewards_used: number;
+          stamps: number;
+          total_spent_gnf: number;
+          total_visits: number;
+          uny_id: string;
+        }[];
+      };
+      partner_top_customers_impl: {
         Args: { p_limit?: number; p_partner: string };
         Returns: {
           avatar_url: string;
@@ -2564,6 +2599,47 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      set_enrollment_status_impl: {
+        Args: {
+          p_details?: Json;
+          p_enrollment: string;
+          p_method?: Database["public"]["Enums"]["verification_method"];
+          p_reason?: string;
+          p_source_ref?: string;
+          p_status: Database["public"]["Enums"]["enrollment_status"];
+        };
+        Returns: {
+          academic_year: string;
+          claimed_birth_date: string | null;
+          claimed_first_name: string;
+          claimed_last_name: string;
+          created_at: string;
+          decided_at: string | null;
+          decided_by: string | null;
+          department: string | null;
+          expires_at: string | null;
+          faculty: string | null;
+          id: string;
+          match_details: Json | null;
+          method: Database["public"]["Enums"]["verification_method"] | null;
+          program: string | null;
+          rejection_reason: string | null;
+          source_ref: string | null;
+          status: Database["public"]["Enums"]["enrollment_status"];
+          student_number: string;
+          student_number_norm: string | null;
+          study_level: string | null;
+          university_id: number;
+          updated_at: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "student_enrollments";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       slugify: { Args: { p: string }; Returns: string };
       submit_enrollment: {
         Args: {
@@ -2618,8 +2694,22 @@ export type Database = {
         Args: { p_audience: string; p_faculty?: string; p_level?: string; p_university: number };
         Returns: number;
       };
+      university_can: { Args: { p_action: string; p_university: number }; Returns: boolean };
       university_declared_count: { Args: { p_university: number }; Returns: Json };
       university_declared_students: {
+        Args: { p_university: number };
+        Returns: {
+          created_at: string;
+          enrollment_status: Database["public"]["Enums"]["enrollment_status"];
+          field_of_study: string;
+          first_name: string;
+          last_name: string;
+          study_level: string;
+          user_id: string;
+          verification_status: Database["public"]["Enums"]["verification_status"];
+        }[];
+      };
+      university_declared_students_impl: {
         Args: { p_university: number };
         Returns: {
           created_at: string;
@@ -2665,12 +2755,51 @@ export type Database = {
           user_id: string;
         }[];
       };
+      university_enrollments_impl: {
+        Args: {
+          p_limit?: number;
+          p_offset?: number;
+          p_search?: string;
+          p_status?: Database["public"]["Enums"]["enrollment_status"][];
+          p_university: number;
+        };
+        Returns: {
+          academic_year: string;
+          avatar_url: string;
+          birth_date: string;
+          card_status: Database["public"]["Enums"]["card_status"];
+          created_at: string;
+          decided_at: string;
+          department: string;
+          expires_at: string;
+          faculty: string;
+          first_name: string;
+          id: string;
+          last_name: string;
+          match_details: Json;
+          method: Database["public"]["Enums"]["verification_method"];
+          program: string;
+          rejection_reason: string;
+          status: Database["public"]["Enums"]["enrollment_status"];
+          student_number: string;
+          study_level: string;
+          total: number;
+          uny_id: string;
+          user_id: string;
+        }[];
+      };
       university_invite_declared: { Args: { p_university: number }; Returns: number };
+      university_invite_declared_impl: { Args: { p_university: number }; Returns: number };
       university_send_announcement: {
         Args: { p_audience: string; p_body: string; p_faculty?: string; p_level?: string; p_title: string; p_university: number };
         Returns: number;
       };
+      university_send_announcement_impl: {
+        Args: { p_audience: string; p_body: string; p_faculty?: string; p_level?: string; p_title: string; p_university: number };
+        Returns: number;
+      };
       university_stats: { Args: { p_university: number }; Returns: Json };
+      university_workspace_role: { Args: { p_university: number }; Returns: string };
       verify_card: {
         Args: { p_token: string };
         Returns: {
@@ -2708,7 +2837,7 @@ export type Database = {
       card_status: "active" | "revoked" | "expired";
       deal_category: "restauration" | "shopping" | "transport" | "sport" | "sante" | "tech" | "formation" | "loisirs";
       document_type: "student_card" | "enrollment_certificate" | "registration_certificate" | "other";
-      enrollment_status: "pending" | "verified" | "rejected" | "expired" | "manual_review";
+      enrollment_status: "pending" | "verified" | "rejected" | "expired" | "manual_review" | "incomplete";
       housing_type: "studio" | "chambre" | "colocation" | "appartement";
       item_condition: "neuf" | "comme_neuf" | "bon_etat" | "usage";
       job_type: "job" | "stage" | "alternance" | "freelance" | "benevolat" | "concours" | "bourse" | "formation";
@@ -2832,7 +2961,7 @@ export const Constants = {
       card_status: ["active", "revoked", "expired"],
       deal_category: ["restauration", "shopping", "transport", "sport", "sante", "tech", "formation", "loisirs"],
       document_type: ["student_card", "enrollment_certificate", "registration_certificate", "other"],
-      enrollment_status: ["pending", "verified", "rejected", "expired", "manual_review"],
+      enrollment_status: ["pending", "verified", "rejected", "expired", "manual_review", "incomplete"],
       housing_type: ["studio", "chambre", "colocation", "appartement"],
       item_condition: ["neuf", "comme_neuf", "bon_etat", "usage"],
       job_type: ["job", "stage", "alternance", "freelance", "benevolat", "concours", "bourse", "formation"],

@@ -18,7 +18,7 @@ const OUTCOME: Record<string, { label: string; tone: string }> = {
 };
 
 export default async function PartnerHome() {
-  const { profile, partner } = await requirePartner();
+  const { profile, partner } = await requirePartner({ manager: true });
   const supabase = await createClient();
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);

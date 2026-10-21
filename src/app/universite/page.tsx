@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, FileSpreadsheet, Inbox } from "lucide-react";
+import { ArrowRight, CalendarClock, FileSpreadsheet, Inbox, PenLine } from "lucide-react";
 import { StatCard } from "@/components/admin/stat-card";
 import { FormMessage } from "@/components/ui/field";
 import { createClient } from "@/lib/supabase/server";
-import { requireUniversity } from "@/lib/university";
+import { requireUniversity, universityCan } from "@/lib/university";
 import { DeclaredStudents } from "@/components/university/declared-students";
-import { formatDate } from "@/lib/format";
+import { formatDate, isoDateInDays } from "@/lib/format";
 import { param, type SearchParams } from "@/lib/url";
 
 export const metadata = { title: "Tableau de bord" };
@@ -29,13 +29,65 @@ export default async function UniversityHome({ searchParams }: { searchParams: P
   const sp = await searchParams;
   const { profile, university } = await requireUniversity();
   const supabase = await createClient();
-  const [{ data }, { data: declared }, { data: branding }] = await Promise.all([
-    supabase.rpc("university_stats", { p_university: university.id }),
-    supabase.rpc("university_declared_count", { p_university: university.id }),
-    supabase.from("university_branding").select("university_id").eq("university_id", university.id).maybeSingle(),
-  ]);
-  const s = data as Stats;
+  const in30 = isoDateInDays(30);
+  const [{ data }, { data: declared }, { data: branding }, { count: incompleteCount }, { count: renewCount }] = await Promise.all(
+    [
+      supabase.rpc("university_stats", { p_university: university.id }),
+      supabase.rpc("university_declared_count", { p_university: university.id }),
+      supabase.from("university_branding").select("university_id").eq("university_id", university.id).maybeSingle(),
+      supabase
+        .from("student_enrollments")
+        .select("id", { count: "exact", head: true })
+        .eq("university_id", university.id)
+        .eq("status", "incomplete"),
+      supabase
+        .from("student_enrollments")
+        .select("id", { count: "exact", head: true })
+        .eq("university_id", university.id)
+        .eq("status", "verified")
+        .lte("expires_at", in30),
+    ],
+  );
+  // Établissement en attente : aucune donnée d'étudiant, seulement des totaux à zéro
+  const s: Stats = (data as Stats | null) ?? {
+    academic_year: "",
+    pending: 0,
+    manual_review: 0,
+    verified: 0,
+    rejected: 0,
+    expired: 0,
+    auto_verified: 0,
+    cards_active: 0,
+    card_uses_30d: 0,
+    roster_size: 0,
+    last_import_at: null,
+    by_faculty: [],
+  };
   const toReview = s.pending + s.manual_review;
+  const canRead = universityCan(university, "read");
+  const actions = [
+    {
+      href: "/universite/demandes",
+      icon: Inbox,
+      count: toReview,
+      label: "Dossiers à vérifier",
+      hint: "Confirmer, refuser ou demander un complément",
+    },
+    {
+      href: "/universite/etudiants?statut=a-completer",
+      icon: PenLine,
+      count: incompleteCount ?? 0,
+      label: "Pièces ou infos manquantes",
+      hint: "En attente de correction par l'étudiant",
+    },
+    {
+      href: "/universite/etudiants?statut=a-renouveler",
+      icon: CalendarClock,
+      count: renewCount ?? 0,
+      label: "Cartes à renouveler",
+      hint: "Expirent dans les 30 jours",
+    },
+  ];
   const declaredCount = (declared ?? { total: 0, without_request: 0 }) as { total: number; without_request: number };
 
   return (
@@ -43,7 +95,8 @@ export default async function UniversityHome({ searchParams }: { searchParams: P
       <section>
         <h1 className="text-2xl font-extrabold tracking-tight md:text-3xl">Bonjour {profile.first_name} 👋</h1>
         <p className="text-muted mt-1 text-sm">
-          {university.name} · année {s.academic_year}
+          {university.name}
+          {s.academic_year && <> · année {s.academic_year}</>}
         </p>
       </section>
 
@@ -63,21 +116,30 @@ export default async function UniversityHome({ searchParams }: { searchParams: P
         </Link>
       )}
 
-      <Link
-        href="/universite/demandes"
-        className="bg-brand-600 uny-pattern flex items-center gap-4 rounded-[var(--radius-card)] p-5 text-white shadow-[var(--shadow-float)]"
-      >
-        <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white/15">
-          <Inbox className="size-8" aria-hidden />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-lg font-extrabold">
-            {toReview} demande{toReview > 1 ? "s" : ""} à traiter
-          </span>
-          <span className="text-brand-100 block text-sm">Confirmez ou refusez les inscriptions déclarées par vos étudiants.</span>
-        </span>
-        <ArrowRight className="size-6 shrink-0" aria-hidden />
-      </Link>
+      {canRead && (
+        <section aria-label="À faire" className="grid gap-3 sm:grid-cols-3">
+          {actions.map(({ href, icon: Icon, count, label, hint }, i) => (
+            <Link
+              key={href}
+              href={href}
+              className={
+                i === 0 && count > 0
+                  ? "bg-brand-600 flex items-center gap-3 rounded-[var(--radius-card)] p-4 text-white shadow-[var(--shadow-float)]"
+                  : "hover:ring-brand-200 flex items-center gap-3 rounded-[var(--radius-card)] bg-white p-4 shadow-[var(--shadow-card)] ring-1 ring-transparent"
+              }
+              data-testid="university-action"
+            >
+              <Icon className="size-7 shrink-0" aria-hidden />
+              <span className="min-w-0 flex-1">
+                <span className="block text-2xl font-extrabold tabular-nums">{count}</span>
+                <span className="block text-sm font-bold">{label}</span>
+                <span className={i === 0 && count > 0 ? "block text-xs text-white/80" : "text-muted block text-xs"}>{hint}</span>
+              </span>
+              <ArrowRight className="size-5 shrink-0" aria-hidden />
+            </Link>
+          ))}
+        </section>
+      )}
 
       {param(sp, "bienvenue") && (
         <FormMessage type="success">
@@ -90,7 +152,7 @@ export default async function UniversityHome({ searchParams }: { searchParams: P
         <DeclaredStudents
           total={declaredCount.total}
           withoutRequest={declaredCount.without_request}
-          canInvite={university.partner_status === "partner" || !!university.preview}
+          canInvite={universityCan(university, "announce")}
         />
       )}
 

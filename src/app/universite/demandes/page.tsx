@@ -2,12 +2,14 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FormMessage } from "@/components/ui/field";
 import { EnrollmentItem, type EnrollmentRow } from "@/components/university/enrollment-item";
 import { createClient } from "@/lib/supabase/server";
-import { requireUniversity } from "@/lib/university";
+import { requireUniversity, universityCan } from "@/lib/university";
+import { RestrictedNotice } from "@/components/university/restricted-notice";
 
 export const metadata = { title: "Demandes à traiter" };
 
 export default async function RequestsPage() {
   const { university } = await requireUniversity();
+  if (!universityCan(university, "read")) return <RestrictedNotice university={university} title="Demandes à traiter" />;
   const supabase = await createClient();
   const { data } = await supabase.rpc("university_enrollments", {
     p_university: university.id,
@@ -15,7 +17,7 @@ export default async function RequestsPage() {
     p_limit: 100,
   });
   const rows = (data ?? []) as EnrollmentRow[];
-  const canDecide = university.partner_status === "partner";
+  const canDecide = universityCan(university, "decide");
 
   return (
     <div className="animate-fade-up space-y-5">
@@ -28,7 +30,8 @@ export default async function RequestsPage() {
       </div>
       {!canDecide && (
         <FormMessage type="info">
-          Les décisions seront possibles dès l&apos;approbation de l&apos;établissement par Uny.
+          Votre rôle permet de consulter ces demandes ; les décisions sont réservées aux rôles « Administrateur » et « Validation
+          ».
         </FormMessage>
       )}
       {rows.length === 0 ? (

@@ -7,7 +7,7 @@ import { PartnerSurveyForm, type PartnerSurveyValues } from "./partner-survey-fo
 export const metadata = { title: "Vos attentes" };
 
 export default async function PartnerSurveyPage() {
-  const { partner } = await requirePartner();
+  const { partner } = await requirePartner({ manager: true });
   const supabase = await createClient();
   const { data: r } = await supabase.from("partner_survey_responses").select("*").eq("partner_id", partner.id).maybeSingle();
 

@@ -78,6 +78,15 @@ export default async function VerificationPage({ searchParams }: { searchParams:
               as accès à tous les avantages.
             </p>
           </div>
+        ) : current?.status === "incomplete" ? (
+          <div className="bg-mango-50 text-ink mt-4 flex items-start gap-3 rounded-2xl p-4 text-sm" role="status">
+            <Landmark className="size-6 shrink-0" aria-hidden />
+            <p>
+              <strong>{current.university?.name}</strong> te demande de compléter ta demande
+              {current.rejection_reason ? <> : « {current.rejection_reason} »</> : "."} Corrige ton matricule ou ton cursus
+              ci-dessous puis renvoie la demande.
+            </p>
+          </div>
         ) : enrollmentWaiting ? (
           <div className="bg-mango-50 text-mango-700 mt-4 flex items-start gap-3 rounded-2xl p-4 text-sm">
             <Landmark className="size-6 shrink-0" aria-hidden />

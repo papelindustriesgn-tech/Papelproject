@@ -47,10 +47,12 @@ export function EnrollmentItem({ e, canDecide }: { e: EnrollmentRow; canDecide: 
   const st = ENROLLMENT_STATUS[e.status];
   const decisions =
     e.status === "pending" || e.status === "manual_review"
-      ? (["verify", "reject"] as const)
+      ? (["verify", "incomplete", "reject"] as const)
       : e.status === "verified"
         ? (["expire", "revoke"] as const)
-        : (["reactivate"] as const);
+        : e.status === "incomplete"
+          ? ([] as const)
+          : (["reactivate"] as const);
   return (
     <li className="rounded-[var(--radius-card)] bg-white p-4 shadow-[var(--shadow-card)]" data-testid="enrollment">
       <div className="flex items-start gap-3">
@@ -98,8 +100,14 @@ export function EnrollmentItem({ e, canDecide }: { e: EnrollmentRow; canDecide: 
           {e.decided_at && <> · décision le {formatDate(e.decided_at)}</>}
           {e.expires_at && e.status === "verified" && <> · valable jusqu&apos;au {formatDate(e.expires_at)}</>}
         </p>
-        {e.rejection_reason && <p className="text-coral-600 text-sm">Motif : {e.rejection_reason}</p>}
-        {canDecide && <DecisionForm action={decideEnrollment.bind(null, e.id)} decisions={[...decisions]} />}
+        {e.rejection_reason && (
+          <p className="text-coral-600 text-sm">
+            {e.status === "incomplete" ? "À compléter" : "Motif"} : {e.rejection_reason}
+          </p>
+        )}
+        {canDecide && decisions.length > 0 && (
+          <DecisionForm action={decideEnrollment.bind(null, e.id)} decisions={[...decisions]} />
+        )}
       </div>
     </li>
   );

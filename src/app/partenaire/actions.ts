@@ -30,7 +30,7 @@ export async function savePartnerEntity(
 ): Promise<FormState> {
   if (!isPartnerKind(kind)) return { error: "Rubrique inconnue" };
   if (id && !z.uuid().safeParse(id).success) return { error: "Élément introuvable" };
-  const { partner } = await requirePartner();
+  const { partner } = await requirePartner({ manager: true });
   const cfg = PARTNER_ENTITIES[kind];
   const { row, fieldErrors } = parseFields(cfg.fields, formData, await getCities());
   if (Object.keys(fieldErrors).length)
@@ -87,7 +87,7 @@ export async function savePartnerEntity(
 
 export async function togglePartnerEntity(kind: PartnerKind, id: string, active: boolean) {
   if (!isPartnerKind(kind) || !z.uuid().safeParse(id).success) return;
-  const { partner } = await requirePartner();
+  const { partner } = await requirePartner({ manager: true });
   const supabase = await createClient();
   if (kind === "boutique") {
     await supabase
@@ -107,7 +107,7 @@ export async function togglePartnerEntity(kind: PartnerKind, id: string, active:
 
 export async function deletePartnerEntity(kind: PartnerKind, id: string) {
   if (!isPartnerKind(kind) || !z.uuid().safeParse(id).success) return;
-  const { partner } = await requirePartner();
+  const { partner } = await requirePartner({ manager: true });
   const supabase = await createClient();
   await supabase.from(PARTNER_ENTITIES[kind].table).delete().eq("id", id).eq("partner_id", partner.id);
   refresh(kind);
@@ -173,7 +173,7 @@ export async function validateCard(_prev: ValidateState, formData: FormData): Pr
 const PROFILE_FIELDS = ENTITIES.partenaires.fields.filter((f) => !["is_active", "is_demo"].includes(f.name));
 
 export async function updatePartnerProfile(_prev: FormState, formData: FormData): Promise<FormState> {
-  const { partner } = await requirePartner();
+  const { partner } = await requirePartner({ manager: true });
   const { row, fieldErrors } = parseFields(PROFILE_FIELDS, formData, await getCities());
   if (Object.keys(fieldErrors).length)
     return { error: "Vérifie les champs indiqués.", fieldErrors, values: formValues(formData) };
@@ -203,7 +203,9 @@ export async function switchPartner(id: string) {
 // -----------------------------------------------------------------------------
 export type PromoCheck = {
   found: boolean;
-  state?: "active" | "used" | "expired" | "cancelled" | "redeemed";
+  state?: "active" | "used" | "expired" | "cancelled" | "redeemed" | "blocked";
+  /** Pourquoi la réduction ne s'applique pas (état « blocked »). */
+  reason?: string | null;
   code?: string;
   deal_title?: string;
   discount_label?: string;

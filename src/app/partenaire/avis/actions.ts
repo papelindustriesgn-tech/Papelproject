@@ -19,7 +19,7 @@ const schema = z.object({
 });
 
 export async function submitPartnerSurvey(_prev: FormState, formData: FormData): Promise<FormState> {
-  const { profile, partner } = await requirePartner();
+  const { profile, partner } = await requirePartner({ manager: true });
   const str = (k: string) => {
     const v = formData.get(k);
     return typeof v === "string" && v !== "" ? v : undefined;

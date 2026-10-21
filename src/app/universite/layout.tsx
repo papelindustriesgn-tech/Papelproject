@@ -6,7 +6,7 @@ import { UniversityBottomNav, UniversitySidebar } from "@/components/university/
 import { UniversitySwitcher } from "@/components/university/university-switcher";
 import { MobileLogout } from "@/components/layout/mobile-logout";
 import { createClient } from "@/lib/supabase/server";
-import { requireUniversity } from "@/lib/university";
+import { requireUniversity, universityCan } from "@/lib/university";
 
 export const metadata: Metadata = {
   title: { default: "Portail université", template: "%s · Université · Uny" },
@@ -22,6 +22,18 @@ export default async function UniversityLayout({ children }: { children: React.R
     .eq("university_id", university.id)
     .in("status", ["pending", "manual_review"]);
   const pending = count ?? 0;
+  const can = (a: Parameters<typeof universityCan>[1]) => universityCan(university, a);
+  const allowed = [
+    "/universite",
+    can("read") && "/universite/demandes",
+    can("read") && "/universite/etudiants",
+    (can("announce") || university.partner_status === "pending") && "/universite/annonces",
+    can("prepare") && "/universite/imports",
+    can("prepare") && "/universite/carte",
+    can("prepare") && "/universite/etablissement",
+    can("manage") && "/universite/equipe",
+    can("audit") && "/universite/historique",
+  ].filter((h): h is string => !!h);
 
   return (
     <div className="flex min-h-dvh">
@@ -30,7 +42,7 @@ export default async function UniversityLayout({ children }: { children: React.R
           <Logo />
         </Link>
         <p className="text-brand-700 mb-6 px-2 text-xs font-bold tracking-wide uppercase">Portail université</p>
-        <UniversitySidebar pending={pending} />
+        <UniversitySidebar pending={pending} allowed={allowed} />
         <div className="mt-auto space-y-2 px-1">
           {profile.role !== "university" && (
             <Link
@@ -79,7 +91,7 @@ export default async function UniversityLayout({ children }: { children: React.R
         )}
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-28 lg:pb-12">{children}</main>
       </div>
-      <UniversityBottomNav pending={pending} />
+      <UniversityBottomNav pending={pending} allowed={allowed} />
     </div>
   );
 }

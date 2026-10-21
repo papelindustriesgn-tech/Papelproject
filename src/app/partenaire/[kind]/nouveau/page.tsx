@@ -11,7 +11,7 @@ export const metadata = { title: "Publier" };
 export default async function NewPartnerEntity({ params }: { params: Promise<{ kind: string }> }) {
   const { kind } = await params;
   if (!isPartnerKind(kind)) notFound();
-  const { profile, partner } = await requirePartner();
+  const { profile, partner } = await requirePartner({ manager: true });
   const cfg = PARTNER_ENTITIES[kind];
   const today = new Date().toISOString().slice(0, 10);
   return (

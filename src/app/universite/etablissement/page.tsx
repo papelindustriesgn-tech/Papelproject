@@ -2,7 +2,7 @@ import { Cable, FileSpreadsheet, MousePointerClick } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/server";
 import { getCities } from "@/lib/cities";
-import { requireUniversity } from "@/lib/university";
+import { AUDIT_ACTIONS as ACTIONS, requireUniversity } from "@/lib/university";
 import { formatDate } from "@/lib/format";
 import { ApiRequestForm, UniversityProfileForm } from "./forms";
 
@@ -14,21 +14,6 @@ const INTEGRATION_STATUS = {
   active: { label: "Active", tone: "mint" },
   disabled: { label: "Désactivée", tone: "coral" },
 } as const;
-
-const ACTIONS: Record<string, string> = {
-  "enrollment.verified": "Inscription confirmée",
-  "enrollment.rejected": "Inscription refusée / carte révoquée",
-  "enrollment.expired": "Carte expirée",
-  "enrollment.manual_review": "Demande à examiner",
-  "enrollment.submitted": "Nouvelle demande",
-  "roster.imported": "Liste importée",
-  "roster.deleted": "Liste supprimée",
-  "card_template.published": "Carte publiée",
-  "connector.verify": "Vérification par API",
-  "integration.requested": "Raccordement API demandé",
-  "integration.updated": "Connecteur modifié par Uny",
-  "integration.tested": "Connecteur testé",
-};
 
 export default async function EstablishmentPage() {
   const { university } = await requireUniversity();

@@ -57,3 +57,8 @@ export function whatsappLink(phone: string, text?: string) {
   const digits = phone.replace(/\D/g, "");
   return `https://wa.me/${digits}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
 }
+
+/** Date du jour + n jours, au format AAAA-MM-JJ (comparaison avec les dates d'expiration). */
+export function isoDateInDays(days: number) {
+  return new Date(Date.now() + days * 86400_000).toISOString().slice(0, 10);
+}

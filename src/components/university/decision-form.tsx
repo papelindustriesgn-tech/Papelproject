@@ -7,10 +7,11 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { Button } from "@/components/ui/button";
 import type { FormState } from "@/lib/actions/types";
 
-type Decision = "verify" | "reject" | "expire" | "revoke" | "reactivate";
+type Decision = "verify" | "incomplete" | "reject" | "expire" | "revoke" | "reactivate";
 
 const LABELS: Record<Decision, string> = {
   verify: "Confirmer l'inscription",
+  incomplete: "Demander un complément",
   reject: "Refuser",
   expire: "Expirer la carte",
   revoke: "Révoquer la carte",
@@ -42,11 +43,22 @@ export function DecisionForm({
             autoFocus
             aria-label="Motif"
             placeholder={
-              asking === "reject" ? "Motif du refus (ex. matricule inconnu pour 2026-2027)" : "Motif (visible par l'étudiant)"
+              asking === "reject"
+                ? "Motif du refus (ex. matricule inconnu pour 2026-2027)"
+                : asking === "incomplete"
+                  ? "Ce que l'étudiant doit corriger (ex. matricule incomplet)"
+                  : "Motif (visible par l'étudiant)"
             }
           />
           <div className="flex gap-2">
-            <SubmitButton name="decision" value={asking} variant="danger" size="sm" className="flex-1" pendingLabel="Envoi…">
+            <SubmitButton
+              name="decision"
+              value={asking}
+              variant={asking === "incomplete" ? "outline" : "danger"}
+              size="sm"
+              className="flex-1"
+              pendingLabel="Envoi…"
+            >
               {LABELS[asking]}
             </SubmitButton>
             <Button size="sm" variant="ghost" onClick={() => setAsking(null)}>
@@ -57,9 +69,9 @@ export function DecisionForm({
       ) : (
         <div className="flex flex-wrap gap-2">
           {decisions.map((d) =>
-            d === "reject" || d === "revoke" ? (
-              <Button key={d} size="sm" variant="danger" onClick={() => setAsking(d)}>
-                <X className="size-4" aria-hidden /> {LABELS[d]}
+            d === "reject" || d === "revoke" || d === "incomplete" ? (
+              <Button key={d} size="sm" variant={d === "incomplete" ? "outline" : "danger"} onClick={() => setAsking(d)}>
+                {d !== "incomplete" && <X className="size-4" aria-hidden />} {LABELS[d]}
               </Button>
             ) : (
               <SubmitButton

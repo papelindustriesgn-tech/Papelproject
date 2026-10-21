@@ -17,6 +17,7 @@ const STATE_LABEL = {
   used: "Code déjà utilisé",
   expired: "Code expiré",
   cancelled: "Code annulé",
+  blocked: "Réduction non applicable",
 } as const;
 
 /** Validation d'un code promo étudiant (UNY-XXXX-XX), avec le paiement reçu. */
@@ -66,6 +67,9 @@ export function PromoRedeem({ merchantCode }: { merchantCode: string | null }) {
             {ok ? <BadgeCheck className="size-6" aria-hidden /> : <ShieldAlert className="size-6" aria-hidden />}
             {STATE_LABEL[r.state]}
           </div>
+          {r.state === "blocked" && r.reason && (
+            <p className="bg-coral-50 text-ink px-4 py-2 text-sm font-semibold">{r.reason}</p>
+          )}
           <dl className="space-y-1 p-4 text-sm">
             <dd className="text-lg font-extrabold">
               {r.first_name} {r.last_name} <span className="text-muted font-mono text-xs">{r.uny_id}</span>
@@ -120,7 +124,7 @@ export function PromoRedeem({ merchantCode }: { merchantCode: string | null }) {
                 </Field>
               </div>
               <SubmitButton size="lg" className="w-full">
-                <BadgeCheck className="size-5" /> Valider le code et appliquer la réduction
+                <BadgeCheck className="size-5" /> Confirmer l&apos;utilisation et appliquer la réduction
               </SubmitButton>
             </form>
           )}

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formValues, zodFieldErrors, type FormState } from "@/lib/actions/types";
-import { canManageUniversity, requireUniversity, UNIVERSITY_COOKIE } from "@/lib/university";
+import { canManageUniversity, requireUniversity, universityCan, UNIVERSITY_COOKIE } from "@/lib/university";
 import { CARD_FIELDS, HEX_COLOR, isCardField, isCardLayout } from "@/lib/card-template";
 import { parseRoster, ROSTER_COLUMNS } from "@/lib/verification/roster";
 import { hasMatchSecret, matchHash } from "@/lib/verification/hash";
@@ -17,6 +17,7 @@ import { SUPPORT_EMAIL } from "@/lib/constants";
 
 const DECISIONS = {
   verify: { status: "verified", done: "Inscription confirmée ✅ La carte de l'étudiant est activée." },
+  incomplete: { status: "incomplete", done: "Demande renvoyée à l'étudiant pour correction ✍️" },
   reject: { status: "rejected", done: "Demande refusée. L'étudiant a été notifié avec le motif." },
   expire: { status: "expired", done: "Carte expirée. L'étudiant a été notifié." },
   revoke: { status: "rejected", done: "Carte révoquée. L'étudiant a été notifié avec le motif." },
@@ -32,7 +33,7 @@ export async function decideEnrollment(id: string, _prev: FormState, formData: F
   const reason = String(formData.get("reason") ?? "")
     .trim()
     .slice(0, 500);
-  if ((decision === "reject" || decision === "revoke") && reason.length < 3)
+  if ((decision === "reject" || decision === "revoke" || decision === "incomplete") && reason.length < 3)
     return { error: "Indiquez le motif (visible par l'étudiant)." };
   const supabase = await createClient();
   const { error } = await supabase.rpc("set_enrollment_status", {
@@ -129,8 +130,9 @@ export type ImportState = FormState & {
 
 export async function importRoster(_prev: ImportState, formData: FormData): Promise<ImportState> {
   const { profile, university } = await requireUniversity();
-  if (university.partner_status !== "partner")
+  if (university.partner_status !== "partner" && !university.preview)
     return { error: "Les imports seront disponibles dès que Uny aura approuvé votre établissement." };
+  if (!universityCan(university, "manage")) return { error: "Réservé aux administrateurs de l'établissement." };
   if (!hasMatchSecret()) return { error: "Import momentanément indisponible (configuration serveur). Contactez Uny." };
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return { error: "Choisissez un fichier .xlsx ou .csv." };
@@ -226,6 +228,7 @@ export async function importRoster(_prev: ImportState, formData: FormData): Prom
 export async function deleteImport(id: string) {
   if (!z.uuid().safeParse(id).success) return;
   const { profile, university } = await requireUniversity();
+  if (!universityCan(university, "manage")) return;
   const admin = createAdminClient();
   const { data } = await admin.from("university_imports").delete().eq("id", id).eq("university_id", university.id).select("id");
   if (data?.length)
@@ -253,6 +256,7 @@ const profileSchema = z.object({
 
 export async function updateUniversityProfile(_prev: FormState, formData: FormData): Promise<FormState> {
   const { university } = await requireUniversity();
+  if (!universityCan(university, "prepare")) return { error: "Réservé aux administrateurs de l'établissement." };
   const parsed = profileSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success)
     return {
@@ -288,6 +292,7 @@ export async function updateUniversityProfile(_prev: FormState, formData: FormDa
 /** Demande de raccordement API : transmise à l'équipe Uny (aucune clé n'est saisie dans le portail). */
 export async function requestApiConnection(_prev: FormState, formData: FormData): Promise<FormState> {
   const { profile, university } = await requireUniversity();
+  if (!universityCan(university, "prepare")) return { error: "Réservé aux administrateurs de l'établissement." };
   const schema = z.object({
     tech_name: z.string().trim().min(2, "Nom requis").max(120),
     tech_email: z.email("Email invalide").max(200),

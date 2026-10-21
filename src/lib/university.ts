@@ -15,9 +15,35 @@ export type UniversitySummary = {
   slug: string;
   partner_status: string;
   city_id: number | null;
+  /** Rôle du membre dans le portail (un admin Uny en aperçu a tous les droits). */
+  role: UniversityRole;
   /** Ouvert par un admin Uny qui n'est pas membre du portail. */
   preview?: boolean;
 };
+
+export type { UniversityRole } from "@/lib/university-roles";
+import type { UniversityRole } from "@/lib/university-roles";
+export type UniversityAction = "read" | "decide" | "audit" | "announce" | "manage" | "prepare";
+
+export { UNIVERSITY_ROLES } from "@/lib/university-roles";
+
+const ROLE_ACTIONS: Record<UniversityRole, UniversityAction[]> = {
+  admin: ["read", "decide", "audit", "announce", "manage", "prepare"],
+  validator: ["read", "decide", "audit"],
+  viewer: ["read"],
+  announcer: ["announce"],
+};
+
+/**
+ * Même règle que la fonction SQL `university_can` : les données d'étudiants (« read », « decide »,
+ * « audit », « announce », « manage ») exigent un établissement approuvé ; « prepare » (fiche, carte)
+ * est possible dès l'inscription, pour le rôle administrateur.
+ */
+export function universityCan(u: UniversitySummary, action: UniversityAction): boolean {
+  if (u.preview) return true;
+  if (!ROLE_ACTIONS[u.role]?.includes(action)) return false;
+  return action === "prepare" ? ["pending", "partner"].includes(u.partner_status) : u.partner_status === "partner";
+}
 
 /**
  * Établissements dont l'utilisateur connecté est membre du portail. Un admin Uny peut aussi
@@ -29,11 +55,11 @@ export const getMyUniversities = cache(async (): Promise<UniversitySummary[]> =>
   const supabase = await createClient();
   const { data } = await supabase
     .from("university_members")
-    .select("university:universities(id, name, short_name, slug, partner_status, city_id)")
+    .select("role, university:universities(id, name, short_name, slug, partner_status, city_id)")
     .eq("user_id", profile.id);
-  const mine = (data ?? [])
-    .map((r) => r.university)
-    .filter((u): u is UniversitySummary => !!u && ["pending", "partner"].includes(u.partner_status));
+  const mine: UniversitySummary[] = (data ?? [])
+    .filter((r) => !!r.university && ["pending", "partner"].includes(r.university.partner_status))
+    .map((r) => ({ ...r.university!, role: (r.role as UniversityRole) ?? "viewer" }));
   if (profile.role === "admin") {
     const chosen = Number((await cookies()).get(UNIVERSITY_COOKIE)?.value);
     if (Number.isInteger(chosen) && chosen > 0 && !mine.some((u) => u.id === chosen)) {
@@ -42,7 +68,7 @@ export const getMyUniversities = cache(async (): Promise<UniversitySummary[]> =>
         .select("id, name, short_name, slug, partner_status, city_id")
         .eq("id", chosen)
         .maybeSingle();
-      if (u) mine.unshift({ ...u, preview: true });
+      if (u) mine.unshift({ ...u, role: "admin", preview: true });
     }
   }
   return mine;
@@ -95,12 +121,13 @@ export const getUniversityCardConfig = cache(
 );
 
 export const ENROLLMENT_STATUS: Record<
-  "pending" | "verified" | "rejected" | "expired" | "manual_review",
+  "pending" | "verified" | "rejected" | "expired" | "manual_review" | "incomplete",
   { label: string; tone: "mango" | "mint" | "coral" | "neutral" | "brand" }
 > = {
-  pending: { label: "En attente", tone: "mango" },
-  manual_review: { label: "À examiner", tone: "brand" },
-  verified: { label: "Confirmée", tone: "mint" },
+  pending: { label: "Soumise", tone: "mango" },
+  manual_review: { label: "À vérifier", tone: "brand" },
+  incomplete: { label: "À compléter", tone: "neutral" },
+  verified: { label: "Validée", tone: "mint" },
   rejected: { label: "Refusée", tone: "coral" },
   expired: { label: "Expirée", tone: "neutral" },
 };
@@ -113,12 +140,12 @@ export const VERIFICATION_METHODS: Record<"api" | "import" | "portal" | "documen
   manual: "Manuelle (Uny)",
 };
 
-/** Administrateur Uny, ou membre du portail de cet établissement. */
+/** Administrateur Uny, ou administrateur du portail de cet établissement (préparation de l'espace). */
 export async function canManageUniversity(universityId: number) {
   const profile = await getProfile();
   if (!profile) return null;
   if (profile.role === "admin") return profile;
-  return (await getMyUniversities()).some((u) => u.id === universityId) ? profile : null;
+  return (await getMyUniversities()).some((u) => u.id === universityId && universityCan(u, "prepare")) ? profile : null;
 }
 
 export const PARTNER_STATUS = {
@@ -127,3 +154,25 @@ export const PARTNER_STATUS = {
   partner: { label: "Partenaire", tone: "mint" },
   suspended: { label: "Suspendue", tone: "coral" },
 } as const;
+
+/** Libellés de l'historique des opérations sensibles. */
+export const AUDIT_ACTIONS: Record<string, string> = {
+  "enrollment.verified": "Inscription validée",
+  "enrollment.rejected": "Inscription refusée / carte révoquée",
+  "enrollment.expired": "Carte expirée",
+  "enrollment.incomplete": "Complément demandé",
+  "enrollment.manual_review": "Demande à vérifier",
+  "enrollment.pending": "Demande remise en attente",
+  "enrollment.submitted": "Nouvelle demande",
+  "roster.imported": "Liste importée",
+  "roster.deleted": "Liste supprimée",
+  "students.exported": "Liste des étudiants exportée",
+  "card_template.published": "Carte publiée",
+  "connector.verify": "Vérification par API",
+  "integration.requested": "Raccordement API demandé",
+  "integration.updated": "Connecteur modifié par Uny",
+  "integration.tested": "Connecteur testé",
+  "member.added": "Membre ajouté",
+  "member.role_changed": "Rôle modifié",
+  "member.removed": "Membre retiré",
+};

@@ -14,7 +14,7 @@ export const metadata = { title: "Modifier" };
 export default async function EditPartnerEntity({ params }: { params: Promise<{ kind: string; id: string }> }) {
   const { kind, id } = await params;
   if (!isPartnerKind(kind) || !z.uuid().safeParse(id).success) notFound();
-  const { profile, partner } = await requirePartner();
+  const { profile, partner } = await requirePartner({ manager: true });
   const cfg = PARTNER_ENTITIES[kind];
   const supabase = await createClient();
 
@@ -33,12 +33,10 @@ export default async function EditPartnerEntity({ params }: { params: Promise<{ 
   }
   if (!initial) notFound();
 
-
   return (
     <div className="animate-fade-up mx-auto max-w-2xl space-y-5">
       <BackLink href={`/partenaire/${kind}`} label={cfg.plural} />
       <h1 className="text-2xl font-extrabold tracking-tight">Modifier : {cfg.singular}</h1>
-
 
       <div className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <EntityForm

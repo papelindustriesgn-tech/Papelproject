@@ -13,7 +13,7 @@ export const metadata = { title: "Ma fiche partenaire" };
 const FIELDS = ENTITIES.partenaires.fields.filter((f) => !["is_active", "is_demo"].includes(f.name));
 
 export default async function PartnerProfile() {
-  const { profile, partner } = await requirePartner();
+  const { profile, partner } = await requirePartner({ manager: true });
   const supabase = await createClient();
   const { data } = await supabase.from("partners").select("*").eq("id", partner.id).single();
 

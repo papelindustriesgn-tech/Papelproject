@@ -3,7 +3,7 @@ import { ConfirmButton } from "@/components/ui/confirm-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormMessage } from "@/components/ui/field";
 import { createClient } from "@/lib/supabase/server";
-import { requireUniversity } from "@/lib/university";
+import { requireUniversity, universityCan } from "@/lib/university";
 import { formatDate } from "@/lib/format";
 import { deleteImport } from "../actions";
 import { ImportForm } from "./import-form";
@@ -42,10 +42,14 @@ export default async function ImportsPage() {
           Colonnes reconnues automatiquement : <strong>Matricule</strong>, <strong>Nom</strong>, Prénom(s), Date de naissance,
           Faculté, Département, Filière, Niveau. Une nouvelle liste remplace la précédente pour la même année.
         </p>
-        {university.partner_status === "partner" ? (
+        {universityCan(university, "manage") ? (
           <ImportForm years={academicYears()} />
         ) : (
-          <FormMessage type="info">Disponible dès l&apos;approbation de l&apos;établissement par Uny.</FormMessage>
+          <FormMessage type="info">
+            {university.partner_status === "partner"
+              ? "Réservé aux administrateurs de l'établissement."
+              : "Disponible dès l'approbation de l'établissement par Uny."}
+          </FormMessage>
         )}
       </section>
 

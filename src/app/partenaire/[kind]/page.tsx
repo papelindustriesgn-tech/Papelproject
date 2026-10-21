@@ -65,7 +65,7 @@ export default async function PartnerList({
   const { kind } = await params;
   if (!isPartnerKind(kind)) notFound();
   const sp = await searchParams;
-  const { partner } = await requirePartner();
+  const { partner } = await requirePartner({ manager: true });
   const cfg = PARTNER_ENTITIES[kind];
   const rows = await load(kind, partner.id);
 

@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { isAuthorizedCron } from "@/lib/cron/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, surveyEmail } from "@/lib/email";
 
@@ -7,14 +8,10 @@ export const dynamic = "force-dynamic";
 /**
  * Tâche quotidienne (Vercel Cron) : crée les relances du jour puis envoie par email les invitations
  * aux questionnaires pas encore envoyées. Sans SMTP, seules les notifications dans l'app partent.
- * Protégée par CRON_SECRET (en-tête Authorization: Bearer …) quand il est défini.
+ * Protégée par CRON_SECRET (en-tête Authorization: Bearer …) : sans secret, la tâche est refusée.
  */
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const authorized = secret
-    ? req.headers.get("authorization") === `Bearer ${secret}`
-    : (req.headers.get("user-agent") ?? "").startsWith("vercel-cron/");
-  if (!authorized) return new Response("Non autorisé", { status: 401 });
+  if (!isAuthorizedCron(req.headers.get("authorization"))) return new Response("Non autorisé", { status: 401 });
 
   const db = createAdminClient();
   // Relances du jour (idempotent : une seule relance tous les 4 jours au plus par personne)
@@ -31,7 +28,10 @@ export async function GET(req: NextRequest) {
   let sent = 0;
   for (const n of pending ?? []) {
     if (!n.user?.email || n.user.is_test_account) continue;
-    const ok = await sendEmail({ to: n.user.email, ...surveyEmail(n.user.first_name, n.type === "partner_survey" ? "partner" : "student") });
+    const ok = await sendEmail({
+      to: n.user.email,
+      ...surveyEmail(n.user.first_name, n.type === "partner_survey" ? "partner" : "student"),
+    });
     if (!ok) break; // SMTP absent ou en panne : on réessaiera au prochain passage
     await db.from("notifications").update({ emailed_at: new Date().toISOString() }).eq("id", n.id);
     sent++;

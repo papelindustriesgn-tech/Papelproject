@@ -14,7 +14,7 @@ const programSchema = z.object({
 });
 
 export async function saveLoyaltyProgram(_prev: FormState, formData: FormData): Promise<FormState> {
-  const { partner } = await requirePartner();
+  const { partner } = await requirePartner({ manager: true });
   const parsed = programSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     const fe = Object.fromEntries(parsed.error.issues.map((i) => [String(i.path[0]), i.message]));
@@ -40,7 +40,7 @@ export type LoyaltyActionState = { status?: LoyaltyStatus; message?: string; err
 
 /** Offrir un tampon ou une récompense à un client (depuis la liste des meilleurs clients). */
 export async function giftLoyalty(cardId: string, kind: "stamp" | "reward"): Promise<LoyaltyActionState> {
-  const { partner } = await requirePartner();
+  const { partner } = await requirePartner({ manager: true });
   if (!z.uuid().safeParse(cardId).success || !["stamp", "reward"].includes(kind)) return { error: "Demande invalide." };
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("partner_gift_loyalty", { p_partner: partner.id, p_card: cardId, p_kind: kind });

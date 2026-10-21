@@ -128,3 +128,37 @@ export async function adminAsUniversityMember() {
   });
   return id;
 }
+
+const envVar = (key: string) =>
+  fs
+    .readFileSync(".env.local", "utf8")
+    .split("\n")
+    .find((l) => l.startsWith(`${key}=`))
+    ?.slice(key.length + 1)
+    .trim() ?? "";
+
+/** Client REST de la base locale connecté avec un compte (clé publique + jeton de l'utilisateur). */
+export async function userApi(email: string, password: string) {
+  const url = envVar("NEXT_PUBLIC_SUPABASE_URL");
+  const anon = envVar("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  const res = await fetch(`${url}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: { apikey: anon, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  const { access_token } = await res.json();
+  if (!access_token) throw new Error(`Connexion impossible pour ${email}`);
+  const headers = { apikey: anon, Authorization: `Bearer ${access_token}`, "Content-Type": "application/json" };
+  return {
+    rpc: (name: string, args: Record<string, unknown>) =>
+      fetch(`${url}/rest/v1/rpc/${name}`, { method: "POST", headers, body: JSON.stringify(args) }),
+    select: async (path: string) => {
+      const r = await fetch(`${url}/rest/v1/${path}`, { headers });
+      return r.json();
+    },
+    patch: (path: string, body: Record<string, unknown>) =>
+      fetch(`${url}/rest/v1/${path}`, { method: "PATCH", headers, body: JSON.stringify(body) }),
+    insert: (table: string, body: Record<string, unknown>) =>
+      fetch(`${url}/rest/v1/${table}`, { method: "POST", headers, body: JSON.stringify(body) }),
+  };
+}

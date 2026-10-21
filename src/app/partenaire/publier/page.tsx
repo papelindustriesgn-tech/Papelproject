@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { PARTNER_ENTITIES, type PartnerKind } from "@/lib/partner-entities";
+import { requirePartner } from "@/lib/partner";
 
 export const metadata = { title: "Publier" };
 
-export default function PublishHub() {
+export default async function PublishHub() {
+  await requirePartner({ manager: true });
   return (
     <div className="animate-fade-up mx-auto max-w-2xl space-y-4">
       <div>

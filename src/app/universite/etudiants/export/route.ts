@@ -1,13 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
-import { requireUniversity } from "@/lib/university";
+import { requireUniversity, universityCan } from "@/lib/university";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { EnrollmentRow } from "@/components/university/enrollment-item";
 
 export const dynamic = "force-dynamic";
 
 const STATUS: Record<string, string> = {
-  pending: "En attente",
+  pending: "Soumise",
   manual_review: "À vérifier",
-  verified: "Confirmée",
+  incomplete: "À compléter",
+  verified: "Validée",
   rejected: "Refusée",
   expired: "Expirée",
 };
@@ -20,7 +22,9 @@ const cell = (v: unknown) => {
 
 /** Export Excel (CSV ; séparateur point-virgule) de toutes les inscriptions de l'établissement. */
 export async function GET() {
-  const { university } = await requireUniversity();
+  const { profile, university } = await requireUniversity();
+  // Double contrôle : l'API refuse aussi (établissement non approuvé ou rôle « Annonces »)
+  if (!universityCan(university, "read")) return new Response("Accès refusé", { status: 403 });
   const supabase = await createClient();
   const rows: EnrollmentRow[] = [];
   for (let offset = 0; offset < 20000; offset += 200) {
@@ -66,10 +70,20 @@ export async function GET() {
       .join(";"),
   );
   const csv = "﻿" + [header.join(";"), ...lines].join("\r\n");
+  if (!university.preview)
+    await createAdminClient()
+      .from("audit_log")
+      .insert({
+        actor_id: profile.id,
+        university_id: university.id,
+        action: "students.exported",
+        details: { rows: rows.length },
+      });
   const date = new Date().toISOString().slice(0, 10);
   return new Response(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
+      "Cache-Control": "private, no-store",
       "Content-Disposition": `attachment; filename="etudiants-uny-${date}.csv"`,
     },
   });

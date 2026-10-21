@@ -32,7 +32,7 @@ export default async function UniversityAdmin({ params }: { params: Promise<{ id
     supabase.from("universities").select("*, city:cities(name)").eq("id", id).maybeSingle(),
     supabase
       .from("university_members")
-      .select("user_id, created_at, user:profiles(first_name, last_name, email, role)")
+      .select("user_id, created_at, role, user:profiles!university_members_user_id_fkey(first_name, last_name, email, role)")
       .eq("university_id", id),
     supabase.from("university_integrations").select("*").eq("university_id", id).maybeSingle(),
     supabase

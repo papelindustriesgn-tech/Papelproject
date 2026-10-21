@@ -17,12 +17,13 @@ const ALL = [
 const isActive = (pathname: string, href: string) =>
   href === "/partenaire" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
-export function PartnerSidebar() {
+export function PartnerSidebar({ cashier = false }: { cashier?: boolean }) {
   const pathname = usePathname();
+  const items = cashier ? [ALL[1]] : ALL;
   return (
     <nav aria-label="Espace partenaire">
       <ul className="space-y-1">
-        {ALL.map(({ href, label, icon: Icon }) => {
+        {items.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (
             <li key={href}>
@@ -48,8 +49,10 @@ export function PartnerSidebar() {
 // Mobile : Accueil, Offres, Scanner (au centre), Fidélité, Fiche — la boutique reste accessible depuis le tableau de bord
 const MOBILE = [ALL[0], ALL[2], ALL[1], ALL[3], ALL[5]];
 
-export function PartnerBottomNav() {
+export function PartnerBottomNav({ cashier = false }: { cashier?: boolean }) {
   const pathname = usePathname();
+  // Caisse : une seule action, le scan (déjà au centre de l'écran)
+  if (cashier) return null;
   return (
     <nav
       aria-label="Navigation partenaire"
