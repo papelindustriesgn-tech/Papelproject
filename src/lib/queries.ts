@@ -162,6 +162,7 @@ export function toItemCard(i: RawItem, verifiedSellers?: Set<string>): ItemCardD
     cover,
     verifiedSeller: i.seller_id ? verifiedSellers?.has(i.seller_id) : false,
     partnerName: i.partner?.name ?? null,
+    sellerId: i.seller_id,
   };
 }
 
@@ -241,3 +242,10 @@ export const getDistricts = unstable_cache(
   ["districts"],
   { revalidate: 3600, tags: [CONTENT_TAG] },
 );
+
+/** Annonces sans les vendeurs bloqués par l'utilisateur, ni ceux qui l'ont bloqué. */
+export async function withoutBlockedSellers<T extends { sellerId?: string | null }>(supabase: Supabase, items: T[]) {
+  const { data } = await supabase.rpc("my_hidden_sellers");
+  const hidden = new Set((data ?? []) as string[]);
+  return hidden.size ? items.filter((i) => !i.sellerId || !hidden.has(i.sellerId)) : items;
+}

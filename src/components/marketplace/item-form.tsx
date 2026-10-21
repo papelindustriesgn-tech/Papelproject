@@ -133,6 +133,13 @@ export function ItemForm({ userId, defaults, districts }: { userId: string; defa
       <SubmitButton size="lg" className="w-full" pendingLabel="Publication…">
         {defaults.id ? "Enregistrer les modifications" : "Publier l'annonce"}
       </SubmitButton>
+      <p className="text-muted text-center text-xs">
+        En publiant, tu acceptes les{" "}
+        <a href="/regles-marketplace" className="underline" target="_blank">
+          règles de la marketplace
+        </a>
+        .
+      </p>
     </form>
   );
 }

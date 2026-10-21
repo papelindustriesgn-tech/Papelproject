@@ -18,6 +18,7 @@ import { formatGNF, timeAgo, whatsappLink } from "@/lib/format";
 import { param, type SearchParams } from "@/lib/url";
 import { discountPercent } from "@/lib/orange-money";
 import { OrangeMoneyPay } from "@/components/payment/orange-money-pay";
+import { ReportBlock } from "@/components/marketplace/report-block";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<SearchParams> };
 
@@ -48,6 +49,11 @@ export default async function ItemPage({ params, searchParams }: Props) {
     : { data: null };
   const seller = sellers?.[0];
   const mine = item.seller_id === profile.id && !item.partner_id;
+  // Vendeur bloqué (dans un sens ou dans l'autre) : l'annonce et ses coordonnées ne sont pas affichées
+  if (!mine && item.seller_id) {
+    const { data: hidden } = await supabase.rpc("my_hidden_sellers");
+    if ((hidden ?? []).includes(item.seller_id)) notFound();
+  }
   const images = [...(item.images ?? [])].sort((a, b) => a.position - b.position).map((i) => i.url);
   const c = MARKET_CATEGORIES[item.category];
   const pct = discountPercent(item.original_price_gnf, item.price_gnf);
@@ -176,6 +182,7 @@ export default async function ItemPage({ params, searchParams }: Props) {
             <p className="text-muted mt-3 text-xs">
               Conseil sécurité : rencontre le vendeur dans un lieu public (campus, café) et vérifie l&apos;article avant de payer.
             </p>
+            {!item.is_demo && <ReportBlock itemId={item.id} sellerId={item.partner_id ? null : item.seller_id} />}
           </>
         ) : (
           <p className="text-muted text-sm">Annonce de démonstration : aucun vendeur réel à contacter.</p>

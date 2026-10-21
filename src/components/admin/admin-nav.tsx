@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Flag,
   BarChart3,
   Building2,
   CreditCard,
@@ -33,6 +34,7 @@ export const ADMIN_NAV = [
   { href: "/admin/demandes-partenaires", label: "Demandes partenaires", icon: Handshake },
   { href: "/admin/avantages", label: "Avantages", icon: Tag },
   { href: "/admin/marketplace", label: "Marketplace", icon: ShoppingBag },
+  { href: "/admin/signalements", label: "Signalements", icon: Flag },
   { href: "/admin/statistiques", label: "Statistiques", icon: BarChart3 },
   { href: "/admin/avis", label: "Avis des inscrits", icon: MessageSquareHeart },
   { href: "/admin/contacts", label: "Contacter les inscrits", icon: Send },

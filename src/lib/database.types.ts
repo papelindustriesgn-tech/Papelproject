@@ -250,6 +250,67 @@ export type Database = {
           },
         ];
       };
+      content_reports: {
+        Row: {
+          created_at: string;
+          decided_at: string | null;
+          decided_by: string | null;
+          decision_note: string | null;
+          details: string | null;
+          id: string;
+          item_id: string;
+          reason: string;
+          reporter_id: string | null;
+          status: string;
+        };
+        Insert: {
+          created_at?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decision_note?: string | null;
+          details?: string | null;
+          id?: string;
+          item_id: string;
+          reason: string;
+          reporter_id?: string | null;
+          status?: string;
+        };
+        Update: {
+          created_at?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decision_note?: string | null;
+          details?: string | null;
+          id?: string;
+          item_id?: string;
+          reason?: string;
+          reporter_id?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "content_reports_decided_by_fkey";
+            columns: ["decided_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "content_reports_item_id_fkey";
+            columns: ["item_id"];
+            isOneToOne: false;
+            referencedRelation: "marketplace_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "content_reports_reporter_id_fkey";
+            columns: ["reporter_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       content_views: {
         Row: {
           created_at: string;
@@ -2384,6 +2445,39 @@ export type Database = {
           },
         ];
       };
+      user_blocks: {
+        Row: {
+          blocked_id: string;
+          blocker_id: string;
+          created_at: string;
+        };
+        Insert: {
+          blocked_id: string;
+          blocker_id: string;
+          created_at?: string;
+        };
+        Update: {
+          blocked_id?: string;
+          blocker_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_blocks_blocked_id_fkey";
+            columns: ["blocked_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_blocks_blocker_id_fkey";
+            columns: ["blocker_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -2397,6 +2491,7 @@ export type Database = {
         Returns: undefined;
       };
       admin_stats: { Args: Record<PropertyKey, never>; Returns: Json };
+      admin_stats_impl: { Args: Record<PropertyKey, never>; Returns: Json };
       allocate_student_email: {
         Args: { p_user: string };
         Returns: {
@@ -2439,6 +2534,8 @@ export type Database = {
       is_university_workspace_member: { Args: { p_university: number }; Returns: boolean };
       loyalty_add_visit: { Args: { p_amount: number; p_partner: string; p_student: string }; Returns: Json };
       loyalty_status: { Args: { p_partner: string; p_student: string; p_unlocked?: boolean }; Returns: Json };
+      moderate_listing: { Args: { p_decision: string; p_item: string; p_note?: string }; Returns: undefined };
+      my_hidden_sellers: { Args: Record<PropertyKey, never>; Returns: string[] };
       new_promo_code: { Args: Record<PropertyKey, never>; Returns: string };
       next_uny_id: { Args: { p_country: string }; Returns: string };
       partner_gift_loyalty: { Args: { p_card: string; p_kind: string; p_partner: string }; Returns: Json };
@@ -2525,6 +2622,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      report_listing: { Args: { p_details?: string; p_item: string; p_reason: string }; Returns: Json };
       review_signups: { Args: { p_decision: string; p_ids: string[]; p_note?: string }; Returns: number };
       review_verification: {
         Args: { p_approve: boolean; p_reason?: string; p_verification_id: string };

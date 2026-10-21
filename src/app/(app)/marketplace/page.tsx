@@ -7,7 +7,8 @@ import { OpportunityTabs } from "@/components/content/opportunity-tabs";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { LinkButton } from "@/components/ui/button";
-import { listMarket } from "@/lib/queries";
+import { listMarket, withoutBlockedSellers } from "@/lib/queries";
+import { createClient } from "@/lib/supabase/server";
 import { MARKET_CATEGORIES } from "@/lib/constants";
 import { param, type SearchParams } from "@/lib/url";
 import { requireProfile } from "@/lib/auth";
@@ -38,6 +39,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
   // Pas encore de promo dans cette ville / catégorie : on montre toutes les annonces plutôt qu'une page vide
   const fallback = view === "promos" && !param(sp, "vue") && items.length === 0;
   if (fallback) ({ items, hasMore } = await listMarket(filters));
+  items = await withoutBlockedSellers(await createClient(), items);
 
   return (
     <div className="animate-fade-up">

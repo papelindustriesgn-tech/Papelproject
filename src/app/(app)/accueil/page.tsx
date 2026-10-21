@@ -12,7 +12,7 @@ import { FormMessage } from "@/components/ui/field";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { requireProfile, universityLabel } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { favoriteIds, listDeals, listMarket } from "@/lib/queries";
+import { favoriteIds, listDeals, listMarket, withoutBlockedSellers } from "@/lib/queries";
 import { getJourney } from "@/lib/journey";
 import { isFlashActive } from "@/lib/flash";
 import { param, type SearchParams } from "@/lib/url";
@@ -40,6 +40,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       .order("created_at", { ascending: false })
       .limit(2),
   ]);
+  market.items = await withoutBlockedSellers(supabase, market.items);
   const showDemoNotice = latest.items.some((d) => d.is_demo) || market.items.some((m) => m.is_demo);
   const askSurvey = !survey.error && (!survey.data || survey.data.version < SURVEY_MIN_VERSION);
   const flashDeals = latest.items.filter((d) => isFlashActive(d.flash_ends_at));

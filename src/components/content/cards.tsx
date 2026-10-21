@@ -268,6 +268,8 @@ export type ItemCardData = {
   status?: string;
   cover: string | null;
   verifiedSeller?: boolean;
+  /** Vendeur étudiant (pour masquer les vendeurs bloqués). */
+  sellerId?: string | null;
   partnerName?: string | null;
 };
 

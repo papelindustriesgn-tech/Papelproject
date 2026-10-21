@@ -7,7 +7,8 @@ import { PageTitle } from "@/components/ui/section-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { requireProfile } from "@/lib/auth";
-import { listHousing, listJobs, listMarket } from "@/lib/queries";
+import { listHousing, listJobs, listMarket, withoutBlockedSellers } from "@/lib/queries";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Opportunités" };
 
@@ -38,6 +39,7 @@ export default async function OpportunitiesPage() {
     listHousing({ page: 1, cityId }),
     listMarket({ page: 1, cityId }),
   ]);
+  market.items = await withoutBlockedSellers(await createClient(), market.items);
   const nothing = !jobs.items.length && !homes.items.length && !market.items.length;
 
   return (
