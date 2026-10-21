@@ -4,7 +4,7 @@ import Link from "next/link";
 import { MessageSquareHeart } from "lucide-react";
 import { MiniPass } from "@/components/home/mini-pass";
 import { NextStepCard } from "@/components/home/journey";
-import { formatGNF } from "@/lib/format";
+import { formatGNF, isoDateInDays } from "@/lib/format";
 import { Rail } from "@/components/home/rail";
 import { DealCard, ItemCard } from "@/components/content/cards";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -24,12 +24,21 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const profile = await requireProfile();
   const supabase = await createClient();
 
-  const [latest, market, favDeals, survey, journey] = await Promise.all([
+  const [latest, market, favDeals, survey, journey, announcements] = await Promise.all([
     listDeals({ cityId: profile.city_id ?? undefined }),
     listMarket({ cityId: profile.city_id ?? undefined, view: "promos" }),
     favoriteIds(supabase, profile.id, "deal"),
     supabase.from("survey_responses").select("version").eq("user_id", profile.id).maybeSingle(),
     getJourney(supabase, profile),
+    // Annonces importantes de l'établissement (reçues en notification, 30 derniers jours)
+    supabase
+      .from("notifications")
+      .select("id, title, body, created_at, read_at")
+      .eq("user_id", profile.id)
+      .eq("type", "university_announcement")
+      .gte("created_at", isoDateInDays(-30))
+      .order("created_at", { ascending: false })
+      .limit(2),
   ]);
   const showDemoNotice = latest.items.some((d) => d.is_demo) || market.items.some((m) => m.is_demo);
   const askSurvey = !survey.error && (!survey.data || survey.data.version < SURVEY_MIN_VERSION);
@@ -72,6 +81,25 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           <p className="text-mint-700 text-sm font-bold">💰 Tu as économisé {formatGNF(journey.savedGnf)} avec Uny</p>
         )}
       </section>
+
+      {(announcements.data ?? []).length > 0 && (
+        <section className="space-y-2">
+          <SectionHeader title="📣 Ton établissement" href="/notifications" />
+          <ul className="space-y-2">
+            {(announcements.data ?? []).map((a) => (
+              <li key={a.id} className="rounded-[var(--radius-card)] bg-white p-4 shadow-[var(--shadow-card)]">
+                <p className="font-bold">
+                  {!a.read_at && (
+                    <span className="bg-brand-600 mr-2 inline-block size-2 rounded-full align-middle" aria-label="Non lue" />
+                  )}
+                  {a.title}
+                </p>
+                <p className="text-muted mt-1 line-clamp-2 text-sm">{a.body}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {flashDeals.length > 0 && (
         <section>

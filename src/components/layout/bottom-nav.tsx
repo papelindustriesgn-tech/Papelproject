@@ -12,7 +12,7 @@ export function BottomNav() {
       aria-label="Navigation principale"
       className="pb-safe border-line/80 fixed inset-x-0 bottom-0 z-40 border-t bg-white/95 backdrop-blur-lg lg:hidden"
     >
-      <ul className="mx-auto grid h-16 max-w-lg grid-cols-4">
+      <ul className="mx-auto grid h-16 max-w-lg grid-cols-5">
         {MOBILE_NAV.map((item) => {
           const { href, label, icon: Icon } = item;
           const active = isActive(pathname, item);

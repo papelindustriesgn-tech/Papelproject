@@ -1,19 +1,22 @@
-import { Bell, CreditCard, Heart, Home, ShieldCheck, Tag, User } from "lucide-react";
+import { Bell, Briefcase, CreditCard, Heart, Home, ShieldCheck, Tag, User } from "lucide-react";
 
-/** La marketplace (articles en promo) est rangée dans « Avantages ». */
-const DEALS_SECTION = ["/avantages", "/marketplace"];
+const DEALS_SECTION = ["/avantages"];
+/** Jobs, logement et marketplace sont regroupés dans « Opportunités ». */
+const OPPORTUNITIES_SECTION = ["/opportunites", "/jobs", "/logement", "/marketplace"];
 
 export const MOBILE_NAV = [
   { href: "/accueil", label: "Accueil", icon: Home },
-  { href: "/carte", label: "Ma carte", icon: CreditCard },
   { href: "/avantages", label: "Avantages", icon: Tag, section: DEALS_SECTION },
+  { href: "/carte", label: "Ma carte", icon: CreditCard },
+  { href: "/opportunites", label: "Opportunités", icon: Briefcase, section: OPPORTUNITIES_SECTION },
   { href: "/profil", label: "Profil", icon: User },
 ] as const;
 
 export const DESKTOP_NAV = [
   { href: "/accueil", label: "Accueil", icon: Home },
-  { href: "/carte", label: "Ma carte", icon: CreditCard },
   { href: "/avantages", label: "Avantages", icon: Tag, section: DEALS_SECTION },
+  { href: "/carte", label: "Ma carte", icon: CreditCard },
+  { href: "/opportunites", label: "Opportunités", icon: Briefcase, section: OPPORTUNITIES_SECTION },
   { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/favoris", label: "Mes favoris", icon: Heart },
   { href: "/profil", label: "Profil", icon: User },
