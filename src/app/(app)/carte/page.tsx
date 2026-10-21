@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarCheck, Paintbrush, QrCode, ScanLine, Store } from "lucide-react";
 import { CardViewer } from "@/components/card/card-viewer";
 import { CardFreshness } from "@/components/card/card-freshness";
+import { NativeCardCache } from "@/components/card/native-card-cache";
 import { PageTitle } from "@/components/ui/section-header";
 import { VerificationBadge } from "@/components/ui/badge";
 import { requireProfile } from "@/lib/auth";
@@ -22,6 +23,18 @@ export default async function CardPage() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,28rem)_1fr]">
         <div>
           <CardFreshness renderedAt={renderedAt} />
+          <NativeCardCache
+            card={{
+              firstName: data.firstName,
+              lastName: data.lastName,
+              university: data.university,
+              unyId: data.unyId,
+              academicYear: data.academicYear,
+              status: data.status,
+              expiresAt: data.details?.expires_at ?? null,
+              qrSvg: data.qrSvg ?? null,
+            }}
+          />
           <CardViewer data={data} bigQrSvg={svg ?? ""} />
           <Link
             href="/carte/personnaliser"

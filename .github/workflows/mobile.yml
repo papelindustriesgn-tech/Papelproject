@@ -1,12 +1,12 @@
 name: Applications mobiles
 
-# Construit l'app Android (APK de test + AAB pour Google Play) et l'app iOS.
-# Sans secrets : builds de vérification (APK installable, build simulateur iOS).
-# Avec les secrets (voir docs/APPLICATIONS-MOBILES.md) : AAB signé et envoi iOS vers TestFlight.
+# Chaîne officielle de publication (voir docs/PUBLICATION-STORES.md) :
+#   Google Play → android/ (Trusted Web Activity)      App Store → mobile/ios (Capacitor)
+# Sans secrets : builds de vérification. Avec les secrets : AAB signé, envoi iOS vers TestFlight.
 
 on:
   push:
-    paths: ["mobile/**", ".github/workflows/mobile.yml"]
+    paths: ["mobile/**", "android/**", ".github/workflows/mobile.yml"]
   workflow_dispatch:
 
 defaults:
@@ -14,46 +14,41 @@ defaults:
     working-directory: mobile
 
 jobs:
+  # Google Play : application android/ (Trusted Web Activity, paquet com.unyafrica.app).
+  # mobile/android (Capacitor) n'est PAS publiée : même identifiant, une seule application possible sur Google Play.
   android:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
     env:
-      HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      HAS_KEYSTORE: ${{ secrets.TWA_UPLOAD_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: mobile/package-lock.json
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
-      - run: npm ci
-      - run: npx cap sync android
-
-      - name: Clé de signature Google Play
+      - uses: android-actions/setup-android@v3
+      - run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+      - name: Build (AAB Google Play + APK de test)
+        run: ./gradlew --no-daemon bundleRelease assembleRelease
+      - name: Signature avec la clé de téléversement (si les secrets sont présents)
         if: ${{ env.HAS_KEYSTORE == 'true' }}
         env:
-          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: echo "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/uny.keystore"
-
-      - name: Build
-        working-directory: mobile/android
-        env:
-          UNY_VERSION_CODE: ${{ github.run_number }}
-          UNY_KEYSTORE_PATH: ${{ env.HAS_KEYSTORE == 'true' && format('{0}/uny.keystore', runner.temp) || '' }}
-          UNY_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          UNY_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          UNY_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew --no-daemon assembleDebug bundleRelease
-
+          KEYSTORE: ${{ secrets.TWA_UPLOAD_KEYSTORE_BASE64 }}
+          PASSWORD: ${{ secrets.TWA_UPLOAD_KEYSTORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE" | base64 --decode > "$RUNNER_TEMP/upload.keystore"
+          jarsigner -keystore "$RUNNER_TEMP/upload.keystore" -storepass "$PASSWORD" -keypass "$PASSWORD" \
+            -sigalg SHA256withRSA -digestalg SHA-256 app/build/outputs/bundle/release/app-release.aab uny
+          rm "$RUNNER_TEMP/upload.keystore"
       - uses: actions/upload-artifact@v4
         with:
-          name: uny-android
+          name: uny-android-google-play
           path: |
-            mobile/android/app/build/outputs/apk/debug/app-debug.apk
-            mobile/android/app/build/outputs/bundle/release/app-release.aab
+            android/app/build/outputs/bundle/release/app-release.aab
+            android/app/build/outputs/apk/release/app-release-unsigned.apk
 
   ios:
     runs-on: macos-latest

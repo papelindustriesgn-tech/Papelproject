@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { forgetNativeCard } from "@/components/card/native-card-cache";
 
 const KEY = "uny_cache_owner";
 
@@ -14,6 +15,7 @@ export function CacheOwner({ userId }: { userId: string }) {
       const previous = localStorage.getItem(KEY);
       if (previous !== userId) {
         navigator.serviceWorker?.controller?.postMessage("clear-pages");
+        forgetNativeCard();
         localStorage.setItem(KEY, userId);
       }
     } catch {
