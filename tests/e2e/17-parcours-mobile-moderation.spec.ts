@@ -138,3 +138,16 @@ test("caissier : seule la caisse est accessible ; caméra refusée → message e
   await serviceRest(`partners?id=eq.${partner.id}`, { method: "DELETE" });
   await serviceRest(`../../auth/v1/admin/users/${created.id}`, { method: "DELETE" });
 });
+
+test.describe("petit écran", () => {
+  test.use({ viewport: { width: 360, height: 720 } });
+  test("barre du bas : aucun libellé tronqué à 360 px", async ({ page }) => {
+    await signUp(page);
+    await page.goto("/opportunites");
+    const truncated = await page
+      .getByRole("navigation", { name: "Navigation principale" })
+      .locator("a span:last-child")
+      .evaluateAll((els) => els.filter((e) => e.scrollWidth > e.clientWidth).map((e) => e.textContent));
+    expect(truncated).toEqual([]);
+  });
+});

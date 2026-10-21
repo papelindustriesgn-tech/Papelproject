@@ -22,16 +22,16 @@ export function BottomNav() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex h-full flex-col items-center justify-center gap-1 text-[11px] font-semibold transition",
+                  "flex h-full flex-col items-center justify-center gap-1 text-[10.5px] font-semibold tracking-tight transition min-[380px]:text-[11px]",
                   active ? "text-brand-600" : "text-muted hover:text-ink",
                 )}
               >
                 <span
-                  className={cn("flex h-7 w-12 items-center justify-center rounded-full transition", active && "bg-brand-50")}
+                  className={cn("flex h-7 w-11 items-center justify-center rounded-full transition", active && "bg-brand-50")}
                 >
                   <Icon className="size-[22px]" strokeWidth={active ? 2.4 : 2} aria-hidden />
                 </span>
-                <span className="max-w-full truncate px-0.5">{label}</span>
+                <span className="max-w-full truncate">{label}</span>
               </Link>
             </li>
           );
