@@ -17,7 +17,8 @@ jobs:
   # Google Play : application android/ (Trusted Web Activity, paquet com.unyafrica.app).
   # mobile/android (Capacitor) n'est PAS publiée : même identifiant, une seule application possible sur Google Play.
   android:
-    runs-on: ubuntu-latest
+    # Image fixée : ubuntu-latest passe à Ubuntu 26 (depuis le 19/10/2026) et setup-android y échoue.
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: android
