@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ADMIN, createAuthUser, latestMailLink, login, logout, serviceRest, signUp } from "./helpers";
+import { ADMIN, createAuthUser, latestMailLink, login, logout, serviceRest, signUp, cronHeaders } from "./helpers";
 
 test("un étudiant n'accède pas à l'administration", async ({ page }) => {
   await signUp(page);
@@ -132,7 +132,8 @@ test("questionnaire : relances automatiques (notification + email) tant que l'é
   expect(await count()).toBe(1);
 
   expect((await request.get("/api/cron/questionnaires")).status()).toBe(401);
-  const run = () => request.get("/api/cron/questionnaires", { headers: { "user-agent": "vercel-cron/1.0" } });
+  expect((await request.get("/api/cron/questionnaires", { headers: { "user-agent": "vercel-cron/1.0" } })).status()).toBe(401);
+  const run = () => request.get("/api/cron/questionnaires", { headers: cronHeaders() });
   const res = await run();
   expect(res.ok()).toBeTruthy();
   expect((await res.json()).reminders).toBeGreaterThanOrEqual(1);

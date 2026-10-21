@@ -42,7 +42,7 @@ export function ReportBlock({ itemId, sellerId }: { itemId: string; sellerId: st
               if (!confirm("Bloquer ce vendeur ? Tu ne verras plus ses annonces et il ne verra plus les tiennes.")) return;
               start(async () => {
                 const r = await blockUser(sellerId);
-                if (r.error) setError(r.error);
+                if (r?.error) setError(r.error);
                 else setBlocked(true);
               });
             }}

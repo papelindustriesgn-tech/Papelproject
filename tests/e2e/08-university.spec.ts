@@ -38,10 +38,8 @@ test("université : demande → portail → carte personnalisée → import → 
   await expect(page.getByText(/en cours d.approbation/)).toBeVisible();
   // Avant la vérification par Uny : pas d'annonce aux étudiants
   await page.goto("/universite/annonces");
-  await page.fill("#title", "Test avant validation");
-  await page.fill("#body", "Ce message ne doit pas partir.");
-  await page.getByRole("button", { name: "Envoyer l'annonce" }).click();
-  await expect(page.getByText(/doit être approuvé par Uny/)).toBeVisible();
+  await expect(page.getByText("Disponible après l'approbation de l'établissement")).toBeVisible();
+  await expect(page.locator("#title")).toHaveCount(0);
   // Déconnexion depuis l'en-tête mobile
   await page.getByRole("banner").getByRole("button", { name: "Se déconnecter" }).click();
   await page.waitForURL(/connexion\?deconnecte=1/);
@@ -70,7 +68,7 @@ test("université : demande → portail → carte personnalisée → import → 
   await page.goto("/accueil");
   await expect(page).toHaveURL(/\/universite$/);
   await expect(page.getByRole("heading", { name: /Bonjour Kadiatou/ })).toBeVisible();
-  await expect(page.getByText("1 demande à traiter")).toBeVisible();
+  await expect(page.getByTestId("university-action").first()).toContainText("1Dossiers à vérifier");
 
   await page.goto("/universite/carte");
   await page.waitForLoadState("networkidle");
@@ -111,7 +109,7 @@ test("université : demande → portail → carte personnalisée → import → 
   await login(page, email, password).catch(() => undefined);
   await page.goto("/universite/demandes");
   const item = page.getByTestId("enrollment").filter({ hasText: b.last });
-  await expect(item.getByText("À examiner")).toBeVisible();
+  await expect(item.getByText("À vérifier")).toBeVisible();
   await expect(item.getByText("✗ Nom")).toBeVisible();
   await item.getByRole("button", { name: "Refuser" }).click();
   await item.getByLabel("Motif").fill("Nom différent de notre registre");
@@ -121,7 +119,7 @@ test("université : demande → portail → carte personnalisée → import → 
   // Étudiant A visible dans « Étudiants & cartes », confirmé via la liste
   await page.goto("/universite/etudiants");
   const rowA = page.getByTestId("enrollment").filter({ hasText: a.last });
-  await expect(rowA.getByText("Confirmée")).toBeVisible();
+  await expect(rowA.getByText("Validée")).toBeVisible();
   await expect(rowA.getByText("Liste importée")).toBeVisible();
   await logout(page);
 

@@ -38,7 +38,7 @@ async function makeUniversity(name: string, status: string) {
     await serviceRest("universities", {
       method: "POST",
       headers: ret,
-      body: JSON.stringify({ name: `${name} ${run}`, country_code: "GN", partner_status: status }),
+      body: JSON.stringify({ name: `${name} ${run}`, country_code: "GN", partner_status: status, is_active: false }),
     })
   ).json();
   return u.id as number;
@@ -176,6 +176,9 @@ test("rôles : consultation, validation, annonces", async () => {
 });
 
 test.afterAll(async () => {
-  for (const id of [approved, other, pendingUni]) await serviceRest(`universities?id=eq.${id}`, { method: "DELETE" });
+  for (const id of [approved, other, pendingUni]) {
+    await serviceRest(`student_enrollments?university_id=eq.${id}`, { method: "DELETE" });
+    await serviceRest(`universities?id=eq.${id}`, { method: "DELETE" });
+  }
   for (const u of Object.values(users)) await serviceRest(`../../auth/v1/admin/users/${u.id}`, { method: "DELETE" });
 });

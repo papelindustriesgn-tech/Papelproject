@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -34,7 +35,8 @@ export async function blockUser(userId: string): Promise<{ error?: string }> {
   const { error } = await supabase.from("user_blocks").upsert({ blocker_id: profile.id, blocked_id: userId });
   if (error) return { error: "Blocage impossible. Réessaie." };
   revalidatePath("/marketplace", "layout");
-  return {};
+  // L'annonce du vendeur bloqué n'est plus accessible : retour à la marketplace avec une confirmation
+  redirect("/marketplace?bloque=1");
 }
 
 export async function unblockUser(userId: string): Promise<{ error?: string }> {

@@ -75,7 +75,7 @@ test("code promo : l'étudiant obtient son code, paie sur le code marchand Orang
   await expect(result.getByText("Code valable")).toBeVisible();
   await expect(result.getByText("PP2610.1234.A56789")).toBeVisible();
   await expect(result.getByText(`${student.first} ${student.last}`)).toBeVisible();
-  await page.getByRole("button", { name: /Valider le code/ }).click();
+  await page.getByRole("button", { name: /Confirmer l'utilisation/ }).click();
   await expect(result.getByText("Code validé ✅")).toBeVisible();
 
   // Un code ne sert qu'une fois

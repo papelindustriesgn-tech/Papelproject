@@ -17,6 +17,8 @@ test("université : étudiants déjà sur Uny, demande de matricule, annonce cib
   await logout(page);
 
   await login(page, ADMIN.email, ADMIN.password);
+  // L'admin local peut être membre de plusieurs établissements (données de démo) : on choisit celui du test
+  await page.context().addCookies([{ name: "uny_university", value: String(uniId), url: "http://localhost:3000" }]);
   await page.goto("/universite");
   const block = page.getByTestId("declared-students");
   await expect(block).toContainText("déjà sur Uny");

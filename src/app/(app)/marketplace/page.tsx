@@ -5,6 +5,7 @@ import { FilterChips, Pagination, SearchBar } from "@/components/ui/filters";
 import { PageTitle } from "@/components/ui/section-header";
 import { OpportunityTabs } from "@/components/content/opportunity-tabs";
 import { EmptyState } from "@/components/ui/empty-state";
+import { FormMessage } from "@/components/ui/field";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { LinkButton } from "@/components/ui/button";
 import { listMarket, withoutBlockedSellers } from "@/lib/queries";
@@ -44,6 +45,13 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
   return (
     <div className="animate-fade-up">
       <OpportunityTabs current="/marketplace" />
+      {param(sp, "bloque") && (
+        <div className="mb-4">
+          <FormMessage type="success">
+            Vendeur bloqué : ses annonces ne s&apos;affichent plus. Débloquer : Marketplace → Mes annonces.
+          </FormMessage>
+        </div>
+      )}
       <PageTitle
         title="Articles en promo"
         subtitle="Les promotions des partenaires Uny, et les bonnes affaires entre étudiants."

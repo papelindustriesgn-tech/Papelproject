@@ -14,6 +14,7 @@ import { ITEM_COLUMNS, toItemCard } from "@/lib/queries";
 import { deleteItem, setItemStatus } from "../actions";
 import { param, type SearchParams } from "@/lib/url";
 import Image from "@/components/ui/safe-image";
+import { BlockedSellers } from "@/components/marketplace/blocked-sellers";
 
 export const metadata: Metadata = { title: "Mes annonces" };
 
@@ -28,6 +29,11 @@ export default async function MyItemsPage({ searchParams }: { searchParams: Prom
   const sp = await searchParams;
   const profile = await requireProfile();
   const supabase = await createClient();
+  const { data: blocks } = await supabase.from("user_blocks").select("blocked_id").eq("blocker_id", profile.id);
+  const blockedIds = (blocks ?? []).map((b) => b.blocked_id);
+  const { data: blockedInfo } = blockedIds.length
+    ? await supabase.rpc("seller_public_info", { p_ids: blockedIds })
+    : { data: [] as { id: string; display_name: string }[] };
   const { data } = await supabase
     .from("marketplace_items")
     .select(`${ITEM_COLUMNS}, view_count`)
@@ -117,6 +123,7 @@ export default async function MyItemsPage({ searchParams }: { searchParams: Prom
           ))}
         </ul>
       )}
+      <BlockedSellers sellers={(blockedInfo ?? []).map((b) => ({ id: b.id, name: b.display_name }))} />
     </div>
   );
 }

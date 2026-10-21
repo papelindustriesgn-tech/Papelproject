@@ -92,7 +92,7 @@ test("offre flash à places limitées, carte de fidélité et récompense offert
   await page.waitForLoadState("networkidle");
   await page.fill("input[name=promo_code]", code);
   await page.getByRole("button", { name: "Vérifier le code" }).click();
-  await page.getByRole("button", { name: /Valider le code/ }).click();
+  await page.getByRole("button", { name: /Confirmer l'utilisation/ }).click();
   await expect(page.getByTestId("promo-result").getByText("Code validé ✅")).toBeVisible();
   await expect(page.getByTestId("loyalty-block")).toContainText("Fidélité : 1/3 tampons");
 

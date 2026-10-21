@@ -162,3 +162,8 @@ export async function userApi(email: string, password: string) {
       fetch(`${url}/rest/v1/${table}`, { method: "POST", headers, body: JSON.stringify(body) }),
   };
 }
+
+/** En-tête des tâches planifiées (secret de l'environnement local). */
+export function cronHeaders() {
+  return { Authorization: `Bearer ${envVar("CRON_SECRET")}` };
+}

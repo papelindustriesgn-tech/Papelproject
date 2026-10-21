@@ -35,11 +35,13 @@ test("parcours : une seule action principale, profil complété à la vérificat
   const [p] = await (await serviceRest(`profiles?email=eq.${email}&select=phone,study_level`)).json();
   expect(p).toEqual({ phone: `+224${s.phone}`, study_level: "Licence 2" });
 
-  // Rubrique Avantages : offres, articles en promo et codes au même endroit
+  // Rubrique Avantages : offres, codes et fidélité ; la marketplace est dans Opportunités
   await page.goto("/avantages");
-  await page.getByRole("navigation", { name: "Rubrique avantages" }).getByRole("link", { name: "Promos" }).click();
-  await expect(page).toHaveURL(/\/marketplace/);
+  await page.getByRole("navigation", { name: "Rubrique avantages" }).getByRole("link", { name: "Codes" }).click();
+  await expect(page).toHaveURL(/\/avantages\/mes-codes/);
   await expect(page.getByRole("link", { name: "Avantages" }).first()).toHaveAttribute("aria-current", "page");
+  await page.goto("/marketplace");
+  await expect(page.getByRole("link", { name: "Opportunités" }).first()).toHaveAttribute("aria-current", "page");
 
   // Étudiant vérifié : l'action suivante est le premier code promo
   await serviceRest(`profiles?email=eq.${email}`, { method: "PATCH", body: JSON.stringify({ verification_status: "verified" }) });
