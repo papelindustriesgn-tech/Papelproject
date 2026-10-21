@@ -1,5 +1,7 @@
 # Uny sur Google Play
 
+> Vue d'ensemble des deux boutiques, exigences vérifiées et checklist : `docs/PUBLICATION-STORES.md`.
+
 L'application Android (dossier `android/`) affiche le site www.unyafrica.com en plein écran
 (technologie « Trusted Web Activity »). Toute mise à jour du site est donc visible tout de suite
 dans l'application, sans republier sur Google Play.
@@ -14,7 +16,7 @@ dans l'application, sans republier sur Google Play.
 | Élément | Valeur |
 |---|---|
 | Nom du paquet | `com.unyafrica.app` (définitif, ne peut plus changer après publication) |
-| Version | 1.0.0 (code 1) |
+| Version | 1.0.0 (code 1), cible Android 16 (API 36) |
 | Clé de téléversement | `uny-upload.keystore`, alias `uny` (à conserver précieusement, hors du dépôt) |
 | Empreinte SHA-256 | `D6:0B:09:80:94:FD:49:D5:A5:16:E0:99:78:FD:9A:66:E6:3B:1E:8A:59:AA:A9:43:16:25:D9:49:30:23:6B:96` |
 | Vérification du site | `public/.well-known/assetlinks.json` |
