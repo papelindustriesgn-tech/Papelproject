@@ -132,6 +132,8 @@ test("questionnaire partenaire : attentes et avantages proposés, visibles par l
   await serviceRest(`partner_survey_responses?partner_id=eq.${partnerId}`, { method: "DELETE" });
   const run = `${Date.now()}`.slice(-7);
   await login(page, ADMIN.email, ADMIN.password);
+  // L'admin local peut être membre de plusieurs partenaires (données de démo) : on choisit celui du test
+  await page.context().addCookies([{ name: "uny_partner", value: partnerId, url: "http://localhost:3000" }]);
   await page.goto("/partenaire");
   await page.getByRole("link", { name: /Quelles sont vos attentes/ }).click();
   await page.waitForLoadState("networkidle");
