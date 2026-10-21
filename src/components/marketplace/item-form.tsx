@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { saveItem } from "@/app/(app)/marketplace/actions";
 import { Field, FormMessage, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { FormDraft } from "@/components/ui/form-draft";
 import { ImageUploader, type UploadedImage } from "./image-uploader";
 import { ITEM_CONDITIONS, MARKET_CATEGORIES } from "@/lib/constants";
 
@@ -29,6 +30,7 @@ export function ItemForm({ userId, defaults, districts }: { userId: string; defa
   return (
     <form action={action} className="space-y-5">
       {defaults.id && <input type="hidden" name="id" value={defaults.id} />}
+      {!defaults.id && <FormDraft id="marketplace-new" />}
       <FormMessage>{state.error}</FormMessage>
       <Field label="Photos" htmlFor="images" error={fe.images}>
         <ImageUploader userId={userId} initial={defaults.images ?? []} />

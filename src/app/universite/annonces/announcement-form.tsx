@@ -1,5 +1,6 @@
 "use client";
 
+import { FormDraft } from "@/components/ui/form-draft";
 import { useActionState } from "react";
 import { Field, FormMessage, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -12,6 +13,7 @@ export function AnnouncementForm({ faculties }: { faculties: string[] }) {
   const v = state.values ?? {};
   return (
     <form action={action} className="space-y-4" key={state.ok ? state.message : "form"}>
+      <FormDraft id="university-announcement" />
       {state.ok ? <FormMessage type="success">{state.message}</FormMessage> : <FormMessage>{state.error}</FormMessage>}
       <Field label="Titre" htmlFor="title" error={fe.title}>
         <Input id="title" name="title" required maxLength={80} defaultValue={v.title} placeholder="Examens du 1er semestre" />
