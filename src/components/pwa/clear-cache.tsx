@@ -6,6 +6,9 @@ import { useEffect } from "react";
 export function ClearPageCache() {
   useEffect(() => {
     navigator.serviceWorker?.controller?.postMessage("clear-pages");
+    try {
+      localStorage.removeItem("uny_cache_owner");
+    } catch {}
   }, []);
   return null;
 }

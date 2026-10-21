@@ -193,16 +193,44 @@ export async function deleteAccount(_prev: FormState, formData: FormData): Promi
   const { data: me } = await admin.from("profiles").select("role").eq("id", user.id).single();
   if (me?.role === "admin") return { error: "Un compte administrateur ne peut pas être supprimé d'ici. Retire d'abord le rôle admin." };
 
-  // Fichiers personnels (photo, justificatifs, photos d'annonces), puis le compte :
-  // toutes les données liées sont supprimées en cascade par la base.
-  for (const bucket of ["avatars", "verification-docs", "marketplace"]) {
-    const { data: files } = await admin.storage.from(bucket).list(user.id, { limit: 1000 });
-    if (files?.length) await admin.storage.from(bucket).remove(files.map((f) => `${user.id}/${f.name}`));
+  // 1. Fichiers personnels (photo, justificatifs, photos d'annonces). En cas d'échec, le compte n'est pas
+  //    supprimé : aucun fichier ne doit rester sans propriétaire. L'étudiant peut réessayer.
+  const files = await deleteUserFiles(admin, user.id);
+  if (!files.ok) {
+    console.error("[suppression du compte] fichiers non supprimés", { user: user.id, failed: files.failed });
+    return { error: "Suppression impossible pour le moment (fichiers). Réessaie dans quelques minutes ou écris-nous." };
   }
+  // 2. Le compte : les données liées sont supprimées en cascade par la base (carte, demandes, codes,
+  //    fidélité, favoris, annonces, notifications) ; l'historique des établissements garde l'action sans le nom.
   const { error } = await admin.auth.admin.deleteUser(user.id);
-  if (error) return { error: "Suppression impossible pour le moment. Réessaie ou écris-nous." };
+  if (error) {
+    console.error("[suppression du compte] compte non supprimé", { user: user.id, code: error.code });
+    return { error: "Suppression impossible pour le moment. Réessaie ou écris-nous." };
+  }
 
   await supabase.auth.signOut({ scope: "local" });
   revalidatePath("/", "layout");
   redirect("/connexion?supprime=1");
+}
+
+/** Supprime tous les fichiers d'un compte dans les espaces de stockage (pages de 1000, plusieurs passes). */
+async function deleteUserFiles(admin: ReturnType<typeof createAdminClient>, userId: string) {
+  const failed: string[] = [];
+  for (const bucket of ["avatars", "verification-docs", "marketplace"]) {
+    for (let pass = 0; pass < 20; pass++) {
+      const { data, error } = await admin.storage.from(bucket).list(userId, { limit: 1000 });
+      if (error) {
+        failed.push(`${bucket}:list`);
+        break;
+      }
+      if (!data?.length) break;
+      const { error: rmError } = await admin.storage.from(bucket).remove(data.map((f) => `${userId}/${f.name}`));
+      if (rmError) {
+        failed.push(`${bucket}:remove`);
+        break;
+      }
+      if (data.length < 1000) break;
+    }
+  }
+  return { ok: failed.length === 0, failed };
 }

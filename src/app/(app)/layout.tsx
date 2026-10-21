@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/layout/bottom-nav";
 import { Sidebar } from "@/components/layout/sidebar";
 import { PendingAccount } from "@/components/layout/pending-account";
 import { requireProfile } from "@/lib/auth";
+import { CacheOwner } from "@/components/pwa/cache-owner";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -36,6 +37,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const unread = count ?? 0;
   return (
     <div className="flex min-h-dvh">
+      <CacheOwner userId={profile.id} />
       <Sidebar isAdmin={profile.role === "admin"} unread={unread} />
       <div className="flex min-w-0 flex-1 flex-col">
         <AppHeader unread={unread} first={profile.first_name} last={profile.last_name} avatar={profile.avatar_url} />

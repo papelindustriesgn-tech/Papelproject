@@ -80,6 +80,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 </Link>
               </li>
               <li>
+                <Link href="/supprimer-mon-compte" className="hover:text-ink">
+                  Supprimer mon compte
+                </Link>
+              </li>
+              <li>
                 <a href={`mailto:${SUPPORT_EMAIL}`} className="hover:text-ink">
                   {SUPPORT_EMAIL}
                 </a>

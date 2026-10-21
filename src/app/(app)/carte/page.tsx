@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CalendarCheck, Paintbrush, QrCode, ScanLine, Store } from "lucide-react";
 import { CardViewer } from "@/components/card/card-viewer";
+import { CardFreshness } from "@/components/card/card-freshness";
 import { PageTitle } from "@/components/ui/section-header";
 import { VerificationBadge } from "@/components/ui/badge";
 import { requireProfile } from "@/lib/auth";
@@ -13,12 +14,14 @@ export const metadata: Metadata = { title: "Ma carte" };
 export default async function CardPage() {
   const profile = await requireProfile();
   const { data, card, svg, url } = await getCardData(profile);
+  const renderedAt = new Date().toISOString();
 
   return (
     <div className="animate-fade-up">
       <PageTitle title="Ma carte Uny" subtitle="Ta carte étudiante digitale, toujours dans ta poche." />
       <div className="grid gap-8 lg:grid-cols-[minmax(0,28rem)_1fr]">
         <div>
+          <CardFreshness renderedAt={renderedAt} />
           <CardViewer data={data} bigQrSvg={svg ?? ""} />
           <Link
             href="/carte/personnaliser"

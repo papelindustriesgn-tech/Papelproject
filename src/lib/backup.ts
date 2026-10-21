@@ -3,8 +3,8 @@ import { gzipSync } from "node:zlib";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const BACKUP_BUCKET = "backups";
-/** Nombre de sauvegardes quotidiennes conservées. */
-export const BACKUP_KEEP = 30;
+import { BACKUP_KEEP } from "@/lib/backup-config";
+export { BACKUP_KEEP };
 
 /** Exporte la base (tables publiques + comptes), la compresse et la range dans le bucket privé. */
 export async function createBackup() {

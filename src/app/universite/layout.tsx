@@ -4,6 +4,7 @@ import { LogOut } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { UniversityBottomNav, UniversitySidebar } from "@/components/university/university-nav";
 import { UniversitySwitcher } from "@/components/university/university-switcher";
+import { CacheOwner } from "@/components/pwa/cache-owner";
 import { MobileLogout } from "@/components/layout/mobile-logout";
 import { createClient } from "@/lib/supabase/server";
 import { requireUniversity, universityCan } from "@/lib/university";
@@ -37,6 +38,7 @@ export default async function UniversityLayout({ children }: { children: React.R
 
   return (
     <div className="flex min-h-dvh">
+      <CacheOwner userId={profile.id} />
       <aside className="border-line sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r bg-white px-4 py-6 lg:flex">
         <Link href="/universite" className="mb-2 px-2">
           <Logo />

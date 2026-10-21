@@ -1,11 +1,13 @@
 /* Uny — service worker (PWA). Stratégies simples et sûres pour réseaux mobiles limités. */
-const VERSION = "uny-v1";
+const VERSION = "uny-v2";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const IMAGES = `${VERSION}-images`;
 const OFFLINE_URL = "/hors-ligne";
 const NETWORK_TIMEOUT_MS = 3000;
 const PRECACHE = [OFFLINE_URL, "/icons/icon-192.png", "/icons/icon.svg"];
+// Portails établissement et partenaire, profil (justificatifs, sécurité), notifications, API
+const NO_STORE = ["/universite", "/partenaire", "/profil", "/notifications", "/api", "/connexion", "/inscription"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -43,6 +45,12 @@ self.addEventListener("fetch", (event) => {
 
   // Jamais de cache pour l'authentification, les données Supabase privées et les requêtes RSC
   if (url.pathname.startsWith("/auth/") || url.pathname.startsWith("/admin") || req.headers.get("RSC") === "1") return;
+
+  // Espaces métier et pages sensibles : réseau uniquement (page hors ligne si pas de réseau), jamais gardés sur l'appareil
+  if (req.mode === "navigate" && NO_STORE.some((p) => url.pathname === p || url.pathname.startsWith(`${p}/`))) {
+    event.respondWith(fetch(req).catch(async () => (await caches.match(OFFLINE_URL)) || Response.error()));
+    return;
+  }
 
   // Pages : réseau d'abord, cache en secours (la carte reste consultable hors ligne).
   // Réseau lent : au-delà de 3 s, on affiche la dernière version enregistrée et le réseau la met à jour en arrière-plan.

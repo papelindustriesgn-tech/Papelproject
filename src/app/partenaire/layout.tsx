@@ -5,6 +5,7 @@ import { Logo } from "@/components/ui/logo";
 import { PartnerBottomNav, PartnerSidebar } from "@/components/partner/partner-nav";
 import { PartnerSwitcher } from "@/components/partner/partner-switcher";
 import { requirePartner } from "@/lib/partner";
+import { CacheOwner } from "@/components/pwa/cache-owner";
 import { MobileLogout } from "@/components/layout/mobile-logout";
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export default async function PartnerLayout({ children }: { children: React.Reac
   const { profile, partners, partner } = await requirePartner();
   return (
     <div className="flex min-h-dvh">
+      <CacheOwner userId={profile.id} />
       <aside className="border-line sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r bg-white px-4 py-6 lg:flex">
         <Link href={partner.role === "cashier" ? "/partenaire/scanner" : "/partenaire"} className="mb-2 px-2">
           <Logo />
