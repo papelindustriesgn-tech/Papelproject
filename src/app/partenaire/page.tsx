@@ -27,7 +27,7 @@ export default async function PartnerHome() {
   const count = (table: "marketplace_items") =>
     supabase.from(table).select("id", { count: "exact", head: true }).eq("partner_id", partner.id);
 
-  const [today, month, recent, deals, items, promos, fiche, survey] = await Promise.all([
+  const [today, month, recent, deals, items, promos, fiche, survey, generated] = await Promise.all([
     supabase
       .from("card_validations")
       .select("id", { count: "exact", head: true })
@@ -51,15 +51,22 @@ export default async function PartnerHome() {
     count("marketplace_items"),
     supabase
       .from("promo_codes")
-      .select("amount_gnf")
+      .select("amount_gnf, payment_method")
       .eq("partner_id", partner.id)
       .eq("status", "used")
       .gte("used_at", monthAgo)
       .limit(5000),
     supabase.from("partners").select("orange_money_merchant_code").eq("id", partner.id).single(),
     supabase.from("partner_survey_responses").select("partner_id").eq("partner_id", partner.id).maybeSingle(),
+    supabase
+      .from("promo_codes")
+      .select("id", { count: "exact", head: true })
+      .eq("partner_id", partner.id)
+      .gte("created_at", monthAgo),
   ]);
-  const promoRevenue = (promos.data ?? []).reduce((s, p) => s + (p.amount_gnf ?? 0), 0);
+  // Achat confirmé : code validé en caisse avec un mode de paiement déclaré par le commerce
+  const confirmed = (promos.data ?? []).filter((p) => p.payment_method);
+  const declaredAmount = confirmed.reduce((s, p) => s + (p.amount_gnf ?? 0), 0);
 
   const uniqueStudents = new Set((month.data ?? []).map((r) => r.student_id)).size;
   const dealViews = (deals.data ?? []).reduce((s, d) => s + d.view_count, 0);
@@ -90,8 +97,8 @@ export default async function PartnerHome() {
           <ScanLine className="size-8" aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-lg font-extrabold">Valider un code promo ou une carte</span>
-          <span className="text-brand-100 block text-sm">Vérifie en 2 secondes qu&apos;un client est bien étudiant.</span>
+          <span className="block text-lg font-extrabold">Scanner</span>
+          <span className="text-brand-100 block text-sm">Carte Uny ou code promo : résultat immédiat, puis confirmation.</span>
         </span>
         <ArrowRight className="size-6 shrink-0" aria-hidden />
       </Link>
@@ -124,16 +131,33 @@ export default async function PartnerHome() {
         </FormMessage>
       )}
 
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+      <section aria-labelledby="funnel-title">
+        <h2 id="funnel-title" className="mb-3 font-bold">
+          Tes offres sur 30 jours
+        </h2>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatCard label="Vues des offres" value={dealViews} hint="Depuis la publication" tone="mint" />
+          <StatCard label="Coupons générés" value={generated.count ?? 0} hint="Demandés par des étudiants" />
+          <StatCard label="Coupons utilisés" value={promos.data?.length ?? 0} hint="Validés en caisse" tone="brand" />
+          <StatCard
+            label="Achats confirmés"
+            value={confirmed.length}
+            hint={declaredAmount ? `${declaredAmount.toLocaleString("fr-FR")} GNF déclarés en caisse` : "Paiement déclaré"}
+            tone="brand"
+          />
+        </div>
+        <p className="text-muted mt-2 text-xs">
+          Les montants sont ceux saisis à la validation : ils ne remplacent pas ta caisse ni ton relevé Orange Money.
+        </p>
+      </section>
+
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         <StatCard
-          label="Codes promo utilisés (30 j)"
-          value={promos.data?.length ?? 0}
-          hint={promoRevenue ? `${promoRevenue.toLocaleString("fr-FR")} GNF encaissés` : undefined}
-          tone="brand"
+          label="Cartes vérifiées aujourd'hui"
+          value={today.count ?? 0}
+          hint="Contrôle du statut, pas une vente"
         />
-        <StatCard label="Cartes validées aujourd'hui" value={today.count ?? 0} tone="brand" />
-        <StatCard label="Étudiants servis (30 j)" value={uniqueStudents} hint={`${month.data?.length ?? 0} passages`} />
-        <StatCard label="Vues de tes offres" value={dealViews} tone="mint" />
+        <StatCard label="Étudiants vérifiés (30 j)" value={uniqueStudents} hint={`${month.data?.length ?? 0} vérifications`} />
         <StatCard
           label="Offres en ligne"
           value={(deals.data ?? []).filter((d) => d.is_active).length}

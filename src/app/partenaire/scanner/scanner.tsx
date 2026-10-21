@@ -131,8 +131,16 @@ export function Scanner({ deals }: { deals: Deal[] }) {
         scanner.current = s;
         await s.start();
         setCamError(null);
-      } catch {
-        if (!cancelled) setCamError("Caméra indisponible. Autorise l'accès à la caméra, ou saisis le numéro de la carte.");
+      } catch (e) {
+        if (cancelled) return;
+        const name = e instanceof Error ? e.name : String(e);
+        setCamError(
+          /NotAllowed|Permission|denied/i.test(name)
+            ? "Accès à la caméra refusé. Tu peux l'autoriser dans les réglages du navigateur ou de l'application, ou saisir le numéro de la carte."
+            : /NotFound|no camera/i.test(name)
+              ? "Aucune caméra détectée sur cet appareil. Saisis le numéro de la carte."
+              : "Caméra indisponible pour le moment. Saisis le numéro de la carte.",
+        );
       }
     })();
     return () => {
@@ -199,7 +207,9 @@ export function Scanner({ deals }: { deals: Deal[] }) {
           {camError && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center text-white">
               <CameraOff className="size-10" aria-hidden />
-              <p className="text-sm">{camError}</p>
+              <p className="text-sm" role="alert">
+                {camError}
+              </p>
               <button
                 type="button"
                 onClick={() => setMode("manual")}
