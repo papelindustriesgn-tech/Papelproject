@@ -3,24 +3,32 @@ import { ESPACES } from "@/lib/auth/espaces";
 import { catalogueEcrans } from "@/lib/navigation/ecrans";
 import { CATEGORIES_PARAMETRES } from "@/lib/navigation/indicateurs";
 import { clientServeur } from "@/lib/supabase/serveur";
-import { FormulaireElement, FormulairePromesse, type Element } from "./formulaires";
+import { FormulaireElement, type Element } from "./formulaires";
 import { LigneParametre } from "./ligne-parametre";
 
+// Ce que l'administrateur règle pour chaque application (la phrase d'accueil et le parcours « Comment ça marche »
+// ne s'affichent plus depuis la simplification du 17/10/2026 : ils ne sont plus proposés ici).
 const BLOCS: { genre: Element["genre"]; titre: string; aide: string }[] = [
-  { genre: "action", titre: "2. Boutons « Que voulez-vous faire ? »", aide: "Le bouton n° 1 est le grand bouton principal : mettez-y le geste le plus fréquent du service. Les autres s'affichent en plus petit." },
-  { genre: "etape", titre: "3. Parcours « Comment ça marche »", aide: "Les étapes du travail, dans l'ordre. Chaque étape ouvre l'écran correspondant." },
-  { genre: "tache", titre: "4. « À faire aujourd'hui »", aide: "Choisissez ce que l'ERP doit compter pour vous. La ligne n'apparaît que s'il y a au moins « Afficher à partir de » éléments en attente." },
+  {
+    genre: "action",
+    titre: "1. Boutons d'action (en haut à droite de la vue d'ensemble)",
+    aide: "Le bouton n° 1 est le bouton principal, en couleur : mettez-y le geste le plus fréquent du service. Seuls les boutons n° 2 et 3 s'affichent à côté ; les suivants sont ignorés.",
+  },
+  {
+    genre: "tache",
+    titre: "2. Alertes « À faire » (menu Alertes)",
+    aide: "Choisissez ce que l'ERP doit compter pour le service. La ligne n'apparaît dans « Alertes » (et dans la pastille rouge) que s'il y a au moins « Afficher à partir de » éléments en attente.",
+  },
 ];
 
 /**
  * Réglages d'un service, faits par l'administrateur dans l'interface (rien n'est figé dans le code) :
- * entrée de l'application (phrase, boutons, parcours, « À faire ») et paramètres de calcul de son domaine.
+ * boutons d'action, alertes « À faire » et paramètres de calcul de son domaine.
  */
 export async function PageReglages({ espace }: { espace: string }) {
   const s = await clientServeur();
   const categories = CATEGORIES_PARAMETRES[espace] ?? [];
-  const [{ data: accueil }, { data: elements }, { data: modifiable }, { data: parametres }] = await Promise.all([
-    s.from("accueil_espaces").select("promesse").eq("espace", espace).maybeSingle(),
+  const [{ data: elements }, { data: modifiable }, { data: parametres }] = await Promise.all([
     s.from("accueil_elements").select("id, genre, libelle, description, ecran, icone, indicateur, urgent, seuil, ordre, actif").eq("espace", espace).order("ordre").order("created_at"),
     s.rpc("peut_regler_espace", { p_espace: espace }),
     categories.length ? s.from("parametres").select("cle, libelle, description, type_valeur, unite, valeur, categorie").in("categorie", categories.map((c) => c.code)).order("libelle") : Promise.resolve({ data: [] }),
@@ -31,12 +39,9 @@ export async function PageReglages({ espace }: { espace: string }) {
 
   return (
     <>
-      <TitrePage titre={libelle} fil={[{ libelle: "Réglages des services", href: "/admin/reglages" }]} sousTitre={`Ce que voit l'équipe en ouvrant l'application ${libelle}, et les seuils de ses calculs. Chaque modification est tracée.`} />
+      <TitrePage titre={libelle} fil={[{ libelle: "Réglages des services", href: "/admin/reglages" }]} sousTitre={`Les boutons et les alertes de l'application ${libelle}, et les seuils de ses calculs. Chaque modification est tracée.`} />
       {!peut && <Message ton="info">Seul l&apos;administrateur peut modifier ces réglages.</Message>}
       <div className="flex flex-col gap-4">
-        <Carte titre="1. Phrase d'accueil">
-          <FormulairePromesse espace={espace} promesse={accueil?.promesse ?? ""} modifiable={peut} />
-        </Carte>
         {BLOCS.map((b) => {
           const liste = ((elements ?? []) as Element[]).filter((e) => e.genre === b.genre);
           return (

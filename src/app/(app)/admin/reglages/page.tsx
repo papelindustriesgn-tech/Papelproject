@@ -27,7 +27,7 @@ export default async function PageReglagesServices() {
   const services = ESPACES.filter((e) => ESPACES_REGLABLES.includes(e.code));
   return (
     <>
-      <TitrePage titre="Réglages des services" sousTitre="Pour chaque application : phrase d'accueil, boutons, étapes, « À faire aujourd'hui » et seuils de calcul. Vous seul pouvez les modifier." />
+      <TitrePage titre="Réglages des services" sousTitre="Pour chaque application : boutons d'action, alertes « À faire » et seuils de calcul. Vous seul pouvez les modifier." />
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {services.map((e) => (
           <li key={e.code}>
