@@ -1,0 +1,615 @@
+/**
+ * Listes de référence éditables dans l'interface (principe « à la Odoo » : rien n'est figé dans le code).
+ * Une liste = une table + ses champs. La page générique /<espace>/listes/<code> permet de rechercher,
+ * ajouter, modifier, archiver et exporter. Pour ajouter une nouvelle liste : la déclarer ici.
+ * Les droits restent contrôlés par la RLS de chaque table.
+ */
+
+export type TypeChamp = "texte" | "texte_long" | "entier" | "decimal" | "date" | "heure" | "booleen" | "choix" | "reference";
+
+export interface ChampReferentiel {
+  nom: string;
+  libelle: string;
+  type: TypeChamp;
+  requis?: boolean;
+  max?: number;
+  aide?: string;
+  /** Pour « choix » : valeurs fixes. */
+  options?: { valeur: string; libelle: string }[];
+  /** Pour « reference » : table liée, colonne affichée et clé (« id » par défaut). */
+  reference?: { table: string; libelle: string; cle?: string };
+  /** Champ non modifiable après création (ex. un code). */
+  figeApresCreation?: boolean;
+  /** Valeur automatique à la création si vide. */
+  regex?: { motif: string; message: string };
+}
+
+export interface Referentiel {
+  code: string;
+  table: string;
+  titre: string;
+  description: string;
+  /** Espaces (codes) dans lesquels la liste apparaît. */
+  espaces: string[];
+  /** Colonne clé primaire. */
+  cle: string;
+  champs: ChampReferentiel[];
+  /** Colonne de tri. */
+  tri: string;
+  /** La table a une colonne « actif » : archivage au lieu de suppression. */
+  archivable: boolean;
+}
+
+export const FAMILLES_ARTICLES = [
+  { valeur: "matiere_premiere", libelle: "Matière première" },
+  { valeur: "emballage", libelle: "Emballage" },
+  { valeur: "produit_fini", libelle: "Produit fini" },
+  { valeur: "piece_detachee", libelle: "Pièce détachée" },
+  { valeur: "autre", libelle: "Autre" },
+];
+
+export const REFERENTIELS: Referentiel[] = [
+  {
+    code: "niveaux-prix",
+    table: "niveaux_prix",
+    titre: "Niveaux de prix",
+    description: "Niveaux de la grille de prix (prix Papel, prix conseillés de la chaîne de distribution).",
+    espaces: ["admin"],
+    cle: "code",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      {
+        nom: "code",
+        libelle: "Code",
+        type: "texte",
+        requis: true,
+        figeApresCreation: true,
+        regex: { motif: "^[a-z0-9_]{2,30}$", message: "Code : minuscules sans accent, chiffres ou _ (ex. b2b)." },
+      },
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+      { nom: "description", libelle: "Description", type: "texte_long", max: 200 },
+      { nom: "ordre", libelle: "Ordre d'affichage", type: "entier" },
+    ],
+  },
+  {
+    code: "villes",
+    table: "villes",
+    titre: "Villes",
+    description: "Villes couvertes par les commerciaux.",
+    espaces: ["admin", "commercial"],
+    cle: "id",
+    tri: "nom",
+    archivable: false,
+    champs: [
+      { nom: "nom", libelle: "Nom", type: "texte", requis: true, max: 60 },
+      { nom: "prefecture", libelle: "Préfecture", type: "texte", max: 60 },
+      { nom: "region", libelle: "Région", type: "texte", max: 60 },
+    ],
+  },
+  {
+    code: "communes",
+    table: "communes",
+    titre: "Communes",
+    description: "Communes rattachées à une ville.",
+    espaces: ["admin", "commercial"],
+    cle: "id",
+    tri: "nom",
+    archivable: false,
+    champs: [
+      { nom: "ville_id", libelle: "Ville", type: "reference", requis: true, reference: { table: "villes", libelle: "nom" } },
+      { nom: "nom", libelle: "Nom", type: "texte", requis: true, max: 60 },
+    ],
+  },
+  {
+    code: "quartiers",
+    table: "quartiers",
+    titre: "Quartiers",
+    description: "Quartiers rattachés à une commune.",
+    espaces: ["admin", "commercial"],
+    cle: "id",
+    tri: "nom",
+    archivable: false,
+    champs: [
+      { nom: "commune_id", libelle: "Commune", type: "reference", requis: true, reference: { table: "communes", libelle: "nom" } },
+      { nom: "nom", libelle: "Nom", type: "texte", requis: true, max: 60 },
+    ],
+  },
+  {
+    code: "categories-articles",
+    table: "categories_articles",
+    titre: "Catégories d'articles",
+    description: "Sous-familles des articles : bobines, films, sacs, boîtes, cartons, encres…",
+    espaces: ["admin", "magasin"],
+    cle: "id",
+    tri: "libelle",
+    archivable: true,
+    champs: [
+      { nom: "famille", libelle: "Famille", type: "choix", requis: true, options: FAMILLES_ARTICLES },
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+    ],
+  },
+  {
+    code: "fournisseurs",
+    table: "fournisseurs",
+    titre: "Fournisseurs",
+    description: "Fournisseurs de matières premières, emballages et pièces.",
+    espaces: ["admin", "magasin", "achats"],
+    cle: "id",
+    tri: "nom",
+    archivable: true,
+    champs: [
+      { nom: "nom", libelle: "Nom", type: "texte", requis: true, max: 100 },
+      { nom: "pays", libelle: "Pays", type: "texte", max: 60 },
+      { nom: "contact", libelle: "Contact", type: "texte", max: 100 },
+      { nom: "telephone", libelle: "Téléphone", type: "texte", max: 30 },
+      { nom: "email", libelle: "E-mail", type: "texte", max: 100 },
+      { nom: "devise", libelle: "Devise habituelle", type: "choix", requis: true, options: [{ valeur: "USD", libelle: "USD" }, { valeur: "GNF", libelle: "GNF" }] },
+      { nom: "notes", libelle: "Notes", type: "texte_long", max: 500 },
+    ],
+  },
+  // --- Production -------------------------------------------------------------
+  {
+    code: "postes",
+    table: "postes",
+    titre: "Postes",
+    description: "Postes de travail (matin, après-midi, nuit…). Un poste peut passer minuit.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 40 },
+      { nom: "heure_debut", libelle: "Début", type: "heure", requis: true },
+      { nom: "heure_fin", libelle: "Fin", type: "heure", requis: true },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  {
+    code: "equipes",
+    table: "equipes",
+    titre: "Équipes",
+    description: "Équipes de production.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "libelle",
+    archivable: true,
+    champs: [{ nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 40 }],
+  },
+  {
+    code: "operateurs",
+    table: "operateurs",
+    titre: "Opérateurs",
+    description: "Personnel de production (pas besoin de compte informatique).",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "nom",
+    archivable: true,
+    champs: [
+      { nom: "nom", libelle: "Nom", type: "texte", requis: true, max: 60 },
+      { nom: "prenom", libelle: "Prénom", type: "texte", max: 60 },
+      { nom: "matricule", libelle: "Matricule", type: "texte", max: 20 },
+      { nom: "equipe_id", libelle: "Équipe", type: "reference", reference: { table: "equipes", libelle: "libelle" } },
+    ],
+  },
+  {
+    code: "lignes-production",
+    table: "lignes_production",
+    titre: "Lignes de production",
+    description: "Lignes de fabrication de l'usine.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "libelle",
+    archivable: true,
+    champs: [{ nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 }],
+  },
+  {
+    code: "cadences",
+    table: "cadences_nominales",
+    titre: "Cadences nominales",
+    description: "Paquets par minute d'une ligne pour un produit, à la vitesse prévue par le constructeur. Indispensable au calcul du TRS.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "created_at",
+    archivable: false,
+    champs: [
+      { nom: "ligne_id", libelle: "Ligne", type: "reference", requis: true, reference: { table: "lignes_production", libelle: "libelle" } },
+      { nom: "produit_id", libelle: "Produit", type: "reference", requis: true, reference: { table: "produits", libelle: "libelle" } },
+      { nom: "paquets_minute", libelle: "Paquets / minute", type: "decimal", requis: true },
+    ],
+  },
+  {
+    code: "causes-arret",
+    table: "causes_arret",
+    titre: "Causes d'arrêt",
+    description: "Un arrêt planifié (pause, nettoyage prévu) ne pénalise pas la disponibilité ; un arrêt non planifié (panne, coupure…) oui.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "libelle",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+      {
+        nom: "type_arret",
+        libelle: "Type",
+        type: "choix",
+        requis: true,
+        options: [
+          { valeur: "non_planifie", libelle: "Non planifié" },
+          { valeur: "planifie", libelle: "Planifié" },
+        ],
+      },
+    ],
+  },
+  {
+    code: "campagnes",
+    table: "campagnes",
+    titre: "Campagnes de production",
+    description: "Périodes de production regroupant des ordres de fabrication.",
+    espaces: ["production", "admin"],
+    cle: "id",
+    tri: "date_debut",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 80 },
+      { nom: "date_debut", libelle: "Début", type: "date", requis: true },
+      { nom: "date_fin", libelle: "Fin", type: "date", requis: true },
+      { nom: "notes", libelle: "Objectif / notes", type: "texte_long", max: 300 },
+    ],
+  },
+  // --- Ventes ----------------------------------------------------------------
+  {
+    code: "types-clients",
+    table: "types_clients",
+    titre: "Types de clients",
+    description: "Niveau de prix appliqué et droit à la dotation (X paquets offerts pour 100 achetés, sur l'encaissé).",
+    espaces: ["ventes", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 40 },
+      { nom: "niveau_prix", libelle: "Niveau de prix", type: "reference", requis: true, reference: { table: "niveaux_prix", libelle: "libelle", cle: "code" } },
+      { nom: "dotation", libelle: "Reçoit la dotation", type: "booleen" },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  {
+    code: "modes-paiement",
+    table: "modes_paiement",
+    titre: "Modes de paiement",
+    description: "Espèces, Orange Money, MTN Mobile Money, virement, chèque…",
+    espaces: ["ventes", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 40 },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  // --- Commercial ------------------------------------------------------------
+  {
+    code: "marques-concurrentes",
+    table: "marques_concurrentes",
+    titre: "Marques concurrentes",
+    description: "Marques relevées par les commerciaux lors des visites.",
+    espaces: ["commercial", "admin"],
+    cle: "id",
+    tri: "libelle",
+    archivable: true,
+    champs: [{ nom: "libelle", libelle: "Marque", type: "texte", requis: true, max: 60 }],
+  },
+  // --- Achats -----------------------------------------------------------------
+  {
+    code: "types-frais",
+    table: "types_frais",
+    titre: "Types de frais d'approche",
+    description: "Fret, assurance, transit, douane, manutention, transport jusqu'à l'usine…",
+    espaces: ["achats", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  {
+    code: "types-documents",
+    table: "types_documents",
+    titre: "Types de documents",
+    description: "Facture, connaissement (BL), packing list, déclaration en douane…",
+    espaces: ["achats", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  // --- Logistique ---------------------------------------------------------------
+  {
+    code: "vehicules",
+    table: "vehicules",
+    titre: "Véhicules",
+    description: "Camions et fourgons de livraison ; la capacité (en colis) est contrôlée au chargement.",
+    espaces: ["logistique", "admin"],
+    cle: "id",
+    tri: "immatriculation",
+    archivable: true,
+    champs: [
+      { nom: "immatriculation", libelle: "Immatriculation", type: "texte", requis: true, max: 20 },
+      { nom: "libelle", libelle: "Désignation", type: "texte", max: 60 },
+      { nom: "type_vehicule", libelle: "Type", type: "texte", max: 30 },
+      { nom: "capacite_colis", libelle: "Capacité (colis)", type: "entier", aide: "Vide = pas de contrôle" },
+      { nom: "notes", libelle: "Notes", type: "texte_long", max: 300 },
+    ],
+  },
+  {
+    code: "chauffeurs",
+    table: "chauffeurs",
+    titre: "Chauffeurs",
+    description: "Chauffeurs-livreurs ; le compte de connexion (rôle Logistique) est facultatif.",
+    espaces: ["logistique", "admin"],
+    cle: "id",
+    tri: "nom",
+    archivable: true,
+    champs: [
+      { nom: "nom", libelle: "Nom", type: "texte", requis: true, max: 80 },
+      { nom: "telephone", libelle: "Téléphone", type: "texte", max: 30 },
+      { nom: "permis", libelle: "Permis", type: "texte", max: 20 },
+      { nom: "profil_id", libelle: "Compte de connexion", type: "reference", reference: { table: "profils", libelle: "identifiant" } },
+    ],
+  },
+  {
+    code: "types-depenses-tournee",
+    table: "types_depenses_tournee",
+    titre: "Types de dépenses de tournée",
+    description: "Carburant, péage, manutention, réparation en route…",
+    espaces: ["logistique", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  // --- Qualité -----------------------------------------------------------------
+  {
+    code: "criteres-qualite",
+    table: "criteres_qualite",
+    titre: "Critères de contrôle",
+    description: "Points contrôlés à réception, en production et sur produit fini, avec leurs tolérances.",
+    espaces: ["qualite", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Critère", type: "texte", requis: true, max: 80 },
+      {
+        nom: "etape",
+        libelle: "Étape",
+        type: "choix",
+        requis: true,
+        options: [
+          { valeur: "reception", libelle: "Réception (bobines)" },
+          { valeur: "production", libelle: "En production" },
+          { valeur: "produit_fini", libelle: "Produit fini" },
+        ],
+      },
+      {
+        nom: "type_mesure",
+        libelle: "Type",
+        type: "choix",
+        requis: true,
+        options: [
+          { valeur: "mesure", libelle: "Mesure chiffrée" },
+          { valeur: "visuel", libelle: "Visuel (conforme / non conforme)" },
+        ],
+      },
+      { nom: "unite", libelle: "Unité", type: "texte", max: 20 },
+      { nom: "valeur_min", libelle: "Minimum toléré", type: "decimal" },
+      { nom: "valeur_max", libelle: "Maximum toléré", type: "decimal" },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  {
+    code: "types-non-conformite",
+    table: "types_non_conformite",
+    titre: "Types de non-conformité",
+    description: "Matière première, fabrication, emballage, réclamation client, hygiène et sécurité…",
+    espaces: ["qualite", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Libellé", type: "texte", requis: true, max: 60 },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  // --- Maintenance -------------------------------------------------------------
+  {
+    code: "equipements",
+    table: "equipements",
+    titre: "Équipements",
+    description: "Parc machines et utilités ; criticité A (arrête la production), B (ralentit), C (sans impact direct).",
+    espaces: ["maintenance", "admin"],
+    cle: "id",
+    tri: "code",
+    archivable: true,
+    champs: [
+      { nom: "code", libelle: "Code", type: "texte", requis: true, max: 20 },
+      { nom: "libelle", libelle: "Désignation", type: "texte", requis: true, max: 80 },
+      { nom: "ligne_id", libelle: "Ligne de production", type: "reference", reference: { table: "lignes_production", libelle: "libelle" } },
+      { nom: "categorie", libelle: "Catégorie", type: "texte", max: 40 },
+      {
+        nom: "criticite",
+        libelle: "Criticité",
+        type: "choix",
+        requis: true,
+        options: [
+          { valeur: "A", libelle: "A – arrête la production" },
+          { valeur: "B", libelle: "B – ralentit la production" },
+          { valeur: "C", libelle: "C – sans impact direct" },
+        ],
+      },
+      { nom: "marque_modele", libelle: "Marque / modèle", type: "texte", max: 80 },
+      { nom: "date_mise_service", libelle: "Mise en service", type: "date" },
+      { nom: "notes", libelle: "Notes", type: "texte_long", max: 500 },
+    ],
+  },
+  // --- Finance -----------------------------------------------------------------
+  {
+    code: "comptes-tresorerie",
+    table: "comptes_tresorerie",
+    titre: "Comptes de trésorerie",
+    description: "Caisses, banques et comptes mobile money, avec leur solde d'ouverture et leur compte SYSCOHADA (classe 5).",
+    espaces: ["finance", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Compte", type: "texte", requis: true, max: 60 },
+      { nom: "type_compte", libelle: "Type", type: "choix", requis: true, options: [{ valeur: "caisse", libelle: "Caisse" }, { valeur: "banque", libelle: "Banque" }, { valeur: "mobile", libelle: "Mobile money" }] },
+      { nom: "devise", libelle: "Devise", type: "choix", requis: true, options: [{ valeur: "GNF", libelle: "GNF" }, { valeur: "USD", libelle: "USD" }] },
+      { nom: "compte_comptable", libelle: "Compte comptable", type: "texte", max: 12 },
+      { nom: "solde_initial", libelle: "Solde d'ouverture", type: "entier", aide: "En GNF ; pour un compte en USD, en centimes (1 000 USD = 100000)" },
+      { nom: "date_solde_initial", libelle: "Date du solde d'ouverture", type: "date", requis: true },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  {
+    code: "categories-charges",
+    table: "categories_charges",
+    titre: "Catégories de charges",
+    description: "Nature (achat stocké, charge variable ou fixe) et compte SYSCOHADA de chaque catégorie : sert au résultat, au seuil de rentabilité et aux exports.",
+    espaces: ["finance", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Catégorie", type: "texte", requis: true, max: 80 },
+      { nom: "nature", libelle: "Nature", type: "choix", requis: true, options: [{ valeur: "stock", libelle: "Achat stocké" }, { valeur: "variable", libelle: "Charge variable" }, { valeur: "fixe", libelle: "Charge fixe" }, { valeur: "investissement", libelle: "Investissement (immobilisation)" }] },
+      { nom: "compte_comptable", libelle: "Compte comptable", type: "texte", max: 12 },
+      { nom: "ordre", libelle: "Ordre", type: "entier" },
+    ],
+  },
+  {
+    code: "charges-recurrentes",
+    table: "charges_recurrentes",
+    titre: "Charges fixes mensuelles",
+    description: "Loyer, salaires, abonnements… : une facture à payer est créée chaque mois (Finance → Fournisseurs → Générer les charges du mois).",
+    espaces: ["finance"],
+    cle: "id",
+    tri: "libelle",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Charge", type: "texte", requis: true, max: 80 },
+      { nom: "categorie_id", libelle: "Catégorie", type: "reference", requis: true, reference: { table: "categories_charges", libelle: "libelle" } },
+      { nom: "tiers", libelle: "Bénéficiaire", type: "texte", requis: true, max: 80 },
+      { nom: "montant_gnf", libelle: "Montant mensuel (GNF)", type: "entier", requis: true },
+      { nom: "jour_echeance", libelle: "Jour d'échéance (1 à 28)", type: "entier", requis: true },
+      { nom: "date_debut", libelle: "À partir du", type: "date", requis: true },
+      { nom: "date_fin", libelle: "Jusqu'au", type: "date" },
+    ],
+  },
+  // --- Ressources humaines -----------------------------------------------------
+  {
+    code: "departements",
+    table: "departements",
+    titre: "Services",
+    description: "Services (départements) de l'entreprise, pour classer le personnel.",
+    espaces: ["rh", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Service", type: "texte", requis: true, max: 60 },
+      { nom: "ordre", libelle: "Ordre d'affichage", type: "entier" },
+    ],
+  },
+  {
+    code: "fonctions",
+    table: "fonctions",
+    titre: "Fonctions",
+    description: "Postes occupés par le personnel (conducteur de ligne, magasinier, chauffeur…).",
+    espaces: ["rh", "admin"],
+    cle: "id",
+    tri: "libelle",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Fonction", type: "texte", requis: true, max: 80 },
+      { nom: "departement_id", libelle: "Service", type: "reference", reference: { table: "departements", libelle: "libelle" } },
+    ],
+  },
+  {
+    code: "types-contrats",
+    table: "types_contrats",
+    titre: "Types de contrat",
+    description: "CDI, CDD, journalier, stagiaire… « Durée déterminée » rend la date de fin de contrat utile (alerte d'échéance).",
+    espaces: ["rh", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Type de contrat", type: "texte", requis: true, max: 60 },
+      { nom: "duree_determinee", libelle: "Durée déterminée", type: "booleen" },
+      { nom: "ordre", libelle: "Ordre d'affichage", type: "entier" },
+    ],
+  },
+  {
+    code: "types-absences",
+    table: "types_absences",
+    titre: "Types d'absence",
+    description: "« Décompte des congés » : déduit du solde de congés payés. « Payée » : sinon, retenue sur le salaire du mois.",
+    espaces: ["rh", "admin"],
+    cle: "id",
+    tri: "ordre",
+    archivable: true,
+    champs: [
+      { nom: "libelle", libelle: "Type d'absence", type: "texte", requis: true, max: 60 },
+      { nom: "decompte_conges", libelle: "Décompte des congés", type: "booleen" },
+      { nom: "payee", libelle: "Payée", type: "booleen" },
+      { nom: "ordre", libelle: "Ordre d'affichage", type: "entier" },
+    ],
+  },
+  {
+    code: "jours-feries",
+    table: "jours_feries",
+    titre: "Jours fériés",
+    description: "Jours non travaillés : ils ne comptent pas dans les jours de congé.",
+    espaces: ["rh", "admin"],
+    cle: "id",
+    tri: "jour",
+    archivable: false,
+    champs: [
+      { nom: "jour", libelle: "Date", type: "date", requis: true },
+      { nom: "libelle", libelle: "Fête", type: "texte", requis: true, max: 80 },
+    ],
+  },
+  {
+    code: "tranches-rts",
+    table: "tranches_rts",
+    titre: "Barème de l'impôt sur salaire (RTS)",
+    description: "Barème progressif : chaque taux s'applique à la part du salaire imposable à partir du montant indiqué. À valider avec le comptable.",
+    espaces: ["rh", "admin"],
+    cle: "id",
+    tri: "de_gnf",
+    archivable: false,
+    champs: [
+      { nom: "de_gnf", libelle: "À partir de (GNF)", type: "entier", requis: true },
+      { nom: "taux", libelle: "Taux (0,05 = 5 %)", type: "decimal", requis: true },
+    ],
+  },
+];
+
+export function referentiel(code: string): Referentiel | undefined {
+  return REFERENTIELS.find((r) => r.code === code);
+}
+
+export function referentielsDeLEspace(espace: string): Referentiel[] {
+  return REFERENTIELS.filter((r) => r.espaces.includes(espace));
+}
