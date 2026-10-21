@@ -36,7 +36,7 @@ export function PartnerSurveyForm({ initial }: { initial: PartnerSurveyValues })
         title="Uny en 3 points"
         steps={[
           { emoji: "🎓", text: "Les étudiants vérifiés trouvent votre offre dans l'app Uny." },
-          { emoji: "🎟️", text: "Ils viennent avec un code promo : vous le validez en 2 secondes dans « Scanner »." },
+          { emoji: "🎟️", text: "Ils viennent avec un code promo : vous le validez en quelques secondes dans « Scanner »." },
           { emoji: "🟠", text: "Ils vous paient directement sur votre code marchand Orange Money. Gratuit pour vous." },
         ]}
       />

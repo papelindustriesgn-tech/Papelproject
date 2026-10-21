@@ -34,8 +34,8 @@ export function CardFreshness({ renderedAt }: { renderedAt: string }) {
     >
       <WifiOff className="mt-0.5 size-4 shrink-0" aria-hidden />
       <span>
-        Carte enregistrée sur ton téléphone, <strong>actualisée le {when}</strong>. Le partenaire vérifie ta carte en ligne
-        avant d&apos;appliquer une réduction.
+        Carte enregistrée sur ton téléphone, <strong>actualisée le {when}</strong>. Le partenaire vérifie ta carte en ligne avant
+        d&apos;appliquer une réduction.
       </span>
     </p>
   );

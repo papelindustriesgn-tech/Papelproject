@@ -178,7 +178,11 @@ export async function signOutEverywhere() {
 
 /** Suppression définitive du compte (exigée par l'App Store et Google Play). */
 export async function deleteAccount(_prev: FormState, formData: FormData): Promise<FormState> {
-  if (String(formData.get("confirm") ?? "").trim().toUpperCase() !== "SUPPRIMER")
+  if (
+    String(formData.get("confirm") ?? "")
+      .trim()
+      .toUpperCase() !== "SUPPRIMER"
+  )
     return { fieldErrors: { confirm: "Tape SUPPRIMER pour confirmer" } };
   const password = String(formData.get("password") ?? "");
 
@@ -191,7 +195,8 @@ export async function deleteAccount(_prev: FormState, formData: FormData): Promi
 
   const admin = createAdminClient();
   const { data: me } = await admin.from("profiles").select("role").eq("id", user.id).single();
-  if (me?.role === "admin") return { error: "Un compte administrateur ne peut pas être supprimé d'ici. Retire d'abord le rôle admin." };
+  if (me?.role === "admin")
+    return { error: "Un compte administrateur ne peut pas être supprimé d'ici. Retire d'abord le rôle admin." };
 
   // 1. Fichiers personnels (photo, justificatifs, photos d'annonces). En cas d'échec, le compte n'est pas
   //    supprimé : aucun fichier ne doit rester sans propriétaire. L'étudiant peut réessayer.

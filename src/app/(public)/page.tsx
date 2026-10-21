@@ -106,13 +106,25 @@ export default async function LandingPage() {
                 Pourquoi Uny ?
               </LinkButton>
             </div>
-            <p className="text-muted mt-4 text-sm">Gratuit · Prête en 3 minutes · Sur tous les téléphones</p>
-            <Link
-              href="#commercants"
-              className="text-ink hover:border-brand-300 border-line mt-5 inline-flex items-center gap-2 rounded-2xl border border-dashed bg-white/70 px-4 py-2.5 text-sm font-semibold"
-            >
-              🏪 Vous êtes commerçant ? <span className="text-brand-600">Gagnez des clients étudiants</span>
-            </Link>
+            <p className="text-muted mt-4 text-sm">Gratuit · Compte créé en quelques minutes · Statut étudiant vérifié ensuite</p>
+            <nav aria-label="Vous êtes" className="mt-6 grid grid-cols-3 gap-2 text-center text-sm font-semibold">
+              {[
+                { href: "/inscription", e: "🎓", t: "Étudiant" },
+                { href: "/universites", e: "🏛️", t: "Établissement" },
+                { href: "/partenaires", e: "🏪", t: "Commerçant" },
+              ].map((x) => (
+                <Link
+                  key={x.href}
+                  href={x.href}
+                  className="border-line hover:border-brand-300 rounded-2xl border bg-white/80 px-2 py-3"
+                >
+                  <span className="block text-xl" aria-hidden>
+                    {x.e}
+                  </span>
+                  {x.t}
+                </Link>
+              ))}
+            </nav>
           </div>
 
           {/* Visuel : avant / après avec le statut étudiant */}
@@ -192,8 +204,8 @@ export default async function LandingPage() {
               Une carte étudiante numérique que tout le monde peut vérifier.
             </h2>
             <p className="text-brand-100 mt-4 text-lg">
-              Ton université confirme ton inscription. Le commerçant scanne ton QR code et voit en 2 secondes « Étudiant vérifié
-              ✅ ». La confiance est là : les offres étudiantes peuvent enfin exister.
+              Ton inscription est vérifiée par ton établissement partenaire ou par l&apos;équipe Uny. Le commerçant scanne ton QR
+              code et voit si la carte est valide et le statut vérifié. Les offres étudiantes peuvent enfin exister.
             </p>
           </div>
           <div className="relative mx-auto w-full max-w-sm">
@@ -264,14 +276,24 @@ export default async function LandingPage() {
         <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">3 étapes, et tu économises.</h2>
         <ol className="mt-8 grid gap-4 md:grid-cols-3">
           {[
-            { n: "1", e: "📱", t: "Crée ta carte", d: "Inscription gratuite en 3 minutes, avec ta photo et ton établissement." },
+            {
+              n: "1",
+              e: "📱",
+              t: "Crée ton compte",
+              d: "Gratuit, en quelques minutes. L'équipe Uny valide le compte avant d'ouvrir ta carte.",
+            },
             {
               n: "2",
               e: "✅",
               t: "Fais-la vérifier",
-              d: "Ton université confirme ton inscription : ta carte devient « Étudiant vérifié ».",
+              d: "Ton établissement (s'il est partenaire) ou l'équipe Uny vérifie ton inscription. Ensuite seulement, ta carte affiche « Étudiant vérifié ».",
             },
-            { n: "3", e: "💸", t: "Montre-la et économise", d: "Le commerçant scanne ton QR code, la réduction est appliquée." },
+            {
+              n: "3",
+              e: "💸",
+              t: "Montre-la et économise",
+              d: "Le commerçant vérifie ta carte ou ton code en ligne, puis applique la réduction.",
+            },
           ].map((s) => (
             <li key={s.n} className="rounded-[var(--radius-card)] bg-white p-6 shadow-[var(--shadow-card)]">
               <div className="flex items-center gap-3">
@@ -311,8 +333,16 @@ export default async function LandingPage() {
                 { Icon: Users, t: "Des clients en plus", d: "Les étudiants viennent en groupe, reviennent et recommandent." },
                 { Icon: Megaphone, t: "Visibilité gratuite", d: "Votre offre apparaît dans l'app, dans votre ville." },
                 { Icon: Clock, t: "Heures creuses remplies", d: "Ciblez vos offres sur les jours et heures calmes." },
-                { Icon: ShieldCheck, t: "Zéro fraude", d: "Un scan du QR code : vous savez si c'est un vrai étudiant." },
-                { Icon: BarChart3, t: "Résultats mesurés", d: "Cartes scannées, clients servis, vues de vos offres." },
+                {
+                  Icon: ShieldCheck,
+                  t: "Statut vérifiable",
+                  d: "Un scan du QR code affiche si la carte est valide et si le statut étudiant a été vérifié.",
+                },
+                {
+                  Icon: BarChart3,
+                  t: "Résultats mesurés",
+                  d: "Vues de vos offres, coupons générés et utilisés, cartes vérifiées.",
+                },
                 { Icon: Store, t: "Votre boutique en ligne", d: "Vendez vos produits sur la marketplace étudiante." },
               ].map(({ Icon, t, d }) => (
                 <li key={t} className="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
@@ -347,7 +377,7 @@ export default async function LandingPage() {
                 <p className="text-sm">
                   <strong>Scanner une carte</strong>
                   <br />
-                  <span className="text-muted">Vérifie en 2 secondes depuis votre téléphone.</span>
+                  <span className="text-muted">Vérification en quelques secondes depuis votre téléphone.</span>
                 </p>
               </div>
             </div>

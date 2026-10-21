@@ -136,7 +136,7 @@ export default async function VerificationPage({ searchParams }: { searchParams:
           </h2>
           <p className="text-muted mb-4 text-sm">
             {isPartnerUni
-              ? "Ton établissement est partenaire d'Uny : il confirme directement ton inscription, souvent instantanément."
+              ? "Ton établissement est partenaire d'Uny : il confirme directement ton inscription (automatiquement si ton matricule figure dans sa liste, sinon après vérification)."
               : "Ces établissements confirment directement les inscriptions sur Uny. Le tien n'y est pas ? Envoie un justificatif ci-dessous."}
           </p>
           {current?.status === "rejected" && current.rejection_reason && (

@@ -18,7 +18,7 @@ const POINTS = [
   },
   {
     icon: ScanLine,
-    t: "Vérifie en 2 secondes",
+    t: "Vérification en quelques secondes",
     d: "Scanne le QR code de la carte Uny : tu sais tout de suite si le client est un étudiant vérifié.",
   },
   { icon: Store, t: "Vends sur la marketplace", d: "Ta boutique avec le badge « Partenaire Uny », contact direct par WhatsApp." },

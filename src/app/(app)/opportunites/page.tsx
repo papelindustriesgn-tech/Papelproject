@@ -20,7 +20,11 @@ function Section({ title, href, children, empty }: { title: string; href: string
           Tout voir <ArrowRight className="size-4" aria-hidden />
         </Link>
       </div>
-      {empty ? <p className="text-muted text-sm">Rien pour le moment : de nouvelles annonces arrivent régulièrement.</p> : children}
+      {empty ? (
+        <p className="text-muted text-sm">Rien pour le moment : de nouvelles annonces arrivent régulièrement.</p>
+      ) : (
+        children
+      )}
     </section>
   );
 }
