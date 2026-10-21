@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, Gift, LayoutDashboard, ScanLine, ShoppingBag, Tag } from "lucide-react";
+import { Building2, Gift, LayoutDashboard, ScanLine, ShoppingBag, Tag, Users } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const ALL = [
@@ -12,6 +12,7 @@ const ALL = [
   { href: "/partenaire/fidelite", label: "Fidélité & clients", short: "Fidélité", icon: Gift },
   { href: "/partenaire/boutique", label: "Boutique", short: "Boutique", icon: ShoppingBag },
   { href: "/partenaire/profil", label: "Ma fiche partenaire", short: "Fiche", icon: Building2 },
+  { href: "/partenaire/equipe", label: "Équipe (caissiers)", short: "Équipe", icon: Users },
 ];
 
 const isActive = (pathname: string, href: string) =>
