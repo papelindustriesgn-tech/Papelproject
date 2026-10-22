@@ -1,4 +1,4 @@
-import { DEAL_PRICE_FIELDS, type FieldSpec } from "@/lib/admin-entities";
+import { DEAL_LABEL_FIELD, DEAL_PRICE_FIELDS, type FieldSpec } from "@/lib/admin-entities";
 import { DEAL_CATEGORIES, ITEM_CONDITIONS, MARKET_CATEGORIES } from "@/lib/constants";
 
 export type PartnerKind = "offres" | "boutique";
@@ -29,7 +29,7 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
     plural: "Offres étudiantes",
     emoji: "🏷️",
     intro:
-      "Réductions réservées aux étudiants Uny. Chaque étudiant obtient un code promo personnel dans l'app : tu le valides dans « Scanner », il paie sur ton code marchand Orange Money.",
+      "Réductions réservées aux étudiants Uny vérifiés. Chaque étudiant obtient un code promo personnel dans l'app : tu le valides dans « Scanner », il paie sur ton code marchand Orange Money.",
     fields: [
       {
         name: "title",
@@ -39,7 +39,6 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
         max: 140,
         placeholder: "-20 % sur tous les plats",
       },
-      { name: "discount_label", label: "Réduction affichée", type: "text", required: true, max: 40, placeholder: "-20 %" },
       { name: "category", label: "Catégorie", type: "select", required: true, options: opts(DEAL_CATEGORIES) },
       { name: "image_url", label: "Photo", type: "image" },
       { name: "description", label: "Description", type: "textarea", max: 2000 },
@@ -57,6 +56,7 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
         hint: "Laisse « Toute la Guinée » si l'offre est valable partout.",
       },
       ...DEAL_PRICE_FIELDS,
+      DEAL_LABEL_FIELD,
       {
         name: "flash_hours",
         label: "⚡ Offre flash : durée",
@@ -72,13 +72,6 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
       { name: "flash_quantity", label: "Nombre de places (offre flash)", type: "number", min: 1, max: 10000, step: 1 },
       { name: "valid_from", label: "Valable à partir du", type: "date", required: true },
       { name: "valid_until", label: "Valable jusqu'au", type: "date" },
-      {
-        name: "requires_verification",
-        label: "Réservée aux étudiants vérifiés",
-        type: "checkbox",
-        defaultValue: true,
-        hint: "Décoche pour l'ouvrir à tous les inscrits Uny.",
-      },
       published,
     ],
   },

@@ -79,9 +79,10 @@ export default async function UserAdmin({ params }: { params: Promise<{ id: stri
         <h2 className="font-bold">Actions</h2>
         <div className="flex flex-wrap gap-2">
           {u.verification_status !== "verified" && (
-            <form action={setUserVerification.bind(null, u.id, "verified")}>
-              <button className={`${btn} text-mint-700`}>Valider manuellement le statut</button>
-            </form>
+            <p className="text-muted w-full text-xs">
+              Le statut « vérifié » s&apos;obtient uniquement par un justificatif contrôlé ou par la confirmation de
+              l&apos;établissement.
+            </p>
           )}
           {u.verification_status === "verified" && (
             <form action={setUserVerification.bind(null, u.id, "unverified")}>

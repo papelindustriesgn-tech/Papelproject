@@ -14,7 +14,7 @@ export function BacReviewForm({ id }: { id: string }) {
       <Input
         name="source_reference"
         maxLength={120}
-        placeholder="Référence de contrôle (facultatif, ex. PV n°…)"
+        placeholder="Référence contrôlée dans les résultats officiels (obligatoire pour valider)"
         aria-label="Référence"
         className="h-10 text-sm"
       />

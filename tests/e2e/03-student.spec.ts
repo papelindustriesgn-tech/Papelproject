@@ -1,6 +1,6 @@
 import path from "node:path";
 import { expect, test } from "@playwright/test";
-import { ADMIN, expectNoHorizontalOverflow, login, logout, serviceRest, signUp } from "./helpers";
+import { ADMIN, expectNoHorizontalOverflow, login, logout, serviceRest, signUp, uniqueDocument } from "./helpers";
 
 const fixture = (f: string) => path.join(__dirname, "..", "fixtures", f);
 
@@ -15,7 +15,7 @@ test("vérification étudiante : envoi du justificatif → validation admin → 
   await page.goto("/profil/verification");
   await page.waitForLoadState("networkidle");
   await page.selectOption("#document_type", "student_card");
-  await page.setInputFiles('[data-testid="doc-input"]', fixture("student-card.jpg"));
+  await page.setInputFiles('[data-testid="doc-input"]', uniqueDocument());
   await page.getByRole("button", { name: "Envoyer mon justificatif" }).click();
   await expect(page.getByText(/a été envoyé à l'instant/)).toBeVisible();
   await expect(page.getByText("Vérification en cours").first()).toBeVisible();
@@ -26,6 +26,17 @@ test("vérification étudiante : envoi du justificatif → validation admin → 
   await page.goto("/admin/verifications");
   const card = page.locator("li", { hasText: `${s.first} ${s.last}` }).first();
   await expect(card.locator("img")).toBeVisible(); // justificatif affiché via URL signée
+  // Sans les contrôles du document ni le matricule lu dessus : validation refusée
+  await card.getByRole("button", { name: "Valider" }).click();
+  await expect(card.getByText("Coche les 4 contrôles du document avant de valider.")).toBeVisible();
+  for (const label of [
+    "Nom et prénom identiques au profil",
+    "Établissement identique au profil",
+    "Document de l'année académique en cours",
+    "Document lisible, original, sans retouche visible",
+  ])
+    await card.getByLabel(label).check();
+  await card.getByLabel("Matricule lu sur le document").fill(`MAT${Date.now()}`);
   await card.getByRole("button", { name: "Valider" }).click();
   await expect(page.getByText(/Étudiant vérifié ✅/)).toBeVisible();
   await expect(page.locator("li", { hasText: `${s.first} ${s.last}` })).toHaveCount(0);

@@ -167,3 +167,12 @@ export async function userApi(email: string, password: string) {
 export function cronHeaders() {
   return { Authorization: `Bearer ${envVar("CRON_SECRET")}` };
 }
+
+/** Justificatif fictif unique (pixels aléatoires) : un même fichier ne peut pas servir à deux comptes. */
+export function uniqueDocument(name = "justificatif.png") {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { PNG } = require("pngjs") as typeof import("pngjs");
+  const png = new PNG({ width: 120, height: 80 });
+  for (let i = 0; i < png.data.length; i++) png.data[i] = i % 4 === 3 ? 255 : Math.floor(Math.random() * 256);
+  return { name, mimeType: "image/png", buffer: PNG.sync.write(png) };
+}

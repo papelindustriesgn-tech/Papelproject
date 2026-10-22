@@ -21,12 +21,18 @@ export async function reviewVerification(_prev: FormState, formData: FormData): 
   if (decision === "reject" && reason.length < 3) return { error: "Indique un motif de refus (visible par l'étudiant)." };
 
   const supabase = await createClient();
+  const checks = Object.fromEntries(
+    ["identity", "institution", "academic_year", "authentic"].map((k) => [k, formData.get(`check_${k}`) === "on"]),
+  );
   const { data, error } = await supabase.rpc("review_verification", {
     p_verification_id: id.data,
     p_approve: decision === "approve",
     p_reason: decision === "reject" ? reason : undefined,
+    p_checks: decision === "approve" ? checks : undefined,
+    p_student_number: decision === "approve" ? String(formData.get("student_number") ?? "").slice(0, 40) : undefined,
+    p_academic_year: decision === "approve" ? String(formData.get("academic_year") ?? "").trim().slice(0, 9) : undefined,
   });
-  if (error || !data) return { error: error?.message ?? "Action impossible." };
+  if (error || !data) return { error: error?.code === "P0001" ? error.message : (error?.message ?? "Action impossible.") };
 
   const { data: profile } = await supabase.from("profiles").select("email, first_name, uny_id").eq("id", data.user_id).single();
   if (profile?.email) {
@@ -42,7 +48,7 @@ export async function reviewVerification(_prev: FormState, formData: FormData): 
   redirect(`/admin/verifications?traite=${decision}&nom=${who}`);
 }
 
-export async function setUserVerification(userId: string, status: "unverified" | "pending" | "verified") {
+export async function setUserVerification(userId: string, status: "unverified" | "pending") {
   await requireAdmin();
   const supabase = await createClient();
   await supabase.rpc("admin_set_verification", { p_user_id: userId, p_status: status });

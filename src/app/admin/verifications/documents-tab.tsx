@@ -18,12 +18,32 @@ export async function DocumentsTab({ sp }: { sp: SearchParams }) {
   const { data } = await supabase
     .from("student_verifications")
     .select(
-      "*, profile:profiles!student_verifications_user_id_fkey(id, first_name, last_name, email, phone, birth_date, field_of_study, study_level, uny_id, university_other, avatar_url, university:universities!profiles_university_id_fkey(name))",
+      "*, profile:profiles!student_verifications_user_id_fkey(id, university_id, first_name, last_name, email, phone, birth_date, field_of_study, study_level, uny_id, university_other, avatar_url, university:universities!profiles_university_id_fkey(name))",
     )
     .eq("status", status)
     .order("created_at", { ascending: status === "pending" })
     .limit(50);
   const rows = data ?? [];
+
+  // Signaux bloquants (la base refuse aussi la validation) : document déjà envoyé par un autre compte,
+  // étudiant d'un établissement partenaire (confirmation par l'établissement)
+  const hashes = rows.map((r) => r.file_sha256).filter((h): h is string => !!h);
+  const [{ data: year }, { data: dupes }, { data: partners }] = await Promise.all([
+    supabase.rpc("current_academic_year"),
+    hashes.length
+      ? supabase.from("student_verifications").select("user_id, file_sha256").in("file_sha256", hashes)
+      : Promise.resolve({ data: [] as { user_id: string; file_sha256: string | null }[] }),
+    supabase.from("universities").select("id, university_members(user_id)").eq("partner_status", "partner"),
+  ]);
+  const partnerIds = new Set((partners ?? []).filter((u) => (u.university_members ?? []).length > 0).map((u) => u.id));
+  const blockedReason = (r: (typeof rows)[number]) => {
+    if (r.file_sha256 && (dupes ?? []).some((d) => d.file_sha256 === r.file_sha256 && d.user_id !== r.user_id))
+      return "⚠ Ce document a déjà été envoyé par un autre compte : validation impossible.";
+    const uni = (r.profile as { university_id?: number | null } | null)?.university_id;
+    if (uni && partnerIds.has(uni))
+      return "Établissement partenaire : l'inscription doit être confirmée par l'établissement dans son portail.";
+    return null;
+  };
 
   // URLs signées temporaires (5 min) : les justificatifs restent privés
   const signed = new Map<string, string>();
@@ -101,7 +121,7 @@ export async function DocumentsTab({ sp }: { sp: SearchParams }) {
                   </p>
                   {r.note && <p className="bg-canvas rounded-xl p-2 text-sm">« {r.note} »</p>}
                   {status === "pending" ? (
-                    <ReviewForm id={r.id} />
+                    <ReviewForm id={r.id} academicYear={(year as string | null) ?? ""} blocked={blockedReason(r)} />
                   ) : (
                     <p className="text-sm">
                       {status === "approved" ? "✅ Validé" : `❌ Refusé${r.rejection_reason ? ` — ${r.rejection_reason}` : ""}`}{" "}

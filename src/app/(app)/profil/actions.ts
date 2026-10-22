@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -104,15 +105,26 @@ export async function submitVerification(_prev: FormState, formData: FormData): 
   if (!auth.user) return { error: "Session expirée." };
   if (!parsed.data.document_path.startsWith(`${auth.user.id}/`)) return { error: "Document invalide." };
 
-  const { error } = await supabase.from("student_verifications").insert({
-    user_id: auth.user.id,
-    document_type: parsed.data.document_type,
-    document_path: parsed.data.document_path,
-    note: parsed.data.note || null,
-  });
+  const { data: row, error } = await supabase
+    .from("student_verifications")
+    .insert({
+      user_id: auth.user.id,
+      document_type: parsed.data.document_type,
+      document_path: parsed.data.document_path,
+      note: parsed.data.note || null,
+    })
+    .select("id")
+    .single();
   if (error) {
     if (error.code === "23505") return { error: "Une demande est déjà en cours d'examen." };
     return { error: "Envoi impossible, réessaie." };
+  }
+  // Empreinte du fichier, calculée par le serveur : un même document ne peut pas servir à deux comptes
+  const admin = createAdminClient();
+  const { data: file } = await admin.storage.from("verification-docs").download(parsed.data.document_path);
+  if (file) {
+    const sha = createHash("sha256").update(Buffer.from(await file.arrayBuffer())).digest("hex");
+    await admin.from("student_verifications").update({ file_sha256: sha }).eq("id", row.id);
   }
   revalidatePath("/", "layout");
   return { ok: true, message: "Justificatif envoyé ! Nous le vérifions au plus vite." };

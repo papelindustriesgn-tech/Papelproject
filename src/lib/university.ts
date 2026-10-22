@@ -176,3 +176,10 @@ export const AUDIT_ACTIONS: Record<string, string> = {
   "member.role_changed": "Rôle modifié",
   "member.removed": "Membre retiré",
 };
+
+/** Correspondance automatique complète (liste importée ou API) : les 4 critères concordent, sans conflit. */
+export function isFullMatch(details: unknown) {
+  if (!details || typeof details !== "object") return false;
+  const d = details as Record<string, unknown>;
+  return ["student_number", "last_name", "first_name", "birth_date"].every((k) => d[k] === true) && d.conflict !== true;
+}

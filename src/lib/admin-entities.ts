@@ -23,6 +23,8 @@ export type FieldSpec =
       options: { value: string; label: string }[] | "partners" | "districts";
     }
   | { name: string; label: string; type: "tags"; hint?: string }
+  /** Prix normal + réduction (pourcentage ou montant) → prix étudiant calculé (price_gnf, discount_*, promo_price_gnf). */
+  | { name: string; label: string; type: "pricing"; hint?: string }
   | { name: string; label: string; type: "image" }
   | { name: string; label: string; type: "images"; max?: number }
   /** Ville (city_id) + quartier (district, si `district` ≠ false). */
@@ -71,11 +73,25 @@ export const ORANGE_MONEY_FIELD: FieldSpec = {
   hint: "Les étudiants paient directement sur ce code marchand. Uny ne touche jamais à l'argent.",
 };
 
-/** Prix facultatifs d'une offre : affichés aux étudiants et proposés pour le paiement Orange Money. */
+/** Prix d'une offre : prix normal + réduction → prix étudiant calculé automatiquement (et par la base). */
 export const DEAL_PRICE_FIELDS: FieldSpec[] = [
-  { name: "price_gnf", label: "Prix normal (GNF)", type: "number", min: 500, max: 1000000000, step: 500 },
-  { name: "promo_price_gnf", label: "Prix étudiant (GNF)", type: "number", min: 0, max: 1000000000, step: 500 },
+  {
+    name: "pricing",
+    label: "Prix et réduction",
+    type: "pricing",
+    hint: "Indique le prix normal et la réduction : le prix étudiant et le libellé sont calculés automatiquement.",
+  },
 ];
+
+/** Libellé libre, seulement pour une offre sans prix (ex. « 1 boisson offerte »). */
+export const DEAL_LABEL_FIELD: FieldSpec = {
+  name: "discount_label",
+  label: "Avantage (offre sans prix)",
+  type: "text",
+  max: 40,
+  placeholder: "1 boisson offerte",
+  hint: "À remplir seulement si l'offre n'a pas de prix ; sinon le libellé est calculé (ex. « -20 % »).",
+};
 
 export const ENTITIES: Record<EntityKey, EntityConfig> = {
   partenaires: {
@@ -114,17 +130,16 @@ export const ENTITIES: Record<EntityKey, EntityConfig> = {
         max: 140,
         placeholder: "-20 % sur tous les plats",
       },
-      { name: "discount_label", label: "Réduction affichée", type: "text", required: true, max: 40, placeholder: "-20 %" },
       { name: "category", label: "Catégorie", type: "select", required: true, options: opts(DEAL_CATEGORIES) },
       { name: "image_url", label: "Photo", type: "image" },
       { name: "description", label: "Description", type: "textarea", max: 2000 },
       { name: "conditions", label: "Conditions", type: "textarea", max: 2000 },
       { name: "location", label: "Ville et quartier", type: "location", hint: "Sans ville : offre valable partout en Guinée." },
       ...DEAL_PRICE_FIELDS,
+      DEAL_LABEL_FIELD,
       { name: "valid_from", label: "Valable à partir du", type: "date", required: true },
       { name: "valid_until", label: "Valable jusqu'au", type: "date" },
       { name: "is_featured", label: "Mettre en avant (« Meilleures réductions »)", type: "checkbox" },
-      { name: "requires_verification", label: "Réservée aux étudiants vérifiés", type: "checkbox", defaultValue: true },
       ...flags,
     ],
   },

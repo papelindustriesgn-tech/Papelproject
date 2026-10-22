@@ -7,7 +7,7 @@ import { RestrictedNotice } from "@/components/university/restricted-notice";
 import { decideEnrollment } from "@/app/universite/actions";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { AUDIT_ACTIONS, ENROLLMENT_STATUS, VERIFICATION_METHODS, requireUniversity, universityCan } from "@/lib/university";
+import { AUDIT_ACTIONS, ENROLLMENT_STATUS, VERIFICATION_METHODS, isFullMatch, requireUniversity, universityCan } from "@/lib/university";
 import { formatDate } from "@/lib/format";
 
 export const metadata = { title: "Fiche étudiant" };
@@ -122,7 +122,7 @@ export default async function StudentFilePage({ params }: { params: Promise<{ id
         )}
         {universityCan(university, "decide") && decisions.length > 0 && (
           <div className="mt-4">
-            <DecisionForm action={decideEnrollment.bind(null, e.id)} decisions={[...decisions]} />
+            <DecisionForm action={decideEnrollment.bind(null, e.id)} decisions={[...decisions]} fullMatch={isFullMatch(e.match_details)} />
           </div>
         )}
       </section>

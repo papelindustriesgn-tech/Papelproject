@@ -75,7 +75,12 @@ test("fiche étudiant : historique visible par la validation, introuvable pour u
   const v = await member("fiche", "partner", "validator");
   const other = await member("voisin", "partner", "admin");
   const student = await (
-    await createAuthUser({ email: `portail.etu.${run}@uny.test`, password, email_confirm: true, user_metadata: { first_name: "Etu", last_name: "Fiche" } })
+    await createAuthUser({
+      email: `portail.etu.${run}@uny.test`,
+      password,
+      email_confirm: true,
+      user_metadata: { first_name: "Etu", last_name: "Fiche" },
+    })
   ).json();
   const [e] = await (
     await serviceRest("student_enrollments", {
@@ -93,7 +98,9 @@ test("fiche étudiant : historique visible par la validation, introuvable pour u
     })
   ).json();
   const api = await userApi(v.email, password);
-  expect((await api.rpc("set_enrollment_status", { p_enrollment: e.id, p_status: "incomplete", p_reason: "Photo illisible" })).status).toBe(200);
+  expect(
+    (await api.rpc("set_enrollment_status", { p_enrollment: e.id, p_status: "incomplete", p_reason: "Photo illisible" })).status,
+  ).toBe(200);
 
   await signIn(page, v.email);
   await page.goto(`/universite/etudiants/${e.id}`);
@@ -113,5 +120,51 @@ test("fiche étudiant : historique visible par la validation, introuvable pour u
     await serviceRest(`universities?id=eq.${m.universityId}`, { method: "DELETE" });
     await serviceRest(`../../auth/v1/admin/users/${m.userId}`, { method: "DELETE" });
   }
+  await serviceRest(`../../auth/v1/admin/users/${student.id}`, { method: "DELETE" });
+});
+
+test("confirmation manuelle : preuve du registre officiel exigée dans le portail", async ({ page }) => {
+  const v = await member("registre", "partner", "validator");
+  const student = await (
+    await createAuthUser({
+      email: `portail.reg.${run}@uny.test`,
+      password,
+      email_confirm: true,
+      user_metadata: { first_name: "Etu", last_name: "Registre" },
+    })
+  ).json();
+  const [e] = await (
+    await serviceRest("student_enrollments", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        user_id: student.id,
+        university_id: v.universityId,
+        academic_year: "2026-2027",
+        student_number: `REG${run}`,
+        claimed_first_name: "Binta",
+        claimed_last_name: "Fictive",
+        status: "pending",
+      }),
+    })
+  ).json();
+  await signIn(page, v.email);
+  await page.goto(`/universite/etudiants/${e.id}`);
+  await page.getByRole("button", { name: "Confirmer l'inscription" }).click();
+  const proof = page.getByTestId("registry-proof");
+  await proof.getByLabel("Référence du registre").fill("Dossier 2026/42");
+  await proof.getByRole("button", { name: "Confirmer l'inscription" }).click();
+  await expect(page.getByText(/Cochez les 4 informations vérifiées/)).toBeVisible();
+  await page.getByRole("button", { name: "Confirmer l'inscription" }).click();
+  for (const l of ["Matricule", "Nom", "Prénom", "Date de naissance"]) await proof.getByLabel(l, { exact: true }).check();
+  await proof.getByLabel("Référence du registre").fill("Dossier 2026/42");
+  await proof.getByRole("button", { name: "Confirmer l'inscription" }).click();
+  await expect(page.getByText(/Inscription confirmée ✅/)).toBeVisible();
+  const [after] = await (await serviceRest(`student_enrollments?id=eq.${e.id}&select=status,source_ref`)).json();
+  expect(after).toEqual({ status: "verified", source_ref: "Dossier 2026/42" });
+
+  await serviceRest(`student_enrollments?id=eq.${e.id}`, { method: "DELETE" });
+  await serviceRest(`universities?id=eq.${v.universityId}`, { method: "DELETE" });
+  await serviceRest(`../../auth/v1/admin/users/${v.userId}`, { method: "DELETE" });
   await serviceRest(`../../auth/v1/admin/users/${student.id}`, { method: "DELETE" });
 });

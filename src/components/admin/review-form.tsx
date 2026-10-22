@@ -7,7 +7,15 @@ import { SubmitButton } from "@/components/ui/submit-button";
 
 const REASONS = ["Document illisible", "Document expiré", "Nom différent du profil", "Document non reconnu"];
 
-export function ReviewForm({ id }: { id: string }) {
+/** Contrôles obligatoires avant validation : ce que l'équipe a vérifié SUR le document, pas sur le profil. */
+const CHECKS = [
+  { key: "identity", label: "Nom et prénom identiques au profil" },
+  { key: "institution", label: "Établissement identique au profil" },
+  { key: "academic_year", label: "Document de l'année académique en cours" },
+  { key: "authentic", label: "Document lisible, original, sans retouche visible" },
+] as const;
+
+export function ReviewForm({ id, academicYear, blocked }: { id: string; academicYear: string; blocked?: string | null }) {
   const [state, action] = useActionState(reviewVerification, {});
   const [reason, setReason] = useState("");
   if (state.ok) return <FormMessage type="success">{state.message}</FormMessage>;
@@ -15,6 +23,20 @@ export function ReviewForm({ id }: { id: string }) {
     <form action={action} className="space-y-3">
       <input type="hidden" name="id" value={id} />
       <FormMessage>{state.error}</FormMessage>
+      {blocked && <FormMessage>{blocked}</FormMessage>}
+      <fieldset className="bg-canvas space-y-1.5 rounded-xl p-3 text-sm">
+        <legend className="mb-1 text-xs font-semibold">Contrôles du document (obligatoires pour valider)</legend>
+        {CHECKS.map((c) => (
+          <label key={c.key} className="flex items-center gap-2">
+            <input type="checkbox" name={`check_${c.key}`} className="accent-brand-600 size-4" />
+            {c.label}
+          </label>
+        ))}
+      </fieldset>
+      <div className="grid grid-cols-2 gap-2">
+        <Input name="student_number" maxLength={40} placeholder="Matricule lu sur le document" aria-label="Matricule lu sur le document" className="h-10 text-sm" />
+        <Input name="academic_year" defaultValue={academicYear} maxLength={9} aria-label="Année académique du document" className="h-10 text-sm" />
+      </div>
       <div className="flex flex-wrap gap-1.5">
         {REASONS.map((r) => (
           <button
@@ -39,7 +61,7 @@ export function ReviewForm({ id }: { id: string }) {
         <SubmitButton name="decision" value="reject" variant="danger">
           Refuser
         </SubmitButton>
-        <SubmitButton name="decision" value="approve" className="bg-mint-500 hover:bg-mint-700">
+        <SubmitButton name="decision" value="approve" className="bg-mint-500 hover:bg-mint-700" disabled={!!blocked}>
           Valider
         </SubmitButton>
       </div>

@@ -3,7 +3,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DecisionForm } from "@/components/university/decision-form";
 import { decideEnrollment } from "@/app/universite/actions";
-import { ENROLLMENT_STATUS, VERIFICATION_METHODS } from "@/lib/university";
+import { ENROLLMENT_STATUS, VERIFICATION_METHODS, isFullMatch } from "@/lib/university";
 import { formatDate, timeAgo } from "@/lib/format";
 import type { Database } from "@/lib/database.types";
 
@@ -107,7 +107,7 @@ export function EnrollmentItem({ e, canDecide }: { e: EnrollmentRow; canDecide: 
           </p>
         )}
         {canDecide && decisions.length > 0 && (
-          <DecisionForm action={decideEnrollment.bind(null, e.id)} decisions={[...decisions]} />
+          <DecisionForm action={decideEnrollment.bind(null, e.id)} decisions={[...decisions]} fullMatch={isFullMatch(e.match_details)} />
         )}
       </div>
     </li>
