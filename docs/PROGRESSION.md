@@ -72,3 +72,11 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
   notification envoyée ; IA désactivée, budgets à 0, aucun appel IA. Première alerte réelle : 8 justificatifs en
   attente depuis plus de 72 h. Non rejoué en prod : parcours connectés (portails, Pilotage, Centre IA, Aide).
 - Retour arrière : redéployer `dpl_ET2KHBAgwZ1gYWJqHZC2V4WN6hdh`, puis si nécessaire `supabase/rollback/20261022_rollback.sql`.
+- Prod au 22/10 après-midi (autorisation du propriétaire) : sauvegarde `uny-2026-10-22-15-53-16`, migrations
+  `20261022100001` à `03`, code `d73d915`, déploiement `dpl_G1fmYdfLdj4kVDnQwniojXmZsH5X`. Vérifié en prod : pages
+  publiques 200 ; surveillance 401 sans secret / 200 avec ; prix calculé par la base (25 000 GNF, -15 % → 21 200 GNF,
+  insertion annulée) ; offre ouverte aux non-vérifiés refusée ; 18 offres reprises sans changement de prix ; 0 offre
+  ouverte aux non-vérifiés ; déclencheur « partenaire » actif ; aucune erreur d'exécution. Non rejoué en prod :
+  parcours connectés (justificatif, portail, dossier établissement), testés en local seulement.
+- Retour arrière de ce lot : redéployer `dpl_3G11DdiZ2GwjEo8E27v2qhTt5cBo`, puis si nécessaire
+  `supabase/rollback/20261022_controles_rollback.sql`.
