@@ -80,3 +80,15 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
   parcours connectés (justificatif, portail, dossier établissement), testés en local seulement.
 - Retour arrière de ce lot : redéployer `dpl_3G11DdiZ2GwjEo8E27v2qhTt5cBo`, puis si nécessaire
   `supabase/rollback/20261022_controles_rollback.sql`.
+
+## Correctifs après revue (22/10, branche `claude/uny-audit-securite-xf13tt`) — corrigés dans le code, testés en local, NON déployés
+- ✅ publish_card_template : refus tant que l'autorisation n'est pas strictement vraie (défaut NULL confirmé en local,
+  motif présent en production, aucun modèle créé depuis le 21/10) — test 21 + contre-épreuve — migration `20261022200001`
+- 🟡 Environnements : préversions arrêtées si branchées sur la production ; tests/scripts refusent la production ;
+  ⛔ base de préproduction à créer (docs/ENVIRONNEMENTS.md)
+- ✅ Support : file, réponse notifiée dans l'app, sans doublon, panne de notification sans perte — test 21 — `20261022200002`
+- ✅ Coûts IA : coût maximal réservé, pas de remplacement ni relance, à rapprocher, tableau de bord — test 22 — `20261022200003`
+- ✅ Textes publics : compte ≠ carte vérifiée, aucun délai ni email promis par défaut — test 01
+- ✅ File de traitement + prochaine étape étudiante — test 23 — `20261022200004`
+- ✅ Parcours pilote complet (fictif) — test 23
+- ⬜ Appareils réels (caméra, retour Android, zones iPhone, liens, signatures) : non exécutés
