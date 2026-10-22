@@ -109,8 +109,8 @@ export function UniversityApplicationForm({
         Créer mon espace établissement
       </SubmitButton>
       <p className="text-muted text-center text-xs">
-        Vous accédez tout de suite à votre espace. Les fonctions liées à vos étudiants s&apos;ouvrent après une vérification
-        rapide de l&apos;établissement par l&apos;équipe Uny (48 h).
+        Vous accédez tout de suite à votre espace. Les fonctions liées à vos étudiants s&apos;ouvrent après le contrôle de
+        votre dossier officiel par l&apos;équipe Uny.
       </p>
     </form>
   );

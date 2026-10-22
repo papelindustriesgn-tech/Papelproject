@@ -16,6 +16,7 @@ import { CompleteProfileForm } from "./complete-profile-form";
 import { missingProfileFields } from "@/lib/journey";
 import { ENROLLMENT_STATUS, VERIFICATION_METHODS } from "@/lib/university";
 import { BAC_METHODS, officialBacProvider } from "@/lib/verification/bac";
+import { delayHint } from "@/lib/review-delay";
 
 export const metadata: Metadata = { title: "Vérification étudiante" };
 
@@ -100,7 +101,7 @@ export default async function VerificationPage({ searchParams }: { searchParams:
             <Clock3 className="size-6 shrink-0" aria-hidden />
             <p>
               Ton justificatif ({DOCUMENT_TYPES[pending.document_type].toLowerCase()}) a été envoyé {timeAgo(pending.created_at)}.
-              L&apos;équipe Uny le vérifie en général sous 48 h. Tu recevras une notification et un email.
+              L&apos;équipe Uny le contrôle{delayHint()}. Tu recevras une notification dans l&apos;application.
             </p>
           </div>
         ) : (
@@ -109,7 +110,7 @@ export default async function VerificationPage({ searchParams }: { searchParams:
             <li className={incomplete ? undefined : "text-ink font-semibold"}>
               2. Envoie ta carte d&apos;étudiant ou ton attestation (photo lisible ou PDF).
             </li>
-            <li>3. L&apos;équipe Uny valide ton statut, généralement sous 48 h.</li>
+            <li>3. L&apos;équipe Uny contrôle le document (nom, établissement, année en cours) puis valide ton statut{delayHint()}.</li>
           </ol>
         )}
       </section>

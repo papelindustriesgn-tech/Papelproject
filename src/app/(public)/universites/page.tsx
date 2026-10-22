@@ -86,7 +86,7 @@ export default async function UniversitiesLanding() {
           <ol className="text-ink/80 mt-5 space-y-4">
             {[
               "Vous créez l'espace de votre établissement (2 minutes) et y accédez tout de suite.",
-              "L'équipe Uny vérifie l'établissement (48 h) : la confirmation des inscriptions et les annonces s'ouvrent.",
+              "Vous déposez le dossier officiel (agrément, lettre signée) ; l'équipe Uny le contrôle et rappelle votre standard : la confirmation des inscriptions et les annonces s'ouvrent ensuite.",
               "Vous personnalisez la carte et importez votre liste d'inscrits (ou confirmez au cas par cas).",
               "Vos étudiants reçoivent une carte Uny vérifiée, reconnue par tous les partenaires.",
             ].map((s, i) => (

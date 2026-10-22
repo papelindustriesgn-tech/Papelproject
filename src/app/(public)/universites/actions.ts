@@ -157,7 +157,7 @@ export async function applyAsUniversity(_prev: FormState, formData: FormData): P
     return {
       ok: true,
       message:
-        "Compte créé ✅ Cet établissement a déjà un espace sur Uny : l'équipe Uny vérifie votre demande et vous donne l'accès sous 48 h.",
+        "Compte créé ✅ Cet établissement a déjà un espace sur Uny : l'équipe Uny vérifie votre demande avant de vous donner l'accès.",
     };
 
   const supabase = await createClient();

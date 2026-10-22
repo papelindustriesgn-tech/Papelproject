@@ -1,6 +1,7 @@
 import { Clock, LogOut, Mail, ShieldX } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { SUPPORT_EMAIL } from "@/lib/constants";
+import { delayHint } from "@/lib/review-delay";
 
 /** Écran affiché aux étudiants tant que leur inscription n'est pas validée par l'équipe Uny. */
 export function PendingAccount({
@@ -28,7 +29,7 @@ export function PendingAccount({
         <p className="text-muted mt-2 text-sm leading-relaxed">
           {rejected
             ? (note ?? "Ton inscription n'a pas pu être validée. Si c'est une erreur, écris-nous : on regarde ça rapidement.")
-            : "L'équipe Uny vérifie chaque inscription pour garantir que seuls de vrais étudiants profitent des avantages. Tu recevras une notification dès que ton compte sera validé, en général sous 24 à 48 h."}
+            : `L'équipe Uny vérifie chaque inscription pour que seuls de vrais étudiants profitent des avantages. Tu recevras une notification dans l'application dès que ton compte sera validé${delayHint(", délai indicatif : ")}.`}
         </p>
         {!rejected && (
           <ul className="bg-canvas mt-5 space-y-2 rounded-2xl p-4 text-left text-sm">

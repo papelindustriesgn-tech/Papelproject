@@ -73,5 +73,5 @@ export async function applyAsPartner(_prev: FormState, formData: FormData): Prom
     }),
   });
 
-  return { ok: true, message: "Demande envoyée ✅ L'équipe Uny te contacte sous 48 h pour activer ton espace partenaire." };
+  return { ok: true, message: "Demande envoyée ✅ L'équipe Uny te contacte pour activer ton espace partenaire." };
 }

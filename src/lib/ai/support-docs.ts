@@ -16,7 +16,7 @@ export const SUPPORT_DOCS: SupportDoc[] = [
     id: "verification",
     title: "Vérifier mon statut étudiant",
     keywords: ["vérification", "justificatif", "statut", "étudiant", "document", "certificat", "matricule"],
-    body: "Ouvre Profil → Vérification étudiante. Complète ton profil puis envoie ton justificatif (ou fais la demande auprès de ton établissement s'il est partenaire). L'équipe Uny ou l'établissement valide ton statut, généralement sous 48 h, sans garantie de délai.",
+    body: "Ouvre Profil → Vérification étudiante. Complète ton profil puis envoie ton justificatif (ou fais la demande auprès de ton établissement s'il est partenaire). L'équipe Uny contrôle le document (nom, établissement, année en cours) ou l'établissement confirme ton inscription ; aucun délai n'est garanti. La création du compte ne donne pas encore accès aux réductions : il faut un statut vérifié.",
   },
   {
     id: "a-completer",

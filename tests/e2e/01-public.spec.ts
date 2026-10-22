@@ -6,7 +6,10 @@ test("landing publique : promesse, problème, solution, avantages, commerçants"
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Ton statut étudiant");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("vaut de l'argent");
   await expect(page.getByText("Disponible dans toute la Guinée", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Obtenir ma carte gratuite/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Créer mon compte gratuit/ })).toBeVisible();
+  // Pas de promesse de carte immédiate : création du compte ≠ carte vérifiée
+  await expect(page.getByText(/prête en 3 minutes/)).toHaveCount(0);
+  await expect(page.getByText(/Ta carte vérifiée sera disponible après validation/)).toBeVisible();
   // Avant / après avec le statut étudiant (exemples)
   await expect(page.getByText("Avec ton statut étudiant", { exact: true })).toBeVisible();
   await expect(page.getByText("Exemples illustratifs de réductions étudiantes")).toBeVisible();

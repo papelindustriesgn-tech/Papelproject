@@ -7,6 +7,7 @@ import { requireUniversity, universityCan } from "@/lib/university";
 import { DeclaredStudents } from "@/components/university/declared-students";
 import { formatDate, isoDateInDays } from "@/lib/format";
 import { param, type SearchParams } from "@/lib/url";
+import { delayHint } from "@/lib/review-delay";
 
 export const metadata = { title: "Tableau de bord" };
 
@@ -143,8 +144,9 @@ export default async function UniversityHome({ searchParams }: { searchParams: P
 
       {param(sp, "bienvenue") && (
         <FormMessage type="success">
-          Bienvenue sur Uny 🎓 L&apos;espace de {university.name} est créé. Préparez dès maintenant votre fiche et votre carte ;
-          l&apos;équipe Uny vérifie l&apos;établissement sous 48 h.
+          Bienvenue sur Uny 🎓 L&apos;espace de {university.name} est créé. Préparez votre fiche et votre carte, puis
+          déposez le dossier de vérification (Établissement &amp; connexion) : l&apos;équipe Uny le contrôle avant
+          d&apos;ouvrir l&apos;accès aux dossiers des étudiants{delayHint(" (délai indicatif : ")}{delayHint() ? ")" : ""}.
         </FormMessage>
       )}
 

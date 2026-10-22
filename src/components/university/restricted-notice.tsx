@@ -2,6 +2,7 @@ import { Lock } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import type { UniversitySummary } from "@/lib/university";
 import { UNIVERSITY_ROLES } from "@/lib/university";
+import { delayHint } from "@/lib/review-delay";
 
 /** Page réservée : établissement pas encore approuvé, ou rôle sans accès aux dossiers d'étudiants. */
 export function RestrictedNotice({ university, title }: { university: UniversitySummary; title: string }) {
@@ -14,7 +15,7 @@ export function RestrictedNotice({ university, title }: { university: University
         title={pending ? "Disponible après l'approbation de l'établissement" : "Accès non inclus dans votre rôle"}
         text={
           pending
-            ? "Pour protéger les données des étudiants, les dossiers ne sont visibles qu'une fois l'établissement vérifié par Uny (sous 48 h en général). Vous pouvez déjà préparer la fiche et la carte."
+            ? `Pour protéger les données des étudiants, les dossiers ne sont visibles qu'une fois l'établissement vérifié par Uny (dossier officiel puis contrôle par l'équipe${delayHint(", délai indicatif : ")}). Vous pouvez déjà préparer la fiche, la carte et le dossier de vérification.`
             : `Votre rôle « ${UNIVERSITY_ROLES[university.role].label} » ne donne pas accès aux dossiers. Demandez à un administrateur de l'établissement de modifier vos droits.`
         }
       />

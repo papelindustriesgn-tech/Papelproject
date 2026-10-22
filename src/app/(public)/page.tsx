@@ -100,7 +100,7 @@ export default async function LandingPage() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <LinkButton href="/inscription" size="lg">
-                Obtenir ma carte gratuite <ArrowRight className="size-5" />
+                Créer mon compte gratuit <ArrowRight className="size-5" />
               </LinkButton>
               <LinkButton href="#pourquoi" size="lg" variant="outline">
                 Pourquoi Uny ?
@@ -416,7 +416,9 @@ export default async function LandingPage() {
       <section className="px-4 pb-16">
         <div className="uny-pattern from-brand-800 via-brand-700 to-brand-500 mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-gradient-to-br px-6 py-14 text-center text-white">
           <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Ton statut étudiant devient un avantage.</h2>
-          <p className="text-brand-100 mx-auto mt-3 max-w-md">Gratuit. Ta carte est prête en 3 minutes.</p>
+          <p className="text-brand-100 mx-auto mt-3 max-w-md">
+            Gratuit. Crée ton compte en quelques minutes. Ta carte vérifiée sera disponible après validation.
+          </p>
           <LinkButton href="/inscription" variant="mango" size="lg" className="mt-8 w-full sm:w-auto">
             Créer mon compte
           </LinkButton>

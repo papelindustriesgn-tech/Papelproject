@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import type { Profile } from "@/lib/auth";
+import { delayHint } from "@/lib/review-delay";
 
 /** Parcours étudiant (Inscription → Vérification → Carte → Utilisation) : prochaine action affichée sur l'accueil. */
 export type NextStep = {
@@ -57,7 +58,7 @@ export async function getJourney(supabase: SupabaseClient<Database>, profile: Pr
     current = 1;
     next = {
       title: "Vérification en cours ⏳",
-      body: "Nous examinons ta demande, en général sous 48 h. Tu recevras une notification.",
+      body: `Nous examinons ta demande${delayHint()}. Tu recevras une notification dans l'application.`,
       href: "/avantages",
       cta: "Voir les offres en attendant",
       tone: "mango",
