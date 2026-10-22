@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DecisionForm } from "@/components/university/decision-form";
@@ -59,9 +60,9 @@ export function EnrollmentItem({ e, canDecide }: { e: EnrollmentRow; canDecide: 
         <Avatar src={e.avatar_url} first={e.first_name} last={e.last_name} size={52} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="font-bold">
+            <Link href={`/universite/etudiants/${e.id}`} className="font-bold hover:underline">
               {e.first_name} <span className="uppercase">{e.last_name}</span>
-            </p>
+            </Link>
             <Badge tone={st.tone}>{st.label}</Badge>
             {e.status === "verified" && e.card_status && e.card_status !== "active" && (
               <Badge tone="coral">Carte {e.card_status === "revoked" ? "révoquée" : "expirée"}</Badge>
