@@ -160,10 +160,29 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
 - Validation (`valider_piece`) : numéro **continu sans trou** par type et par an (`DEV-`, `CMD-`, `FA-`, `AV-AAAA-NNNNN`, table `compteurs`),
   TVA sur le total HT (un arrondi), échéance = date + délai du client. Pièce validée = figée (correction par avoir).
 - Livraison (bon `BL-`) : depuis une commande validée, partielle possible ; validation = sorties de stock « vente » (stock insuffisant → refus).
-- Paiements **saisis au bureau uniquement** (rôle finance) via `enregistrer_paiement` : refus au-delà du reste dû ; recalcul de la dotation.
+- Paiements **saisis au bureau uniquement** (rôle finance) via `enregistrer_paiement` : refus au-delà du reste dû ; recalcul de la dotation. Liste : Ventes → Encaissements.
 - Dotation (`calculer_dotation_facture`, même méthode que `dotation.ts`, part payée calculée sur le TTC) ; remise physique
   (`remettre_dotation`) = sortie de stock « dotation » dans le même produit.
-- Avoir (`valider_avoir`) : reprend les lignes de la facture (quantités ajustables), remet les paquets en stock (« retour »), ne peut pas dépasser le reste dû.
+- **Pièce verrouillée en base** (migration `20261022002500_securisation_ventes.sql`, trigger `piece_figee`) : par l'API, une pièce ne se crée qu'en
+  brouillon (totaux ignorés), ne change jamais de statut, de numéro, de type, de lien ni de totaux ; validée, elle est figée pour tous
+  (seule exception : `annuler_piece` d'un devis/commande). Statut, annulation, transformation : uniquement `valider_piece`, `annuler_piece`,
+  `transformer_piece` (security definer, droits vérifiés). « Écriture directe » = `est_acces_api()` (rôles authenticated/anon/service_role).
+- **Avoir** : créé par `transformer_piece(facture, 'avoir')`, une ligne par ligne de facture encore créditable (`origine_ligne_id`, prix figé).
+  **Un seul circuit** : `valider_piece` applique les contrôles de l'avoir (`valider_avoir` n'en est qu'un alias) ; aperçu et validation
+  partagent `analyser_avoir` (même calcul). Permis sur facture payée ou partiellement payée, dans la limite des quantités et du TTC encore
+  créditables ; TVA de la facture, le dernier avoir reprend exactement le reste. Effet financier stocké : `avoir_reduction_creance_gnf`
+  (baisse du reste dû) et `avoir_credit_client_gnf` (**crédit client**, visible dans `factures_etat.credit_client_gnf`, jamais masqué).
+  Remboursement = opération saisie (`enregistrer_remboursement`, table `remboursements_clients`, sortie de trésorerie), jamais automatique.
+- **Retour physique ≠ avoir financier** : les paquets rapportés à la livraison (`enregistrer_remise`) sont déjà en stock ; la validation de
+  l'avoir les rattache d'office (`retour_livraison_paquets`, plus rien à relivrer dans `reste_a_livrer`) sans nouvelle entrée. Un nouveau
+  retour à l'usine se saisit par ligne (`retour_stock_paquets`), plafonné à ce que le client détient (livré − rapporté − déjà repris ; 0 sans
+  livraison). Index unique : une seule entrée « retour » par (document, article).
+- **Encaissements** : insertion directe interdite ; `enregistrer_paiement(…, p_cle)` seul chemin ; le trigger `controler_paiement` refait les
+  contrôles (facture validée, montant > 0, reste dû = TTC − avoirs − (payé − remboursé)) sous **verrou de la facture** (paiements
+  concurrents sérialisés) ; `p_cle` = clé d'idempotence générée par la page (`nouvelleCle()`) : un double clic renvoie le même paiement.
+  Paiements et remboursements inaltérables ; sans compte de trésorerie pour le mode, l'encaissement est refusé.
+- **Erreur de chargement** : lire les résultats Supabase avec `exigerDonnees(resultat, "quoi")` (`src/lib/donnees/resultat.ts`) — une requête
+  en échec affiche `src/app/(app)/error.tsx` (message + « Réessayer »), jamais zéro ni une liste vide.
 - Impayés : tranches d'ancienneté, relances (canal, compte rendu, promesse de paiement).
 - Indicateurs (`src/lib/ventes/indicateurs.ts`) : CA HT (factures − avoirs), volumes paquets/colis, prix moyen, commandes, clients actifs,
   nouveaux clients, encaissements, créances, échu, **DSO** = créances ÷ CA TTC × jours (`src/lib/metier/ventes.ts`).

@@ -6,6 +6,7 @@ import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { formaterDate } from "@/lib/formulaires/dates";
 import { gnf } from "@/lib/stocks/libelles";
+import { exigerDonnees } from "@/lib/donnees/resultat";
 import { clientServeur } from "@/lib/supabase/serveur";
 
 export const metadata: Metadata = { title: "Impayés" };
@@ -19,11 +20,14 @@ const TRANCHES = [
 
 export default async function PageImpayes() {
   const supabase = await clientServeur();
-  const [{ data }, { data: relances }, { alerte_impaye_jours: seuilImpaye }] = await Promise.all([
+  const [resFactures, resRelances, { alerte_impaye_jours: seuilImpaye }] = await Promise.all([
     supabase.from("factures_etat").select("*").gt("solde_gnf", 0).order("jours_retard", { ascending: false }),
     supabase.from("relances").select("facture_id, date_relance, promesse_date").order("date_relance", { ascending: false }),
     lireSeuils({ alerte_impaye_jours: 30 }),
   ]);
+  // Requête en échec : message + « Réessayer », jamais « Aucun impayé ».
+  const data = exigerDonnees(resFactures, "les factures impayées");
+  const relances = exigerDonnees(resRelances, "les relances");
   const factures = (data ?? []).map((f) => ({ ...f, solde: Number(f.solde_gnf ?? 0), retard: Number(f.jours_retard ?? 0) }));
   const derniereRelance = new Map<string, { date_relance: string; promesse_date: string | null }>();
   for (const r of relances ?? []) if (!derniereRelance.has(r.facture_id)) derniereRelance.set(r.facture_id, r);

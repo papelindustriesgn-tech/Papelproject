@@ -161,13 +161,24 @@ export async function supprimerLigne(ligneId: string, pieceId: string): Promise<
 export async function validerPiece(pieceId: string, typePiece: TypePiece, _e: EtatFormulaire): Promise<EtatFormulaire> {
   await exigerEspace("ventes");
   const supabase = await clientServeur();
-  const { data, error } =
-    typePiece === "avoir"
-      ? await supabase.rpc("valider_avoir", { p_avoir: pieceId, p_retour_stock: true })
-      : await supabase.rpc("valider_piece", { p_piece: pieceId });
+  // Un seul circuit de validation : pour un avoir, la base applique ses contrôles (quantités, prix, retours).
+  const { data, error } = await supabase.rpc("valider_piece", { p_piece: pieceId });
   if (error) return { message: messageErreurBase(error) };
   rafraichir();
+  if (typePiece === "avoir") revalidatePath("/magasin", "layout");
   redirect(avecSucces(`/ventes/pieces/${pieceId}`, `Pièce ${data} validée.`));
+}
+
+// Avoir : paquets de la ligne qui reviennent physiquement à l'usine à la validation (nouvelle entrée en stock).
+export async function modifierRetourStock(ligneId: string, pieceId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
+  await exigerEspace("ventes");
+  const n = lireNombre(String(fd.get("retour_stock_paquets") ?? "0") || "0");
+  if (n === null || !Number.isInteger(n) || n < 0) return { erreurs: { retour_stock_paquets: "Nombre de paquets invalide." } };
+  const supabase = await clientServeur();
+  const { error } = await supabase.from("lignes_piece").update({ retour_stock_paquets: n }).eq("id", ligneId);
+  if (error) return { message: messageErreurBase(error) };
+  revalidatePath(`/ventes/pieces/${pieceId}`);
+  return { ok: true };
 }
 
 export async function transformerPiece(pieceId: string, versType: TypePiece): Promise<void> {
@@ -237,6 +248,8 @@ const schemaPaiement = z.object({
   mode_id: uuid("Choisissez le mode de paiement."),
   date_paiement: z.string().regex(schemaDateIso, "Date invalide."),
   reference: z.string().trim().max(100),
+  // Clé de la saisie : un double clic ou une nouvelle tentative ne crée pas un 2e paiement.
+  cle: uuid("Rechargez la page avant d'enregistrer."),
 });
 
 export async function enregistrerPaiement(factureId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
@@ -252,10 +265,35 @@ export async function enregistrerPaiement(factureId: string, _e: EtatFormulaire,
     p_mode: d.mode_id,
     p_date: d.date_paiement,
     p_reference: d.reference,
+    p_cle: d.cle,
   });
   if (error) return { message: messageErreurBase(error), valeurs };
   rafraichir();
+  revalidatePath("/finance", "layout");
   return { ok: true, message: "Paiement enregistré. La dotation éventuelle est recalculée." };
+}
+
+// Remboursement d'un crédit client (argent rendu) : jamais automatique, saisi par la finance.
+export async function enregistrerRemboursement(factureId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
+  await exigerEspace("ventes");
+  const valeurs = valeursFormulaire(fd);
+  const lecture = schemaPaiement.safeParse(valeurs);
+  if (!lecture.success) return { erreurs: erreursZod(lecture.error), valeurs };
+  const d = lecture.data;
+  const supabase = await clientServeur();
+  const { error } = await supabase.rpc("enregistrer_remboursement", {
+    p_facture: factureId,
+    p_montant: d.montant_gnf,
+    p_mode: d.mode_id,
+    p_date: d.date_paiement,
+    p_reference: d.reference,
+    p_cle: d.cle,
+  });
+  if (error) return { message: messageErreurBase(error), valeurs };
+  rafraichir();
+  revalidatePath("/finance", "layout");
+  // Le formulaire disparaît quand le crédit est soldé : le message passe par le bandeau de la page.
+  redirect(avecSucces(`/ventes/pieces/${factureId}`, "Remboursement enregistré (sortie de trésorerie)."));
 }
 
 export async function remettreDotation(dotationId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {

@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { Bouton, Champ, Message, Selection } from "@/components/ui";
 import { ETAT_INITIAL, type EtatFormulaire } from "@/lib/formulaires/etat";
 import { CANAUX_RELANCE } from "@/lib/ventes/libelles";
-import { ajouterLigne, enregistrerPaiement, enregistrerRelance, modifierQuantiteLigne, remettreDotation, validerPiece } from "../../actions";
+import { ajouterLigne, enregistrerPaiement, enregistrerRelance, enregistrerRemboursement, modifierQuantiteLigne, modifierRetourStock, remettreDotation, validerPiece } from "../../actions";
 
 type Option = { id: string; libelle: string };
 
@@ -61,26 +61,112 @@ export function FormulaireQuantite({ ligneId, pieceId, colis, vrac }: { ligneId:
   );
 }
 
-export function BoutonValiderPiece({ pieceId, typePiece, libelle }: { pieceId: string; typePiece: "devis" | "commande" | "facture" | "avoir"; libelle: string }) {
+export function BoutonValiderPiece({
+  pieceId,
+  typePiece,
+  libelle,
+  confirmation,
+  bloque,
+}: {
+  pieceId: string;
+  typePiece: "devis" | "commande" | "facture" | "avoir";
+  libelle: string;
+  /** Conséquences à confirmer avant de valider (avoir : solde client et stock). */
+  confirmation?: string[];
+  /** Validation impossible en l'état (le motif est affiché à côté). */
+  bloque?: boolean;
+}) {
   const [etat, action, enCours] = useActionState(validerPiece.bind(null, pieceId, typePiece), ETAT_INITIAL);
+  const [aConfirmer, setAConfirmer] = useState(false);
+  if (confirmation && !aConfirmer) {
+    return (
+      <div className="flex flex-col gap-2">
+        {etat.message && <Message ton={etat.ok ? "succes" : "erreur"}>{etat.message}</Message>}
+        <Bouton type="button" disabled={bloque} onClick={() => setAConfirmer(true)} className="self-start">
+          {libelle}
+        </Bouton>
+      </div>
+    );
+  }
   return (
     <form action={action} className="flex flex-col gap-2">
       {etat.message && <Message ton={etat.ok ? "succes" : "erreur"}>{etat.message}</Message>}
-      <Bouton type="submit" disabled={enCours} className="self-start">
-        {enCours ? "Validation…" : libelle}
-      </Bouton>
+      {confirmation && (
+        <div role="alertdialog" aria-label="Confirmer la validation" className="rounded-xl bg-amber-50 p-3 text-gray-900">
+          <p className="font-semibold">En validant, définitivement :</p>
+          <ul className="mt-1 list-disc pl-5">
+            {confirmation.map((c) => (
+              <li key={c}>{c}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <Bouton type="submit" disabled={enCours || bloque}>
+          {enCours ? "Validation…" : confirmation ? "Confirmer la validation" : libelle}
+        </Bouton>
+        {confirmation && (
+          <Bouton type="button" variante="discret" disabled={enCours} onClick={() => setAConfirmer(false)}>
+            Revenir
+          </Bouton>
+        )}
+      </div>
     </form>
   );
 }
 
-export function FormulairePaiement({ factureId, modes, reste, dateDuJour }: { factureId: string; modes: Option[]; reste: number; dateDuJour: string }) {
-  const [etat, action, enCours] = useActionState(enregistrerPaiement.bind(null, factureId), ETAT_INITIAL);
+/** Avoir : paquets de la ligne qui reviennent physiquement à l'usine (0 = avoir purement financier). */
+export function FormulaireRetourStock({ ligneId, pieceId, valeur, max }: { ligneId: string; pieceId: string; valeur: number; max: number }) {
+  const [etat, action, enCours] = useActionState(modifierRetourStock.bind(null, ligneId, pieceId), ETAT_INITIAL);
+  const inutile = max === 0 && valeur === 0;
+  return (
+    <form action={action} className="flex flex-wrap items-center gap-1">
+      <input
+        name="retour_stock_paquets"
+        defaultValue={valeur}
+        inputMode="numeric"
+        disabled={inutile}
+        className="min-h-11 w-20 rounded border border-gray-300 px-2 disabled:bg-gray-100 md:min-h-9"
+        aria-label="Paquets qui reviennent en stock"
+      />
+      <span className="text-sm">paq. (max {max})</span>
+      {!inutile && (
+        <Bouton type="submit" variante="discret" disabled={enCours}>
+          OK
+        </Bouton>
+      )}
+      {etat.erreurs && <span className="text-sm text-red-700">{Object.values(etat.erreurs)[0]}</span>}
+      {etat.message && !etat.ok && <span className="text-sm text-red-700">{etat.message}</span>}
+    </form>
+  );
+}
+
+function FormulaireReglement({
+  action: actionServeur,
+  modes,
+  montant,
+  dateDuJour,
+  cle,
+  libelleBouton,
+  variante = "principal",
+}: {
+  action: (e: EtatFormulaire, fd: FormData) => Promise<EtatFormulaire>;
+  modes: Option[];
+  montant: number;
+  dateDuJour: string;
+  cle: string;
+  libelleBouton: string;
+  variante?: "principal" | "secondaire";
+}) {
+  const [etat, action, enCours] = useActionState(actionServeur, ETAT_INITIAL);
   const v = etat.ok ? {} : (etat.valeurs ?? {});
   const e = etat.erreurs ?? {};
   return (
     <form action={action} className="flex flex-wrap items-end gap-2">
       <Retour etat={etat} />
-      <Champ libelle="Montant (GNF)" name="montant_gnf" inputMode="numeric" defaultValue={v.montant_gnf ?? String(reste)} erreur={e.montant_gnf} className="basis-36 flex-1" />
+      {/* Clé de cette saisie : identique en cas de double clic, renouvelée par la page après l'enregistrement. */}
+      <input type="hidden" name="cle" value={cle} />
+      <Champ libelle="Montant (GNF)" name="montant_gnf" inputMode="numeric" defaultValue={v.montant_gnf ?? String(montant)} erreur={e.montant_gnf} className="basis-36 flex-1" />
       <Selection libelle="Mode" name="mode_id" defaultValue={v.mode_id ?? modes[0]?.id ?? ""} erreur={e.mode_id} className="basis-40 flex-1">
         {modes.map((m) => (
           <option key={m.id} value={m.id}>
@@ -89,11 +175,29 @@ export function FormulairePaiement({ factureId, modes, reste, dateDuJour }: { fa
         ))}
       </Selection>
       <Champ libelle="Date" name="date_paiement" type="date" defaultValue={v.date_paiement ?? dateDuJour} max={dateDuJour} erreur={e.date_paiement} className="basis-36 flex-1" />
-      <Champ libelle="Référence (n° de transaction, chèque…)" name="reference" defaultValue={v.reference} erreur={e.reference} className="basis-48 flex-1" />
-      <Bouton type="submit" disabled={enCours}>
-        Enregistrer le paiement
+      <Champ libelle="Référence (n° de transaction, chèque…)" name="reference" defaultValue={v.reference} erreur={e.reference ?? e.cle} className="basis-48 flex-1" />
+      <Bouton type="submit" variante={variante} disabled={enCours}>
+        {enCours ? "Enregistrement…" : libelleBouton}
       </Bouton>
     </form>
+  );
+}
+
+export function FormulairePaiement({ factureId, modes, reste, dateDuJour, cle }: { factureId: string; modes: Option[]; reste: number; dateDuJour: string; cle: string }) {
+  return <FormulaireReglement action={enregistrerPaiement.bind(null, factureId)} modes={modes} montant={reste} dateDuJour={dateDuJour} cle={cle} libelleBouton="Enregistrer le paiement" />;
+}
+
+export function FormulaireRemboursement({ factureId, modes, credit, dateDuJour, cle }: { factureId: string; modes: Option[]; credit: number; dateDuJour: string; cle: string }) {
+  return (
+    <FormulaireReglement
+      action={enregistrerRemboursement.bind(null, factureId)}
+      modes={modes}
+      montant={credit}
+      dateDuJour={dateDuJour}
+      cle={cle}
+      libelleBouton="Enregistrer le remboursement"
+      variante="secondaire"
+    />
   );
 }
 

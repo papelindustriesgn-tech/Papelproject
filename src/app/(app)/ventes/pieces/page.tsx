@@ -6,6 +6,7 @@ import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { formaterDate } from "@/lib/formulaires/dates";
 import { gnf } from "@/lib/stocks/libelles";
 import { STATUTS_PIECE, TYPES_PIECE } from "@/lib/ventes/libelles";
+import { exigerDonnees } from "@/lib/donnees/resultat";
 import { clientServeur } from "@/lib/supabase/serveur";
 import type { Database } from "@/lib/supabase/types";
 
@@ -27,7 +28,9 @@ export default async function PagePieces({ searchParams }: PageProps<"/ventes/pi
     .limit(300);
   if (q) requete = requete.or(`numero.ilike.${motifRecherche(q)}`);
   if (statut) requete = requete.eq("statut", statut as Database["public"]["Enums"]["statut_piece"]);
-  const [{ data }, { data: etats }] = await Promise.all([requete, type === "facture" ? supabase.from("factures_etat").select("id, solde_gnf, jours_retard") : Promise.resolve({ data: [] })]);
+  const [resPieces, resEtats] = await Promise.all([requete, type === "facture" ? supabase.from("factures_etat").select("id, solde_gnf, jours_retard") : Promise.resolve({ data: [], error: null })]);
+  const data = exigerDonnees(resPieces, "les pièces de vente");
+  const etats = exigerDonnees(resEtats, "l'état des factures");
   const etat = new Map((etats ?? []).map((e) => [e.id, { solde_gnf: Number(e.solde_gnf ?? 0), jours_retard: Number(e.jours_retard ?? 0) }]));
   const pieces = data ?? [];
 

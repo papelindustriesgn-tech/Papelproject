@@ -1521,13 +1521,13 @@ isOneToOne: false
                   ]
                 },"lignes_piece": {
                   Row: {
-                    "conditionnement_id": string,"created_at": string,"id": string,"montant_ht_gnf": number,"paquets": number,"paquets_vrac": number,"piece_id": string,"prix_paquet_gnf": number,"quantite_colis": number
+                    "conditionnement_id": string,"created_at": string,"id": string,"montant_ht_gnf": number,"origine_ligne_id": string | null,"paquets": number,"paquets_vrac": number,"piece_id": string,"prix_paquet_gnf": number,"quantite_colis": number,"retour_livraison_paquets": number,"retour_stock_paquets": number
                   }
                   Insert: {
-                    "conditionnement_id": string,"created_at"?: string,"id"?: string,"montant_ht_gnf": number,"paquets": number,"paquets_vrac"?: number,"piece_id": string,"prix_paquet_gnf": number,"quantite_colis"?: number
+                    "conditionnement_id": string,"created_at"?: string,"id"?: string,"montant_ht_gnf": number,"origine_ligne_id"?: string | null,"paquets": number,"paquets_vrac"?: number,"piece_id": string,"prix_paquet_gnf": number,"quantite_colis"?: number,"retour_livraison_paquets"?: number,"retour_stock_paquets"?: number
                   }
                   Update: {
-                    "conditionnement_id"?: string,"created_at"?: string,"id"?: string,"montant_ht_gnf"?: number,"paquets"?: number,"paquets_vrac"?: number,"piece_id"?: string,"prix_paquet_gnf"?: number,"quantite_colis"?: number
+                    "conditionnement_id"?: string,"created_at"?: string,"id"?: string,"montant_ht_gnf"?: number,"origine_ligne_id"?: string | null,"paquets"?: number,"paquets_vrac"?: number,"piece_id"?: string,"prix_paquet_gnf"?: number,"quantite_colis"?: number,"retour_livraison_paquets"?: number,"retour_stock_paquets"?: number
                   }
                   Relationships: [
                     {
@@ -1542,6 +1542,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "prix_actuels"
       referencedColumns: ["conditionnement_id"]
+    },{
+      foreignKeyName: "lignes_piece_origine_ligne_id_fkey"
+      columns: ["origine_ligne_id"]
+isOneToOne: false
+      referencedRelation: "lignes_piece"
+      referencedColumns: ["id"]
     },{
       foreignKeyName: "lignes_piece_piece_id_fkey"
       columns: ["piece_id"]
@@ -1811,13 +1817,13 @@ isOneToOne: false
                   ]
                 },"mouvements_tresorerie": {
                   Row: {
-                    "categorie_id": string | null,"compte_id": string,"created_at": string,"date_operation": string,"id": string,"libelle": string,"montant": number,"montant_gnf": number,"origine": string,"paiement_id": string | null,"reference": string,"reglement_id": string | null,"saisi_par": string | null,"sens": string,"taux_change": number,"virement_id": string | null
+                    "categorie_id": string | null,"compte_id": string,"created_at": string,"date_operation": string,"id": string,"libelle": string,"montant": number,"montant_gnf": number,"origine": string,"paiement_id": string | null,"reference": string,"reglement_id": string | null,"remboursement_id": string | null,"saisi_par": string | null,"sens": string,"taux_change": number,"virement_id": string | null
                   }
                   Insert: {
-                    "categorie_id"?: string | null,"compte_id": string,"created_at"?: string,"date_operation"?: string,"id"?: string,"libelle": string,"montant": number,"montant_gnf": number,"origine": string,"paiement_id"?: string | null,"reference"?: string,"reglement_id"?: string | null,"saisi_par"?: string | null,"sens": string,"taux_change"?: number,"virement_id"?: string | null
+                    "categorie_id"?: string | null,"compte_id": string,"created_at"?: string,"date_operation"?: string,"id"?: string,"libelle": string,"montant": number,"montant_gnf": number,"origine": string,"paiement_id"?: string | null,"reference"?: string,"reglement_id"?: string | null,"remboursement_id"?: string | null,"saisi_par"?: string | null,"sens": string,"taux_change"?: number,"virement_id"?: string | null
                   }
                   Update: {
-                    "categorie_id"?: string | null,"compte_id"?: string,"created_at"?: string,"date_operation"?: string,"id"?: string,"libelle"?: string,"montant"?: number,"montant_gnf"?: number,"origine"?: string,"paiement_id"?: string | null,"reference"?: string,"reglement_id"?: string | null,"saisi_par"?: string | null,"sens"?: string,"taux_change"?: number,"virement_id"?: string | null
+                    "categorie_id"?: string | null,"compte_id"?: string,"created_at"?: string,"date_operation"?: string,"id"?: string,"libelle"?: string,"montant"?: number,"montant_gnf"?: number,"origine"?: string,"paiement_id"?: string | null,"reference"?: string,"reglement_id"?: string | null,"remboursement_id"?: string | null,"saisi_par"?: string | null,"sens"?: string,"taux_change"?: number,"virement_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -1849,6 +1855,12 @@ isOneToOne: true
       columns: ["reglement_id"]
 isOneToOne: true
       referencedRelation: "reglements_fournisseurs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mouvements_tresorerie_remboursement_id_fkey"
+      columns: ["remboursement_id"]
+isOneToOne: true
+      referencedRelation: "remboursements_clients"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "mouvements_tresorerie_saisi_par_fkey"
@@ -2077,13 +2089,13 @@ isOneToOne: false
                   ]
                 },"paiements": {
                   Row: {
-                    "created_at": string,"date_paiement": string,"facture_id": string,"id": string,"mode_id": string,"montant_gnf": number,"notes": string,"reference": string,"saisi_par": string | null
+                    "cle_idempotence": string | null,"created_at": string,"date_paiement": string,"facture_id": string,"id": string,"mode_id": string,"montant_gnf": number,"notes": string,"reference": string,"saisi_par": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"date_paiement"?: string,"facture_id": string,"id"?: string,"mode_id": string,"montant_gnf": number,"notes"?: string,"reference"?: string,"saisi_par"?: string | null
+                    "cle_idempotence"?: string | null,"created_at"?: string,"date_paiement"?: string,"facture_id": string,"id"?: string,"mode_id": string,"montant_gnf": number,"notes"?: string,"reference"?: string,"saisi_par"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"date_paiement"?: string,"facture_id"?: string,"id"?: string,"mode_id"?: string,"montant_gnf"?: number,"notes"?: string,"reference"?: string,"saisi_par"?: string | null
+                    "cle_idempotence"?: string | null,"created_at"?: string,"date_paiement"?: string,"facture_id"?: string,"id"?: string,"mode_id"?: string,"montant_gnf"?: number,"notes"?: string,"reference"?: string,"saisi_par"?: string | null
                   }
                   Relationships: [
                     {
@@ -2152,13 +2164,13 @@ isOneToOne: false
                   ]
                 },"pieces_vente": {
                   Row: {
-                    "client_id": string,"commercial_id": string | null,"created_at": string,"created_by": string | null,"date_echeance": string | null,"date_piece": string,"id": string,"notes": string,"numero": string | null,"origine_id": string | null,"statut": Database["public"]['Enums']["statut_piece"],"total_ht_gnf": number,"total_ttc_gnf": number,"total_tva_gnf": number,"tva_taux": number,"type_piece": Database["public"]['Enums']["type_piece"],"updated_at": string,"valide_le": string | null,"valide_par": string | null
+                    "avoir_credit_client_gnf": number | null,"avoir_reduction_creance_gnf": number | null,"client_id": string,"commercial_id": string | null,"created_at": string,"created_by": string | null,"date_echeance": string | null,"date_piece": string,"id": string,"notes": string,"numero": string | null,"origine_id": string | null,"statut": Database["public"]['Enums']["statut_piece"],"total_ht_gnf": number,"total_ttc_gnf": number,"total_tva_gnf": number,"tva_taux": number,"type_piece": Database["public"]['Enums']["type_piece"],"updated_at": string,"valide_le": string | null,"valide_par": string | null
                   }
                   Insert: {
-                    "client_id": string,"commercial_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_echeance"?: string | null,"date_piece"?: string,"id"?: string,"notes"?: string,"numero"?: string | null,"origine_id"?: string | null,"statut"?: Database["public"]['Enums']["statut_piece"],"total_ht_gnf"?: number,"total_ttc_gnf"?: number,"total_tva_gnf"?: number,"tva_taux"?: number,"type_piece": Database["public"]['Enums']["type_piece"],"updated_at"?: string,"valide_le"?: string | null,"valide_par"?: string | null
+                    "avoir_credit_client_gnf"?: number | null,"avoir_reduction_creance_gnf"?: number | null,"client_id": string,"commercial_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_echeance"?: string | null,"date_piece"?: string,"id"?: string,"notes"?: string,"numero"?: string | null,"origine_id"?: string | null,"statut"?: Database["public"]['Enums']["statut_piece"],"total_ht_gnf"?: number,"total_ttc_gnf"?: number,"total_tva_gnf"?: number,"tva_taux"?: number,"type_piece": Database["public"]['Enums']["type_piece"],"updated_at"?: string,"valide_le"?: string | null,"valide_par"?: string | null
                   }
                   Update: {
-                    "client_id"?: string,"commercial_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_echeance"?: string | null,"date_piece"?: string,"id"?: string,"notes"?: string,"numero"?: string | null,"origine_id"?: string | null,"statut"?: Database["public"]['Enums']["statut_piece"],"total_ht_gnf"?: number,"total_ttc_gnf"?: number,"total_tva_gnf"?: number,"tva_taux"?: number,"type_piece"?: Database["public"]['Enums']["type_piece"],"updated_at"?: string,"valide_le"?: string | null,"valide_par"?: string | null
+                    "avoir_credit_client_gnf"?: number | null,"avoir_reduction_creance_gnf"?: number | null,"client_id"?: string,"commercial_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"date_echeance"?: string | null,"date_piece"?: string,"id"?: string,"notes"?: string,"numero"?: string | null,"origine_id"?: string | null,"statut"?: Database["public"]['Enums']["statut_piece"],"total_ht_gnf"?: number,"total_ttc_gnf"?: number,"total_tva_gnf"?: number,"tva_taux"?: number,"type_piece"?: Database["public"]['Enums']["type_piece"],"updated_at"?: string,"valide_le"?: string | null,"valide_par"?: string | null
                   }
                   Relationships: [
                     {
@@ -2458,6 +2470,43 @@ isOneToOne: false
       columns: ["facture_id"]
 isOneToOne: false
       referencedRelation: "pieces_vente"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"remboursements_clients": {
+                  Row: {
+                    "cle_idempotence": string | null,"created_at": string,"date_remboursement": string,"facture_id": string,"id": string,"mode_id": string,"montant_gnf": number,"notes": string,"reference": string,"saisi_par": string | null
+                  }
+                  Insert: {
+                    "cle_idempotence"?: string | null,"created_at"?: string,"date_remboursement"?: string,"facture_id": string,"id"?: string,"mode_id": string,"montant_gnf": number,"notes"?: string,"reference"?: string,"saisi_par"?: string | null
+                  }
+                  Update: {
+                    "cle_idempotence"?: string | null,"created_at"?: string,"date_remboursement"?: string,"facture_id"?: string,"id"?: string,"mode_id"?: string,"montant_gnf"?: number,"notes"?: string,"reference"?: string,"saisi_par"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "remboursements_clients_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "factures_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "remboursements_clients_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "pieces_vente"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "remboursements_clients_mode_id_fkey"
+      columns: ["mode_id"]
+isOneToOne: false
+      referencedRelation: "modes_paiement"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "remboursements_clients_saisi_par_fkey"
+      columns: ["saisi_par"]
+isOneToOne: false
+      referencedRelation: "profils"
       referencedColumns: ["id"]
     }
                   ]
@@ -3136,7 +3185,7 @@ isOneToOne: false
                   ]
                 },"factures_etat": {
                   Row: {
-                    "avoirs_gnf": number | null,"client_code": string | null,"client_id": string | null,"client_nom": string | null,"commercial_id": string | null,"date_echeance": string | null,"date_piece": string | null,"id": string | null,"jours_retard": number | null,"numero": string | null,"paye_gnf": number | null,"solde_gnf": number | null,"total_ht_gnf": number | null,"total_ttc_gnf": number | null,"total_tva_gnf": number | null
+                    "avoirs_gnf": number | null,"client_code": string | null,"client_id": string | null,"client_nom": string | null,"commercial_id": string | null,"credit_client_gnf": number | null,"date_echeance": string | null,"date_piece": string | null,"id": string | null,"jours_retard": number | null,"numero": string | null,"paye_gnf": number | null,"rembourse_gnf": number | null,"solde_gnf": number | null,"total_ht_gnf": number | null,"total_ttc_gnf": number | null,"total_tva_gnf": number | null
                   }
                   Relationships: [
                     {
@@ -3409,7 +3458,7 @@ isOneToOne: false
                   ]
                 },"soldes_clients": {
                   Row: {
-                    "client_id": string | null,"code": string | null,"commercial_id": string | null,"condition_paiement": string | null,"echu_gnf": number | null,"encours_gnf": number | null,"nom": string | null,"plafond_credit_gnf": number | null,"retard_max_jours": number | null
+                    "client_id": string | null,"code": string | null,"commercial_id": string | null,"condition_paiement": string | null,"credit_client_gnf": number | null,"echu_gnf": number | null,"encours_gnf": number | null,"nom": string | null,"plafond_credit_gnf": number | null,"retard_max_jours": number | null
                   }
                   Relationships: [
                     {
@@ -3577,6 +3626,9 @@ isOneToOne: false
 "affecter_livraison":
 { Args: { "p_livraison": string,"p_tournee": string }; Returns: undefined
                            },
+"analyser_avoir":
+{ Args: { "p_avoir": string }; Returns: Json
+                           },
 "annuler_piece":
 { Args: { "p_piece": string }; Returns: undefined
                            },
@@ -3591,6 +3643,9 @@ isOneToOne: false
                            },
 "cloturer_nc":
 { Args: { "p_nc": string }; Returns: undefined
+                           },
+"compte_du_mode":
+{ Args: { "p_mode": string }; Returns: string
                            },
 "confirmer_livraison":
 { Args: { "p_confirmation": string,"p_livraison": string,"p_note"?: string }; Returns: string
@@ -3626,7 +3681,10 @@ isOneToOne: false
 { Args: { "p_prefixe": string }; Returns: number
                            },
 "enregistrer_paiement":
-{ Args: { "p_date"?: string,"p_facture": string,"p_mode": string,"p_montant": number,"p_notes"?: string,"p_reference"?: string }; Returns: string
+{ Args: { "p_cle"?: string,"p_date"?: string,"p_facture": string,"p_mode": string,"p_montant": number,"p_notes"?: string,"p_reference"?: string }; Returns: string
+                           },
+"enregistrer_remboursement":
+{ Args: { "p_cle"?: string,"p_date"?: string,"p_facture": string,"p_mode": string,"p_montant": number,"p_notes"?: string,"p_reference"?: string }; Returns: string
                            },
 "enregistrer_remise":
 { Args: { "p_commentaire"?: string,"p_latitude"?: number,"p_livraison": string,"p_longitude"?: number,"p_photo"?: string,"p_precision"?: number,"p_receptionnaire": string,"p_retours"?: Json,"p_signature"?: string,"p_statut": string }; Returns: undefined
@@ -3636,6 +3694,9 @@ isOneToOne: false
                            },
 "espace_de_categorie":
 { Args: { "p_categorie": string }; Returns: string
+                           },
+"est_acces_api":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "est_actif":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -3663,6 +3724,9 @@ isOneToOne: false
                            },
 "mes_roles":
 { Args: Record<PropertyKey, never>; Returns: (Database["public"]['Enums']["role_code"])[]
+                           },
+"montants_facture":
+{ Args: { "p_facture": string }; Returns: Record<string, unknown>
                            },
 "nom_normalise":
 { Args: { "p": string }; Returns: string
@@ -3725,6 +3789,11 @@ isOneToOne: false
                            },
 "retirer_livraison":
 { Args: { "p_livraison": string }; Returns: undefined
+                           },
+"statut_piece_verrouille":
+{ Args: { "p_piece": string }; Returns: {
+              "statut": Database["public"]['Enums']["statut_piece"],"type_piece": Database["public"]['Enums']["type_piece"]
+            }[]
                            },
 "synchroniser_terrain":
 { Args: { "p_operations": Json }; Returns: Json
