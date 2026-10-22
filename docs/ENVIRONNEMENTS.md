@@ -1,6 +1,6 @@
 # Environnements : production, préproduction, tests
 
-État vérifié le 23/10/2026 (noms et cibles des variables Vercel, sans les valeurs).
+État vérifié le 22/10/2026 (noms et cibles des variables Vercel, sans les valeurs).
 
 | Variable Vercel | Production | Préversions (preview) | Constat |
 |---|---|---|---|

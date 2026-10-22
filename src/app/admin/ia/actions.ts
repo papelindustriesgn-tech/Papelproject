@@ -91,3 +91,15 @@ export async function retrySupportNotification(id: string, _prev: FormState): Pr
   revalidatePath("/admin/ia");
   return { ok: true, message: "Notification envoyée." };
 }
+
+/** Rapprochement d'un appel à la facturation incertaine (coût relevé chez le fournisseur). */
+export async function reconcileRun(id: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  await requireAdmin();
+  const cost = Number(formData.get("cost"));
+  const note = String(formData.get("note") ?? "").trim().slice(0, 300);
+  if (!z.uuid().safeParse(id).success || !Number.isFinite(cost) || cost < 0) return { error: "Coût invalide." };
+  const { error } = await (await createClient()).rpc("ai_reconcile", { p_run: id, p_cost: cost, p_note: note });
+  if (error) return { error: error.code === "P0001" || error.code === "P0002" ? error.message : "Rapprochement impossible." };
+  revalidatePath("/admin/ia");
+  return { ok: true, message: "Appel rapproché." };
+}

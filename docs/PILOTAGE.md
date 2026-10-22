@@ -47,10 +47,26 @@ récurrents et conversion vue → achat sont affichés « Non disponible » avec
 État affiché par agent : **Non configuré** (clé absente, budget nul ou IA désactivée) · **Suspendu** · **Actif** ·
 **En erreur** (dernière exécution en échec). Par défaut : IA désactivée, budgets à 0 → aucun appel payant.
 
-Chaque appel passe par `ai_reserve` (verrou, interrupteurs, plafonds mensuels agent + global, limites par jour et par
-personne ; le coût estimé est compté pendant l'appel, ce qui empêche un dépassement en parallèle) puis `ai_finish`
-(coût réel d'après les jetons ; en cas de panne, le coût estimé reste compté). Si le fournisseur est indisponible ou le
-budget atteint, l'application continue : l'aide répond depuis la documentation, le transfert humain reste possible.
+Chaque appel réserve d'abord son **coût maximal** (`ai_reserve`, sous verrou : pas de dépassement en parallèle) :
+entrée majorée par la taille en octets du contexte (un jeton couvre au moins un octet, donc jamais sous-estimée,
+même pour des emojis), sortie au plafond `max_tokens` (raisonnement compris), au tarif le plus élevé du modèle.
+Aucun modèle de remplacement automatique, aucune relance (`maxRetries: 0`) : un appel ne peut pas coûter plus que sa
+réservation. Seuls les modèles dont le tarif est vérifié sont autorisés (Opus 5.5, Sonnet 5.5, Haiku 5.5 ;
+contrainte en base). Clôture unique (`ai_close`) :
+
+| Situation | État | Coût compté |
+|---|---|---|
+| réponse reçue | `succeeded` / `failed` (vide ou refus) | coût réel d'après l'usage renvoyé |
+| erreur HTTP renvoyée par le fournisseur | `failed` | 0 (requête non facturée) |
+| délai dépassé, coupure réseau, modèle inattendu | `to_reconcile` | coût maximal réservé conservé |
+| clôture impossible à enregistrer | reste `running`, puis `to_reconcile` (vérification) | coût maximal réservé conservé |
+
+Le rapprochement (`/admin/ia`, coût relevé dans la console du fournisseur, source obligatoire) se fait une seule
+fois ; une clôture tardive ne recompte rien. Le tableau de bord distingue estimé, réservé, enregistré et à
+rapprocher. **Ce plafond est applicatif** : il ne garantit pas la facture du fournisseur ; configurer aussi une
+limite de dépense dans la console Anthropic. Tarifs vérifiés le 22/10/2026 :
+https://platform.claude.com/docs/en/about-claude/pricing (Opus 5.5 : 4 $ / 20 $ par million de jetons ;
+Sonnet 5.5 : 2 $ / 10 $ ; Haiku 5.5 : 0,10 $ / 0,50 $, 0,50 $ / 2,50 $ au-delà de 100 000 jetons d'entrée).
 
 ### Matrice des permissions
 

@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { aiConfigured } from "@/lib/ai/client";
 import { formatDate } from "@/lib/format";
-import { AnswerForm, ApprovalForm, ConfigForm, ReportForm, RetryNotificationForm } from "./forms";
+import { AnswerForm, ApprovalForm, ConfigForm, ReconcileForm, ReportForm, RetryNotificationForm } from "./forms";
 
 export const metadata = { title: "Centre IA" };
 
@@ -40,7 +40,8 @@ export default async function AiCenterPage() {
   const { data: global } = await supabase.from("platform_settings").select("value").eq("key", "ai").maybeSingle();
   const g = (global?.value ?? { enabled: false, monthly_budget_usd: 0 }) as { enabled: boolean; monthly_budget_usd: number };
   const keyOk = aiConfigured();
-  const spentMonth = (setting as { ai_cost_usd_month?: number } | null)?.ai_cost_usd_month ?? 0;
+  const m = (setting ?? {}) as Record<string, number | undefined>;
+  const usd = (k: string) => Number(m[k] ?? 0).toFixed(2);
 
   const spent = (agent: string) =>
     (runs ?? [])
@@ -70,8 +71,27 @@ export default async function AiCenterPage() {
       <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <h2 className="font-bold">Réglage global</h2>
         <p className="text-muted mt-1 text-sm">
-          Clé API : {keyOk ? "présente côté serveur" : "absente (ANTHROPIC_API_KEY)"} · dépensé ce mois-ci :{" "}
-          {Number(spentMonth).toFixed(2)} USD / plafond {Number(g.monthly_budget_usd).toFixed(2)} USD
+          Clé API : {keyOk ? "présente côté serveur" : "absente (ANTHROPIC_API_KEY)"} · plafond global{" "}
+          {Number(g.monthly_budget_usd).toFixed(2)} USD / mois
+        </p>
+        <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4" data-testid="ai-costs">
+          {[
+            ["Coût estimé (mois)", usd("ai_estimated_usd_month"), "réservations maximales des appels du mois"],
+            ["Réservé (en cours)", usd("ai_reserved_usd"), "appels non terminés"],
+            ["Coût enregistré (mois)", usd("ai_recorded_usd_month"), "d'après l'usage renvoyé par le fournisseur"],
+            ["À rapprocher", usd("ai_to_reconcile_usd"), "facturation incertaine, estimation conservée"],
+          ].map(([label, value, hint]) => (
+            <div key={label} className="bg-canvas rounded-xl p-3">
+              <dt className="text-muted text-xs">{label}</dt>
+              <dd className="text-lg font-bold tabular-nums">{value} USD</dd>
+              <dd className="text-muted text-[11px]">{hint}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="text-muted mt-2 text-xs">
+          Plafond applicatif calculé par Uny (coût maximal réservé avant chaque appel, sans relance ni modèle de
+          remplacement) : il ne remplace pas une limite de dépense configurée dans la console du fournisseur. Tarifs
+          vérifiés le 22/10/2026.
         </p>
         <ConfigForm agent="*" enabled={g.enabled} budget={Number(g.monthly_budget_usd)} />
       </section>
@@ -192,6 +212,29 @@ export default async function AiCenterPage() {
           </ul>
         )}
       </section>
+
+      {(runs ?? []).some((r) => r.status === "to_reconcile") && (
+        <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]" data-testid="ai-reconcile">
+          <h2 className="mb-2 font-bold">Appels à rapprocher</h2>
+          <p className="text-muted mb-3 text-sm">
+            Facturation incertaine (délai dépassé, coupure réseau, clôture non enregistrée). Relevez le coût réel dans la
+            console du fournisseur ; d&apos;ici là, le coût maximal réservé reste compté dans le budget.
+          </p>
+          <ul className="space-y-3 text-sm">
+            {(runs ?? [])
+              .filter((r) => r.status === "to_reconcile")
+              .map((r) => (
+                <li key={r.id}>
+                  <p>
+                    {formatDate(r.created_at, { hour: "2-digit", minute: "2-digit" })} · {r.agent_id} · réservé{" "}
+                    {Number(r.estimated_cost_usd).toFixed(4)} USD · {r.error}
+                  </p>
+                  <ReconcileForm id={r.id} />
+                </li>
+              ))}
+          </ul>
+        </section>
+      )}
 
       <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <h2 className="mb-2 font-bold">Historique des exécutions</h2>

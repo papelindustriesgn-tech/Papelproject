@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { FormMessage, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { answerConversation, configureAi, decideApproval, requestReport, retrySupportNotification } from "./actions";
+import { answerConversation, configureAi, decideApproval, reconcileRun, requestReport, retrySupportNotification } from "./actions";
 
 export function ConfigForm({
   agent,
@@ -107,6 +107,21 @@ export function RetryNotificationForm({ id }: { id: string }) {
         Renvoyer la notification
       </SubmitButton>
       <FormMessage type={state.ok ? "success" : "error"}>{state.message ?? state.error}</FormMessage>
+    </form>
+  );
+}
+
+export function ReconcileForm({ id }: { id: string }) {
+  const [state, action] = useActionState(reconcileRun.bind(null, id), {});
+  if (state.ok) return <FormMessage type="success">{state.message}</FormMessage>;
+  return (
+    <form action={action} className="mt-1 flex flex-wrap items-center gap-2">
+      <Input name="cost" type="number" min={0} step="0.0001" placeholder="Coût réel (USD)" aria-label="Coût réel (USD)" className="h-9 w-36" />
+      <Input name="note" maxLength={300} placeholder="Source (ex. console, facture du …)" aria-label="Source du coût" className="h-9 w-64" />
+      <SubmitButton size="sm" variant="outline">
+        Rapprocher
+      </SubmitButton>
+      <FormMessage>{state.error}</FormMessage>
     </form>
   );
 }

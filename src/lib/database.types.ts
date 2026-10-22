@@ -315,6 +315,8 @@ export type Database = {
           input_tokens: number | null;
           model: string | null;
           output_tokens: number | null;
+          reconcile_note: string | null;
+          reconciled_at: string | null;
           refusal: string | null;
           requested_by: string | null;
           status: string;
@@ -330,6 +332,8 @@ export type Database = {
           input_tokens?: number | null;
           model?: string | null;
           output_tokens?: number | null;
+          reconcile_note?: string | null;
+          reconciled_at?: string | null;
           refusal?: string | null;
           requested_by?: string | null;
           status: string;
@@ -345,6 +349,8 @@ export type Database = {
           input_tokens?: number | null;
           model?: string | null;
           output_tokens?: number | null;
+          reconcile_note?: string | null;
+          reconciled_at?: string | null;
           refusal?: string | null;
           requested_by?: string | null;
           status?: string;
@@ -3047,6 +3053,18 @@ export type Database = {
       ai_approval_consume: { Args: { p_action: string; p_approval: string; p_params: Json }; Returns: undefined };
       ai_approval_decide: { Args: { p_approval: string; p_approve: boolean }; Returns: undefined };
       ai_approval_request: { Args: { p_action: string; p_agent: string; p_params: Json; p_user: string }; Returns: string };
+      ai_close: {
+        Args: {
+          p_cost: number;
+          p_error?: string;
+          p_input: number;
+          p_model: string;
+          p_outcome: string;
+          p_output: number;
+          p_run: string;
+        };
+        Returns: boolean;
+      };
       ai_configure: {
         Args: { p_agent: string; p_budget: number; p_enabled: boolean; p_max_day: number; p_max_user_day: number };
         Returns: undefined;
@@ -3063,6 +3081,8 @@ export type Database = {
         };
         Returns: undefined;
       };
+      ai_mark_stale: { Args: { p_minutes?: number }; Returns: number };
+      ai_reconcile: { Args: { p_cost: number; p_note: string; p_run: string }; Returns: undefined };
       ai_reserve: { Args: { p_agent: string; p_estimated_cost: number; p_user: string }; Returns: Json };
       allocate_student_email: {
         Args: { p_user: string };
