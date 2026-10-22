@@ -9,6 +9,7 @@ import { Field, FormMessage, Input, Select, Textarea } from "@/components/ui/fie
 import { SubmitButton } from "@/components/ui/submit-button";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage, randomName } from "@/lib/image-client";
+import { discountLabel, studentPrice, type DiscountKind } from "@/lib/pricing";
 
 type Values = Record<string, unknown>;
 type CityOption = { id: number; name: string; districts: string[] };
@@ -80,6 +81,67 @@ function LocationField({
           </datalist>
         </>
       )}
+    </div>
+  );
+}
+
+/** Prix normal + réduction : le prix étudiant s'affiche en direct (recalculé par le serveur et la base). */
+function PricingField({
+  name,
+  initial,
+  error,
+}: {
+  name: string;
+  initial: { price: string; kind: string; value: string };
+  error?: string;
+}) {
+  const [price, setPrice] = useState(initial.price);
+  const [kind, setKind] = useState<DiscountKind>((initial.kind as DiscountKind) || "percent");
+  const [value, setValue] = useState(initial.value);
+  const p = Number(price.replace(/\s/g, "")) || null;
+  const v = Number(value.replace(/\s/g, "")) || null;
+  const computed = studentPrice(p, kind, v);
+  const valid = computed !== null && p !== null && computed < p && (kind !== "percent" || (v ?? 0) <= 90);
+  return (
+    <div className="space-y-3">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <label className="space-y-1 text-sm">
+          <span className="text-muted block text-xs font-semibold">Prix normal (GNF)</span>
+          <Input
+            name={`${name}__price`}
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            inputMode="numeric"
+            placeholder="25000"
+            aria-label="Prix normal (GNF)"
+            aria-invalid={!!error}
+          />
+        </label>
+        <label className="space-y-1 text-sm">
+          <span className="text-muted block text-xs font-semibold">Type de réduction</span>
+          <Select name={`${name}__kind`} value={kind} onChange={(e) => setKind(e.target.value as DiscountKind)} aria-label="Type de réduction">
+            <option value="percent">Pourcentage (%)</option>
+            <option value="amount">Montant (GNF)</option>
+          </Select>
+        </label>
+        <label className="space-y-1 text-sm">
+          <span className="text-muted block text-xs font-semibold">{kind === "percent" ? "Réduction (%)" : "Réduction (GNF)"}</span>
+          <Input
+            name={`${name}__value`}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            inputMode="numeric"
+            placeholder={kind === "percent" ? "20" : "5000"}
+            aria-label={kind === "percent" ? "Réduction (%)" : "Réduction (GNF)"}
+            aria-invalid={!!error}
+          />
+        </label>
+      </div>
+      <p className="bg-brand-50 text-brand-800 rounded-xl px-3 py-2 text-sm" data-testid="student-price" aria-live="polite">
+        {valid
+          ? <>Prix étudiant : <strong>{computed!.toLocaleString("fr-FR")} GNF</strong> au lieu de {p!.toLocaleString("fr-FR")} GNF ({discountLabel(kind, v!)})</>
+          : "Le prix étudiant est calculé dès que le prix normal et la réduction sont remplis."}
+      </p>
     </div>
   );
 }
@@ -219,6 +281,23 @@ export function EntityForm({
                 withDistrict={f.district !== false}
                 required={f.required}
                 error={fe[f.name]}
+              />
+            </Field>
+          );
+        }
+        if (f.type === "pricing") {
+          const sv = state.values;
+          const str = (x: unknown) => (x === null || x === undefined ? "" : String(x));
+          return (
+            <Field key={f.name} label={f.label} htmlFor={`${f.name}__price`} error={fe[f.name]} hint={f.hint} optional>
+              <PricingField
+                name={f.name}
+                error={fe[f.name]}
+                initial={
+                  sv
+                    ? { price: str(sv[`${f.name}__price`]), kind: str(sv[`${f.name}__kind`]), value: str(sv[`${f.name}__value`]) }
+                    : { price: str(initial.price_gnf), kind: str(initial.discount_kind), value: str(initial.discount_value) }
+                }
               />
             </Field>
           );

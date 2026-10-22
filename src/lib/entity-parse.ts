@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { FieldSpec } from "@/lib/admin-entities";
 import type { City } from "@/lib/cities";
 import { safeImage } from "@/lib/images";
+import { discountLabel, studentPrice } from "@/lib/pricing";
 
 const HOST_ERROR = "Image refusée : utilise « Ajouter » (stockage Uny) ou une URL images.unsplash.com.";
 
@@ -28,6 +29,33 @@ export function parseField(f: FieldSpec, formData: FormData, cities: City[]): Pa
       values.district = districtRaw || null;
     }
     return { values };
+  }
+
+  if (f.type === "pricing") {
+    const get = (k: string) => String(formData.get(`${f.name}__${k}`) ?? "").replace(/\s/g, "");
+    const priceRaw = get("price");
+    const kind = get("kind");
+    const valueRaw = get("value");
+    const price = priceRaw ? Number(priceRaw) : null;
+    const value = valueRaw ? Number(valueRaw) : null;
+    if (price !== null && (!Number.isInteger(price) || price < 500 || price > 1_000_000_000))
+      return { error: "Prix normal invalide (500 GNF minimum)" };
+    if (value === null)
+      return { values: { price_gnf: price, discount_kind: null, discount_value: null, promo_price_gnf: null } };
+    if (kind !== "percent" && kind !== "amount") return { error: "Choisis le type de réduction" };
+    if (!Number.isInteger(value) || value <= 0) return { error: "Réduction invalide" };
+    if (price === null) return { error: "Indique le prix normal pour calculer le prix étudiant" };
+    if (kind === "percent" && value > 90) return { error: "Réduction de 90 % au maximum" };
+    if (kind === "amount" && value >= price) return { error: "La réduction doit être inférieure au prix normal" };
+    return {
+      values: {
+        price_gnf: price,
+        discount_kind: kind,
+        discount_value: value,
+        promo_price_gnf: studentPrice(price, kind, value),
+        discount_label: discountLabel(kind, value),
+      },
+    };
   }
 
   const raw = formData.get(f.name);
@@ -109,6 +137,11 @@ export function parseFields(fields: FieldSpec[], formData: FormData, cities: Cit
       fieldErrors[low === "promo_price_gnf" ? low : high] = "Le prix promo doit être inférieur au prix normal";
   };
   lower("promo_price_gnf", "price_gnf");
+  // Offre : libellé calculé depuis la réduction, sinon avantage saisi (offre sans prix)
+  if (fields.some((f) => f.type === "pricing") && !fieldErrors.pricing) {
+    if (row.discount_kind) row.discount_label = discountLabel(row.discount_kind as "percent" | "amount", row.discount_value as number);
+    else if (!row.discount_label) fieldErrors.discount_label = "Indique une réduction (avec le prix) ou l'avantage offert";
+  }
   lower("price_gnf", "original_price_gnf");
   // Champs texte non nulls en base
   for (const k of ["description", "conditions"]) if (k in row && row[k] === null) row[k] = "";

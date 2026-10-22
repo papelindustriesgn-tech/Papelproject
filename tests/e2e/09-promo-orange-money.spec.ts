@@ -34,12 +34,15 @@ test("code promo : l'étudiant obtient son code, paie sur le code marchand Orang
   await page.goto("/partenaire/offres/nouveau");
   await page.waitForLoadState("networkidle");
   await page.fill("#title", `Menu promo ${run}`);
-  await page.fill("#discount_label", "-20 %");
-  await page.fill("#price_gnf", "50000");
-  await page.fill("#promo_price_gnf", "60000");
+  // Prix normal + réduction : le prix étudiant est calculé automatiquement
+  await page.getByLabel("Prix normal (GNF)").fill("50000");
+  await page.getByLabel("Type de réduction").selectOption("amount");
+  await page.getByLabel("Réduction (GNF)").fill("60000");
   await page.getByRole("button", { name: "Publier" }).click();
-  await expect(page.getByText("Le prix promo doit être inférieur au prix normal")).toBeVisible();
-  await page.fill("#promo_price_gnf", "40000");
+  await expect(page.getByText("La réduction doit être inférieure au prix normal")).toBeVisible();
+  await page.getByLabel("Type de réduction").selectOption("percent");
+  await page.getByLabel("Réduction (%)").fill("20");
+  await expect(page.getByTestId("student-price")).toContainText("40 000 GNF");
   await page.getByRole("button", { name: "Publier" }).click();
   await expect(page).toHaveURL(/partenaire\/offres\?enregistre=1/);
   await logout(page);

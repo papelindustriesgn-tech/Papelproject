@@ -52,9 +52,9 @@ test("offre flash à places limitées, carte de fidélité et récompense offert
   await page.goto("/partenaire/offres/nouveau");
   await page.waitForLoadState("networkidle");
   await page.fill("#title", `Poulet braisé ${run}`);
-  await page.fill("#discount_label", "-30 %");
-  await page.fill("#price_gnf", "50000");
-  await page.fill("#promo_price_gnf", "35000");
+  await page.getByLabel("Prix normal (GNF)").fill("50000");
+  await page.getByLabel("Réduction (%)").fill("30");
+  await expect(page.getByTestId("student-price")).toContainText("35 000 GNF");
   await page.selectOption("#flash_hours", "4");
   await page.fill("#flash_quantity", "1");
   await page.getByRole("button", { name: "Publier" }).click();
