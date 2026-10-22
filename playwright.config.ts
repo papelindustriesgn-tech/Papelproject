@@ -1,4 +1,11 @@
+import fs from "node:fs";
 import { defineConfig } from "@playwright/test";
+import { assertNonProductionTarget } from "./scripts/lib/target-guard.mjs";
+
+// Garde-fou : les tests écrivent des données fictives ; ils refusent de viser la production (base ou site).
+const localEnv = fs.existsSync(".env.local") ? fs.readFileSync(".env.local", "utf8") : "";
+const supabaseUrl = /^NEXT_PUBLIC_SUPABASE_URL=(.*)$/m.exec(localEnv)?.[1]?.trim();
+assertNonProductionTarget([supabaseUrl, process.env.E2E_BASE_URL ?? "http://localhost:3000"], "tests e2e");
 
 /**
  * Tests de bout en bout. Pré-requis : Supabase local démarré (npx supabase start)

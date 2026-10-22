@@ -3,8 +3,10 @@
  * Usage : npx tsx --env-file=.env.local scripts/create-local-admin.mts [email] [motdepasse]
  */
 import { createClient } from "@supabase/supabase-js";
+import { assertNonProductionTarget } from "./lib/target-guard.mjs";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+assertNonProductionTarget([url], "admin local");
 if (!/127\.0\.0\.1|localhost/.test(url)) {
   console.error("Ce script est réservé à l'environnement local. En production, utilise scripts/make-admin.mts.");
   process.exit(1);

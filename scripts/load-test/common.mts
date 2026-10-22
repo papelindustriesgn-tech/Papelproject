@@ -1,7 +1,10 @@
+import { assertNonProductionTarget } from "../lib/target-guard.mjs";
+
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 export const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 export const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 export const APP_URL = process.env.LOAD_APP_URL ?? "http://localhost:3000";
+assertNonProductionTarget([SUPABASE_URL, APP_URL], "test de charge");
 export const TEST_DOMAIN = "loadtest.uny.test";
 export const TEST_PASSWORD = "LoadTest2026!";
 export const testEmail = (i: number) => `synthetique.${String(i).padStart(4, "0")}@${TEST_DOMAIN}`;

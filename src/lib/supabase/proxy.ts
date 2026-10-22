@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { previewUsesProductionDatabase } from "@/lib/env-guard";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/database.types";
 
@@ -27,6 +28,13 @@ function matches(pathname: string, prefixes: string[]) {
 
 /** Rafraîchit la session Supabase et applique les redirections d'accès optimistes. */
 export async function updateSession(request: NextRequest) {
+  // Préversion branchée sur la base de production : arrêt avant toute lecture ou écriture
+  if (previewUsesProductionDatabase()) {
+    return new NextResponse(
+      "<!doctype html><meta charset=utf-8><title>Préversion non isolée</title><p style=\"font-family:sans-serif;padding:2rem\">Cette préversion est volontairement désactivée : elle n'a pas de base de test dédiée et ne doit pas utiliser les données réelles. Voir docs/ENVIRONNEMENTS.md.</p>",
+      { status: 503, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } },
+    );
+  }
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(
