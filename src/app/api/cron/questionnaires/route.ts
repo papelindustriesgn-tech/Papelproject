@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { isAuthorizedCron } from "@/lib/cron/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, surveyEmail } from "@/lib/email";
+import { runJob } from "@/lib/ops/jobs";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +14,18 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   if (!isAuthorizedCron(req.headers.get("authorization"))) return new Response("Non autorisé", { status: 401 });
 
+  // Clé par passage : l'idempotence est assurée par les données (une relance tous les 4 jours au plus,
+  // emailed_at par notification) ; le journal des exécutions sert au suivi et aux alertes d'échec.
+  const out = await runJob("questionnaires", `questionnaires:${new Date().toISOString()}`, sendSurveys, 1);
+  if (out.status !== "succeeded") return Response.json({ ok: false }, { status: 500 });
+  return Response.json({ ok: true, ...out.result });
+}
+
+async function sendSurveys() {
   const db = createAdminClient();
   // Relances du jour (idempotent : une seule relance tous les 4 jours au plus par personne)
-  const { data: created } = await db.rpc("send_survey_reminders");
+  const { data: created, error } = await db.rpc("send_survey_reminders");
+  if (error) throw new Error(`Relances : ${error.message}`);
 
   const { data: pending } = await db
     .from("notifications")
@@ -36,5 +46,5 @@ export async function GET(req: NextRequest) {
     await db.from("notifications").update({ emailed_at: new Date().toISOString() }).eq("id", n.id);
     sent++;
   }
-  return Response.json({ reminders: created ?? 0, emails: sent });
+  return { reminders: created ?? 0, emails: sent };
 }
