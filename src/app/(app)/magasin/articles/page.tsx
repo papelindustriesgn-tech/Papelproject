@@ -5,6 +5,7 @@ import { BarreFiltres, lireParam, motifRecherche } from "@/components/donnees/fi
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { FAMILLES_ARTICLES } from "@/lib/referentiels/definitions";
 import { afficherStock, gnf, LIBELLES_FAMILLES, nombre } from "@/lib/stocks/libelles";
+import { exigerDonnees } from "@/lib/donnees/resultat";
 import { clientServeur } from "@/lib/supabase/serveur";
 import type { Database } from "@/lib/supabase/types";
 
@@ -23,8 +24,9 @@ export default async function PageArticles({ searchParams }: PageProps<"/magasin
   if (famille) requete = requete.eq("famille", famille as Database["public"]["Enums"]["famille_article"]);
   if (categorie) requete = requete.eq("categorie_id", categorie);
   if (!archives) requete = requete.eq("actif", true);
-  const [{ data }, { data: categories }] = await Promise.all([requete, supabase.from("categories_articles").select("id, libelle").eq("actif", true).order("libelle")]);
-  const lignes = data ?? [];
+  const [resArticles, resCategories] = await Promise.all([requete, supabase.from("categories_articles").select("id, libelle").eq("actif", true).order("libelle")]);
+  const lignes = exigerDonnees(resArticles, "les articles en stock") ?? [];
+  const categories = exigerDonnees(resCategories, "les catégories d'articles");
   const nomCategorie = new Map((categories ?? []).map((c) => [c.id, c.libelle]));
 
   return (

@@ -1,38 +1,51 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge, BarreEtapes, Bouton, Carte, Cellule, classesBouton, Tableau, TitrePage } from "@/components/ui";
+import { Badge, BarreEtapes, Bouton, Carte, Cellule, classesBouton, Message, Tableau, TitrePage } from "@/components/ui";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
+import { exigerDonnees } from "@/lib/donnees/resultat";
+import { nouvelleCle } from "@/lib/formulaires/cle";
 import { calculerTotaux } from "@/lib/metier/tva";
 import { formaterStockProduitFini, type Paquets } from "@/lib/metier/unites";
 import { montantEnLettresGnf } from "@/lib/metier/ventes";
 import { gnf, nombre } from "@/lib/stocks/libelles";
+import { consequencesAvoir, lireAnalyseAvoir } from "@/lib/ventes/avoirs";
 import { CANAUX_RELANCE, TYPES_PIECE } from "@/lib/ventes/libelles";
 import { parametresVente } from "@/lib/ventes/parametres";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { annulerPiece, preparerLivraison, supprimerBrouillon, supprimerLigne, transformerPiece } from "../../actions";
-import { BoutonValiderPiece, FormulaireDotation, FormulaireLigne, FormulairePaiement, FormulaireQuantite, FormulaireRelance } from "./formulaires";
+import { BoutonValiderPiece, FormulaireDotation, FormulaireLigne, FormulairePaiement, FormulaireQuantite, FormulaireRelance, FormulaireRemboursement, FormulaireRetourStock } from "./formulaires";
 
 export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[id]">) {
   const { id } = await params;
   const supabase = await clientServeur();
-  const { data: p } = await supabase
-    .from("pieces_vente")
-    .select(
-      `*, clients(id, nom, code, condition_paiement, types_clients(libelle, dotation)),
-       lignes_piece(id, conditionnement_id, quantite_colis, paquets_vrac, paquets, prix_paquet_gnf, montant_ht_gnf, conditionnements(libelle, paquets_par_colis, produits(libelle)))`,
-    )
-    .eq("id", id)
-    .maybeSingle();
+  const p = exigerDonnees(
+    await supabase
+      .from("pieces_vente")
+      .select(
+        `*, clients(id, nom, code, condition_paiement, types_clients(libelle, dotation)),
+         lignes_piece(id, conditionnement_id, quantite_colis, paquets_vrac, paquets, prix_paquet_gnf, montant_ht_gnf, retour_stock_paquets, retour_livraison_paquets,
+                      conditionnements(libelle, paquets_par_colis, produits(libelle)))`,
+      )
+      .eq("id", id)
+      .maybeSingle(),
+    "la pièce",
+  );
   if (!p) notFound();
+  p.lignes_piece.sort((a, b) => a.id.localeCompare(b.id));
   const def = TYPES_PIECE[p.type_piece];
   const brouillon = p.statut === "brouillon";
 
-  const [{ data: origine }, { data: derivees }, { data: conditionnements }, parametres] = await Promise.all([
+  const estAvoir = p.type_piece === "avoir";
+  const [{ data: origine }, { data: derivees }, { data: conditionnements }, parametres, resAnalyse] = await Promise.all([
     p.origine_id ? supabase.from("pieces_vente").select("id, type_piece, numero").eq("id", p.origine_id).maybeSingle() : Promise.resolve({ data: null }),
     supabase.from("pieces_vente").select("id, type_piece, numero, statut").eq("origine_id", p.id),
     supabase.from("conditionnements").select("id, libelle, paquets_par_colis, par_defaut, produit_id, produits(libelle, actif)").eq("actif", true),
     parametresVente(),
+    // Avoir en brouillon : aperçu calculé par la base (même calcul que la validation).
+    estAvoir && brouillon ? supabase.rpc("analyser_avoir", { p_avoir: p.id }) : Promise.resolve({ data: null, error: null }),
   ]);
+  const analyse = estAvoir && brouillon ? lireAnalyseAvoir(exigerDonnees(resAnalyse, "l'aperçu de l'avoir")) : null;
+  const analyseLigne = new Map((analyse?.lignes ?? []).map((l) => [l.ligne_id, l]));
   const listeConditionnements = (conditionnements ?? [])
     .filter((c) => c.produits?.actif)
     // Tri : produit, puis colis par défaut en premier, puis taille de colis croissante.
@@ -47,7 +60,7 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
   // Données spécifiques aux commandes et factures.
   const estCommande = p.type_piece === "commande" && p.statut === "valide";
   const estFacture = p.type_piece === "facture" && p.statut === "valide";
-  const [{ data: livraisons }, { data: reste }, { data: etat }, { data: paiements }, { data: modes }, { data: dotations }, { data: relances }] = await Promise.all([
+  const [{ data: livraisons }, { data: reste }, resEtat, resPaiements, { data: modes }, { data: dotations }, { data: relances }, resRemboursements] = await Promise.all([
     estCommande ? supabase.from("livraisons").select("id, numero, date_livraison, statut").eq("commande_id", p.id).order("created_at") : Promise.resolve({ data: [] }),
     estCommande ? supabase.from("reste_a_livrer").select("conditionnement_id, paquets_restants").eq("commande_id", p.id) : Promise.resolve({ data: [] }),
     estFacture ? supabase.from("factures_etat").select("*").eq("id", p.id).maybeSingle() : Promise.resolve({ data: null }),
@@ -55,7 +68,14 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
     estFacture ? supabase.from("modes_paiement").select("id, libelle").eq("actif", true).order("ordre") : Promise.resolve({ data: [] }),
     estFacture ? supabase.from("dotations").select("id, produit_id, paquets_dus, paquets_remis, produits(libelle)").eq("facture_id", p.id) : Promise.resolve({ data: [] }),
     estFacture ? supabase.from("relances").select("id, date_relance, canal, note, promesse_date").eq("facture_id", p.id).order("date_relance", { ascending: false }) : Promise.resolve({ data: [] }),
+    estFacture
+      ? supabase.from("remboursements_clients").select("id, date_remboursement, montant_gnf, reference, modes_paiement(libelle)").eq("facture_id", p.id).order("date_remboursement")
+      : Promise.resolve({ data: [], error: null }),
   ]);
+  // Montants d'argent : une lecture en échec ne doit pas faire croire à une facture soldée ou impayée.
+  const etat = exigerDonnees(resEtat, "l'état de la facture");
+  const paiements = exigerDonnees(resPaiements, "les paiements");
+  const remboursements = exigerDonnees(resRemboursements, "les remboursements");
   // Barre d'étapes du document (à la Odoo).
   const etapes = [
     { code: "brouillon", libelle: "Brouillon" },
@@ -68,6 +88,32 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
   const factureExiste = (derivees ?? []).some((d) => d.type_piece === "facture" && d.statut !== "annule");
   const commandeExiste = (derivees ?? []).some((d) => d.type_piece === "commande" && d.statut !== "annule");
   const solde = Number(etat?.solde_gnf ?? 0);
+  const creditClient = Number(etat?.credit_client_gnf ?? 0);
+  const entierementCreditee = estFacture && Number(etat?.avoirs_gnf ?? 0) >= p.total_ttc_gnf;
+  // Conséquences de l'avoir : aperçu (brouillon) ou montants figés à la validation.
+  const consequences = estAvoir
+    ? brouillon
+      ? analyse && analyse.erreurs.length === 0
+        ? consequencesAvoir({
+            totalTtcGnf: analyse.total_ttc_gnf ?? 0,
+            reductionCreanceGnf: analyse.reduction_creance_gnf ?? 0,
+            creditClientGnf: analyse.credit_client_gnf ?? 0,
+            paquetsRetourStock: analyse.paquets_retour_stock ?? 0,
+            paquetsDejaRevenus: analyse.paquets_deja_revenus ?? 0,
+            factureNumero: analyse.facture_numero,
+          })
+        : []
+      : p.statut === "valide"
+        ? consequencesAvoir({
+            totalTtcGnf: p.total_ttc_gnf,
+            reductionCreanceGnf: Number(p.avoir_reduction_creance_gnf ?? p.total_ttc_gnf),
+            creditClientGnf: Number(p.avoir_credit_client_gnf ?? 0),
+            paquetsRetourStock: p.lignes_piece.reduce((t, l) => t + l.retour_stock_paquets, 0),
+            paquetsDejaRevenus: p.lignes_piece.reduce((t, l) => t + l.retour_livraison_paquets, 0),
+            factureNumero: origine?.numero,
+          })
+        : []
+    : [];
 
   return (
     <>
@@ -113,7 +159,7 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
 
       <div className="flex flex-col gap-4">
         <Carte titre="Produits">
-          <Tableau entetes={["Produit", "Quantité", "Prix HT / paquet", "Montant HT", ""]}>
+          <Tableau entetes={estAvoir ? ["Produit", "Quantité créditée", "Retour en stock", "Prix HT / paquet", "Montant HT", ""] : ["Produit", "Quantité", "Prix HT / paquet", "Montant HT", ""]}>
             {p.lignes_piece.map((l) => (
               <tr key={l.id}>
                 <Cellule>
@@ -126,6 +172,23 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
                     formaterStockProduitFini(l.paquets as Paquets, { paquetsParColis: l.conditionnements?.paquets_par_colis ?? 1 })
                   )}
                 </Cellule>
+                {estAvoir && (
+                  <Cellule>
+                    {brouillon ? (
+                      <>
+                        <FormulaireRetourStock ligneId={l.id} pieceId={p.id} valeur={l.retour_stock_paquets} max={analyseLigne.get(l.id)?.retour_stock_max ?? 0} />
+                        {(analyseLigne.get(l.id)?.retour_livraison ?? 0) > 0 && (
+                          <p className="mt-1 text-sm text-gray-700">{nombre(analyseLigne.get(l.id)?.retour_livraison)} paquets déjà revenus à la livraison</p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {l.retour_stock_paquets > 0 ? `${nombre(l.retour_stock_paquets)} paquets entrés en stock` : "Aucune entrée"}
+                        {l.retour_livraison_paquets > 0 && <p className="text-sm text-gray-700">{nombre(l.retour_livraison_paquets)} déjà revenus à la livraison</p>}
+                      </>
+                    )}
+                  </Cellule>
+                )}
                 <Cellule>{gnf(l.prix_paquet_gnf)}</Cellule>
                 <Cellule className="font-semibold">{gnf(l.montant_ht_gnf)}</Cellule>
                 <Cellule>
@@ -155,20 +218,61 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
           {p.notes && <p className="mt-2 text-gray-700">Notes : {p.notes}</p>}
         </Carte>
 
+        {brouillon && estAvoir && analyse && (
+          <Carte titre="Ce que fera cet avoir">
+            {analyse.erreurs.length > 0 ? (
+              <Message ton="erreur">
+                <p className="font-semibold">Validation impossible en l&apos;état :</p>
+                <ul className="list-disc pl-5">
+                  {analyse.erreurs.map((e) => (
+                    <li key={e}>{e}</li>
+                  ))}
+                </ul>
+              </Message>
+            ) : (
+              <ul className="flex flex-col gap-1 text-gray-800">
+                {consequences.map((c) => (
+                  <li key={c}>• {c}</li>
+                ))}
+              </ul>
+            )}
+            <p className="mt-3 text-sm text-gray-700">
+              « Retour en stock » : ne saisissez que les paquets que le client rapporte maintenant à l&apos;usine. Ceux rapportés lors de la livraison sont
+              déjà en stock et sont rattachés automatiquement.
+            </p>
+          </Carte>
+        )}
+
         {brouillon && (
           <Carte titre="Validation">
             <p className="mb-2 text-gray-700">
               La validation attribue le numéro définitif{p.type_piece === "facture" ? ", calcule la TVA et contrôle le plafond de crédit du client" : ""}
-              {p.type_piece === "avoir" ? " et remet les paquets repris en stock" : ""}. Elle est définitive.
+              {estAvoir ? ", applique les effets ci-dessus sur le solde du client et sur le stock" : ""}. Elle est définitive.
             </p>
             <div className="flex flex-wrap items-start gap-3">
-              <BoutonValiderPiece pieceId={p.id} typePiece={p.type_piece} libelle={{ devis: "Valider le devis", commande: "Valider la commande", facture: "Valider la facture", avoir: "Valider l'avoir" }[p.type_piece]} />
+              <BoutonValiderPiece
+                pieceId={p.id}
+                typePiece={p.type_piece}
+                libelle={{ devis: "Valider le devis", commande: "Valider la commande", facture: "Valider la facture", avoir: "Valider l'avoir" }[p.type_piece]}
+                confirmation={estAvoir ? consequences : undefined}
+                bloque={estAvoir && (analyse?.erreurs.length ?? 0) > 0}
+              />
               <form action={supprimerBrouillon.bind(null, p.id)}>
                 <Bouton type="submit" variante="discret">
                   Supprimer le brouillon
                 </Bouton>
               </form>
             </div>
+          </Carte>
+        )}
+
+        {estAvoir && p.statut === "valide" && (
+          <Carte titre="Effets de cet avoir">
+            <ul className="flex flex-col gap-1 text-gray-800">
+              {consequences.map((c) => (
+                <li key={c}>• {c}</li>
+              ))}
+            </ul>
           </Carte>
         )}
 
@@ -238,7 +342,7 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
 
         {estFacture && (
           <>
-            <Carte titre={`Paiements — reste à payer : ${gnf(solde)}`}>
+            <Carte titre={creditClient > 0 ? `Paiements — crédit client : ${gnf(creditClient)}` : `Paiements — reste à payer : ${gnf(solde)}`}>
               <Tableau entetes={["Date", "Mode", "Référence", "Montant"]}>
                 {(paiements ?? []).map((pa) => (
                   <tr key={pa.id}>
@@ -252,14 +356,44 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
               {Number(etat?.avoirs_gnf ?? 0) > 0 && <p className="mt-2 text-gray-700">Avoirs déduits : {gnf(etat?.avoirs_gnf)}</p>}
               {solde > 0 ? (
                 <div className="mt-3">
-                  <FormulairePaiement factureId={p.id} modes={modes ?? []} reste={solde} dateDuJour={aujourdhui()} />
+                  <FormulairePaiement factureId={p.id} modes={modes ?? []} reste={solde} dateDuJour={aujourdhui()} cle={nouvelleCle()} />
                 </div>
+              ) : creditClient > 0 ? (
+                <p className="mt-2">
+                  <Badge ton="alerte">Crédit en faveur du client : {gnf(creditClient)}</Badge>
+                </p>
               ) : (
                 <p className="mt-2">
                   <Badge ton="succes">Facture soldée</Badge>
                 </p>
               )}
             </Carte>
+
+            {(creditClient > 0 || (remboursements ?? []).length > 0) && (
+              <Carte titre="Crédit client et remboursements">
+                <p className="mb-2 text-gray-700">
+                  Le client a payé plus que ce qu&apos;il doit après avoir(s). Ce crédit reste dû au client tant qu&apos;il n&apos;est pas remboursé : rien n&apos;est
+                  remboursé automatiquement.
+                </p>
+                {(remboursements ?? []).length > 0 && (
+                  <Tableau entetes={["Date", "Mode", "Référence", "Remboursé"]}>
+                    {(remboursements ?? []).map((r) => (
+                      <tr key={r.id}>
+                        <Cellule>{formaterDate(r.date_remboursement)}</Cellule>
+                        <Cellule>{r.modes_paiement?.libelle}</Cellule>
+                        <Cellule>{r.reference}</Cellule>
+                        <Cellule className="font-semibold">{gnf(r.montant_gnf)}</Cellule>
+                      </tr>
+                    ))}
+                  </Tableau>
+                )}
+                {creditClient > 0 && (
+                  <div className="mt-3">
+                    <FormulaireRemboursement factureId={p.id} modes={modes ?? []} credit={creditClient} dateDuJour={aujourdhui()} cle={nouvelleCle()} />
+                  </div>
+                )}
+              </Carte>
+            )}
 
             {p.clients?.types_clients?.dotation && (
               <Carte titre={`Dotation (${nombre(parametres.tauxDotation * 100, 1)} paquets offerts pour 100, sur l'encaissé)`}>
@@ -306,12 +440,22 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
             )}
 
             <Carte titre="Retour de marchandise / erreur de facturation">
-              <p className="mb-2 text-gray-700">Une facture validée ne se modifie pas : établissez un avoir (les paquets repris reviennent en stock).</p>
-              <form action={transformerPiece.bind(null, p.id, "avoir")}>
-                <Bouton type="submit" variante="secondaire">
-                  Créer un avoir
-                </Bouton>
-              </form>
+              {entierementCreditee ? (
+                <p className="text-gray-700">Cette facture est entièrement créditée par avoir(s).</p>
+              ) : (
+                <>
+                  <p className="mb-2 text-gray-700">
+                    Une facture validée ne se modifie pas : établissez un avoir. Il réduit d&apos;abord le reste à payer ; si la facture est déjà payée, la
+                    différence devient un crédit client. Le stock ne bouge que pour les paquets que vous indiquez comme rapportés à l&apos;usine (ceux revenus
+                    lors de la livraison sont déjà en stock).
+                  </p>
+                  <form action={transformerPiece.bind(null, p.id, "avoir")}>
+                    <Bouton type="submit" variante="secondaire">
+                      Créer un avoir
+                    </Bouton>
+                  </form>
+                </>
+              )}
             </Carte>
           </>
         )}

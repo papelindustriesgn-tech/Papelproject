@@ -3,17 +3,19 @@ import Link from "next/link";
 import { ExportCsv } from "@/components/donnees/export-csv";
 import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { nombre } from "@/lib/stocks/libelles";
+import { exigerDonnees } from "@/lib/donnees/resultat";
 import { clientServeur } from "@/lib/supabase/serveur";
 
 export const metadata: Metadata = { title: "Dotations" };
 
 export default async function PageDotations() {
   const supabase = await clientServeur();
-  const { data } = await supabase
+  const resultat = await supabase
     .from("dotations")
     .select("id, paquets_dus, paquets_remis, produits(libelle), pieces_vente(id, numero, date_piece, clients(nom))")
     .order("updated_at", { ascending: false })
     .limit(500);
+  const data = exigerDonnees(resultat, "les dotations");
   const lignes = (data ?? []).map((d) => ({ ...d, reste: d.paquets_dus - d.paquets_remis }));
   const aRemettre = lignes.filter((d) => d.reste > 0);
 

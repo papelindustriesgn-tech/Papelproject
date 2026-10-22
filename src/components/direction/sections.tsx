@@ -36,7 +36,7 @@ export function IndicateursEssentiels({ s }: { s: SyntheseDirection }) {
   const pf = s.stock.produitsFinis.reduce((t, x) => t + x.paquets, 0);
   return (
     <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <Indicateur libelle="Encaissements" valeur={gnf(v.encaisseGnf)} variation={{ ecart: ecartRelatif(v.encaisseGnf, vp.encaisseGnf) }} lien="/ventes/impayes" />
+      <Indicateur libelle="Encaissements" valeur={gnf(v.encaisseGnf)} variation={{ ecart: ecartRelatif(v.encaisseGnf, vp.encaisseGnf) }} lien="/ventes/encaissements" />
       <Indicateur libelle="Impayés (échus)" valeur={gnf(v.echuGnf)} detail={`Créances totales : ${gnf(v.creancesGnf)}`} ton={v.echuGnf > 0 ? "alerte" : "normal"} lien="/ventes/impayes" />
       <Indicateur libelle="Commandes" valeur={nombre(v.nbCommandes)} variation={{ ecart: ecartRelatif(v.nbCommandes, vp.nbCommandes) }} detail={`${nombre(v.paquets)} paquets vendus`} lien="/ventes/commandes" />
       <Indicateur libelle="Produits finis en stock" valeur={`${nombre(pf)} paquets`} lien="/magasin/articles" />
@@ -76,7 +76,7 @@ export function BlocsIndicateurs({ s, jours = [] }: { s: SyntheseDirection; jour
         <Indicateur libelle="Ventes" valeur={`${nombre(v.paquets)} paquets`} variation={{ ecart: ecartRelatif(v.paquets, vp.paquets) }} detail={v.parProduit.map((x) => `${x.libelle} : ${nombre(x.colis)} colis`).join(" · ") || "—"} lien="/ventes" />
         <Indicateur libelle="Prix moyen HT" valeur={v.prixMoyenPaquetGnf === null ? "—" : `${gnf(v.prixMoyenPaquetGnf)} / paquet`} variation={{ ecart: ecartRelatif(v.prixMoyenPaquetGnf, vp.prixMoyenPaquetGnf) }} />
         <Indicateur libelle="Clients actifs" valeur={nombre(v.clientsActifs)} variation={{ ecart: ecartRelatif(v.clientsActifs, vp.clientsActifs) }} detail={`${v.nouveauxClients} nouveau(x)`} lien="/ventes/clients" />
-        <Indicateur libelle="Encaissements" valeur={gnf(v.encaisseGnf)} variation={{ ecart: ecartRelatif(v.encaisseGnf, vp.encaisseGnf) }} lien="/ventes/impayes" />
+        <Indicateur libelle="Encaissements" valeur={gnf(v.encaisseGnf)} variation={{ ecart: ecartRelatif(v.encaisseGnf, vp.encaisseGnf) }} lien="/ventes/encaissements" />
         <Indicateur libelle="Impayés (échus)" valeur={gnf(v.echuGnf)} detail={`Créances totales : ${gnf(v.creancesGnf)}`} ton={v.echuGnf > 0 ? "alerte" : "normal"} lien="/ventes/impayes" />
         <Indicateur libelle="Délai moyen de paiement (DSO)" valeur={v.dso === null ? "—" : `${nombre(v.dso, 0)} jours`} variation={{ ecart: ecartRelatif(v.dso, vp.dso), hausseBonne: false }} lien="/ventes/impayes" />
       </Section>

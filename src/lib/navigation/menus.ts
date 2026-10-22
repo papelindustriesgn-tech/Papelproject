@@ -74,14 +74,16 @@ export const MENUS: Record<string, EntreeMenu[]> = {
     { libelle: "Commandes", href: "/ventes/pieces?type=commande" },
     { libelle: "Devis", href: "/ventes/pieces?type=devis" },
     { libelle: "Clients", href: "/ventes/clients" },
+    // Argent : encaissements reçus, ce qui reste dû, avoirs (corrections) et dotations à remettre.
+    { libelle: "Encaissements", href: "/ventes/encaissements" },
     { libelle: "Impayés", href: "/ventes/impayes" },
+    { libelle: "Avoirs", href: "/ventes/pieces?type=avoir" },
+    { libelle: "Dotations", href: "/ventes/dotations" },
     { libelle: "Suivi des commandes", href: "/ventes/commandes" },
     { libelle: "Tâches", href: "/ventes/taches" },
     {
       libelle: "Configuration",
       enfants: [
-        { href: "/ventes/pieces?type=avoir", libelle: "Avoirs" },
-        { href: "/ventes/dotations", libelle: "Dotations" },
         { href: "/ventes/listes", libelle: "Types de clients, modes de paiement…" },
         { href: "/ventes/objectifs", libelle: "Objectifs mensuels" },
       ],

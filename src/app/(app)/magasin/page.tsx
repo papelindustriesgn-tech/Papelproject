@@ -10,6 +10,7 @@ import { aujourdhui } from "@/lib/formulaires/dates";
 import { lireFiltresAnalyse, lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { formaterPoids, kg } from "@/lib/metier/unites";
 import { afficherStock, gnf, nombre } from "@/lib/stocks/libelles";
+import { exigerDonnees } from "@/lib/donnees/resultat";
 import { clientServeur } from "@/lib/supabase/serveur";
 
 export const metadata: Metadata = { title: "Stocks" };
@@ -22,13 +23,18 @@ export default async function TableauDeBordMagasin({ searchParams }: PageProps<"
   // Mouvements de produits finis de la période (entrées de production, livraisons, dotations, retours).
   const mouvementsPf = (du: string, au: string) =>
     supabase.from("mouvements_stock").select("type, quantite, articles!inner(famille, produit_id)").eq("articles.famille", "produit_fini").in("type", ["production", "vente", "dotation", "retour"]).gte("date_operation", du).lte("date_operation", au).limit(50000);
-  const [{ data: etat }, { data: transit }, { data: mvts }, { data: mvtsPrec }, options] = await Promise.all([
+  const [resEtat, resTransit, resMvts, resMvtsPrec, options] = await Promise.all([
     supabase.from("etat_stock").select("*").eq("actif", true),
     supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
     mouvementsPf(periode.du, periode.au),
     mouvementsPf(periode.precedente.du, periode.precedente.au),
     chargerOptionsFiltres(),
   ]);
+  // Une requête en échec affiche « données non chargées + Réessayer », jamais un stock à zéro.
+  const etat = exigerDonnees(resEtat, "l'état du stock");
+  const transit = exigerDonnees(resTransit, "la marchandise en transit");
+  const mvts = exigerDonnees(resMvts, "les mouvements de la période");
+  const mvtsPrec = exigerDonnees(resMvtsPrec, "les mouvements de la période précédente");
   const deLaGamme = (produitId: string | null | undefined) => !filtres.produit || produitId === filtres.produit;
   const paquetsPar = (liste: typeof mvts, type: string) => Math.abs((liste ?? []).filter((m) => m.type === type && deLaGamme(m.articles?.produit_id)).reduce((t, m) => t + Number(m.quantite), 0));
   const flux = (liste: typeof mvts) => ({ produits: paquetsPar(liste, "production"), livres: paquetsPar(liste, "vente") - paquetsPar(liste, "retour"), offerts: paquetsPar(liste, "dotation") });
