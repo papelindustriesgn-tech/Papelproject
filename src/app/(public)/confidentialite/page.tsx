@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Politique de confidentialité" };
 
 export default function PrivacyPage() {
   return (
-    <Prose title="Politique de confidentialité" updated="21 octobre 2026">
+    <Prose title="Politique de confidentialité" updated="22 octobre 2026">
       <p>
         Cette page décrit les données réellement traitées par Uny (site et applications), qui peut les voir et combien de
         temps elles sont conservées. Responsable du traitement : Papel Industries, Conakry (Guinée) — contact :{" "}
@@ -92,6 +92,12 @@ export default function PrivacyPage() {
         <li>Supabase : base de données, comptes et fichiers, hébergés à Paris (France).</li>
         <li>Vercel : hébergement du site (Paris) et mesure d&apos;audience et de performance sans cookie publicitaire.</li>
         <li>Un service d&apos;envoi d&apos;emails pour les messages liés à ton compte.</li>
+        <li>
+          Anthropic (États-Unis), uniquement si tu utilises l&apos;assistant de la page Aide et qu&apos;il est activé : ta
+          question, l&apos;état de ton compte (statut de validation, de vérification et de carte) et des extraits de
+          l&apos;aide de Uny lui sont transmis pour formuler la réponse. Ni ton nom, ni ton email, ni tes justificatifs ne
+          sont ajoutés par Uny. Les conversations sont conservées dans Uny et supprimées avec ton compte.
+        </li>
       </ul>
       <p>Uny ne vend pas tes données et n&apos;affiche pas de publicité ciblée.</p>
 

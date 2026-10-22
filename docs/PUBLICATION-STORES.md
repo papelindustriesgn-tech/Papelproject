@@ -51,12 +51,17 @@ désinscription et suppression du jeton à la déconnexion à prévoir), widget 
 | Établissement, filière, niveau, matricule | oui | vérification, carte | établissement concerné | oui |
 | Annonces, photos d'annonces, candidatures | oui | marketplace, jobs | autres utilisateurs (annonce) | oui |
 | Codes promo, vérifications en caisse, fidélité, paiements déclarés (montant, référence) | oui | réductions, statistiques du partenaire | partenaire concerné | oui |
+| Questions posées à l'assistant de la page Aide (et statut du compte) | oui, si l'utilisateur s'en sert | support | Anthropic (sous-traitant), **uniquement si l'assistant est activé** | oui (conversation liée au compte) |
 | Mesure d'audience et de performance (Vercel Analytics, Speed Insights) | oui, sans cookie publicitaire | statistiques agrégées | Vercel (sous-traitant) | non |
 | Localisation précise, contacts, données de santé, identifiant publicitaire | **non** | — | — | — |
 
 - Chiffrement en transit : oui (HTTPS). Suppression sur demande : oui (dans l'app et sur le web).
 - Pas de vente de données, pas de publicité ciblée, pas de suivi entre applications (pas d'ATT nécessaire).
 - SDK des applications : Capacitor (App, Preferences, SplashScreen, StatusBar) ; TWA : android-browser-helper.
+
+Notifications : uniquement dans l'application (aucune notification push, aucun jeton d'appareil à gérer) ; préférences
+d'emails dans Profil → Paramètres. Si des notifications push sont ajoutées : consentement explicite, préférences par
+type, jeton supprimé à la déconnexion et au changement de compte.
 
 ## 5. Paiements
 
