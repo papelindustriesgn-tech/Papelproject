@@ -30,7 +30,7 @@ export default async function PilotagePage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   const days = param(sp, "jours") === "30" ? 30 : 7;
   const supabase = await createClient();
-  const [metrics, { data: alerts }, { data: runs }] = await Promise.all([
+  const [metrics, { data: alerts }, { data: runs }, { data: queuesRaw }] = await Promise.all([
     getMetrics(days),
     supabase
       .from("ops_alerts")
@@ -43,10 +43,25 @@ export default async function PilotagePage({ searchParams }: { searchParams: Pro
       .select("id, job, status, attempts, max_attempts, started_at, finished_at, error")
       .order("started_at", { ascending: false })
       .limit(30),
+    supabase.rpc("ops_queues"),
   ]);
+  type Queue = {
+    key: string;
+    label: string;
+    link: string;
+    next: string;
+    threshold_hours: number;
+    count: number;
+    oldest: string | null;
+    overdue: number;
+    incomplete?: number;
+  };
+  const queues = ((queuesRaw ?? []) as unknown as Queue[]).sort((a, b) => b.overdue - a.overdue || b.count - a.count);
   const lastRun = (job: string) => runs?.find((r) => r.job === job);
   const rank = { critical: 0, high: 1, medium: 2, low: 3 } as const;
-  const sorted = [...(alerts ?? [])].sort((a, b) => rank[a.severity as keyof typeof rank] - rank[b.severity as keyof typeof rank]);
+  const sorted = [...(alerts ?? [])].sort(
+    (a, b) => rank[a.severity as keyof typeof rank] - rank[b.severity as keyof typeof rank],
+  );
 
   return (
     <div className="space-y-6">
@@ -56,6 +71,35 @@ export default async function PilotagePage({ searchParams }: { searchParams: Pro
           Alertes issues de règles fixes (pas de l&apos;IA), tâches automatiques et indicateurs calculés en base.
         </p>
       </div>
+
+      <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]" data-testid="queues">
+        <h2 className="mb-1 font-bold">File de traitement</h2>
+        <p className="text-muted mb-3 text-xs">
+          Ancienneté du plus ancien dossier et dossiers au-delà du délai de suivi (mêmes seuils que les alertes). Aucun message
+          n&apos;est envoyé aux utilisateurs.
+        </p>
+        <ul className="divide-line divide-y text-sm">
+          {queues.map((q) => (
+            <li key={q.key} className="flex flex-wrap items-center justify-between gap-2 py-2" data-testid={`queue-${q.key}`}>
+              <span className="min-w-0">
+                <a href={q.link} className="font-semibold hover:underline">
+                  {q.label}
+                </a>
+                <span className="text-muted block text-xs">
+                  Prochaine action : {q.next} · suivi au-delà de{" "}
+                  {q.threshold_hours >= 48 ? `${q.threshold_hours / 24} j` : `${q.threshold_hours} h`}
+                  {typeof q.incomplete === "number" && q.incomplete > 0 && <> · {q.incomplete} à compléter par l&apos;étudiant</>}
+                </span>
+              </span>
+              <span className="flex items-center gap-2">
+                <Badge tone={q.count === 0 ? "neutral" : q.overdue > 0 ? "coral" : "mango"}>{q.count}</Badge>
+                {q.overdue > 0 && <Badge tone="coral">{q.overdue} en retard</Badge>}
+                {q.oldest && <span className="text-muted text-xs">depuis le {formatDate(q.oldest)}</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <h2 className="mb-3 font-bold">Tâches automatiques</h2>

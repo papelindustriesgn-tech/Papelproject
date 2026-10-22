@@ -3148,6 +3148,7 @@ export type Database = {
       ops_job_begin: { Args: { p_job: string; p_key: string; p_max?: number }; Returns: Json };
       ops_job_finish: { Args: { p_error?: string; p_ok: boolean; p_result?: Json; p_run: string }; Returns: undefined };
       ops_metrics: { Args: { p_days?: number }; Returns: Json };
+      ops_queues: { Args: Record<PropertyKey, never>; Returns: Json };
       ops_raise: {
         Args: { p_details: Json; p_fingerprint: string; p_rule: string; p_severity: string; p_title: string };
         Returns: undefined;

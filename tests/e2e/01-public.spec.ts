@@ -5,7 +5,7 @@ test("landing publique : promesse, problème, solution, avantages, commerçants"
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Ton statut étudiant");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("vaut de l'argent");
-  await expect(page.getByText("Disponible dans toute la Guinée", { exact: true })).toBeVisible();
+  await expect(page.getByText("Version pilote · Guinée", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: /Créer mon compte gratuit/ })).toBeVisible();
   // Pas de promesse de carte immédiate : création du compte ≠ carte vérifiée
   await expect(page.getByText(/prête en 3 minutes/)).toHaveCount(0);

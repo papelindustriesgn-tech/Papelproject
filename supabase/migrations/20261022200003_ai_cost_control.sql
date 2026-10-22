@@ -221,6 +221,27 @@ begin
     v_seen := v_seen || ('ai_failures:' || r.agent_id);
   end loop;
 
+  -- R8. Autres files de traitement (mêmes seuils que la file de traitement ops_queues)
+  select count(*) into v_count from public.bac_verifications
+   where status in ('pending', 'manual_review') and created_at < now() - interval '72 hours';
+  if v_count > 0 then
+    perform public.ops_raise('queue_bac', 'queue_bac', 'medium', 'BAC à vérifier depuis plus de 72 h', jsonb_build_object('count', v_count));
+    v_seen := v_seen || 'queue_bac'::text;
+  end if;
+  select count(*) into v_count from public.university_vetting v join public.universities u on u.id = v.university_id
+   where v.submitted_at < now() - interval '7 days' and v.decided_at is null and u.partner_status = 'pending';
+  if v_count > 0 then
+    perform public.ops_raise('queue_universities', 'queue_universities', 'medium', 'Dossiers d''établissement à contrôler depuis plus de 7 jours',
+      jsonb_build_object('count', v_count));
+    v_seen := v_seen || 'queue_universities'::text;
+  end if;
+  select count(*) into v_count from public.ai_conversations where status = 'handed_off' and updated_at < now() - interval '48 hours';
+  if v_count > 0 then
+    perform public.ops_raise('queue_support', 'queue_support', 'medium', 'Demandes de support sans réponse depuis plus de 48 h',
+      jsonb_build_object('count', v_count));
+    v_seen := v_seen || 'queue_support'::text;
+  end if;
+
   -- R7. IA : appels à rapprocher (coût incertain, estimation conservée dans le budget)
   select count(*) into v_count from public.ai_runs where status = 'to_reconcile';
   if v_count > 0 then

@@ -87,7 +87,7 @@ export default async function LandingPage() {
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pt-10 pb-16 md:grid-cols-2 md:pt-20 md:pb-24">
           <div className="animate-fade-up">
             <span className="text-brand-700 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold shadow-[var(--shadow-card)]">
-              <span className="bg-mint-500 size-2 rounded-full" aria-hidden /> Disponible dans toute la Guinée
+              <span className="bg-mint-500 size-2 rounded-full" aria-hidden /> Version pilote · Guinée
             </span>
             <h1 className="text-ink mt-5 text-[2.6rem] leading-[1.05] font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
               Ton statut étudiant

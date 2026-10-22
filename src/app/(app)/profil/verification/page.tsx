@@ -115,6 +115,29 @@ export default async function VerificationPage({ searchParams }: { searchParams:
         )}
       </section>
 
+      {p.verification_status !== "verified" && (
+        <p className="text-muted text-sm" data-testid="next-step">
+          <strong className="text-ink">Prochaine étape :</strong>{" "}
+          {incomplete
+            ? "compléter ton profil."
+            : current?.status === "incomplete"
+              ? "corriger ta demande selon le motif indiqué, puis la renvoyer."
+              : enrollmentWaiting
+                ? "attendre la réponse de ton établissement (rien à faire de ton côté)."
+                : pending
+                  ? "attendre le contrôle de ton justificatif par l'équipe Uny (rien à faire de ton côté)."
+                  : isPartnerUni
+                    ? "demander la confirmation de ton inscription à ton établissement."
+                    : "envoyer un justificatif de l'année en cours."}
+          {(current || pending) && (
+            <>
+              {" "}
+              Dernière mise à jour : {timeAgo(String(pending?.created_at ?? current?.decided_at ?? current?.created_at))}.
+            </>
+          )}
+        </p>
+      )}
+
       {incomplete && (
         <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
           <h2 className="mb-1 font-bold">1. Complète ton profil</h2>
@@ -153,7 +176,14 @@ export default async function VerificationPage({ searchParams }: { searchParams:
         </section>
       )}
 
-      {p.verification_status !== "verified" && !incomplete && !pending && !enrollmentWaiting && (
+      {p.verification_status !== "verified" && !incomplete && !pending && !enrollmentWaiting && isPartnerUni && (
+        <p className="bg-brand-50 text-brand-800 rounded-2xl p-4 text-sm">
+          Ton établissement est partenaire de Uny : ton inscription est confirmée par lui, à partir de la demande ci-dessus.
+          Un justificatif envoyé à l&apos;équipe Uny ne peut pas remplacer cette confirmation.
+        </p>
+      )}
+
+      {p.verification_status !== "verified" && !incomplete && !pending && !enrollmentWaiting && !isPartnerUni && (
         <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
           <h2 className="mb-4 font-bold">
             {partnerUniversities.length ? "Ou envoyer un justificatif à l'équipe Uny" : "Envoyer un justificatif"}
