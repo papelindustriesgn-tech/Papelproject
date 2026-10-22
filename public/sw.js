@@ -1,5 +1,5 @@
 /* Uny — service worker (PWA). Stratégies simples et sûres pour réseaux mobiles limités. */
-const VERSION = "uny-v2";
+const VERSION = "uny-v3";
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const IMAGES = `${VERSION}-images`;
@@ -7,7 +7,7 @@ const OFFLINE_URL = "/hors-ligne";
 const NETWORK_TIMEOUT_MS = 3000;
 const PRECACHE = [OFFLINE_URL, "/icons/icon-192.png", "/icons/icon.svg"];
 // Portails établissement et partenaire, profil (justificatifs, sécurité), notifications, API
-const NO_STORE = ["/universite", "/partenaire", "/profil", "/notifications", "/api", "/connexion", "/inscription"];
+const NO_STORE = ["/universite", "/partenaire", "/profil", "/notifications", "/aide", "/admin", "/api", "/connexion", "/inscription"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

@@ -14,6 +14,7 @@ const PROTECTED_PREFIXES = [
   "/notifications",
   "/favoris",
   "/avis",
+  "/aide",
   "/admin",
   "/partenaire",
   "/universite",

@@ -20,6 +20,317 @@ export type Database = {
   };
   public: {
     Tables: {
+      ai_agents: {
+        Row: {
+          data_scope: string;
+          description: string;
+          effort: string;
+          enabled: boolean;
+          id: string;
+          max_runs_per_day: number;
+          max_runs_per_user_day: number;
+          model: string;
+          monthly_budget_usd: number;
+          name: string;
+          tools: string[];
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          data_scope: string;
+          description: string;
+          effort?: string;
+          enabled?: boolean;
+          id: string;
+          max_runs_per_day?: number;
+          max_runs_per_user_day?: number;
+          model?: string;
+          monthly_budget_usd?: number;
+          name: string;
+          tools?: string[];
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          data_scope?: string;
+          description?: string;
+          effort?: string;
+          enabled?: boolean;
+          id?: string;
+          max_runs_per_day?: number;
+          max_runs_per_user_day?: number;
+          model?: string;
+          monthly_budget_usd?: number;
+          name?: string;
+          tools?: string[];
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_agents_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_approvals: {
+        Row: {
+          action: string;
+          agent_id: string;
+          consumed_at: string | null;
+          created_at: string;
+          decided_at: string | null;
+          decided_by: string | null;
+          expires_at: string;
+          id: string;
+          params: NonNullable<Json>;
+          params_hash: string;
+          requested_by: string | null;
+          status: string;
+        };
+        Insert: {
+          action: string;
+          agent_id: string;
+          consumed_at?: string | null;
+          created_at?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          expires_at?: string;
+          id?: string;
+          params: NonNullable<Json>;
+          params_hash: string;
+          requested_by?: string | null;
+          status?: string;
+        };
+        Update: {
+          action?: string;
+          agent_id?: string;
+          consumed_at?: string | null;
+          created_at?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          expires_at?: string;
+          id?: string;
+          params?: NonNullable<Json>;
+          params_hash?: string;
+          requested_by?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_approvals_agent_id_fkey";
+            columns: ["agent_id"];
+            isOneToOne: false;
+            referencedRelation: "ai_agents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_approvals_decided_by_fkey";
+            columns: ["decided_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_approvals_requested_by_fkey";
+            columns: ["requested_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_conversations: {
+        Row: {
+          created_at: string;
+          handoff_reason: string | null;
+          id: string;
+          status: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          handoff_reason?: string | null;
+          id?: string;
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          handoff_reason?: string | null;
+          id?: string;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_messages: {
+        Row: {
+          content: string;
+          conversation_id: string;
+          created_at: string;
+          id: number;
+          role: string;
+        };
+        Insert: {
+          content: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: never;
+          role: string;
+        };
+        Update: {
+          content?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: never;
+          role?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "ai_conversations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_reports: {
+        Row: {
+          agent_id: string;
+          alert_id: string | null;
+          content: string;
+          created_at: string;
+          id: string;
+          metrics: NonNullable<Json>;
+          period_days: number | null;
+          requested_by: string | null;
+          run_id: string | null;
+        };
+        Insert: {
+          agent_id: string;
+          alert_id?: string | null;
+          content: string;
+          created_at?: string;
+          id?: string;
+          metrics?: NonNullable<Json>;
+          period_days?: number | null;
+          requested_by?: string | null;
+          run_id?: string | null;
+        };
+        Update: {
+          agent_id?: string;
+          alert_id?: string | null;
+          content?: string;
+          created_at?: string;
+          id?: string;
+          metrics?: NonNullable<Json>;
+          period_days?: number | null;
+          requested_by?: string | null;
+          run_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_reports_agent_id_fkey";
+            columns: ["agent_id"];
+            isOneToOne: false;
+            referencedRelation: "ai_agents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_reports_requested_by_fkey";
+            columns: ["requested_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_reports_run_id_fkey";
+            columns: ["run_id"];
+            isOneToOne: false;
+            referencedRelation: "ai_runs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_runs: {
+        Row: {
+          agent_id: string;
+          cost_usd: number | null;
+          created_at: string;
+          error: string | null;
+          estimated_cost_usd: number;
+          finished_at: string | null;
+          id: string;
+          input_tokens: number | null;
+          model: string | null;
+          output_tokens: number | null;
+          refusal: string | null;
+          requested_by: string | null;
+          status: string;
+        };
+        Insert: {
+          agent_id: string;
+          cost_usd?: number | null;
+          created_at?: string;
+          error?: string | null;
+          estimated_cost_usd?: number;
+          finished_at?: string | null;
+          id?: string;
+          input_tokens?: number | null;
+          model?: string | null;
+          output_tokens?: number | null;
+          refusal?: string | null;
+          requested_by?: string | null;
+          status: string;
+        };
+        Update: {
+          agent_id?: string;
+          cost_usd?: number | null;
+          created_at?: string;
+          error?: string | null;
+          estimated_cost_usd?: number;
+          finished_at?: string | null;
+          id?: string;
+          input_tokens?: number | null;
+          model?: string | null;
+          output_tokens?: number | null;
+          refusal?: string | null;
+          requested_by?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_runs_agent_id_fkey";
+            columns: ["agent_id"];
+            isOneToOne: false;
+            referencedRelation: "ai_agents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_runs_requested_by_fkey";
+            columns: ["requested_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       audit_log: {
         Row: {
           action: string;
@@ -1082,6 +1393,101 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      ops_alerts: {
+        Row: {
+          details: NonNullable<Json>;
+          fingerprint: string;
+          first_seen: string;
+          id: string;
+          last_seen: string;
+          occurrences: number;
+          owner_id: string | null;
+          resolution: string | null;
+          resolved_at: string | null;
+          rule: string;
+          severity: string;
+          status: string;
+          title: string;
+        };
+        Insert: {
+          details?: NonNullable<Json>;
+          fingerprint: string;
+          first_seen?: string;
+          id?: string;
+          last_seen?: string;
+          occurrences?: number;
+          owner_id?: string | null;
+          resolution?: string | null;
+          resolved_at?: string | null;
+          rule: string;
+          severity: string;
+          status?: string;
+          title: string;
+        };
+        Update: {
+          details?: NonNullable<Json>;
+          fingerprint?: string;
+          first_seen?: string;
+          id?: string;
+          last_seen?: string;
+          occurrences?: number;
+          owner_id?: string | null;
+          resolution?: string | null;
+          resolved_at?: string | null;
+          rule?: string;
+          severity?: string;
+          status?: string;
+          title?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ops_alerts_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ops_job_runs: {
+        Row: {
+          attempts: number;
+          error: string | null;
+          finished_at: string | null;
+          id: string;
+          idempotency_key: string;
+          job: string;
+          max_attempts: number;
+          result: Json | null;
+          started_at: string;
+          status: string;
+        };
+        Insert: {
+          attempts?: number;
+          error?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          idempotency_key: string;
+          job: string;
+          max_attempts?: number;
+          result?: Json | null;
+          started_at?: string;
+          status?: string;
+        };
+        Update: {
+          attempts?: number;
+          error?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          idempotency_key?: string;
+          job?: string;
+          max_attempts?: number;
+          result?: Json | null;
+          started_at?: string;
+          status?: string;
+        };
+        Relationships: [];
       };
       partner_applications: {
         Row: {
@@ -2492,6 +2898,27 @@ export type Database = {
       };
       admin_stats: { Args: Record<PropertyKey, never>; Returns: Json };
       admin_stats_impl: { Args: Record<PropertyKey, never>; Returns: Json };
+      ai_action_hash: { Args: { p_action: string; p_params: Json }; Returns: string };
+      ai_approval_consume: { Args: { p_action: string; p_approval: string; p_params: Json }; Returns: undefined };
+      ai_approval_decide: { Args: { p_approval: string; p_approve: boolean }; Returns: undefined };
+      ai_approval_request: { Args: { p_action: string; p_agent: string; p_params: Json; p_user: string }; Returns: string };
+      ai_configure: {
+        Args: { p_agent: string; p_budget: number; p_enabled: boolean; p_max_day: number; p_max_user_day: number };
+        Returns: undefined;
+      };
+      ai_finish: {
+        Args: {
+          p_cost: number;
+          p_error?: string;
+          p_input: number;
+          p_model: string;
+          p_ok: boolean;
+          p_output: number;
+          p_run: string;
+        };
+        Returns: undefined;
+      };
+      ai_reserve: { Args: { p_agent: string; p_estimated_cost: number; p_user: string }; Returns: Json };
       allocate_student_email: {
         Args: { p_user: string };
         Returns: {
@@ -2538,6 +2965,15 @@ export type Database = {
       my_hidden_sellers: { Args: Record<PropertyKey, never>; Returns: string[] };
       new_promo_code: { Args: Record<PropertyKey, never>; Returns: string };
       next_uny_id: { Args: { p_country: string }; Returns: string };
+      ops_alert_update: { Args: { p_alert: string; p_note?: string; p_status: string }; Returns: undefined };
+      ops_job_begin: { Args: { p_job: string; p_key: string; p_max?: number }; Returns: Json };
+      ops_job_finish: { Args: { p_error?: string; p_ok: boolean; p_result?: Json; p_run: string }; Returns: undefined };
+      ops_metrics: { Args: { p_days?: number }; Returns: Json };
+      ops_raise: {
+        Args: { p_details: Json; p_fingerprint: string; p_rule: string; p_severity: string; p_title: string };
+        Returns: undefined;
+      };
+      ops_run_checks: { Args: Record<PropertyKey, never>; Returns: Json };
       partner_gift_loyalty: { Args: { p_card: string; p_kind: string; p_partner: string }; Returns: Json };
       partner_gift_loyalty_impl: { Args: { p_card: string; p_kind: string; p_partner: string }; Returns: Json };
       partner_job_applications: {

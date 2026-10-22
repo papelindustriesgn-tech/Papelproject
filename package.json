@@ -20,6 +20,7 @@
     "loadtest:cleanup": "tsx --env-file=.env.local scripts/load-test/cleanup.mts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.1.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "@vercel/analytics": "^2.0.1",

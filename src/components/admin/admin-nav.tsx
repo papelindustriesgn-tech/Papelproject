@@ -19,6 +19,8 @@ import {
   UserPlus,
   Users,
   DatabaseBackup,
+  Activity,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -35,6 +37,8 @@ export const ADMIN_NAV = [
   { href: "/admin/avantages", label: "Avantages", icon: Tag },
   { href: "/admin/marketplace", label: "Marketplace", icon: ShoppingBag },
   { href: "/admin/signalements", label: "Signalements", icon: Flag },
+  { href: "/admin/pilotage", label: "Pilotage", icon: Activity },
+  { href: "/admin/ia", label: "Centre IA", icon: Bot },
   { href: "/admin/statistiques", label: "Statistiques", icon: BarChart3 },
   { href: "/admin/avis", label: "Avis des inscrits", icon: MessageSquareHeart },
   { href: "/admin/contacts", label: "Contacter les inscrits", icon: Send },
