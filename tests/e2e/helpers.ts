@@ -129,7 +129,7 @@ export async function adminAsUniversityMember() {
   return id;
 }
 
-const envVar = (key: string) =>
+export const envVar = (key: string) =>
   fs
     .readFileSync(".env.local", "utf8")
     .split("\n")
