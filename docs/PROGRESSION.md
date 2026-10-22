@@ -25,6 +25,16 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
 - ✅ Étudiants : 5 onglets, Opportunités (jobs, logement, marketplace), prochaine démarche sur l'accueil, brouillons, carte hors ligne datée
 - ✅ Aide : assistant + transfert humain (`/aide`), fonctionne sans IA
 
+- ✅ Vérification étudiante stricte (22/10, demandée par le propriétaire) — local (03, 18, 20) :
+  justificatif = 4 contrôles cochés + matricule et année lus sur le document + aucun doublon (fichier, matricule) ;
+  étudiant d'un établissement partenaire → confirmation par l'établissement ; portail : référence du registre +
+  4 critères ; plus de « validation manuelle du statut » ; BAC : référence officielle obligatoire ; réductions
+  réservées aux étudiants vérifiés.
+- ✅ Établissements : dossier (agrément, signataire, lettre signée) + contrôles Uny (source de l'agrément, rappel au
+  numéro officiel trouvé par Uny, signataire habilité) ; seule `approve_university` rend partenaire — local (08, 20)
+- ✅ Commerçants : prix étudiant calculé automatiquement (prix normal + réduction en % ou en GNF, arrondi à la
+  centaine inférieure), imposé par la base — local (09, 12, 20)
+
 ## 3. Mobile et stores
 - ✅ Chaînes : Google Play = `android/` (API 36), App Store = `mobile/ios` ; CI verte (PR #1)
 - ✅ Signalement, blocage, file de modération ; suppression du compte (app + web)

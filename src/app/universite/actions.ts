@@ -35,11 +35,19 @@ export async function decideEnrollment(id: string, _prev: FormState, formData: F
     .slice(0, 500);
   if ((decision === "reject" || decision === "revoke" || decision === "incomplete") && reason.length < 3)
     return { error: "Indiquez le motif (visible par l'étudiant)." };
+  // Confirmation : preuve du registre officiel (référence + informations vérifiées), contrôlée par la base
+  const sourceRef = String(formData.get("source_ref") ?? "").trim().slice(0, 120);
+  const checked = Object.fromEntries(
+    ["student_number", "last_name", "first_name", "birth_date"].map((k) => [k, formData.get(`checked_${k}`) === "on"]),
+  );
   const supabase = await createClient();
   const { error } = await supabase.rpc("set_enrollment_status", {
     p_enrollment: id,
     p_status: DECISIONS[decision].status,
     p_reason: reason || undefined,
+    ...(DECISIONS[decision].status === "verified"
+      ? { p_source_ref: sourceRef || undefined, p_details: Object.values(checked).some(Boolean) ? { checked } : undefined }
+      : {}),
   });
   if (error) return { error: error.code === "P0001" ? error.message : "Action impossible. Réessayez." };
   revalidatePath("/universite", "layout");
@@ -335,4 +343,62 @@ export async function switchUniversity(id: number) {
     maxAge: 60 * 60 * 24 * 365,
   });
   revalidatePath("/universite", "layout");
+}
+
+// -----------------------------------------------------------------------------
+// Dossier de vérification de l'établissement (contrôlé par l'équipe Uny avant l'approbation)
+// -----------------------------------------------------------------------------
+const vettingSchema = z.object({
+  legal_name: z.string().trim().min(3, "Nom légal requis").max(200),
+  accreditation_ref: z.string().trim().min(3, "Numéro d'agrément ou d'arrêté requis").max(120),
+  accreditation_date: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide")
+    .optional()
+    .or(z.literal("")),
+  signatory_name: z.string().trim().min(3, "Nom du signataire requis").max(120),
+  signatory_title: z.string().trim().min(2, "Fonction du signataire requise").max(120),
+  official_phone: z.string().trim().min(6, "Téléphone du standard requis").max(30),
+  official_email: z.email("Email invalide").max(200).optional().or(z.literal("")),
+});
+const VETTING_TYPES: Record<string, string> = { "application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png" };
+
+export async function submitUniversityVetting(_prev: FormState, formData: FormData): Promise<FormState> {
+  const { university } = await requireUniversity();
+  if (!universityCan(university, "prepare") || university.role !== "admin")
+    return { error: "Réservé aux administrateurs de l'établissement." };
+  const parsed = vettingSchema.safeParse(Object.fromEntries([...formData.entries()].filter(([, v]) => typeof v === "string")));
+  if (!parsed.success)
+    return { error: "Vérifiez les champs indiqués.", fieldErrors: zodFieldErrors(parsed.error.issues), values: formValues(formData) };
+
+  // Lettre officielle signée et cachetée : stockage privé, chemin imposé par le serveur
+  let documentPath: string | null = null;
+  const file = formData.get("document");
+  if (file instanceof File && file.size > 0) {
+    const ext = VETTING_TYPES[file.type];
+    if (!ext) return { error: "Lettre officielle : PDF, JPG ou PNG uniquement.", values: formValues(formData) };
+    if (file.size > 5 * 1024 * 1024) return { error: "Lettre officielle : 5 Mo maximum.", values: formValues(formData) };
+    documentPath = `universities/${university.id}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await createAdminClient()
+      .storage.from("verification-docs")
+      .upload(documentPath, Buffer.from(await file.arrayBuffer()), { contentType: file.type });
+    if (upErr) return { error: "Envoi du document impossible, réessayez.", values: formValues(formData) };
+  }
+  const d = parsed.data;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("university_submit_vetting", {
+    p_university: university.id,
+    p_legal_name: d.legal_name,
+    p_accreditation_ref: d.accreditation_ref,
+    p_accreditation_date: d.accreditation_date || (null as unknown as string),
+    p_signatory_name: d.signatory_name,
+    p_signatory_title: d.signatory_title,
+    p_official_phone: d.official_phone,
+    p_official_email: d.official_email || (null as unknown as string),
+    p_document_path: documentPath as unknown as string,
+  });
+  if (error) return { error: "Enregistrement impossible.", values: formValues(formData) };
+  revalidatePath("/universite/etablissement");
+  return { ok: true, message: "Dossier envoyé ✅ L'équipe Uny va le contrôler et rappeler votre standard officiel." };
 }

@@ -1,3 +1,4 @@
+import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { ADMIN, login, logout, serviceRest, signUp } from "./helpers";
 
@@ -51,10 +52,40 @@ test("université : demande → portail → carte personnalisée → import → 
   await page.goto("/admin/universites");
   const appCard = page
     .locator("div", { hasText: uniName })
-    .filter({ has: page.getByRole("button", { name: /Approuver/ }) })
+    .filter({ has: page.getByRole("button", { name: /Ouvrir l'espace/ }) })
     .last();
-  await appCard.getByRole("button", { name: /Approuver/ }).click();
+  await appCard.getByRole("button", { name: /Ouvrir l'espace/ }).click();
   await expect(page.getByText(/Compte existant relié/)).toBeVisible();
+  await logout(page);
+
+  // 2 bis. L'établissement dépose son dossier officiel (agrément, signataire, lettre signée)
+  await login(page, email, password).catch(() => undefined);
+  await page.goto("/universite/etablissement");
+  const vetting = page.getByTestId("vetting-form");
+  await vetting.locator("#legal_name").fill(official);
+  await vetting.locator("#accreditation_ref").fill(`Arrêté n°${run}/MESRS`);
+  await vetting.locator("#official_phone").fill("+224 620 00 00 00");
+  await vetting.locator("#signatory_name").fill("Kadiatou Sow");
+  await vetting.locator("#signatory_title").fill("Directrice générale");
+  await vetting.locator("#document").setInputFiles(path.join(__dirname, "..", "fixtures", "student-card.jpg"));
+  await vetting.getByRole("button", { name: "Envoyer le dossier" }).click();
+  await expect(page.getByText(/Dossier envoyé ✅/)).toBeVisible();
+  await logout(page);
+
+  // 2 ter. L'équipe Uny contrôle : agrément, rappel au numéro officiel, signataire habilité, puis approuve
+  await login(page, ADMIN.email, ADMIN.password);
+  const [uniRow] = await (await serviceRest(`universities?name=eq.${encodeURIComponent(uniName)}&select=id`)).json();
+  await page.goto(`/admin/universites/${uniRow.id}`);
+  const approve = page.getByTestId("approve-university");
+  await approve.getByRole("button", { name: "Approuver l'établissement" }).click();
+  await expect(approve.getByText(/Indique où l.agrément a été vérifié/)).toBeVisible();
+  await approve.locator("#accreditation_source").fill("Liste officielle du ministère (test)");
+  await approve.locator("#callback_phone").fill("+224 621 11 11 11");
+  await approve.locator("#callback_source").fill("Annuaire officiel (test)");
+  await approve.locator("#callback_person").fill("Secrétariat de direction — confirme la demande");
+  await approve.getByText("Lettre signée et cachetée").click();
+  await approve.getByRole("button", { name: "Approuver l'établissement" }).click();
+  await expect(page.getByTestId("vetting-section")).toContainText("Contrôlé et approuvé");
   await logout(page);
 
   // 3. Deux étudiants : A (correspond à la liste) et B (nom différent)
@@ -170,6 +201,10 @@ test("BAC : vérification par le numéro de PV, numéro effacé après décision
   const card = page.locator("li", { hasText: `${s.first} ${s.last}` });
   // L'admin voit le numéro de PV complet pour le contrôler dans les résultats officiels
   await expect(card.getByText(candidate)).toBeVisible();
+  // Sans référence contrôlée dans les résultats officiels : validation refusée
+  await card.getByRole("button", { name: "BAC vérifié" }).click();
+  await expect(card.getByText(/Indique la référence contrôlée/)).toBeVisible();
+  await card.getByLabel("Référence").fill("Résultats officiels BAC 2022, PV p. 12");
   await card.getByRole("button", { name: "BAC vérifié" }).click();
   await expect(card).toHaveCount(0);
 

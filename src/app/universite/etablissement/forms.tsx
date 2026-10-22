@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Field, FormMessage, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { requestApiConnection, updateUniversityProfile } from "../actions";
+import { requestApiConnection, submitUniversityVetting, updateUniversityProfile } from "../actions";
 
 type Uni = {
   short_name: string | null;
@@ -79,6 +79,67 @@ export function ApiRequestForm() {
       <SubmitButton variant="outline" className="w-full" pendingLabel="Envoi…">
         Demander le raccordement
       </SubmitButton>
+    </form>
+  );
+}
+
+type Vetting = {
+  legal_name: string | null;
+  accreditation_ref: string | null;
+  accreditation_date: string | null;
+  signatory_name: string | null;
+  signatory_title: string | null;
+  official_phone: string | null;
+  official_email: string | null;
+  document_path: string | null;
+};
+
+/** Dossier de vérification : pièces officielles contrôlées par l'équipe Uny avant l'approbation. */
+export function VettingForm({ v }: { v: Vetting | null }) {
+  const [state, run] = useActionState(submitUniversityVetting, {});
+  const fe = state.fieldErrors ?? {};
+  const val = (k: keyof Vetting) => (state.values?.[k] as string | undefined) ?? v?.[k] ?? "";
+  return (
+    <form action={run} className="space-y-4" data-testid="vetting-form">
+      <FormMessage type={state.ok ? "success" : "error"}>{state.message ?? state.error}</FormMessage>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Nom légal de l'établissement" htmlFor="legal_name" error={fe.legal_name}>
+          <Input id="legal_name" name="legal_name" defaultValue={val("legal_name")} maxLength={200} required />
+        </Field>
+        <Field label="N° d'agrément ou d'arrêté de création" htmlFor="accreditation_ref" error={fe.accreditation_ref}>
+          <Input id="accreditation_ref" name="accreditation_ref" defaultValue={val("accreditation_ref")} maxLength={120} required />
+        </Field>
+        <Field label="Date de l'agrément" htmlFor="accreditation_date" optional error={fe.accreditation_date}>
+          <Input id="accreditation_date" name="accreditation_date" type="date" defaultValue={val("accreditation_date")} />
+        </Field>
+        <Field label="Téléphone du standard officiel" htmlFor="official_phone" error={fe.official_phone}>
+          <Input id="official_phone" name="official_phone" type="tel" defaultValue={val("official_phone")} maxLength={30} required />
+        </Field>
+        <Field label="Signataire (nom complet)" htmlFor="signatory_name" error={fe.signatory_name}>
+          <Input id="signatory_name" name="signatory_name" defaultValue={val("signatory_name")} maxLength={120} required />
+        </Field>
+        <Field label="Fonction du signataire" htmlFor="signatory_title" error={fe.signatory_title}>
+          <Input
+            id="signatory_title"
+            name="signatory_title"
+            defaultValue={val("signatory_title")}
+            maxLength={120}
+            placeholder="Recteur, Directeur général, Secrétaire général…"
+            required
+          />
+        </Field>
+        <Field label="Email officiel" htmlFor="official_email" optional error={fe.official_email}>
+          <Input id="official_email" name="official_email" type="email" defaultValue={val("official_email")} maxLength={200} />
+        </Field>
+        <Field
+          label="Lettre officielle signée et cachetée"
+          htmlFor="document"
+          hint={v?.document_path ? "Déjà envoyée. Ajoutez un fichier pour la remplacer." : "PDF, JPG ou PNG · 5 Mo max"}
+        >
+          <Input id="document" name="document" type="file" accept="application/pdf,image/jpeg,image/png" required={!v?.document_path} />
+        </Field>
+      </div>
+      <SubmitButton pendingLabel="Envoi…">Envoyer le dossier</SubmitButton>
     </form>
   );
 }

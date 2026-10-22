@@ -173,3 +173,41 @@ export function ResultButton({
     </div>
   );
 }
+
+/** Contrôles de l'équipe Uny avant l'approbation d'un établissement (tous obligatoires, vérifiés par la base). */
+export function ApproveUniversityForm({ action }: { action: (prev: FormState, fd: FormData) => Promise<FormState> }) {
+  const [state, run] = useActionState(action, {});
+  if (state.ok) return <FormMessage type="success">{state.message}</FormMessage>;
+  return (
+    <form action={run} className="space-y-3" data-testid="approve-university">
+      <FormMessage>{state.error}</FormMessage>
+      <Field label="Agrément vérifié sur (source officielle)" htmlFor="accreditation_source">
+        <Input
+          id="accreditation_source"
+          name="accreditation_source"
+          maxLength={300}
+          placeholder="Liste officielle du ministère de l'Enseignement supérieur, Journal officiel n°…"
+        />
+      </Field>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Numéro officiel appelé" htmlFor="callback_phone" hint="Trouvé par Uny, pas celui fourni dans le dossier">
+          <Input id="callback_phone" name="callback_phone" type="tel" maxLength={30} />
+        </Field>
+        <Field label="Où ce numéro a été trouvé" htmlFor="callback_source">
+          <Input id="callback_source" name="callback_source" maxLength={300} placeholder="Annuaire du ministère, site officiel…" />
+        </Field>
+      </div>
+      <Field label="Personne jointe et sa fonction" htmlFor="callback_person">
+        <Input id="callback_person" name="callback_person" maxLength={200} placeholder="Mme X, secrétaire du rectorat — confirme la demande" />
+      </Field>
+      <label className="bg-canvas flex items-start gap-3 rounded-2xl p-3 text-sm">
+        <input type="checkbox" name="mandate_checked" className="accent-brand-600 mt-0.5 size-5" />
+        <span>Lettre signée et cachetée par une personne habilitée à engager l&apos;établissement</span>
+      </label>
+      <Field label="Note" htmlFor="note" optional>
+        <Textarea id="note" name="note" rows={2} maxLength={1000} />
+      </Field>
+      <SubmitButton pendingLabel="Enregistrement…">Approuver l&apos;établissement</SubmitButton>
+    </form>
+  );
+}

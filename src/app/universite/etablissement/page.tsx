@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCities } from "@/lib/cities";
 import { AUDIT_ACTIONS as ACTIONS, requireUniversity } from "@/lib/university";
 import { formatDate } from "@/lib/format";
-import { ApiRequestForm, UniversityProfileForm } from "./forms";
+import { ApiRequestForm, UniversityProfileForm, VettingForm } from "./forms";
 
 export const metadata = { title: "Établissement & connexion" };
 
@@ -18,7 +18,7 @@ const INTEGRATION_STATUS = {
 export default async function EstablishmentPage() {
   const { university } = await requireUniversity();
   const supabase = await createClient();
-  const [{ data: uni }, { data: integration }, { data: logs }, cities] = await Promise.all([
+  const [{ data: uni }, { data: integration }, { data: logs }, cities, { data: vetting }] = await Promise.all([
     supabase
       .from("universities")
       .select("name, short_name, website, contact_email, city_id, faculties")
@@ -37,6 +37,7 @@ export default async function EstablishmentPage() {
       .order("created_at", { ascending: false })
       .limit(15),
     getCities(),
+    supabase.from("university_vetting").select("*").eq("university_id", university.id).maybeSingle(),
   ]);
   const st = INTEGRATION_STATUS[(integration?.status ?? "not_configured") as keyof typeof INTEGRATION_STATUS];
 
@@ -53,6 +54,26 @@ export default async function EstablishmentPage() {
         <h2 className="mb-4 font-bold">Fiche</h2>
         {uni && <UniversityProfileForm uni={uni} cities={cities} />}
       </section>
+
+      {university.role === "admin" && (
+        <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-bold">Dossier de vérification</h2>
+            <Badge tone={vetting?.decided_at ? "mint" : vetting?.submitted_at ? "mango" : "neutral"}>
+              {vetting?.decided_at
+                ? `Contrôlé le ${formatDate(vetting.decided_at)}`
+                : vetting?.submitted_at
+                  ? "En cours de contrôle par Uny"
+                  : "À compléter"}
+            </Badge>
+          </div>
+          <p className="text-muted mb-4 text-sm">
+            Avant d&apos;accéder aux dossiers des étudiants, Uny vérifie votre agrément auprès d&apos;une source officielle,
+            rappelle votre standard au numéro officiel et contrôle la lettre signée par une personne habilitée.
+          </p>
+          <VettingForm v={vetting} />
+        </section>
+      )}
 
       <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

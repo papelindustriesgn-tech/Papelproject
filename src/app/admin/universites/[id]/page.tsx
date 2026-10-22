@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { FormMessage } from "@/components/ui/field";
 import { requireAdmin } from "@/lib/auth";
+import type { Database } from "@/lib/database.types";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/format";
 import { getUniversityCardConfig, PARTNER_STATUS } from "@/lib/university";
@@ -16,10 +17,11 @@ import {
   openUniversityPortal,
   removeUniversityMember,
   saveIntegration,
+  approveUniversity,
   setUniversityStatus,
   testIntegration,
 } from "../../university-actions";
-import { IntegrationForm } from "../forms";
+import { ApproveUniversityForm, IntegrationForm } from "../forms";
 
 export const metadata = { title: "Université" };
 
@@ -28,7 +30,7 @@ export default async function UniversityAdmin({ params }: { params: Promise<{ id
   const id = Number((await params).id);
   if (!Number.isInteger(id)) notFound();
   const supabase = await createClient();
-  const [{ data: uni }, { data: members }, { data: integration }, { data: imports }, { data: stats }, card] = await Promise.all([
+  const [{ data: uni }, { data: members }, { data: integration }, { data: imports }, { data: stats }, card, { data: vetting }] = await Promise.all([
     supabase.from("universities").select("*, city:cities(name)").eq("id", id).maybeSingle(),
     supabase
       .from("university_members")
@@ -43,12 +45,13 @@ export default async function UniversityAdmin({ params }: { params: Promise<{ id
       .limit(5),
     supabase.rpc("university_stats", { p_university: id }),
     getUniversityCardConfig(id, true),
+    supabase.from("university_vetting").select("*").eq("university_id", id).maybeSingle(),
   ]);
   if (!uni) notFound();
   const st = PARTNER_STATUS[uni.partner_status as keyof typeof PARTNER_STATUS];
   const s = stats as { pending: number; manual_review: number; verified: number; cards_active: number } | null;
 
-  const statusButton = (to: keyof typeof PARTNER_STATUS, label: string, danger = false) => (
+  const statusButton = (to: "listed" | "pending" | "suspended", label: string, danger = false) => (
     <form action={setUniversityStatus.bind(null, id, to)}>
       <ConfirmButton
         message={`${label} : confirmer ?`}
@@ -80,7 +83,6 @@ export default async function UniversityAdmin({ params }: { params: Promise<{ id
       </div>
 
       <section className="flex flex-wrap gap-2 rounded-[var(--radius-card)] bg-white p-4 shadow-[var(--shadow-card)]">
-        {uni.partner_status !== "partner" && statusButton("partner", "Approuver comme partenaire")}
         {uni.partner_status === "listed" && statusButton("pending", "Ouvrir le portail (en attente)")}
         {uni.partner_status === "partner" && statusButton("suspended", "Suspendre le partenariat", true)}
         {uni.partner_status !== "listed" && statusButton("listed", "Repasser en simple référencement", true)}
@@ -95,6 +97,8 @@ export default async function UniversityAdmin({ params }: { params: Promise<{ id
           </p>
         )}
       </section>
+
+      <VettingSection universityId={id} vetting={vetting} website={uni.website} members={members ?? []} partner={uni.partner_status === "partner"} />
 
       <div className="grid gap-5 xl:grid-cols-2">
         <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
@@ -213,5 +217,101 @@ export default async function UniversityAdmin({ params }: { params: Promise<{ id
         )}
       </section>
     </div>
+  );
+}
+
+const domainOf = (v: string | null | undefined) => {
+  if (!v) return null;
+  try {
+    return (v.includes("@") ? v.split("@")[1] : new URL(v).hostname).replace(/^www\./, "").toLowerCase();
+  } catch {
+    return null;
+  }
+};
+const GENERIC = ["gmail.com", "yahoo.fr", "yahoo.com", "hotmail.com", "hotmail.fr", "outlook.com", "outlook.fr", "icloud.com"];
+
+/** Dossier déposé par l'établissement, signaux et contrôles obligatoires avant l'approbation. */
+async function VettingSection({
+  universityId,
+  vetting,
+  website,
+  members,
+  partner,
+}: {
+  universityId: number;
+  vetting: Database["public"]["Tables"]["university_vetting"]["Row"] | null;
+  website: string | null;
+  members: { user: { email: string | null } | null }[];
+  partner: boolean;
+}) {
+  const supabase = await createClient();
+  const docUrl = vetting?.document_path
+    ? (await supabase.storage.from("verification-docs").createSignedUrl(vetting.document_path, 300)).data?.signedUrl
+    : null;
+  const site = domainOf(website);
+  const emails = [vetting?.official_email, ...members.map((m) => m.user?.email)].filter((e): e is string => !!e);
+  const signals = emails.map((e) => {
+    const d = domainOf(e);
+    return {
+      email: e,
+      tone: d && GENERIC.includes(d) ? "coral" : d && site && d === site ? "mint" : "mango",
+      label: d && GENERIC.includes(d) ? "adresse personnelle" : d && site && d === site ? "domaine du site officiel" : "domaine à vérifier",
+    } as const;
+  });
+  const rows: [string, string | null | undefined][] = [
+    ["Nom légal", vetting?.legal_name],
+    ["Agrément / arrêté", vetting?.accreditation_ref],
+    ["Date de l'agrément", vetting?.accreditation_date ? formatDate(vetting.accreditation_date) : null],
+    ["Signataire", vetting?.signatory_name ? `${vetting.signatory_name} — ${vetting.signatory_title ?? ""}` : null],
+    ["Standard officiel (déclaré)", vetting?.official_phone],
+    ["Email officiel (déclaré)", vetting?.official_email],
+  ];
+  return (
+    <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]" data-testid="vetting-section">
+      <h2 className="mb-1 font-bold">Contrôle de l&apos;établissement</h2>
+      <p className="text-muted mb-3 text-sm">
+        {vetting?.submitted_at ? `Dossier déposé le ${formatDate(vetting.submitted_at)}.` : "Aucun dossier déposé par l'établissement."}
+        {vetting?.decided_at && ` Contrôlé et approuvé le ${formatDate(vetting.decided_at)}.`}
+      </p>
+      <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+        {rows.map(([k, v]) => (
+          <div key={k}>
+            <dt className="text-muted text-xs">{k}</dt>
+            <dd className="font-semibold">{v || "—"}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-2 text-sm">
+        Lettre officielle :{" "}
+        {docUrl ? (
+          <a href={docUrl} target="_blank" rel="noopener noreferrer" className="text-brand-600 font-semibold">
+            ouvrir le document
+          </a>
+        ) : (
+          "non fournie"
+        )}
+      </p>
+      {signals.length > 0 && (
+        <ul className="mt-2 flex flex-wrap gap-2 text-xs">
+          {signals.map((x) => (
+            <li key={x.email}>
+              <Badge tone={x.tone}>
+                {x.email} · {x.label}
+              </Badge>
+            </li>
+          ))}
+        </ul>
+      )}
+      {vetting?.decided_at ? (
+        <p className="text-muted mt-3 text-xs">
+          Agrément vérifié sur : {vetting.accreditation_source} · rappel au {vetting.callback_phone} ({vetting.callback_source}) ·{" "}
+          {vetting.callback_person}
+        </p>
+      ) : !partner ? (
+        <div className="border-line mt-4 border-t pt-4">
+          <ApproveUniversityForm action={approveUniversity.bind(null, universityId)} />
+        </div>
+      ) : null}
+    </section>
   );
 }

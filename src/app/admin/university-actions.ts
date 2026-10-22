@@ -62,7 +62,8 @@ export async function createUniversity(_prev: FormState, formData: FormData): Pr
   redirect(`/admin/universites/${data.id}`);
 }
 
-const STATUS_CHANGES = ["listed", "pending", "partner", "suspended"] as const;
+// « partenaire » : uniquement via approveUniversity (dossier complet + contrôles), jamais en un clic
+const STATUS_CHANGES = ["listed", "pending", "suspended"] as const;
 
 export async function setUniversityStatus(id: number, status: (typeof STATUS_CHANGES)[number]) {
   const admin = await requireAdmin();
@@ -70,7 +71,7 @@ export async function setUniversityStatus(id: number, status: (typeof STATUS_CHA
   const supabase = await createClient();
   await supabase
     .from("universities")
-    .update({ partner_status: status, ...(status === "partner" ? { approved_at: new Date().toISOString() } : {}) })
+    .update({ partner_status: status })
     .eq("id", id);
   await audit(admin.id, `university.${status}`, {}, id);
   revalidatePath("/admin/universites", "layout");
@@ -125,7 +126,7 @@ export async function removeUniversityMember(universityId: number, userId: strin
   revalidatePath(`/admin/universites/${universityId}`);
 }
 
-/** Demande « Université partenaire » acceptée : fiche (créée ou reliée) + accès au portail. */
+/** Demande « Université partenaire » acceptée : fiche (créée ou reliée) + espace en attente du dossier de vérification. */
 export async function approveUniversityApplication(applicationId: string): Promise<FormState> {
   const adminUser = await requireAdmin();
   if (!z.uuid().safeParse(applicationId).success) return { error: "Demande invalide" };
@@ -143,10 +144,8 @@ export async function approveUniversityApplication(applicationId: string): Promi
     if (error || !uni) return { error: "Création de l'établissement impossible (nom déjà utilisé ?)." };
     universityId = uni.id;
   }
-  await admin
-    .from("universities")
-    .update({ partner_status: "partner", approved_at: new Date().toISOString(), contact_email: app.email })
-    .eq("id", universityId);
+  // Espace ouvert « en attente » : l'établissement dépose son dossier, puis l'équipe Uny le contrôle
+  await admin.from("universities").update({ partner_status: "pending", contact_email: app.email }).eq("id", universityId);
 
   const [first, ...rest] = app.contact_name.trim().split(/\s+/);
   const r = await grantAccess(universityId, { email: app.email, first_name: first, last_name: rest.join(" ") || first });
@@ -155,7 +154,7 @@ export async function approveUniversityApplication(applicationId: string): Promi
     .from("university_applications")
     .update({ status: "approved", university_id: universityId, reviewed_at: new Date().toISOString() })
     .eq("id", applicationId);
-  await audit(adminUser.id, "university.partner", { application: applicationId }, universityId);
+  await audit(adminUser.id, "university.pending", { application: applicationId }, universityId);
   // Pas de revalidation : le mot de passe provisoire doit rester affiché
   return { ok: true, message: r.message };
 }
@@ -288,6 +287,8 @@ export async function reviewBac(id: string, _prev: FormState, formData: FormData
     .slice(0, 120);
   if (decision !== "verify" && decision !== "reject") return { error: "Décision invalide" };
   if (decision === "reject" && reason.length < 3) return { error: "Indique le motif du refus." };
+  if (decision === "verify" && reference.length < 3)
+    return { error: "Indique la référence contrôlée dans les résultats officiels (PV, liste, page)." };
 
   const admin = createAdminClient();
   const { data: bac } = await admin.from("bac_verifications").select("*").eq("id", id).single();
@@ -504,4 +505,25 @@ export async function openUniversityPortal(universityId: number) {
     maxAge: 60 * 60 * 24 * 30,
   });
   redirect("/universite");
+}
+
+/**
+ * Approbation d'un établissement : seulement après dossier complet et contrôles de l'équipe Uny
+ * (agrément vérifié sur une source officielle, rappel au numéro officiel trouvé par Uny, signataire habilité).
+ */
+export async function approveUniversity(universityId: number, _prev: FormState, formData: FormData): Promise<FormState> {
+  await requireAdmin();
+  const str = (k: string) => String(formData.get(k) ?? "").trim().slice(0, 300);
+  const { error } = await (await createClient()).rpc("approve_university", {
+    p_university: universityId,
+    p_accreditation_source: str("accreditation_source"),
+    p_callback_phone: str("callback_phone").slice(0, 30),
+    p_callback_source: str("callback_source"),
+    p_callback_person: str("callback_person").slice(0, 200),
+    p_mandate_checked: formData.get("mandate_checked") === "on",
+    p_note: str("note") || undefined,
+  });
+  if (error) return { error: error.code === "P0001" ? error.message : "Approbation impossible." };
+  revalidatePath("/admin/universites", "layout");
+  return { ok: true, message: "Établissement approuvé ✅ Les contrôles sont enregistrés dans l'historique." };
 }

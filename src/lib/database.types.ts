@@ -722,7 +722,9 @@ export type Database = {
           conditions: string;
           created_at: string;
           description: string;
+          discount_kind: string | null;
           discount_label: string;
+          discount_value: number | null;
           district: string | null;
           flash_ends_at: string | null;
           flash_hours: number | null;
@@ -750,7 +752,9 @@ export type Database = {
           conditions?: string;
           created_at?: string;
           description?: string;
+          discount_kind?: string | null;
           discount_label: string;
+          discount_value?: number | null;
           district?: string | null;
           flash_ends_at?: string | null;
           flash_hours?: number | null;
@@ -778,7 +782,9 @@ export type Database = {
           conditions?: string;
           created_at?: string;
           description?: string;
+          discount_kind?: string | null;
           discount_label?: string;
+          discount_value?: number | null;
           district?: string | null;
           flash_ends_at?: string | null;
           flash_hours?: number | null;
@@ -2179,9 +2185,13 @@ export type Database = {
       };
       student_verifications: {
         Row: {
+          checks: Json | null;
           created_at: string;
+          document_academic_year: string | null;
           document_path: string;
+          document_student_number: string | null;
           document_type: Database["public"]["Enums"]["document_type"];
+          file_sha256: string | null;
           id: string;
           note: string | null;
           rejection_reason: string | null;
@@ -2191,9 +2201,13 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          checks?: Json | null;
           created_at?: string;
+          document_academic_year?: string | null;
           document_path: string;
+          document_student_number?: string | null;
           document_type: Database["public"]["Enums"]["document_type"];
+          file_sha256?: string | null;
           id?: string;
           note?: string | null;
           rejection_reason?: string | null;
@@ -2203,9 +2217,13 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          checks?: Json | null;
           created_at?: string;
+          document_academic_year?: string | null;
           document_path?: string;
+          document_student_number?: string | null;
           document_type?: Database["public"]["Enums"]["document_type"];
+          file_sha256?: string | null;
           id?: string;
           note?: string | null;
           rejection_reason?: string | null;
@@ -2825,6 +2843,94 @@ export type Database = {
           },
         ];
       };
+      university_vetting: {
+        Row: {
+          accreditation_date: string | null;
+          accreditation_ref: string | null;
+          accreditation_source: string | null;
+          callback_person: string | null;
+          callback_phone: string | null;
+          callback_source: string | null;
+          decided_at: string | null;
+          decided_by: string | null;
+          decision_note: string | null;
+          document_path: string | null;
+          legal_name: string | null;
+          mandate_checked: boolean;
+          official_email: string | null;
+          official_phone: string | null;
+          signatory_name: string | null;
+          signatory_title: string | null;
+          submitted_at: string | null;
+          submitted_by: string | null;
+          university_id: number;
+        };
+        Insert: {
+          accreditation_date?: string | null;
+          accreditation_ref?: string | null;
+          accreditation_source?: string | null;
+          callback_person?: string | null;
+          callback_phone?: string | null;
+          callback_source?: string | null;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decision_note?: string | null;
+          document_path?: string | null;
+          legal_name?: string | null;
+          mandate_checked?: boolean;
+          official_email?: string | null;
+          official_phone?: string | null;
+          signatory_name?: string | null;
+          signatory_title?: string | null;
+          submitted_at?: string | null;
+          submitted_by?: string | null;
+          university_id: number;
+        };
+        Update: {
+          accreditation_date?: string | null;
+          accreditation_ref?: string | null;
+          accreditation_source?: string | null;
+          callback_person?: string | null;
+          callback_phone?: string | null;
+          callback_source?: string | null;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decision_note?: string | null;
+          document_path?: string | null;
+          legal_name?: string | null;
+          mandate_checked?: boolean;
+          official_email?: string | null;
+          official_phone?: string | null;
+          signatory_name?: string | null;
+          signatory_title?: string | null;
+          submitted_at?: string | null;
+          submitted_by?: string | null;
+          university_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "university_vetting_decided_by_fkey";
+            columns: ["decided_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "university_vetting_submitted_by_fkey";
+            columns: ["submitted_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "university_vetting_university_id_fkey";
+            columns: ["university_id"];
+            isOneToOne: true;
+            referencedRelation: "universities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       uny_id_counters: {
         Row: {
           country_code: string;
@@ -2896,6 +3002,10 @@ export type Database = {
         Args: { p_status: Database["public"]["Enums"]["verification_status"]; p_user_id: string };
         Returns: undefined;
       };
+      admin_set_verification_impl: {
+        Args: { p_status: Database["public"]["Enums"]["verification_status"]; p_user_id: string };
+        Returns: undefined;
+      };
       admin_stats: { Args: Record<PropertyKey, never>; Returns: Json };
       admin_stats_impl: { Args: Record<PropertyKey, never>; Returns: Json };
       ai_action_hash: { Args: { p_action: string; p_params: Json }; Returns: string };
@@ -2945,12 +3055,26 @@ export type Database = {
         };
       };
       apply_student_email_policy: { Args: Record<PropertyKey, never>; Returns: number };
+      approve_university: {
+        Args: {
+          p_accreditation_source: string;
+          p_callback_person: string;
+          p_callback_phone: string;
+          p_callback_source: string;
+          p_mandate_checked: boolean;
+          p_note?: string;
+          p_university: number;
+        };
+        Returns: undefined;
+      };
       backup_snapshot: { Args: Record<PropertyKey, never>; Returns: Json };
       card_template_fields: { Args: Record<PropertyKey, never>; Returns: string[] };
       claim_promo_code: { Args: { p_deal: string }; Returns: Json };
       current_academic_year: { Args: Record<PropertyKey, never>; Returns: string };
       data_watch_digest: { Args: Record<PropertyKey, never>; Returns: undefined };
+      deal_discount_label: { Args: { p_kind: string; p_value: number }; Returns: string };
       deal_flash_remaining: { Args: { p_deal: string }; Returns: number };
+      deal_student_price: { Args: { p_kind: string; p_price: number; p_value: number }; Returns: number };
       declare_promo_payment: { Args: { p_code: string; p_reference: string }; Returns: undefined };
       expire_enrollments: { Args: Record<PropertyKey, never>; Returns: number };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
@@ -3061,11 +3185,47 @@ export type Database = {
       report_listing: { Args: { p_details?: string; p_item: string; p_reason: string }; Returns: Json };
       review_signups: { Args: { p_decision: string; p_ids: string[]; p_note?: string }; Returns: number };
       review_verification: {
+        Args: {
+          p_academic_year?: string;
+          p_approve: boolean;
+          p_checks?: Json;
+          p_reason?: string;
+          p_student_number?: string;
+          p_verification_id: string;
+        };
+        Returns: {
+          checks: Json | null;
+          created_at: string;
+          document_academic_year: string | null;
+          document_path: string;
+          document_student_number: string | null;
+          document_type: Database["public"]["Enums"]["document_type"];
+          file_sha256: string | null;
+          id: string;
+          note: string | null;
+          rejection_reason: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          status: Database["public"]["Enums"]["verification_request_status"];
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "student_verifications";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      review_verification_impl: {
         Args: { p_approve: boolean; p_reason?: string; p_verification_id: string };
         Returns: {
+          checks: Json | null;
           created_at: string;
+          document_academic_year: string | null;
           document_path: string;
+          document_student_number: string | null;
           document_type: Database["public"]["Enums"]["document_type"];
+          file_sha256: string | null;
           id: string;
           note: string | null;
           rejection_reason: string | null;
@@ -3333,6 +3493,20 @@ export type Database = {
         Returns: number;
       };
       university_stats: { Args: { p_university: number }; Returns: Json };
+      university_submit_vetting: {
+        Args: {
+          p_accreditation_date: string;
+          p_accreditation_ref: string;
+          p_document_path: string;
+          p_legal_name: string;
+          p_official_email: string;
+          p_official_phone: string;
+          p_signatory_name: string;
+          p_signatory_title: string;
+          p_university: number;
+        };
+        Returns: undefined;
+      };
       university_workspace_role: { Args: { p_university: number }; Returns: string };
       verify_card: {
         Args: { p_token: string };

@@ -85,7 +85,7 @@ export default async function UniversitiesAdmin({ searchParams }: { searchParams
                 portail.
               </p>
               <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                <ApproveButton action={approveUniversityApplication.bind(null, a.id)} label="Approuver et ouvrir le portail" />
+                <ApproveButton action={approveUniversityApplication.bind(null, a.id)} label="Ouvrir l'espace (dossier à contrôler)" />
                 <form action={rejectUniversityApplication.bind(null, a.id)}>
                   <ConfirmButton
                     message="Refuser cette demande ?"
