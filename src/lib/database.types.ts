@@ -145,30 +145,52 @@ export type Database = {
       };
       ai_conversations: {
         Row: {
+          answered_at: string | null;
+          answered_by: string | null;
           created_at: string;
+          handed_off_at: string | null;
           handoff_reason: string | null;
           id: string;
+          notified_at: string | null;
+          notify_error: string | null;
           status: string;
           updated_at: string;
           user_id: string;
         };
         Insert: {
+          answered_at?: string | null;
+          answered_by?: string | null;
           created_at?: string;
+          handed_off_at?: string | null;
           handoff_reason?: string | null;
           id?: string;
+          notified_at?: string | null;
+          notify_error?: string | null;
           status?: string;
           updated_at?: string;
           user_id: string;
         };
         Update: {
+          answered_at?: string | null;
+          answered_by?: string | null;
           created_at?: string;
+          handed_off_at?: string | null;
           handoff_reason?: string | null;
           id?: string;
+          notified_at?: string | null;
+          notify_error?: string | null;
           status?: string;
           updated_at?: string;
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "ai_conversations_answered_by_fkey";
+            columns: ["answered_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "ai_conversations_user_id_fkey";
             columns: ["user_id"];
@@ -180,27 +202,40 @@ export type Database = {
       };
       ai_messages: {
         Row: {
+          author_id: string | null;
           content: string;
           conversation_id: string;
           created_at: string;
           id: number;
+          request_id: string | null;
           role: string;
         };
         Insert: {
+          author_id?: string | null;
           content: string;
           conversation_id: string;
           created_at?: string;
           id?: never;
+          request_id?: string | null;
           role: string;
         };
         Update: {
+          author_id?: string | null;
           content?: string;
           conversation_id?: string;
           created_at?: string;
           id?: never;
+          request_id?: string | null;
           role?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "ai_messages_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "ai_messages_conversation_id_fkey";
             columns: ["conversation_id"];
@@ -3376,6 +3411,9 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      support_answer: { Args: { p_answer: string; p_conversation: string; p_request_id: string }; Returns: Json };
+      support_notify: { Args: { p_conversation: string }; Returns: boolean };
+      support_retry_notification: { Args: { p_conversation: string }; Returns: boolean };
       touch_last_seen: { Args: Record<PropertyKey, never>; Returns: undefined };
       track_view: { Args: { p_id: string; p_type: Database["public"]["Enums"]["view_entity"] }; Returns: undefined };
       university_audience: {

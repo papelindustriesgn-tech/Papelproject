@@ -26,6 +26,7 @@ async function markAllRead() {
 const ICONS: Record<string, string> = {
   welcome: "👋",
   verification_approved: "✅",
+  support_reply: "💬",
   verification_rejected: "⚠️",
   marketplace_removed: "🛑",
 };

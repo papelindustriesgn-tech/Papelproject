@@ -3,7 +3,7 @@ import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/cn";
-import { AskForm, HumanButton } from "./support-forms";
+import { AskForm, HumanButton, NewConversationButton } from "./support-forms";
 
 export const metadata = { title: "Aide" };
 
@@ -40,9 +40,16 @@ export default async function HelpPage() {
               data-testid={`msg-${m.role}`}
               className={cn(
                 "rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap",
-                m.role === "user" ? "bg-brand-600 ml-8 text-white" : m.role === "assistant" ? "mr-8 bg-white shadow-[var(--shadow-card)]" : "bg-mango-50 text-mango-700",
+                m.role === "user"
+                  ? "bg-brand-600 ml-8 text-white"
+                  : m.role === "assistant"
+                    ? "mr-8 bg-white shadow-[var(--shadow-card)]"
+                    : m.role === "staff"
+                      ? "ring-brand-200 mr-8 bg-white ring-2"
+                      : "bg-mango-50 text-mango-700",
               )}
             >
+              {m.role === "staff" && <span className="text-brand-700 mb-1 block text-xs font-bold">Équipe Uny</span>}
               {m.content}
               <span className={cn("mt-1 block text-[11px]", m.role === "user" ? "text-brand-100" : "text-muted")}>
                 {formatDate(m.created_at, { hour: "2-digit", minute: "2-digit" })}
@@ -51,10 +58,16 @@ export default async function HelpPage() {
           ))}
         </ul>
       )}
-      {conv?.status === "handed_off" ? (
-        <p className="bg-mango-50 text-mango-700 rounded-2xl p-3 text-sm">
-          Ta demande est entre les mains de l&apos;équipe Uny. La réponse apparaîtra ici.
-        </p>
+      {conv?.status === "handed_off" || conv?.status === "answered" ? (
+        <>
+          <p className="bg-mango-50 text-mango-700 rounded-2xl p-3 text-sm" data-testid="support-status">
+            {conv.status === "handed_off"
+              ? "Ta demande est entre les mains de l'équipe Uny. La réponse apparaîtra ici et dans tes notifications."
+              : "L'équipe Uny t'a répondu. Tu peux lui écrire à nouveau ci-dessous."}
+          </p>
+          <AskForm conversationId={conv.id} label="Écrire à l'équipe Uny" />
+          <NewConversationButton conversationId={conv.id} />
+        </>
       ) : (
         <>
           <AskForm conversationId={conv?.id ?? null} />

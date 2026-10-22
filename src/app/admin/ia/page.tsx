@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { aiConfigured } from "@/lib/ai/client";
 import { formatDate } from "@/lib/format";
-import { AnswerForm, ApprovalForm, ConfigForm, ReportForm } from "./forms";
+import { AnswerForm, ApprovalForm, ConfigForm, ReportForm, RetryNotificationForm } from "./forms";
 
 export const metadata = { title: "Centre IA" };
 
@@ -31,10 +31,11 @@ export default async function AiCenterPage() {
       supabase.from("ai_reports").select("id, agent_id, period_days, alert_id, created_at").order("created_at", { ascending: false }).limit(20),
       supabase
         .from("ai_conversations")
-        .select("id, handoff_reason, updated_at, messages:ai_messages(role, content, id)")
-        .eq("status", "handed_off")
-        .order("updated_at", { ascending: false })
-        .limit(20),
+        .select("id, status, handoff_reason, handed_off_at, updated_at, answered_at, notified_at, notify_error, messages:ai_messages(role, content, id)")
+        .not("handed_off_at", "is", null)
+        .or("status.eq.handed_off,notify_error.not.is.null,and(status.eq.answered,notified_at.is.null)")
+        .order("updated_at", { ascending: true })
+        .limit(30),
     ]);
   const { data: global } = await supabase.from("platform_settings").select("value").eq("key", "ai").maybeSingle();
   const g = (global?.value ?? { enabled: false, monthly_budget_usd: 0 }) as { enabled: boolean; monthly_budget_usd: number };
@@ -160,7 +161,7 @@ export default async function AiCenterPage() {
       </section>
 
       <section className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
-        <h2 className="mb-2 font-bold">Conversations transférées à l&apos;équipe</h2>
+        <h2 className="mb-2 font-bold">Support : file de l&apos;équipe (plus anciennes en premier)</h2>
         {!handoffs?.length ? (
           <p className="text-muted text-sm">Aucune.</p>
         ) : (
@@ -168,7 +169,8 @@ export default async function AiCenterPage() {
             {handoffs.map((c) => (
               <li key={c.id} className="border-line rounded-xl border p-3" data-testid="handoff">
                 <p className="text-muted text-xs">
-                  {c.handoff_reason} · {formatDate(c.updated_at, { hour: "2-digit", minute: "2-digit" })}
+                  {c.status === "handed_off" ? "En attente de l'équipe" : "Répondu, notification à renvoyer"} · {c.handoff_reason} ·
+                  dernier message le {formatDate(c.updated_at, { hour: "2-digit", minute: "2-digit" })}
                 </p>
                 <ul className="mt-1 space-y-1">
                   {[...(c.messages ?? [])]
@@ -176,12 +178,15 @@ export default async function AiCenterPage() {
                     .slice(-6)
                     .map((m) => (
                       <li key={m.id}>
-                        <span className="font-semibold">{m.role === "user" ? "Utilisateur" : m.role === "assistant" ? "Assistant" : "Info"} :</span>{" "}
+                        <span className="font-semibold">
+                          {m.role === "user" ? "Utilisateur" : m.role === "assistant" ? "Assistant" : m.role === "staff" ? "Équipe" : "Info"} :
+                        </span>{" "}
                         {m.content}
                       </li>
                     ))}
                 </ul>
-                <AnswerForm id={c.id} />
+                {c.status === "handed_off" ? <AnswerForm id={c.id} /> : <RetryNotificationForm id={c.id} />}
+                {c.notify_error && <p className="text-coral-600 mt-1 text-xs">Notification en échec : {c.notify_error}</p>}
               </li>
             ))}
           </ul>

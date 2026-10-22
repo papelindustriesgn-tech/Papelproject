@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { generateAnalystReport } from "@/lib/ai/analyst";
 import type { FormState } from "@/lib/actions/types";
 
@@ -61,17 +60,34 @@ export async function decideApproval(id: string, _prev: FormState, formData: For
   return { ok: true, message: "Décision enregistrée." };
 }
 
-/** Réponse humaine à une conversation transférée : ajoutée à la conversation, qui est close (aucun envoi externe). */
+/**
+ * Réponse humaine à une conversation transférée : enregistrée puis notifiée dans l'application (lien vers Aide).
+ * La clé de requête du formulaire évite tout doublon en cas de nouvelle tentative ; si la notification échoue,
+ * la réponse est conservée et la notification peut être renvoyée.
+ */
 export async function answerConversation(id: string, _prev: FormState, formData: FormData): Promise<FormState> {
   await requireAdmin();
   const text = String(formData.get("answer") ?? "").trim().slice(0, 2000);
-  if (!z.uuid().safeParse(id).success || text.length < 2) return { error: "Réponse vide." };
-  // Lecture sous RLS : seules les conversations transférées sont visibles par l'équipe
-  const { data: conv } = await (await createClient()).from("ai_conversations").select("id").eq("id", id).eq("status", "handed_off").maybeSingle();
-  if (!conv) return { error: "Conversation introuvable." };
-  const db = createAdminClient();
-  await db.from("ai_messages").insert({ conversation_id: id, role: "notice", content: `Réponse de l'équipe Uny : ${text}` });
-  await db.from("ai_conversations").update({ status: "closed", updated_at: new Date().toISOString() }).eq("id", id);
+  const requestId = String(formData.get("request_id") ?? "");
+  if (!z.uuid().safeParse(id).success || !z.uuid().safeParse(requestId).success) return { error: "Demande invalide." };
+  if (text.length < 2) return { error: "Réponse vide." };
+  const { data, error } = await (await createClient()).rpc("support_answer", {
+    p_conversation: id,
+    p_answer: text,
+    p_request_id: requestId,
+  });
+  if (error) return { error: error.code === "P0001" || error.code === "P0002" ? error.message : "Réponse non enregistrée, réessayez." };
   revalidatePath("/admin/ia");
-  return { ok: true, message: "Réponse ajoutée à la conversation." };
+  const r = data as { notified: boolean; duplicate: boolean };
+  if (!r.notified) return { ok: true, message: "Réponse enregistrée. ⚠ Notification non envoyée : utilisez « Renvoyer la notification »." };
+  return { ok: true, message: r.duplicate ? "Réponse déjà enregistrée (aucun doublon)." : "Réponse enregistrée et notifiée à l'utilisateur." };
+}
+
+export async function retrySupportNotification(id: string, _prev: FormState): Promise<FormState> {
+  await requireAdmin();
+  if (!z.uuid().safeParse(id).success) return { error: "Demande invalide." };
+  const { data, error } = await (await createClient()).rpc("support_retry_notification", { p_conversation: id });
+  if (error || !data) return { error: "Notification toujours impossible." };
+  revalidatePath("/admin/ia");
+  return { ok: true, message: "Notification envoyée." };
 }

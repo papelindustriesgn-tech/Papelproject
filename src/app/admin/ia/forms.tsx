@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { FormMessage, Input, Select, Textarea } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { answerConversation, configureAi, decideApproval, requestReport } from "./actions";
+import { answerConversation, configureAi, decideApproval, requestReport, retrySupportNotification } from "./actions";
 
 export function ConfigForm({
   agent,
@@ -84,14 +84,29 @@ export function ApprovalForm({ id }: { id: string }) {
 
 export function AnswerForm({ id }: { id: string }) {
   const [state, action] = useActionState(answerConversation.bind(null, id), {});
+  // Clé stable pour ce formulaire : un double envoi ou une nouvelle tentative ne crée pas de doublon
+  const [requestId] = useState(() => crypto.randomUUID());
   if (state.ok) return <FormMessage type="success">{state.message}</FormMessage>;
   return (
     <form action={action} className="mt-2 space-y-2">
+      <input type="hidden" name="request_id" value={requestId} />
       <Textarea name="answer" rows={2} maxLength={2000} placeholder="Réponse de l'équipe" aria-label="Réponse" />
       <SubmitButton size="sm" variant="outline">
-        Répondre et clore
+        Répondre (notification dans l&apos;app)
       </SubmitButton>
       <FormMessage>{state.error}</FormMessage>
+    </form>
+  );
+}
+
+export function RetryNotificationForm({ id }: { id: string }) {
+  const [state, action] = useActionState(retrySupportNotification.bind(null, id), {});
+  return (
+    <form action={action} className="mt-2 flex items-center gap-2">
+      <SubmitButton size="sm" variant="outline">
+        Renvoyer la notification
+      </SubmitButton>
+      <FormMessage type={state.ok ? "success" : "error"}>{state.message ?? state.error}</FormMessage>
     </form>
   );
 }

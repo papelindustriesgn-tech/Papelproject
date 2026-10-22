@@ -49,30 +49,44 @@ async function myStatus(userId: string) {
 
 type Reply = { conversationId: string; reply: string; handedOff: boolean; ai: boolean };
 
-/** Conversation de la personne (créée au besoin). Une conversation d'un autre utilisateur est introuvable. */
+/**
+ * Conversation de la personne (créée au besoin). Une conversation d'un autre utilisateur est introuvable ;
+ * une conversation close n'est pas rouverte : une nouvelle est créée (reprise de contact).
+ */
 async function ownConversation(userId: string, conversationId: string | null) {
   const db = createAdminClient();
   if (conversationId) {
-    const { data } = await db.from("ai_conversations").select("id, status").eq("id", conversationId).eq("user_id", userId).maybeSingle();
+    const { data } = await db
+      .from("ai_conversations")
+      .select("id, status")
+      .eq("id", conversationId)
+      .eq("user_id", userId)
+      .neq("status", "closed")
+      .maybeSingle();
     if (data) return data;
   }
-  const { data } = await db.from("ai_conversations").insert({ user_id: userId }).select("id, status").single();
-  return data!;
+  const { data, error } = await db.from("ai_conversations").insert({ user_id: userId }).select("id, status").single();
+  if (error || !data) throw new Error("Conversation non enregistrée");
+  return data;
 }
 
+/** Message affiché après un transfert : aucun email promis (envoi d'emails non configuré). */
+export const HANDOFF_NOTICE =
+  "Ta demande est transmise à l'équipe Uny. La réponse apparaîtra ici, dans Aide, et dans tes notifications.";
+
+/** Transfert à l'équipe : idempotent (un second clic n'ajoute ni doublon ni nouveau message). */
 export async function handOff(userId: string, conversationId: string | null, reason: string) {
   const db = createAdminClient();
   const conv = await ownConversation(userId, conversationId);
-  await db
+  if (conv.status === "handed_off") return conv.id;
+  const now = new Date().toISOString();
+  const { error } = await db
     .from("ai_conversations")
-    .update({ status: "handed_off", handoff_reason: reason.slice(0, 500), updated_at: new Date().toISOString() })
+    .update({ status: "handed_off", handoff_reason: reason.slice(0, 500), handed_off_at: now, updated_at: now })
     .eq("id", conv.id)
     .eq("user_id", userId);
-  await db.from("ai_messages").insert({
-    conversation_id: conv.id,
-    role: "notice",
-    content: "Ta demande est transmise à l'équipe Uny. Tu recevras une réponse par notification ou par email.",
-  });
+  if (error) throw new Error("Transfert non enregistré");
+  await db.from("ai_messages").insert({ conversation_id: conv.id, role: "notice", content: HANDOFF_NOTICE });
   return conv.id;
 }
 
@@ -85,7 +99,18 @@ export async function supportReply(userId: string, conversationId: string | null
   const text = question.trim().slice(0, 1000);
   const db = createAdminClient();
   const conv = await ownConversation(userId, conversationId);
-  await db.from("ai_messages").insert({ conversation_id: conv.id, role: "user", content: text });
+  const { error: saveErr } = await db.from("ai_messages").insert({ conversation_id: conv.id, role: "user", content: text });
+  if (saveErr) throw new Error("Message non enregistré");
+
+  // Conversation suivie par l'équipe : aucune réponse automatique, le message rejoint la file humaine
+  if (conv.status === "handed_off" || conv.status === "answered") {
+    await db
+      .from("ai_conversations")
+      .update({ status: "handed_off", updated_at: new Date().toISOString() })
+      .eq("id", conv.id)
+      .eq("user_id", userId);
+    return { conversationId: conv.id, reply: "", handedOff: true, ai: false };
+  }
 
   const { data: history } = await db
     .from("ai_messages")
