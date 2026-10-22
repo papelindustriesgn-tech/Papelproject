@@ -90,7 +90,18 @@ locale) → message + « Réessayer » → données revenues. `e2e/ventes.spec.t
 
 ## 4. Déploiement, vérification, récupération
 
-**Aucun déploiement n'a été fait.** À faire seulement après accord explicite.
+**Déployé le 22/10/2026 avec l'accord de la direction** (base `shnwwgbcrmfswzaecmeo` puis site Vercel, branche `claude/securisation-ventes-paiements`).
+L'outil Supabase expirant sur les gros envois et sur toute instruction `drop` (confirmation non reçue), la migration a été appliquée en
+11 parties (`securisation_ventes_0_acces_api` … `securisation_ventes_10_remplacements`), contenu identique au fichier, sauf la partie 10
+écrite sans `drop`, à effet identique et réversible :
+- `create or replace trigger piece_figee …` au lieu de `drop trigger` + `create trigger` ;
+- règle `paiements_ajout` neutralisée (`alter policy … with check (false)`) au lieu d'être supprimée ;
+- ancienne fonction renommée `enregistrer_paiement_avant_securisation` (exécution retirée à tous) au lieu d'être supprimée.
+Ces deux restes inertes peuvent être supprimés plus tard dans l'éditeur SQL (`drop policy paiements_ajout on public.paiements;`
+`drop function public.enregistrer_paiement_avant_securisation(uuid, bigint, uuid, date, text, text);`).
+`supabase/scripts/securisation-ventes-finalisation.sql` n'est donc plus à exécuter.
+
+Procédure de référence pour une autre base :
 
 1. **Avant** : sauvegarde (Supabase → Database → Backups, ou `pg_dump` du schéma `public`) ; vérifier que la production est à la
    migration `coordination` (`list_migrations`). Contrôles en lecture seule (doivent renvoyer 0) :

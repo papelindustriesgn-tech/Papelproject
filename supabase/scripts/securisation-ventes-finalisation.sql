@@ -1,6 +1,7 @@
 -- =============================================================================
 -- Papel ERP — Finalisation de la migration 25 (sécurisation des ventes) sur la base réelle.
--- À exécuter UNE fois dans Supabase → SQL Editor (projet shnwwgbcrmfswzaecmeo).
+-- DÉJÀ FAIT sur shnwwgbcrmfswzaecmeo le 22/10/2026 (partie « securisation_ventes_10_remplacements », sans drop) : NE PAS RÉEXÉCUTER.
+-- Gardé comme procédure pour une autre base où la migration aurait été appliquée en morceaux.
 -- Les parties 0 à 9 sont déjà appliquées ; ces 3 remplacements contiennent un « drop » que l'outil
 -- automatique ne peut pas faire valider. Aucune donnée n'est supprimée. Tout ou rien (transaction).
 -- =============================================================================
