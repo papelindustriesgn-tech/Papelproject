@@ -3,7 +3,7 @@
 Checklist de reprise. Légende : ✅ fait et vérifié (lieu indiqué) · 🟡 fait, à vérifier ailleurs · ⛔ bloqué (raison) · ⬜ à faire.
 « Local » = Supabase local + données fictives. « Prod » = vérifié sur www.unyafrica.com.
 
-Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt` (copie sur `claude/uny-student-platform-xf13tt`).
+Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt` (copie sur `claude/uny-student-platform-xf13tt` ; PR #1 fusionnée dans `main`).
 
 ## 1. Sécurité et intégrité
 - ✅ Isolation interétablissements (RLS, fonctions, export, fiche étudiant) — local (tests 14, 18) ; migrations en prod le 21/10
@@ -54,4 +54,11 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
 
 ## Déploiement
 - Prod au 21/10 : migrations 20261021000001–06 + code `cdf39bc`.
-- En attente d'autorisation : migrations `20261022000001_ai_agents.sql`, `20261022000002_ops_monitoring.sql` + code de cette branche.
+- Prod au 22/10 (autorisation du propriétaire) : sauvegarde préalable `uny-2026-10-22-05-36-00`, migrations
+  `20261022000001`, `20261022000002` (+ `20261022055514`, même contenu que la clé « ai »), code `7036cce`,
+  déploiement `dpl_3G11DdiZ2GwjEo8E27v2qhTt5cBo`. Vérifié en prod : pages publiques 200 ; `/aide` et `/admin/pilotage`
+  redirigent vers la connexion ; `/api/cron/surveillance` 401 sans secret (y compris User-Agent usurpé), 200 avec ;
+  sauvegarde du jour créée puis second passage ignoré (« déjà effectuée ») ; aucune erreur d'exécution ; aucune
+  notification envoyée ; IA désactivée, budgets à 0, aucun appel IA. Première alerte réelle : 8 justificatifs en
+  attente depuis plus de 72 h. Non rejoué en prod : parcours connectés (portails, Pilotage, Centre IA, Aide).
+- Retour arrière : redéployer `dpl_ET2KHBAgwZ1gYWJqHZC2V4WN6hdh`, puis si nécessaire `supabase/rollback/20261022_rollback.sql`.
