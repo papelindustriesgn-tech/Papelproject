@@ -1,7 +1,7 @@
 # Surveillance, pilotage et agents IA
 
-Mis à jour le 22 octobre 2026. Tout ce qui suit est **vérifié en local** (Supabase local, données fictives, fournisseur IA
-remplacé par un bouchon). Rien n'est déployé en production.
+Mis à jour le 23 octobre 2026. Déployé en production (IA désactivée, budget 0). Le fonctionnement des agents est
+**vérifié en local seulement** (Supabase local, données fictives, fournisseur IA remplacé par un bouchon).
 
 ## 1. Surveillance (sans IA)
 

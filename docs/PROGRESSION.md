@@ -81,7 +81,19 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
 - Retour arrière de ce lot : redéployer `dpl_3G11DdiZ2GwjEo8E27v2qhTt5cBo`, puis si nécessaire
   `supabase/rollback/20261022_controles_rollback.sql`.
 
-## Correctifs après revue (22/10, branche `claude/uny-audit-securite-xf13tt`) — corrigés dans le code, testés en local, NON déployés
+- Prod au 22–23/10, correctifs après revue (autorisation du propriétaire) : sauvegarde `uny-2026-10-22-23-40-39`,
+  migrations `20261022200001` (appliquée en premier, seule), puis `200002` à `200004` (+ `20261022234132`, contraintes
+  appliquées séparément, même contenu), code `931791d`, déploiement `dpl_4heZxfBV1WX1HmLbpj2um7SiSTHm`. Vérifié en
+  prod : utilisateur extérieur refusé par `publish_card_template` (42501, essai annulé, 0 modèle créé) ; fonctions
+  et droits en place (anon et utilisateurs sans accès aux fonctions internes) ; file de traitement cohérente avec
+  les alertes (8 justificatifs et 9 BAC en retard) ; pages publiques 200 avec les nouveaux textes ; `/aide`,
+  `/admin/pilotage`, `/admin/ia` redirigent vers la connexion ; surveillance 401 sans secret (y compris User-Agent
+  usurpé), 200 avec ; aucune erreur d'exécution ; aucune notification envoyée ; IA désactivée, budget 0, aucun
+  appel. Non rejoué en prod : réponse du support, rapprochement IA, parcours pilote connecté (testés en local).
+- Retour arrière de ce lot : redéployer `dpl_G1fmYdfLdj4kVDnQwniojXmZsH5X`, puis si nécessaire
+  `supabase/rollback/20261022_revue_rollback.sql` (ne touche pas au correctif `200001`).
+
+## Correctifs après revue (22/10) — déployés le 23/10 (voir « Déploiement »)
 - ✅ publish_card_template : refus tant que l'autorisation n'est pas strictement vraie (défaut NULL confirmé en local,
   motif présent en production, aucun modèle créé depuis le 21/10) — test 21 + contre-épreuve — migration `20261022200001`
 - 🟡 Environnements : préversions arrêtées si branchées sur la production ; tests/scripts refusent la production ;
