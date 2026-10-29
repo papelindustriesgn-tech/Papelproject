@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Building2, Gift, LayoutDashboard, ScanLine, ShoppingBag, Tag, Users } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { OPPORTUNITIES_ENABLED } from "@/lib/features";
 
 const ALL = [
   { href: "/partenaire", label: "Tableau de bord", short: "Accueil", icon: LayoutDashboard },
   { href: "/partenaire/scanner", label: "Scanner carte / code promo", short: "Scanner", icon: ScanLine },
   { href: "/partenaire/offres", label: "Offres étudiantes", short: "Offres", icon: Tag },
   { href: "/partenaire/fidelite", label: "Fidélité & clients", short: "Fidélité", icon: Gift },
-  { href: "/partenaire/boutique", label: "Boutique", short: "Boutique", icon: ShoppingBag },
+  ...(OPPORTUNITIES_ENABLED ? [{ href: "/partenaire/boutique", label: "Boutique", short: "Boutique", icon: ShoppingBag }] : []),
   { href: "/partenaire/profil", label: "Ma fiche partenaire", short: "Fiche", icon: Building2 },
   { href: "/partenaire/equipe", label: "Équipe (caissiers)", short: "Équipe", icon: Users },
 ];
@@ -20,7 +21,7 @@ const isActive = (pathname: string, href: string) =>
 
 export function PartnerSidebar({ cashier = false }: { cashier?: boolean }) {
   const pathname = usePathname();
-  const items = cashier ? [ALL[1]] : ALL;
+  const items = cashier ? [byHref("/partenaire/scanner")] : ALL;
   return (
     <nav aria-label="Espace partenaire">
       <ul className="space-y-1">
@@ -48,7 +49,8 @@ export function PartnerSidebar({ cashier = false }: { cashier?: boolean }) {
 }
 
 // Mobile : Accueil, Offres, Scanner (au centre), Fidélité, Fiche — la boutique reste accessible depuis le tableau de bord
-const MOBILE = [ALL[0], ALL[2], ALL[1], ALL[3], ALL[5]];
+const byHref = (href: string) => ALL.find((i) => i.href === href)!;
+const MOBILE = ["/partenaire", "/partenaire/offres", "/partenaire/scanner", "/partenaire/fidelite", "/partenaire/profil"].map(byHref);
 
 export function PartnerBottomNav({ cashier = false }: { cashier?: boolean }) {
   const pathname = usePathname();

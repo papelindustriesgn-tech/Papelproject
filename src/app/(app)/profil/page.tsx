@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OPPORTUNITIES_ENABLED } from "@/lib/features";
 import Link from "next/link";
 import {
   Bell,
@@ -60,7 +61,7 @@ export default async function ProfilePage() {
     { href: "/profil/verification", label: "Vérification étudiante", icon: UserCheck },
     { href: "/carte", label: "Ma carte Uny", icon: CreditCard },
     { href: "/carte/personnaliser", label: "Personnaliser ma carte", icon: Paintbrush },
-    { href: "/marketplace/mes-annonces", label: "Mes annonces", icon: ShoppingBag },
+    ...(OPPORTUNITIES_ENABLED ? [{ href: "/marketplace/mes-annonces", label: "Mes annonces", icon: ShoppingBag }] : []),
     { href: "/favoris", label: "Mes favoris", icon: Heart },
     { href: "/notifications", label: "Notifications", icon: Bell },
     { href: "/aide", label: "Aide et assistance", icon: LifeBuoy },

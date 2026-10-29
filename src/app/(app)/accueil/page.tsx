@@ -6,15 +6,16 @@ import { MiniPass } from "@/components/home/mini-pass";
 import { NextStepCard } from "@/components/home/journey";
 import { formatGNF, isoDateInDays } from "@/lib/format";
 import { Rail } from "@/components/home/rail";
-import { DealCard, ItemCard } from "@/components/content/cards";
+import { DealCard, ItemCard, type DealCardData } from "@/components/content/cards";
+import { BrandRail } from "@/components/content/brand-tile";
 import { SectionHeader } from "@/components/ui/section-header";
 import { FormMessage } from "@/components/ui/field";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { requireProfile, universityLabel } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { favoriteIds, listDeals, listMarket, withoutBlockedSellers } from "@/lib/queries";
+import { dealShowcase, favoriteIds, listMarket, withoutBlockedSellers } from "@/lib/queries";
+import { OPPORTUNITIES_ENABLED } from "@/lib/features";
 import { getJourney } from "@/lib/journey";
-import { isFlashActive } from "@/lib/flash";
 import { param, type SearchParams } from "@/lib/url";
 
 export const metadata: Metadata = { title: "Accueil" };
@@ -24,9 +25,12 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const profile = await requireProfile();
   const supabase = await createClient();
 
-  const [latest, market, favDeals, survey, journey, announcements] = await Promise.all([
-    listDeals({ cityId: profile.city_id ?? undefined }),
-    listMarket({ cityId: profile.city_id ?? undefined, view: "promos" }),
+  // Accueil « Découvrir » (façon UNiDAYS) : la vitrine des offres
+  const [showcase, market, favDeals, survey, journey, announcements] = await Promise.all([
+    dealShowcase({ cityId: profile.city_id ?? undefined }),
+    OPPORTUNITIES_ENABLED
+      ? listMarket({ cityId: profile.city_id ?? undefined, view: "promos" })
+      : Promise.resolve({ items: [], hasMore: false }),
     favoriteIds(supabase, profile.id, "deal"),
     supabase.from("survey_responses").select("version").eq("user_id", profile.id).maybeSingle(),
     getJourney(supabase, profile),
@@ -41,11 +45,20 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       .limit(2),
   ]);
   market.items = await withoutBlockedSellers(supabase, market.items);
-  const showDemoNotice = latest.items.some((d) => d.is_demo) || market.items.some((m) => m.is_demo);
+  const shown = [...showcase.exclusives, ...showcase.trending, ...showcase.featured, ...showcase.online, ...showcase.newest];
+  const showDemoNotice = shown.some((d) => d.is_demo) || market.items.some((m) => m.is_demo);
   const askSurvey = !survey.error && (!survey.data || survey.data.version < SURVEY_MIN_VERSION);
-  const flashDeals = latest.items.filter((d) => isFlashActive(d.flash_ends_at));
-  const featured = { items: latest.items.filter((d) => d.is_featured && !isFlashActive(d.flash_ends_at)) };
-  const newest = latest.items.filter((d) => !d.is_featured && !isFlashActive(d.flash_ends_at)).slice(0, 4);
+  const rail = (title: string, testId: string, deals: DealCardData[], href = "/avantages") =>
+    deals.length > 0 && (
+      <section data-testid={testId}>
+        <SectionHeader title={title} href={href} />
+        <Rail label={title}>
+          {deals.map((d, i) => (
+            <DealCard key={d.id} deal={d} compact favorite={favDeals.has(d.id)} priority={i === 0} />
+          ))}
+        </Rail>
+      </section>
+    );
   const hour = new Date().toLocaleString("fr-FR", { hour: "numeric", hour12: false, timeZone: "Africa/Conakry" });
   const greeting = Number(hour) >= 18 ? "Bonsoir" : "Bonjour";
 
@@ -102,33 +115,23 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </section>
       )}
 
-      {flashDeals.length > 0 && (
-        <section>
-          <SectionHeader title="⚡ Offres flash" href="/avantages" />
-          <Rail label="Offres flash">
-            {flashDeals.map((d) => (
-              <DealCard key={d.id} deal={d} compact favorite={favDeals.has(d.id)} />
-            ))}
-          </Rail>
+      {rail("★ Exclusivités Uny", "home-exclusives", showcase.exclusives)}
+      {showcase.trending.length > 0
+        ? rail("🔥 Tendances", "home-trending", showcase.trending)
+        : rail("🏆 Meilleures réductions", "home-featured", showcase.featured)}
+      {rail("⚡ Offres flash", "home-flash", showcase.flash)}
+      {rail("📱 À distance", "home-online", showcase.online, "/avantages?canal=a-distance")}
+      {showcase.brands.length > 0 && (
+        <section data-testid="home-brands">
+          <SectionHeader title="🏷️ Marques" href="/avantages/marques" linkLabel="Toutes les marques" />
+          <BrandRail brands={showcase.brands.slice(0, 20)} />
         </section>
       )}
-
-      {featured.items.length > 0 && (
-        <section>
-          <SectionHeader title="🔥 Meilleures réductions" href="/avantages" />
-          <Rail label="Meilleures réductions">
-            {featured.items.map((d, i) => (
-              <DealCard key={d.id} deal={d} compact favorite={favDeals.has(d.id)} priority={i === 0} />
-            ))}
-          </Rail>
-        </section>
-      )}
-
-      {newest.length > 0 && (
-        <section>
-          <SectionHeader title="✨ Nouvelles offres" href="/avantages" />
+      {showcase.newest.length > 0 && (
+        <section data-testid="home-newest">
+          <SectionHeader title="✨ Nouveautés" href="/avantages" />
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {newest.map((d) => (
+            {showcase.newest.slice(0, 4).map((d) => (
               <DealCard key={d.id} deal={d} favorite={favDeals.has(d.id)} />
             ))}
           </div>

@@ -21,7 +21,11 @@ const POINTS = [
     t: "Vérification en quelques secondes",
     d: "Scanne le QR code de la carte Uny : tu sais tout de suite si le client est un étudiant vérifié.",
   },
-  { icon: Store, t: "Vends sur la marketplace", d: "Ta boutique avec le badge « Partenaire Uny », contact direct par WhatsApp." },
+  {
+    icon: Store,
+    t: "Vends aussi à distance",
+    d: "Les étudiants te commandent par WhatsApp ou par appel avec leur code Uny, même sans site internet.",
+  },
   {
     icon: BarChart3,
     t: "Mesure tes résultats",

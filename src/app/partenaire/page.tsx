@@ -4,7 +4,7 @@ import { StatCard } from "@/components/admin/stat-card";
 import { FormMessage } from "@/components/ui/field";
 import { createClient } from "@/lib/supabase/server";
 import { requirePartner } from "@/lib/partner";
-import { PARTNER_ENTITIES, type PartnerKind } from "@/lib/partner-entities";
+import { PARTNER_ENTITIES, VISIBLE_PARTNER_KINDS, type PartnerKind } from "@/lib/partner-entities";
 import { formatDate, timeAgo } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -169,7 +169,7 @@ export default async function PartnerHome() {
       <section>
         <h2 className="mb-3 font-bold">Tes publications</h2>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-2">
-          {(Object.keys(PARTNER_ENTITIES) as PartnerKind[]).map((k) => (
+          {VISIBLE_PARTNER_KINDS.map((k) => (
             <Link
               key={k}
               href={`/partenaire/${k}`}

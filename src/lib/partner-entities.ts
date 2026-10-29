@@ -1,5 +1,6 @@
 import { DEAL_LABEL_FIELD, DEAL_ONLINE_FIELDS, DEAL_PRICE_FIELDS, type FieldSpec } from "@/lib/admin-entities";
 import { DEAL_CATEGORIES, ITEM_CONDITIONS, MARKET_CATEGORIES } from "@/lib/constants";
+import { OPPORTUNITIES_ENABLED } from "@/lib/features";
 
 export type PartnerKind = "offres" | "boutique";
 
@@ -131,5 +132,9 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
 };
 
 export function isPartnerKind(k: string): k is PartnerKind {
-  return k in PARTNER_ENTITIES;
+  // « boutique » (marketplace) masquée tant qu'Uny est recentrée sur les offres (src/lib/features.ts)
+  return k in PARTNER_ENTITIES && (k !== "boutique" || OPPORTUNITIES_ENABLED);
 }
+
+/** Rubriques visibles dans l'espace partenaire. */
+export const VISIBLE_PARTNER_KINDS = (Object.keys(PARTNER_ENTITIES) as PartnerKind[]).filter(isPartnerKind);

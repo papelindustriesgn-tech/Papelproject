@@ -6,10 +6,11 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { DEAL_CATEGORIES } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 import { applyAsPartner } from "./actions";
+import { OPPORTUNITIES_ENABLED } from "@/lib/features";
 
 const WANTS = [
   { value: "avantages", label: "🏷️ Offres étudiantes" },
-  { value: "marketplace", label: "🛍️ Vendre mes produits" },
+  ...(OPPORTUNITIES_ENABLED ? [{ value: "marketplace", label: "🛍️ Vendre mes produits" }] : []),
 ];
 
 export function ApplicationForm({ cities }: { cities: { id: number; name: string; slug: string }[] }) {

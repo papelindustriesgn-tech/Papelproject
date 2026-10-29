@@ -13,7 +13,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 const description =
-  "Uny, le passeport étudiant africain : carte étudiante digitale, réductions et marketplace réunis dans une seule application. Disponible dans toute la Guinée.";
+  "Uny, le passeport étudiant africain : carte étudiante digitale et réductions étudiantes, en magasin et à distance, dans une seule application. Disponible dans toute la Guinée.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

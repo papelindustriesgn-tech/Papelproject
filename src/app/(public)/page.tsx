@@ -343,7 +343,11 @@ export default async function LandingPage() {
                   t: "Résultats mesurés",
                   d: "Vues de vos offres, coupons générés et utilisés, cartes vérifiées.",
                 },
-                { Icon: Store, t: "Votre boutique en ligne", d: "Vendez vos produits sur la marketplace étudiante." },
+                {
+                  Icon: Store,
+                  t: "Ventes à distance",
+                  d: "Les étudiants vous commandent par WhatsApp ou par appel avec leur code Uny.",
+                },
               ].map(({ Icon, t, d }) => (
                 <li key={t} className="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
                   <Icon className="text-mango-400 size-6" aria-hidden />

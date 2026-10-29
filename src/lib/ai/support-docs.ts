@@ -3,9 +3,11 @@
  * Toute modification doit refléter le comportement réel de l'application ; revue humaine obligatoire.
  * Dernière revue : 22/10/2026.
  */
+import { OPPORTUNITIES_ENABLED } from "@/lib/features";
+
 export type SupportDoc = { id: string; title: string; keywords: string[]; body: string };
 
-export const SUPPORT_DOCS: SupportDoc[] = [
+const ALL_DOCS: SupportDoc[] = [
   {
     id: "compte-validation",
     title: "Mon compte est en attente",
@@ -52,7 +54,9 @@ export const SUPPORT_DOCS: SupportDoc[] = [
     id: "jobs-logement",
     title: "Jobs, logement, marketplace",
     keywords: ["job", "emploi", "stage", "logement", "chambre", "opportunités"],
-    body: "Ces rubriques sont regroupées dans l'onglet « Opportunités ».",
+    body: OPPORTUNITIES_ENABLED
+      ? "Ces rubriques sont regroupées dans l'onglet « Opportunités »."
+      : "Uny se concentre sur les réductions étudiantes : les rubriques jobs, logement et marketplace ne sont pas disponibles pour le moment.",
   },
   {
     id: "suppression",
@@ -73,6 +77,9 @@ export const SUPPORT_DOCS: SupportDoc[] = [
     body: "Tes notifications sont dans l'onglet Notifications. Tes préférences d'emails se règlent dans Profil → Paramètres.",
   },
 ];
+
+/** La marketplace masquée n'est pas décrite par l'assistant. */
+export const SUPPORT_DOCS = ALL_DOCS.filter((d) => OPPORTUNITIES_ENABLED || d.id !== "marketplace");
 
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 

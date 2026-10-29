@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "Uny — Le passeport étudiant",
     short_name: "Uny",
-    description: "Carte étudiante digitale, réductions et marketplace.",
+    description: "Carte étudiante digitale et réductions étudiantes.",
     start_url: "/accueil?source=pwa",
     scope: "/",
     display: "standalone",
