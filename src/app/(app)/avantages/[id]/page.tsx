@@ -222,7 +222,13 @@ export default async function DealPage({ params }: Props) {
             {online && deal.online_code_mode && (
               <section>
                 {deal.channel === "both" && <h2 className="mb-2 font-bold">📱 À distance</h2>}
-                <OnlinePanel dealId={deal.id} brand={deal.partner?.name ?? "la marque"} title={deal.title} mode={deal.online_code_mode} />
+                <OnlinePanel
+                  dealId={deal.id}
+                  brand={deal.partner?.name ?? "la marque"}
+                  title={deal.title}
+                  mode={deal.online_code_mode}
+                  demo={deal.is_demo}
+                />
               </section>
             )}
             {deal.channel !== "online" && (

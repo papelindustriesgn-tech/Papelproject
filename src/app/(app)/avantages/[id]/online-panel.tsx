@@ -16,9 +16,33 @@ function contactHref(kind: string, contact: string, message: string) {
 }
 
 /** Offre à distance : le contact (et le code) ne sont révélés qu'après contrôle du statut par la base. */
-export function OnlinePanel({ dealId, brand, title, mode }: { dealId: string; brand: string; title: string; mode: string }) {
+export function OnlinePanel({
+  dealId,
+  brand,
+  title,
+  mode,
+  demo = false,
+}: {
+  dealId: string;
+  brand: string;
+  title: string;
+  mode: string;
+  demo?: boolean;
+}) {
   const [state, action] = useActionState(openOnlineOffer.bind(null, dealId), {} as OnlineOfferState);
   const [copied, setCopied] = useState(false);
+
+  // Offre de démonstration : marque fictive, aucun contact réel (la base refuse aussi l'ouverture)
+  if (demo)
+    return (
+      <p
+        className="bg-canvas text-muted ring-line rounded-2xl p-4 text-center text-sm ring-1"
+        data-testid="online-panel-demo"
+      >
+        <strong className="text-ink">Exemple de démonstration.</strong> Pour une vraie marque, tu obtiendrais ici ton
+        code et le bouton pour commander sur WhatsApp ou appeler.
+      </p>
+    );
 
   if (!state.contact || !state.contactKind)
     return (

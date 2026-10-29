@@ -103,7 +103,9 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
       {showcase && (
         <div className="mt-6 space-y-7" data-testid="deal-showcase">
           {rail("★ Exclusivités Uny", "rail-exclusives", showcase.exclusives)}
-          {rail("🔥 Tendances", "rail-trending", showcase.trending)}
+          {showcase.trending.length > 0
+            ? rail("🔥 Tendances", "rail-trending", showcase.trending)
+            : rail("🏆 Meilleures réductions", "rail-featured", showcase.featured)}
           {rail("⚡ Offres flash", "rail-flash", showcase.flash)}
           {rail("📱 À distance", "rail-online", showcase.online, "/avantages?canal=a-distance")}
           {showcase.brands.length > 0 && (

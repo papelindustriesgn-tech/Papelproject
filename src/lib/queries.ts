@@ -258,9 +258,10 @@ export const listDeals = cached((o: Opts<typeof _listDeals>) => _listDeals(creat
 async function _dealShowcase(supabase: AnyClient, { cityId }: { cityId?: number }) {
   const { data: trend } = await supabase.rpc("deals_trending", { p_limit: 12 });
   const trendIds = (trend ?? []).map((t) => t.deal_id);
-  const [exclusives, trendingRaw, flash, online, newest] = await Promise.all([
+  const [exclusives, trendingRaw, featured, flash, online, newest] = await Promise.all([
     _listDeals(supabase, { cityId, exclusive: true }),
     _listDeals(supabase, { cityId, ids: trendIds }),
+    _listDeals(supabase, { cityId, featured: true }),
     _listDeals(supabase, { cityId, flash: true }),
     _listDeals(supabase, { channel: "a-distance" }),
     _listDeals(supabase, { cityId, newest: true }),
@@ -282,6 +283,8 @@ async function _dealShowcase(supabase: AnyClient, { cityId }: { cityId?: number 
   return {
     exclusives: exclusives.items.slice(0, 10),
     trending: trending.slice(0, 10),
+    // Sans activité réelle (tendances vides) : meilleures réductions, jamais présentées comme « tendances »
+    featured: featured.items.slice(0, 10),
     flash: flash.items.slice(0, 10),
     online: online.items.slice(0, 10),
     newest: newest.items.slice(0, 10),

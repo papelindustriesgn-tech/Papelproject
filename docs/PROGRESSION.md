@@ -128,3 +128,12 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
   401 / 200 ; aucune erreur d'exécution. Non rejoué en prod : parcours connectés (vitrine, WhatsApp, Scanner),
   testés en local seulement.
 - Retour arrière : redéployer `dpl_4heZxfBV1WX1HmLbpj2um7SiSTHm`, puis si nécessaire `supabase/rollback/20261029_offres_rollback.sql`.
+
+## Démos de la vitrine (29/10, branche `claude/uny-offres-xf13tt`) — testées en local, NON déployées
+- ✅ 6 exclusivités et des offres « à distance » de démonstration (marques fictives Wax & Style Couture, Délices
+  Livraison ; offres existantes converties), toutes marquées « Démo » — migration `20261029000002_demo_offers.sql`
+  (idempotente, ne touche que des lignes `is_demo`)
+- ✅ Aucun contact réel pour les démos ; `open_online_offer` refuse les offres de démonstration ; fiche : explication
+  au lieu du bouton de commande — local (25)
+- ✅ Sans activité réelle, la rangée « Tendances » devient « Meilleures réductions » (jamais de fausses tendances)
+- Suite complète : 91/91 en local
