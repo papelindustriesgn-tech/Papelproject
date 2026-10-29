@@ -722,6 +722,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      deal_clicks: {
+        Row: {
+          created_at: string;
+          deal_id: string;
+          id: number;
+          student_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          deal_id: string;
+          id?: never;
+          student_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          deal_id?: string;
+          id?: never;
+          student_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deal_clicks_deal_id_fkey";
+            columns: ["deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "deal_clicks_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       deal_favorites: {
         Row: {
           created_at: string;
@@ -755,10 +791,40 @@ export type Database = {
           },
         ];
       };
+      deal_online_access: {
+        Row: {
+          code: string | null;
+          deal_id: string;
+          updated_at: string;
+          url: string;
+        };
+        Insert: {
+          code?: string | null;
+          deal_id: string;
+          updated_at?: string;
+          url: string;
+        };
+        Update: {
+          code?: string | null;
+          deal_id?: string;
+          updated_at?: string;
+          url?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "deal_online_access_deal_id_fkey";
+            columns: ["deal_id"];
+            isOneToOne: true;
+            referencedRelation: "deals";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       deals: {
         Row: {
           announced_at: string | null;
           category: Database["public"]["Enums"]["deal_category"];
+          channel: string;
           city_id: number | null;
           conditions: string;
           created_at: string;
@@ -775,7 +841,9 @@ export type Database = {
           image_url: string | null;
           is_active: boolean;
           is_demo: boolean;
+          is_exclusive: boolean;
           is_featured: boolean;
+          online_code_mode: string | null;
           partner_id: string;
           price_gnf: number | null;
           promo_price_gnf: number | null;
@@ -789,6 +857,7 @@ export type Database = {
         Insert: {
           announced_at?: string | null;
           category: Database["public"]["Enums"]["deal_category"];
+          channel?: string;
           city_id?: number | null;
           conditions?: string;
           created_at?: string;
@@ -805,7 +874,9 @@ export type Database = {
           image_url?: string | null;
           is_active?: boolean;
           is_demo?: boolean;
+          is_exclusive?: boolean;
           is_featured?: boolean;
+          online_code_mode?: string | null;
           partner_id: string;
           price_gnf?: number | null;
           promo_price_gnf?: number | null;
@@ -819,6 +890,7 @@ export type Database = {
         Update: {
           announced_at?: string | null;
           category?: Database["public"]["Enums"]["deal_category"];
+          channel?: string;
           city_id?: number | null;
           conditions?: string;
           created_at?: string;
@@ -835,7 +907,9 @@ export type Database = {
           image_url?: string | null;
           is_active?: boolean;
           is_demo?: boolean;
+          is_exclusive?: boolean;
           is_featured?: boolean;
+          online_code_mode?: string | null;
           partner_id?: string;
           price_gnf?: number | null;
           promo_price_gnf?: number | null;
@@ -3130,6 +3204,13 @@ export type Database = {
       deal_discount_label: { Args: { p_kind: string; p_value: number }; Returns: string };
       deal_flash_remaining: { Args: { p_deal: string }; Returns: number };
       deal_student_price: { Args: { p_kind: string; p_price: number; p_value: number }; Returns: number };
+      deals_trending: {
+        Args: { p_limit?: number };
+        Returns: {
+          deal_id: string;
+          score: number;
+        }[];
+      };
       declare_promo_payment: { Args: { p_code: string; p_reference: string }; Returns: undefined };
       expire_enrollments: { Args: Record<PropertyKey, never>; Returns: number };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
@@ -3144,6 +3225,7 @@ export type Database = {
       my_hidden_sellers: { Args: Record<PropertyKey, never>; Returns: string[] };
       new_promo_code: { Args: Record<PropertyKey, never>; Returns: string };
       next_uny_id: { Args: { p_country: string }; Returns: string };
+      open_online_offer: { Args: { p_deal: string }; Returns: Json };
       ops_alert_update: { Args: { p_alert: string; p_note?: string; p_status: string }; Returns: undefined };
       ops_job_begin: { Args: { p_job: string; p_key: string; p_max?: number }; Returns: Json };
       ops_job_finish: { Args: { p_error?: string; p_ok: boolean; p_result?: Json; p_run: string }; Returns: undefined };
@@ -3154,6 +3236,7 @@ export type Database = {
         Returns: undefined;
       };
       ops_run_checks: { Args: Record<PropertyKey, never>; Returns: Json };
+      partner_deal_stats: { Args: { p_partner: string }; Returns: Json };
       partner_gift_loyalty: { Args: { p_card: string; p_kind: string; p_partner: string }; Returns: Json };
       partner_gift_loyalty_impl: { Args: { p_card: string; p_kind: string; p_partner: string }; Returns: Json };
       partner_job_applications: {

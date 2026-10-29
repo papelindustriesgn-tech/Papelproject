@@ -15,6 +15,7 @@ import { isPartnerKind, PARTNER_ENTITIES, type PartnerKind } from "@/lib/partner
 import { ENTITIES } from "@/lib/admin-entities";
 import { normalizeUnyId, UNY_ID_EXAMPLE } from "@/lib/uny-id";
 import { isPaymentMethod } from "@/lib/orange-money";
+import { syncOnlineAccess, takeOnlineAccess } from "@/lib/deal-online";
 
 function refresh(kind?: PartnerKind) {
   updateTag(CONTENT_TAG);
@@ -66,6 +67,7 @@ export async function savePartnerEntity(
       if (error) return { error: "Photos refusées : utilise le bouton « Ajouter ».", values: formValues(formData) };
     }
   } else {
+    const online = takeOnlineAccess(row);
     const table = supabase.from(cfg.table);
     const res = id
       ? await table
@@ -79,6 +81,8 @@ export async function savePartnerEntity(
           .select("id")
           .single();
     if (res.error) return { error: `Enregistrement impossible : ${res.error.message}`, values: formValues(formData) };
+    const sync = await syncOnlineAccess(supabase, res.data.id, row.channel, online);
+    if (sync.error) return { error: "Offre enregistrée, mais le lien en ligne n'a pas pu l'être. Réessaie.", values: formValues(formData) };
   }
 
   refresh(kind);

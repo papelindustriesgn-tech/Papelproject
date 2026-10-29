@@ -5,6 +5,7 @@ import { EntityForm } from "@/components/admin/entity-form";
 import { ConfirmButton } from "@/components/ui/confirm-button";
 import { createClient } from "@/lib/supabase/server";
 import { getCities } from "@/lib/cities";
+import { readOnlineAccess } from "@/lib/deal-online";
 import { requirePartner } from "@/lib/partner";
 import { isPartnerKind, PARTNER_ENTITIES } from "@/lib/partner-entities";
 import { deletePartnerEntity, savePartnerEntity } from "../../actions";
@@ -29,7 +30,7 @@ export default async function EditPartnerEntity({ params }: { params: Promise<{ 
     if (data) initial = { ...data, images: [...(data.images ?? [])].sort((a, b) => a.position - b.position).map((i) => i.url) };
   } else {
     const { data } = await supabase.from(cfg.table).select("*").eq("id", id).eq("partner_id", partner.id).maybeSingle();
-    initial = data as Record<string, unknown> | null;
+    initial = data ? { ...data, ...(await readOnlineAccess(supabase, id)) } : null;
   }
   if (!initial) notFound();
 

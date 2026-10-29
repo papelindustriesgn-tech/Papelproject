@@ -18,6 +18,20 @@ export async function claimPromoCode(dealId: string, _prev: PromoState): Promise
   return { code: r.code, expiresAt: r.expires_at };
 }
 
+export type OnlineOfferState = { url?: string; code?: string | null; mode?: string; expiresAt?: string | null; error?: string };
+
+/** Offre en ligne : vérifie le statut côté base, journalise l'ouverture et renvoie le lien (et le code). */
+export async function openOnlineOffer(dealId: string, _prev: OnlineOfferState): Promise<OnlineOfferState> {
+  if (!z.uuid().safeParse(dealId).success) return { error: "Offre introuvable." };
+  await requireProfile();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("open_online_offer", { p_deal: dealId });
+  if (error) return { error: error.code === "P0001" ? error.message : "Impossible d'ouvrir l'offre. Réessaie." };
+  const r = data as { url: string; code: string | null; mode: string; expires_at: string | null };
+  if (r.mode === "unique") revalidatePath("/avantages/mes-codes");
+  return { url: r.url, code: r.code, mode: r.mode, expiresAt: r.expires_at };
+}
+
 export async function declarePromoPayment(prev: PromoState, formData: FormData): Promise<PromoState> {
   await requireProfile();
   const code = String(formData.get("code") ?? "");

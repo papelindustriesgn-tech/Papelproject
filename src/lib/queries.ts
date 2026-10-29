@@ -21,7 +21,7 @@ const cached = <A extends unknown[], R>(fn: (...args: A) => Promise<R>, key: str
   unstable_cache(fn, [key], { revalidate: 60, tags: [CONTENT_TAG] });
 
 export const DEAL_COLUMNS =
-  "id, title, discount_label, category, district, image_url, valid_until, is_demo, is_featured, flash_ends_at, partner:partners(name, logo_url), city:cities(name)";
+  "id, title, discount_label, category, district, image_url, valid_until, is_demo, is_featured, is_exclusive, channel, flash_ends_at, partner_id, partner:partners(name, logo_url), city:cities(name)";
 export const JOB_COLUMNS =
   "id, title, company_name, type, location, is_remote, compensation, deadline, is_demo, created_at, city:cities(name)";
 export const HOUSING_COLUMNS =
@@ -66,7 +66,28 @@ async function _listDeals(
     page = 1,
     featured,
     cityId,
-  }: { category?: string; q?: string; district?: string; page?: number; featured?: boolean; cityId?: number },
+    channel,
+    exclusive,
+    flash,
+    partnerId,
+    ids,
+    newest,
+  }: {
+    category?: string;
+    q?: string;
+    district?: string;
+    page?: number;
+    featured?: boolean;
+    cityId?: number;
+    /** en-ligne : offres utilisables en ligne ; magasin : en magasin (les offres « les deux » apparaissent dans les deux). */
+    channel?: string;
+    exclusive?: boolean;
+    flash?: boolean;
+    partnerId?: string;
+    ids?: string[];
+    /** Tri par date seulement (sans priorité aux offres mises en avant). */
+    newest?: boolean;
+  },
 ) {
   let query = supabase
     .from("deals")
@@ -75,16 +96,20 @@ async function _listDeals(
     .or(`valid_until.is.null,valid_until.gte.${today()}`)
     .or(`flash_ends_at.is.null,flash_ends_at.gt.${new Date().toISOString()}`);
   if (await hasRealContent(supabase, "deals")) query = query.eq("is_demo", false);
-  if (cityId) query = query.or(inCity(cityId));
+  if (cityId && channel !== "en-ligne") query = query.or(inCity(cityId));
   if (category) query = query.eq("category", category as DealCategory);
   if (district) query = query.eq("district", district);
   if (featured) query = query.eq("is_featured", true);
+  if (exclusive) query = query.eq("is_exclusive", true);
+  if (flash) query = query.not("flash_ends_at", "is", null);
+  if (channel === "en-ligne") query = query.in("channel", ["online", "both"]);
+  if (channel === "magasin") query = query.in("channel", ["in_store", "both"]);
+  if (partnerId) query = query.eq("partner_id", partnerId);
+  if (ids) query = query.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
   if (q) query = query.ilike("title", ilikePattern(q));
   const [from, to] = range(page);
-  const { data, error } = await query
-    .order("is_featured", { ascending: false })
-    .order("created_at", { ascending: false })
-    .range(from, to);
+  if (!newest) query = query.order("is_featured", { ascending: false });
+  const { data, error } = await query.order("created_at", { ascending: false }).range(from, to);
   if (error) throw error;
   return { items: (data ?? []).slice(0, PAGE_SIZE), hasMore: (data?.length ?? 0) > PAGE_SIZE };
 }
@@ -228,6 +253,54 @@ export async function favoriteIds(supabase: Supabase, userId: string, kind: "dea
 type Opts<F> = F extends (s: AnyClient, o: infer O) => unknown ? O : never;
 
 export const listDeals = cached((o: Opts<typeof _listDeals>) => _listDeals(createPublicClient(), o), "deals");
+
+/** Vitrine des offres (façon UNiDAYS) : exclusivités, tendances, flash, en ligne, nouveautés et marques. */
+async function _dealShowcase(supabase: AnyClient, { cityId }: { cityId?: number }) {
+  const { data: trend } = await supabase.rpc("deals_trending", { p_limit: 12 });
+  const trendIds = (trend ?? []).map((t) => t.deal_id);
+  const [exclusives, trendingRaw, flash, online, newest] = await Promise.all([
+    _listDeals(supabase, { cityId, exclusive: true }),
+    _listDeals(supabase, { cityId, ids: trendIds }),
+    _listDeals(supabase, { cityId, flash: true }),
+    _listDeals(supabase, { channel: "en-ligne" }),
+    _listDeals(supabase, { cityId, newest: true }),
+  ]);
+  // Ordre des tendances : score décroissant (la requête trie par date)
+  const rank = new Map(trendIds.map((id, i) => [id, i]));
+  const trending = [...trendingRaw.items].sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99));
+  const { data: brandRows } = await supabase
+    .from("partners")
+    .select("id, name, logo_url, category, is_demo, deals!inner(id)")
+    .eq("is_active", true)
+    .eq("deals.is_active", true)
+    .order("name")
+    .limit(60);
+  const real = (brandRows ?? []).some((b) => !b.is_demo);
+  const brands = (brandRows ?? [])
+    .filter((b) => !real || !b.is_demo)
+    .map((b) => ({ id: b.id, name: b.name, logo_url: b.logo_url, category: b.category, offers: b.deals.length }));
+  return {
+    exclusives: exclusives.items.slice(0, 10),
+    trending: trending.slice(0, 10),
+    flash: flash.items.slice(0, 10),
+    online: online.items.slice(0, 10),
+    newest: newest.items.slice(0, 10),
+    brands,
+  };
+}
+export const dealShowcase = cached((o: { cityId?: number }) => _dealShowcase(createPublicClient(), o), "deal-showcase");
+
+/** Marque (partenaire actif) et ses offres en cours. */
+export const getBrand = cached(async (id: string) => {
+  const supabase = createPublicClient();
+  const { data } = await supabase
+    .from("partners")
+    .select("id, name, logo_url, description, category, district, address, website, is_demo, city:cities(name)")
+    .eq("id", id)
+    .eq("is_active", true)
+    .maybeSingle();
+  return data;
+}, "brand");
 export const listJobs = cached((o: Opts<typeof _listJobs>) => _listJobs(createPublicClient(), o), "jobs");
 export const listHousing = cached((o: Opts<typeof _listHousing>) => _listHousing(createPublicClient(), o), "housing");
 // Service role : les colonnes vendeur ne sont pas lisibles par « anon » ; seules les annonces actives sont renvoyées.

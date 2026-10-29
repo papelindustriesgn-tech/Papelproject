@@ -1,4 +1,4 @@
-import { DEAL_LABEL_FIELD, DEAL_PRICE_FIELDS, type FieldSpec } from "@/lib/admin-entities";
+import { DEAL_LABEL_FIELD, DEAL_ONLINE_FIELDS, DEAL_PRICE_FIELDS, type FieldSpec } from "@/lib/admin-entities";
 import { DEAL_CATEGORIES, ITEM_CONDITIONS, MARKET_CATEGORIES } from "@/lib/constants";
 
 export type PartnerKind = "offres" | "boutique";
@@ -29,7 +29,7 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
     plural: "Offres étudiantes",
     emoji: "🏷️",
     intro:
-      "Réductions réservées aux étudiants Uny vérifiés. Chaque étudiant obtient un code promo personnel dans l'app : tu le valides dans « Scanner », il paie sur ton code marchand Orange Money.",
+      "Réductions réservées aux étudiants Uny vérifiés, en magasin ou en ligne. En magasin, chaque étudiant obtient un code promo personnel : tu le valides dans « Scanner ». En ligne, l'étudiant vérifié ouvre ton lien avec son code.",
     fields: [
       {
         name: "title",
@@ -55,6 +55,7 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
         type: "location",
         hint: "Laisse « Toute la Guinée » si l'offre est valable partout.",
       },
+      ...DEAL_ONLINE_FIELDS,
       ...DEAL_PRICE_FIELDS,
       DEAL_LABEL_FIELD,
       {

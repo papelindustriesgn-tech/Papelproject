@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "@/components/ui/safe-image";
 import { notFound } from "next/navigation";
-import { CalendarDays, Gift, MapPin, Phone, ShieldCheck, Ticket, Zap } from "lucide-react";
+import { CalendarDays, Gift, Globe, MapPin, Phone, ShieldCheck, Ticket, Zap } from "lucide-react";
 import { flashUntil, isFlashActive, isFlashOver } from "@/lib/flash";
 import { BackLink } from "@/components/ui/back-link";
 import { Badge, DemoBadge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import { DEAL_CATEGORIES } from "@/lib/constants";
 import { formatDate, formatGNF } from "@/lib/format";
 import { discountPercent } from "@/lib/orange-money";
 import { PromoPanel } from "./promo-panel";
+import { OnlinePanel } from "./online-panel";
 import Link from "next/link";
 import { z } from "zod";
 
@@ -75,6 +76,7 @@ export default async function DealPage({ params }: Props) {
   const pct = discountPercent(deal.price_gnf, deal.promo_price_gnf);
   const cat = DEAL_CATEGORIES[deal.category];
   const verified = profile.verification_status === "verified";
+  const online = deal.channel === "online" || deal.channel === "both";
   const expired = flashOver || (deal.valid_until ? new Date(`${deal.valid_until}T23:59:59`) < new Date() : false);
 
   return (
@@ -93,11 +95,19 @@ export default async function DealPage({ params }: Props) {
 
       <div className="mt-5 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <Badge>
-            {cat.emoji} {cat.label}
-          </Badge>
+          <div className="flex flex-wrap gap-1.5">
+            <Badge>
+              {cat.emoji} {cat.label}
+            </Badge>
+            {deal.is_exclusive && <Badge tone="brand">★ Exclu Uny</Badge>}
+            {online && <Badge tone="mint">🌐 {deal.channel === "both" ? "En ligne et en magasin" : "En ligne"}</Badge>}
+          </div>
           <h1 className="mt-2 text-2xl font-extrabold tracking-tight">{deal.title}</h1>
-          <p className="text-muted mt-1 font-semibold">{deal.partner?.name}</p>
+          {deal.partner && (
+            <Link href={`/avantages/marques/${deal.partner.id}`} className="text-muted hover:text-brand-600 mt-1 inline-block font-semibold">
+              {deal.partner.name} ›
+            </Link>
+          )}
         </div>
         <FavoriteButton kind="deal" id={deal.id} initial={!!fav} className="ring-line shrink-0 ring-1" />
       </div>
@@ -140,11 +150,23 @@ export default async function DealPage({ params }: Props) {
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[var(--shadow-card)]">
-          <MapPin className="text-brand-600 size-5 shrink-0" aria-hidden />
-          <div className="min-w-0 text-sm">
-            <p className="font-semibold">{deal.district ?? "Guinée"}</p>
-            {deal.partner?.address && <p className="text-muted truncate">{deal.partner.address}</p>}
-          </div>
+          {deal.channel === "online" ? (
+            <>
+              <Globe className="text-brand-600 size-5 shrink-0" aria-hidden />
+              <div className="min-w-0 text-sm">
+                <p className="font-semibold">Sur le site de la marque</p>
+                <p className="text-muted">Partout en Guinée</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <MapPin className="text-brand-600 size-5 shrink-0" aria-hidden />
+              <div className="min-w-0 text-sm">
+                <p className="font-semibold">{deal.district ?? "Guinée"}</p>
+                {deal.partner?.address && <p className="text-muted truncate">{deal.partner.address}</p>}
+              </div>
+            </>
+          )}
         </div>
         <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[var(--shadow-card)]">
           <CalendarDays className="text-brand-600 size-5 shrink-0" aria-hidden />
@@ -196,15 +218,28 @@ export default async function DealPage({ params }: Props) {
             {soldOut ? "Offre flash épuisée." : flashOver ? "Cette offre flash est terminée." : "Cette offre a expiré."}
           </p>
         ) : verified || !deal.requires_verification ? (
-          <PromoPanel
-            dealId={deal.id}
-            initial={
-              promo ? { code: promo.code, expiresAt: promo.expires_at, reference: promo.payment_reference ?? undefined } : {}
-            }
-            partnerName={deal.partner?.name ?? "le partenaire"}
-            merchantCode={deal.partner?.orange_money_merchant_code ?? null}
-            amount={deal.promo_price_gnf}
-          />
+          <div className="space-y-5">
+            {online && deal.online_code_mode && (
+              <section>
+                {deal.channel === "both" && <h2 className="mb-2 font-bold">🌐 En ligne</h2>}
+                <OnlinePanel dealId={deal.id} brand={deal.partner?.name ?? "la marque"} mode={deal.online_code_mode} />
+              </section>
+            )}
+            {deal.channel !== "online" && (
+              <section>
+                {deal.channel === "both" && <h2 className="mb-2 font-bold">🏬 En magasin</h2>}
+                <PromoPanel
+                  dealId={deal.id}
+                  initial={
+                    promo ? { code: promo.code, expiresAt: promo.expires_at, reference: promo.payment_reference ?? undefined } : {}
+                  }
+                  partnerName={deal.partner?.name ?? "le partenaire"}
+                  merchantCode={deal.partner?.orange_money_merchant_code ?? null}
+                  amount={deal.promo_price_gnf}
+                />
+              </section>
+            )}
+          </div>
         ) : (
           <LinkButton href="/profil/verification" size="lg" variant="mango" className="w-full">
             <ShieldCheck className="size-5" /> Vérifier mon statut pour en profiter

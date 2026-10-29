@@ -117,7 +117,8 @@ export async function adminAsUniversityMember() {
   const [uni] = await (await serviceRest("universities?select=id&partner_status=eq.partner&order=id&limit=1")).json();
   let id = uni?.id as number | undefined;
   if (!id) {
-    const [any] = await (await serviceRest("universities?select=id&order=id&limit=1")).json();
+    // Jamais le premier établissement de la liste : c'est celui choisi à l'inscription par signUp
+    const [any] = await (await serviceRest("universities?select=id&order=id.desc&limit=1")).json();
     await serviceRest(`universities?id=eq.${any.id}`, { method: "PATCH", body: JSON.stringify({ partner_status: "partner" }) });
     id = any.id;
   }

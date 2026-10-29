@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { DealCard } from "@/components/content/cards";
+import { DealCard, type DealCardData } from "@/components/content/cards";
 import { FilterChips, Pagination, SearchBar } from "@/components/ui/filters";
-import { PageTitle } from "@/components/ui/section-header";
+import { PageTitle, SectionHeader } from "@/components/ui/section-header";
 import { DealsTabs } from "@/components/content/deals-tabs";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DemoNotice } from "@/components/ui/demo-notice";
 import { LinkButton } from "@/components/ui/button";
 import { Select } from "@/components/ui/field";
+import { Rail } from "@/components/home/rail";
+import { BrandRail } from "@/components/content/brand-tile";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { favoriteIds, listDeals } from "@/lib/queries";
+import { dealShowcase, favoriteIds, listDeals } from "@/lib/queries";
 import { getDistricts } from "@/lib/queries";
 import { DEAL_CATEGORIES } from "@/lib/constants";
 import { param, type SearchParams } from "@/lib/url";
@@ -18,6 +20,11 @@ import { CityPicker } from "@/components/ui/city-picker";
 
 export const metadata: Metadata = { title: "Avantages & réductions" };
 
+const CHANNEL_OPTIONS = [
+  { value: "en-ligne", label: "En ligne", emoji: "🌐" },
+  { value: "magasin", label: "En magasin", emoji: "🏬" },
+];
+
 export default async function DealsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
   const profile = await requireProfile();
@@ -25,26 +32,46 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
   const page = Math.max(1, Number(param(sp, "page") ?? 1) || 1);
   const category = param(sp, "categorie");
   const district = param(sp, "quartier");
+  const channel = param(sp, "canal");
   const q = param(sp, "q");
   const { cities, city, slug } = await resolveCity(sp, profile.city_id);
+  // Vitrine (façon UNiDAYS) seulement sur la première page, sans recherche ni filtre
+  const browsing = !q && !category && !district && !channel && page === 1;
 
-  const [{ items, hasMore }, favs, districts] = await Promise.all([
-    listDeals({ category, district, q, page, cityId: city?.id }),
+  const [{ items, hasMore }, favs, districts, showcase] = await Promise.all([
+    listDeals({ category, district, q, page, cityId: city?.id, channel }),
     favoriteIds(supabase, profile.id, "deal"),
     getDistricts(city?.slug),
+    browsing ? dealShowcase({ cityId: city?.id }) : Promise.resolve(null),
   ]);
+
+  const rail = (title: string, testId: string, deals: DealCardData[], href?: string) =>
+    deals.length > 0 && (
+      <section data-testid={testId}>
+        <SectionHeader title={title} href={href} />
+        <Rail label={title}>
+          {deals.map((d) => (
+            <DealCard key={d.id} deal={d} compact favorite={favs.has(d.id)} />
+          ))}
+        </Rail>
+      </section>
+    );
 
   return (
     <div className="animate-fade-up">
       <DealsTabs current="/avantages" />
-      <PageTitle title="Avantages" subtitle="Choisis une offre, obtiens ton code promo et montre-le au partenaire." />
+      <PageTitle
+        title="Avantages"
+        subtitle="Réductions réservées aux étudiants vérifiés : en magasin avec ton code, en ligne avec le lien de la marque."
+      />
       <div className="space-y-3">
         <SearchBar
           pathname="/avantages"
           searchParams={sp}
           placeholder="Rechercher une offre…"
-          keep={["categorie", "quartier", "ville"]}
+          keep={["categorie", "quartier", "ville", "canal"]}
         />
+        <FilterChips pathname="/avantages" searchParams={sp} name="canal" allLabel="Partout" options={CHANNEL_OPTIONS} />
         <FilterChips
           pathname="/avantages"
           searchParams={sp}
@@ -56,6 +83,7 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
           {districts.length > 0 && (
             <form action="/avantages" className="flex gap-2">
               {category && <input type="hidden" name="categorie" value={category} />}
+              {channel && <input type="hidden" name="canal" value={channel} />}
               {q && <input type="hidden" name="q" value={q} />}
               <input type="hidden" name="ville" value={slug} />
               <Select name="quartier" defaultValue={district ?? ""} aria-label="Quartier" className="h-11 flex-1">
@@ -72,12 +100,29 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
         </div>
       </div>
 
-      <div className="mt-5">
+      {showcase && (
+        <div className="mt-6 space-y-7" data-testid="deal-showcase">
+          {rail("★ Exclusivités Uny", "rail-exclusives", showcase.exclusives)}
+          {rail("🔥 Tendances", "rail-trending", showcase.trending)}
+          {rail("⚡ Offres flash", "rail-flash", showcase.flash)}
+          {rail("🌐 En ligne", "rail-online", showcase.online, "/avantages?canal=en-ligne")}
+          {showcase.brands.length > 0 && (
+            <section data-testid="rail-brands">
+              <SectionHeader title="🏷️ Marques" href="/avantages/marques" linkLabel="Toutes les marques" />
+              <BrandRail brands={showcase.brands.slice(0, 20)} />
+            </section>
+          )}
+          {rail("✨ Nouveautés", "rail-newest", showcase.newest)}
+        </div>
+      )}
+
+      <div className="mt-7">
+        {showcase && <SectionHeader title="Toutes les offres" />}
         {items.length === 0 ? (
           <EmptyState
             emoji="🏷️"
             title="Aucune offre trouvée"
-            text="Essaie une autre catégorie ou un autre quartier."
+            text="Essaie une autre catégorie, un autre quartier ou les offres en ligne."
             action={
               <LinkButton href="/avantages" variant="secondary">
                 Voir toutes les offres

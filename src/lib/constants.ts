@@ -27,6 +27,20 @@ export const DEAL_CATEGORIES: Record<DealCategory, { label: string; emoji: strin
   sante: { label: "Santé & bien-être", emoji: "💊" },
 };
 
+export type DealChannel = "in_store" | "online" | "both";
+export const DEAL_CHANNELS: Record<DealChannel, { label: string; emoji: string }> = {
+  in_store: { label: "En magasin", emoji: "🏬" },
+  online: { label: "En ligne", emoji: "🌐" },
+  both: { label: "En ligne et en magasin", emoji: "🛍️" },
+};
+
+export type OnlineCodeMode = "unique" | "shared" | "link";
+export const ONLINE_CODE_MODES: Record<OnlineCodeMode, string> = {
+  unique: "Code personnel Uny par étudiant (tu le valides dans ton espace)",
+  shared: "Code de ma boutique en ligne (montré seulement aux étudiants vérifiés)",
+  link: "Lien réservé, sans code",
+};
+
 export const JOB_TYPES: Record<JobType, { label: string; emoji: string }> = {
   job: { label: "Job étudiant", emoji: "💼" },
   stage: { label: "Stage", emoji: "🎯" },

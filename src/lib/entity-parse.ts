@@ -143,6 +143,19 @@ export function parseFields(fields: FieldSpec[], formData: FormData, cities: Cit
     else if (!row.discount_label) fieldErrors.discount_label = "Indique une réduction (avec le prix) ou l'avantage offert";
   }
   lower("price_gnf", "original_price_gnf");
+  // Offre en ligne : lien https + mode obligatoires ; code obligatoire pour le mode « code de la boutique »
+  if (fields.some((f) => f.name === "channel")) {
+    if (row.channel === "online" || row.channel === "both") {
+      if (typeof row.online_url !== "string" || !row.online_url.startsWith("https://"))
+        fieldErrors.online_url = "Indique le lien de la boutique en ligne (https://…)";
+      if (!row.online_code_mode) fieldErrors.online_code_mode = "Choisis comment l'étudiant obtient la réduction";
+      if (row.online_code_mode === "shared" && !row.online_code) fieldErrors.online_code = "Indique le code de ta boutique";
+    } else {
+      row.online_url = null;
+      row.online_code_mode = null;
+      row.online_code = null;
+    }
+  }
   // Champs texte non nulls en base
   for (const k of ["description", "conditions"]) if (k in row && row[k] === null) row[k] = "";
   return { row, fieldErrors };

@@ -1,7 +1,7 @@
 import { discountPercent } from "@/lib/orange-money";
 import Image from "@/components/ui/safe-image";
 import Link from "next/link";
-import { BadgeCheck, CalendarClock, MapPin, Wallet } from "lucide-react";
+import { BadgeCheck, CalendarClock, Globe, MapPin, Wallet } from "lucide-react";
 import { Badge, DemoBadge } from "@/components/ui/badge";
 import { FavoriteButton } from "@/components/content/favorite-button";
 import { cn } from "@/lib/cn";
@@ -34,6 +34,8 @@ export type DealCardData = {
   valid_until: string | null;
   is_demo: boolean;
   flash_ends_at?: string | null;
+  is_exclusive?: boolean;
+  channel?: string;
   partner: { name: string; logo_url: string | null } | null;
   city?: { name: string } | null;
 };
@@ -70,7 +72,12 @@ export function DealCard({
           <span className="bg-coral-500 absolute bottom-3 left-3 rounded-xl px-2.5 py-1 text-base font-extrabold text-white shadow-lg">
             {deal.discount_label}
           </span>
-          <div className="absolute top-3 left-3 flex gap-1.5">
+          <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pr-10">
+            {deal.is_exclusive && (
+              <span className="bg-ink rounded-full px-2 py-0.5 text-[11px] font-extrabold text-white shadow" data-testid="badge-exclusive">
+                ★ Exclu Uny
+              </span>
+            )}
             {flash && (
               <span className="bg-mango-400 text-ink rounded-full px-2 py-0.5 text-[11px] font-extrabold shadow">⚡ Flash</span>
             )}
@@ -83,8 +90,20 @@ export function DealCard({
           </p>
           <h3 className="text-ink mt-1 line-clamp-2 leading-snug font-bold">{deal.title}</h3>
           <p className="text-muted mt-2 flex items-center gap-1 text-xs">
-            <MapPin className="size-3.5 shrink-0" aria-hidden />
-            <span className="truncate">{[deal.district, deal.city?.name].filter(Boolean).join(", ") || "Guinée"}</span>
+            {deal.channel === "online" ? (
+              <>
+                <Globe className="size-3.5 shrink-0" aria-hidden />
+                <span className="truncate">En ligne</span>
+              </>
+            ) : (
+              <>
+                <MapPin className="size-3.5 shrink-0" aria-hidden />
+                <span className="truncate">
+                  {deal.channel === "both" ? "En ligne et " : ""}
+                  {[deal.district, deal.city?.name].filter(Boolean).join(", ") || "Guinée"}
+                </span>
+              </>
+            )}
             {flash && deal.flash_ends_at ? (
               <span className="text-coral-600 ml-auto shrink-0 font-semibold">{flashUntil(deal.flash_ends_at)}</span>
             ) : (

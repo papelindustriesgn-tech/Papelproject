@@ -39,6 +39,11 @@ export default function PrivacyPage() {
         <li>Vérifications de carte en caisse : commerçant, date, résultat. Cartes de fidélité : passages, tampons, récompenses.</li>
         <li>Favoris, notifications, dernière connexion, consultations d&apos;offres (pour des statistiques).</li>
         <li>
+          Offres en ligne : offre et date quand tu ouvres le lien d&apos;une marque. La marque ne voit que des totaux (nombre
+          d&apos;ouvertures et d&apos;étudiants), jamais ton nom. Sur son site, ce sont ses propres conditions qui
+          s&apos;appliquent.
+        </li>
+        <li>
           Sécurité : indicateurs automatiques sur les inscriptions suspectes (par exemple adresse email jetable), pour la
           validation des comptes.
         </li>

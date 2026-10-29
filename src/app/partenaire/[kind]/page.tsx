@@ -18,19 +18,34 @@ async function load(kind: PartnerKind, partnerId: string): Promise<Row[]> {
   const supabase = await createClient();
   switch (kind) {
     case "offres": {
-      const { data } = await supabase
-        .from("deals")
-        .select("id, title, discount_label, is_active, view_count, valid_until, image_url")
-        .eq("partner_id", partnerId)
-        .order("created_at", { ascending: false });
-      return (data ?? []).map((d) => ({
-        id: d.id,
-        title: d.title,
-        active: d.is_active,
-        image: d.image_url,
-        badge: d.discount_label,
-        sub: `${d.view_count} vues${d.valid_until ? ` · jusqu'au ${formatDate(d.valid_until)}` : ""}`,
-      }));
+      const [{ data }, { data: statsRaw }] = await Promise.all([
+        supabase
+          .from("deals")
+          .select("id, title, discount_label, is_active, view_count, valid_until, image_url, channel")
+          .eq("partner_id", partnerId)
+          .order("created_at", { ascending: false }),
+        supabase.rpc("partner_deal_stats", { p_partner: partnerId }),
+      ]);
+      type Stat = { deal: string; views: number; clicks: number; codes: number; used: number };
+      const stats = new Map(((statsRaw ?? []) as unknown as Stat[]).map((s) => [s.deal, s]));
+      return (data ?? []).map((d) => {
+        const s = stats.get(d.id);
+        const online = d.channel !== "in_store";
+        const parts = [
+          `30 j : ${s?.views ?? 0} vues`,
+          online ? `${s?.clicks ?? 0} ouvertures en ligne` : null,
+          `${s?.codes ?? 0} codes obtenus`,
+          `${s?.used ?? 0} utilisés`,
+        ].filter(Boolean);
+        return {
+          id: d.id,
+          title: d.title,
+          active: d.is_active,
+          image: d.image_url,
+          badge: online ? `${d.discount_label} · ${d.channel === "online" ? "en ligne" : "en ligne + magasin"}` : d.discount_label,
+          sub: `${parts.join(" · ")}${d.valid_until ? ` · jusqu'au ${formatDate(d.valid_until)}` : ""}`,
+        };
+      });
     }
     case "boutique": {
       const { data } = await supabase

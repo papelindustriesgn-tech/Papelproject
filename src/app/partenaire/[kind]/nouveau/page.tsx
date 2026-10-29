@@ -27,6 +27,7 @@ export default async function NewPartnerEntity({ params }: { params: Promise<{ k
             category: kind === "offres" ? partner.category : undefined,
             city_id: partner.city_id,
             status: "active",
+            channel: "in_store",
             condition: "neuf",
           }}
           action={savePartnerEntity.bind(null, kind, null)}

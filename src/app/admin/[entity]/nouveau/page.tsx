@@ -20,7 +20,7 @@ export default async function NewEntity({ params }: { params: Promise<{ entity: 
       <div className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <EntityForm
           fields={cfg.fields}
-          initial={{ valid_from: today, rooms: 1 }}
+          initial={{ valid_from: today, rooms: 1, channel: "in_store" }}
           action={saveEntity.bind(null, entity, null)}
           partners={partners}
           cities={cities}

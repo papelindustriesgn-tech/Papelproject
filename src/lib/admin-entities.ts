@@ -1,4 +1,4 @@
-import { DEAL_CATEGORIES } from "@/lib/constants";
+import { DEAL_CATEGORIES, DEAL_CHANNELS, ONLINE_CODE_MODES } from "@/lib/constants";
 
 export type FieldSpec =
   | {
@@ -93,6 +93,39 @@ export const DEAL_LABEL_FIELD: FieldSpec = {
   hint: "À remplir seulement si l'offre n'a pas de prix ; sinon le libellé est calculé (ex. « -20 % »).",
 };
 
+/** Canal de l'offre (magasin / en ligne) ; le code partagé est stocké à part et jamais affiché publiquement. */
+export const DEAL_ONLINE_FIELDS: FieldSpec[] = [
+  {
+    name: "channel",
+    label: "Où l'offre est-elle valable ?",
+    type: "select",
+    required: true,
+    options: Object.entries(DEAL_CHANNELS).map(([value, c]) => ({ value, label: `${c.emoji} ${c.label}` })),
+  },
+  {
+    name: "online_url",
+    label: "Lien de la boutique en ligne",
+    type: "url",
+    max: 500,
+    placeholder: "https://…",
+    hint: "Offre en ligne uniquement : page où l'étudiant utilise la réduction (adresse en https).",
+  },
+  {
+    name: "online_code_mode",
+    label: "Comment l'étudiant obtient la réduction en ligne ?",
+    type: "select",
+    options: Object.entries(ONLINE_CODE_MODES).map(([value, label]) => ({ value, label })),
+  },
+  {
+    name: "online_code",
+    label: "Code de ta boutique en ligne",
+    type: "text",
+    max: 40,
+    placeholder: "UNY20",
+    hint: "Seulement pour « Code de ma boutique en ligne ». Jamais affiché publiquement : révélé aux étudiants vérifiés.",
+  },
+];
+
 export const ENTITIES: Record<EntityKey, EntityConfig> = {
   partenaires: {
     table: "partners",
@@ -135,11 +168,13 @@ export const ENTITIES: Record<EntityKey, EntityConfig> = {
       { name: "description", label: "Description", type: "textarea", max: 2000 },
       { name: "conditions", label: "Conditions", type: "textarea", max: 2000 },
       { name: "location", label: "Ville et quartier", type: "location", hint: "Sans ville : offre valable partout en Guinée." },
+      ...DEAL_ONLINE_FIELDS,
       ...DEAL_PRICE_FIELDS,
       DEAL_LABEL_FIELD,
       { name: "valid_from", label: "Valable à partir du", type: "date", required: true },
       { name: "valid_until", label: "Valable jusqu'au", type: "date" },
       { name: "is_featured", label: "Mettre en avant (« Meilleures réductions »)", type: "checkbox" },
+      { name: "is_exclusive", label: "Exclusivité Uny (badge « Exclu Uny »)", type: "checkbox" },
       ...flags,
     ],
   },

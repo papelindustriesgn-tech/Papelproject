@@ -6,6 +6,7 @@ import { ConfirmButton } from "@/components/ui/confirm-button";
 import { createClient } from "@/lib/supabase/server";
 import { ENTITIES, isEntity } from "@/lib/admin-entities";
 import { formLookups } from "@/lib/admin-form-data";
+import { readOnlineAccess } from "@/lib/deal-online";
 import { deleteEntity, saveEntity } from "../../crud-actions";
 import { grantPartnerAccess, removePartnerMember } from "../../partner-actions";
 import { GrantAccessForm } from "@/components/admin/partner-access";
@@ -19,6 +20,8 @@ export default async function EditEntity({ params }: { params: Promise<{ entity:
   const supabase = await createClient();
   const [{ data }, lookups] = await Promise.all([supabase.from(cfg.table).select("*").eq("id", id).maybeSingle(), formLookups()]);
   if (!data) notFound();
+  const initial: Record<string, unknown> =
+    cfg.table === "deals" ? { ...data, ...(await readOnlineAccess(supabase, id)) } : (data as Record<string, unknown>);
 
   const members =
     entity === "partenaires"
@@ -37,7 +40,7 @@ export default async function EditEntity({ params }: { params: Promise<{ entity:
       <div className="rounded-[var(--radius-card)] bg-white p-5 shadow-[var(--shadow-card)]">
         <EntityForm
           fields={cfg.fields}
-          initial={data as Record<string, unknown>}
+          initial={initial}
           action={saveEntity.bind(null, entity, id)}
           partners={lookups.partners}
           cities={lookups.cities}
