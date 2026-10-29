@@ -368,6 +368,17 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
   « Signaler un problème », opération hors ligne `confirmation` → `confirmer_livraison`). Problème signalé = alerte critique Ventes,
   Logistique, Équipe commerciale, Direction ; suivi dans « Commandes clients ».
 
+## 6 quindecies. Indicateurs de performance (coûts de l'usine, OTIF)
+
+- Calculs purs et testés : `src/lib/metier/performance.ts` ; chargement : `src/lib/performance/charger.ts` (fonctions SQL `indicateurs_couts`,
+  `indicateurs_livraison`, montants agrégés seulement, fermées aux visiteurs non connectés).
+- **Coût de l'énergie par tonne** = factures fournisseurs des catégories cochées « Énergie » (`categories_charges.energie`, modifiable dans la
+  liste) ÷ tonnes de papier consommées sur les fiches validées. **Coût complet par paquet** = (coût matière des fiches validées + charges
+  fixes et variables de la période) ÷ paquets produits ; toute l'usine (pas de découpage par gamme). Tuiles et objectifs : Production.
+- **OTIF** = commandes arrivées à échéance sur la période (date + `delai_livraison_promis_jours`, jusqu'à aujourd'hui) dont tous les paquets
+  ont été remis au client (livrés − rapportés) au plus tard à la date promise ; **délai commande → livraison** = jusqu'à la remise qui complète
+  la commande. Seuil `alerte_otif_min` (90 %). Tuiles et objectifs : Logistique. Sans donnée : « — », jamais 0.
+
 ## 7. Seuils d'alerte (paramétrables)
 
 - Production : rendement < **95 %** du théorique ; perte > **5 %** ; arrêt > **30 min**.

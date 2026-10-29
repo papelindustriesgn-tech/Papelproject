@@ -6,11 +6,12 @@ import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
-import { Indicateur } from "@/components/ui/indicateur";
+import { ecartPoints, ecartRelatif, Indicateur } from "@/components/ui/indicateur";
 import { aujourdhui } from "@/lib/formulaires/dates";
 import { chargerBilanLogistique } from "@/lib/logistique/indicateurs";
 import { STATUTS_TOURNEE } from "@/lib/logistique/libelles";
 import { coutParColis, tauxLivraisonReussie, tauxRetour } from "@/lib/metier/logistique";
+import { chargerIndicateursLivraison } from "@/lib/performance/charger";
 import { pct } from "@/lib/production/affichage";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -22,13 +23,16 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
   const jour = aujourdhui();
   const periode = lirePeriode(sp, jour);
   const supabase = await clientServeur();
-  const [b, { data: duJour }, { count: aPlanifier }] = await Promise.all([
+  const [b, { data: duJour }, { count: aPlanifier }, liv, livPrec] = await Promise.all([
     chargerBilanLogistique(periode.du, periode.au),
     supabase.from("tournees_livraison_etat").select("*").or(`date_tournee.eq.${jour},statut.eq.en_cours`).neq("statut", "annulee").order("date_tournee"),
     supabase.from("livraisons").select("id", { count: "exact", head: true }).eq("statut", "validee").is("tournee_id", null).eq("statut_remise", "a_livrer"),
+    chargerIndicateursLivraison(periode.du, periode.au),
+    chargerIndicateursLivraison(periode.precedente.du, periode.precedente.au),
   ]);
   const { alerte_livraisons_reussies_min: seuilReussite } = await lireSeuils({ alerte_livraisons_reussies_min: 0.95 });
   const reussite = tauxLivraisonReussie(b);
+  const { alerte_otif_min: seuilOtif } = await lireSeuils({ alerte_otif_min: 0.9 });
 
   return (
     <>
@@ -39,12 +43,27 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
         <Indicateur lien="/logistique/tournees" libelle="Livraisons réussies" valeur={pct(reussite)} detail={`${b.nbPartielles} partielle(s) · ${b.nbRefusees} refus`} ton={reussite !== null && reussite < seuilReussite ? "alerte" : "normal"} />
         <Indicateur lien="/logistique/tournees" libelle="Colis livrés" valeur={nombre(b.colisLivres)} detail={`Retours : ${pct(tauxRetour(b))} des paquets chargés`} />
         <Indicateur libelle="Coût par colis livré" valeur={coutParColis(b.depensesGnf, b.colisLivres) === null ? "—" : gnf(coutParColis(b.depensesGnf, b.colisLivres))} detail={`${nombre(b.nbTournees)} tournée(s) · dépenses ${gnf(b.depensesGnf)}${b.kmParcourus === null ? "" : ` · ${nombre(b.kmParcourus)} km`}`} />
+        <Indicateur
+          lien="/logistique/commandes"
+          libelle="Livrées à temps et complètes (OTIF)"
+          valeur={pct(liv.otif)}
+          variation={{ ecart: ecartPoints(liv.otif, livPrec.otif), unite: "points" }}
+          detail={liv.commandes ? `${nombre(liv.otifOk)} sur ${nombre(liv.commandes)} commande(s) à échéance · promis sous ${liv.delaiPromisJours} j` : "Aucune commande arrivée à échéance"}
+          ton={liv.otif !== null && liv.otif < seuilOtif ? "alerte" : "normal"}
+        />
+        <Indicateur
+          lien="/logistique/commandes"
+          libelle="Délai commande → livraison"
+          valeur={liv.delaiMoyenJours === null ? "—" : `${nombre(liv.delaiMoyenJours, 1)} j`}
+          variation={{ ecart: ecartRelatif(liv.delaiMoyenJours, livPrec.delaiMoyenJours), hausseBonne: false }}
+          detail={liv.livreesCompletes ? `Moyenne sur ${nombre(liv.livreesCompletes)} commande(s) entièrement livrée(s)` : "Aucune commande entièrement livrée"}
+        />
       </div>
       <CarteObjectifs
         espace="logistique"
         du={periode.du}
         au={periode.au}
-        reels={{ colis_livres: b.colisLivres, taux_reussite: reussite, cout_par_colis: coutParColis(b.depensesGnf, b.colisLivres) }}
+        reels={{ colis_livres: b.colisLivres, taux_reussite: reussite, cout_par_colis: coutParColis(b.depensesGnf, b.colisLivres), otif: liv.otif, delai_livraison: liv.delaiMoyenJours }}
       />
       <Carte titre="Tournées du jour et en cours">
         {duJour && duJour.length > 0 ? (

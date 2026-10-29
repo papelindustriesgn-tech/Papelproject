@@ -40,6 +40,8 @@ export const OBJECTIFS: Record<string, DefinitionObjectif[]> = {
     d("rendement", "Rendement réel / théorique", "pct", false),
     d("taux_perte", "Taux de perte", "pct", false, false),
     d("trs", "TRS (OEE)", "pct", false),
+    d("cout_energie_tonne", "Coût de l'énergie par tonne (maximum)", "gnf", false, false),
+    d("cout_complet_paquet", "Coût complet par paquet (maximum)", "gnf", false, false),
   ],
   magasin: [
     d("paquets_livres", "Paquets livrés aux clients", "paquets", true),
@@ -61,6 +63,8 @@ export const OBJECTIFS: Record<string, DefinitionObjectif[]> = {
     d("colis_livres", "Colis livrés", "nombre", true),
     d("taux_reussite", "Livraisons réussies", "pct", false),
     d("cout_par_colis", "Coût par colis livré (maximum)", "gnf", false, false),
+    d("otif", "Commandes livrées à temps et complètes (OTIF)", "pct", false),
+    d("delai_livraison", "Délai commande → livraison (maximum)", "jours", false, false),
   ],
   qualite: [
     d("conformite_reception", "Conformité à réception", "pct", false),

@@ -259,6 +259,8 @@ insert into public.categories_charges (libelle, nature, compte_comptable, ordre)
   ('Investissements : constructions (hangar)', 'investissement', '231', 41),
   ('Investissements : machines et matériel (transport et douane compris)', 'investissement', '241', 42)
 on conflict (libelle) do nothing;
+-- Catégories suivies comme énergie (coût de l'énergie par tonne de papier) : case modifiable dans la liste.
+update public.categories_charges set energie = true where libelle = 'Énergie : électricité, carburant du groupe';
 
 insert into public.parametres (cle, valeur, libelle, description, categorie, type_valeur, unite) values
   ('compta_compte_clients', '"4111"', 'Compte clients', 'Compte collectif des clients (journal des ventes)', 'comptabilite', 'texte', null),

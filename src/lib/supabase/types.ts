@@ -287,13 +287,13 @@ isOneToOne: false
                   ]
                 },"categories_charges": {
                   Row: {
-                    "actif": boolean,"compte_comptable": string,"id": string,"libelle": string,"nature": string,"ordre": number
+                    "actif": boolean,"compte_comptable": string,"energie": boolean,"id": string,"libelle": string,"nature": string,"ordre": number
                   }
                   Insert: {
-                    "actif"?: boolean,"compte_comptable"?: string,"id"?: string,"libelle": string,"nature": string,"ordre"?: number
+                    "actif"?: boolean,"compte_comptable"?: string,"energie"?: boolean,"id"?: string,"libelle": string,"nature": string,"ordre"?: number
                   }
                   Update: {
-                    "actif"?: boolean,"compte_comptable"?: string,"id"?: string,"libelle"?: string,"nature"?: string,"ordre"?: number
+                    "actif"?: boolean,"compte_comptable"?: string,"energie"?: boolean,"id"?: string,"libelle"?: string,"nature"?: string,"ordre"?: number
                   }
                   Relationships: [
                     
@@ -3718,6 +3718,12 @@ isOneToOne: false
                            },
 "hook_jeton_acces":
 { Args: { "event": Json }; Returns: Json
+                           },
+"indicateurs_couts":
+{ Args: { "p_au": string,"p_du": string }; Returns: Json
+                           },
+"indicateurs_livraison":
+{ Args: { "p_au": string,"p_du": string }; Returns: Json
                            },
 "jours_ouvrables":
 { Args: { "p_au": string,"p_du": string }; Returns: number

@@ -14,7 +14,8 @@ import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { formaterPoids, kg, paquetsVersColis, type Paquets } from "@/lib/metier/unites";
 import { minutes, pct } from "@/lib/production/affichage";
 import { agreger, chargerFiches, regrouper, seuilsProduction } from "@/lib/production/indicateurs";
-import { nombre } from "@/lib/stocks/libelles";
+import { chargerCoutsUsine } from "@/lib/performance/charger";
+import { gnf, nombre } from "@/lib/stocks/libelles";
 
 export const metadata: Metadata = { title: "Production" };
 
@@ -22,11 +23,14 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
   const sp = await searchParams;
   const periode = lirePeriode(sp, aujourdhui());
   const filtres = lireFiltresAnalyse(sp);
-  const [fiches, precedentes, seuils, options] = await Promise.all([
+  const [fiches, precedentes, seuils, options, couts, coutsPrec] = await Promise.all([
     chargerFiches({ du: periode.du, au: periode.au, produit: filtres.produit }),
     chargerFiches({ du: periode.precedente.du, au: periode.precedente.au, produit: filtres.produit }),
     seuilsProduction(),
     chargerOptionsFiltres(),
+    // Coûts de toute l'usine (énergie, charges, matière) : ils ne se découpent pas par gamme.
+    chargerCoutsUsine(periode.du, periode.au),
+    chargerCoutsUsine(periode.precedente.du, periode.precedente.au),
   ]);
   const gamme = decrireFiltres({ ...filtres, commercial: null }, options);
   const ind = agreger(fiches);
@@ -110,13 +114,41 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
           detail={`Disponibilité : ${pct(ind.disponibilite)}`}
           lien="/production/pannes"
         />
+        <Indicateur
+          libelle="Coût de l'énergie par tonne"
+          valeur={couts.energieParTonne === null ? "—" : gnf(couts.energieParTonne)}
+          variation={{ ecart: ecartRelatif(couts.energieParTonne, coutsPrec.energieParTonne), hausseBonne: false }}
+          detail={
+            couts.energieParTonne === null
+              ? "Pas de papier consommé sur des fiches validées"
+              : `Énergie : ${gnf(couts.energieGnf)} pour ${formaterPoids(kg(couts.papierKg))}${filtres.produit ? " · toutes gammes" : ""}`
+          }
+        />
+        <Indicateur
+          libelle="Coût complet par paquet"
+          valeur={couts.parPaquet === null ? "—" : gnf(couts.parPaquet.totalGnf)}
+          variation={{ ecart: ecartRelatif(couts.parPaquet?.totalGnf ?? null, coutsPrec.parPaquet?.totalGnf ?? null), hausseBonne: false }}
+          detail={
+            couts.parPaquet === null
+              ? "Pas de paquet produit sur des fiches validées"
+              : `Matière ${gnf(couts.parPaquet.matiereGnf)} + charges ${gnf(couts.parPaquet.chargesGnf)}${filtres.produit ? " · toutes gammes" : ""}`
+          }
+        />
       </div>
       <CarteObjectifs
         espace="production"
         du={periode.du}
         au={periode.au}
         filtre={!!filtres.produit}
-        reels={{ paquets_produits: ind.paquetsBons, papier_kg: ind.tonnesConsommees * 1000, rendement: ind.ratioRendement, taux_perte: ind.tauxPerte, trs: ind.trs }}
+        reels={{
+          paquets_produits: ind.paquetsBons,
+          papier_kg: ind.tonnesConsommees * 1000,
+          rendement: ind.ratioRendement,
+          taux_perte: ind.tauxPerte,
+          trs: ind.trs,
+          cout_energie_tonne: couts.energieParTonne,
+          cout_complet_paquet: couts.parPaquet?.totalGnf ?? null,
+        }}
       />
 
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
