@@ -105,7 +105,7 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
 - ✅ Parcours pilote complet (fictif) — test 23
 - ⬜ Appareils réels (caméra, retour Android, zones iPhone, liens, signatures) : non exécutés
 
-## Offres façon UNiDAYS (29/10, branche `claude/uny-offres-xf13tt`) — corrigées dans le code, testées en local, NON déployées
+## Offres façon UNiDAYS (29/10) — déployées le 29/10 (voir ci-dessous)
 - ✅ Vitrine des offres : Exclusivités Uny, Tendances (14 j : vues + codes + ouvertures), Flash, À distance, Marques,
   Nouveautés ; filtre « À distance / En magasin » — local (24)
 - ✅ Pages des marques (`/avantages/marques`, `/avantages/marques/[id]`) — local (24)
@@ -120,3 +120,11 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
 - Suite complète : 90/90 en local
 - Migration `20261029000001_offers_catalog.sql` (non destructive) ; retour arrière `supabase/rollback/20261029_offres_rollback.sql`
 - ⬜ Recrutement de marques et premières exclusivités (action commerciale, hors code)
+- Prod au 29/10 (autorisation du propriétaire) : sauvegarde `uny-2026-10-29-11-22-21` (2 827 lignes), migration
+  `20261029000001` appliquée par étapes, code `6623528`, déploiement `dpl_4B3TfbdVKWiTHdPDEURdwE3PW5Di`. Vérifié en
+  prod : 36 offres existantes inchangées (en magasin, sans exclusivité) ; tables protégées (RLS, aucun accès anonyme) ;
+  `open_online_offer` refusé pour un compte sans offre à distance, statistiques refusées hors marque (42501), aucun
+  clic enregistré (essai annulé) ; pages publiques 200, pages connectées redirigent vers la connexion ; surveillance
+  401 / 200 ; aucune erreur d'exécution. Non rejoué en prod : parcours connectés (vitrine, WhatsApp, Scanner),
+  testés en local seulement.
+- Retour arrière : redéployer `dpl_4heZxfBV1WX1HmLbpj2um7SiSTHm`, puis si nécessaire `supabase/rollback/20261029_offres_rollback.sql`.
