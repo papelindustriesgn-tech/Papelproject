@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { coutCompletParPaquet, coutEnergieParTonne, indicateursLivraison } from "./performance";
+import { coutCompletParPaquet, coutEnergieParTonne, indicateursLivraison, margeCompleteParPaquet } from "./performance";
 
 describe("coutEnergieParTonne", () => {
   it("rapporte l'énergie aux tonnes de papier consommées", () => {
@@ -44,5 +44,16 @@ describe("indicateursLivraison (OTIF)", () => {
 
   it("aucune commande à échéance : pas de taux (et non 0 %)", () => {
     expect(indicateursLivraison([])).toEqual({ commandes: 0, otifOk: 0, otif: null, delaiMoyenJours: null, livreesCompletes: 0 });
+  });
+});
+
+describe("margeCompleteParPaquet", () => {
+  it("prix moyen de vente − coût complet, positif ou négatif", () => {
+    expect(margeCompleteParPaquet(2839, 2500)).toBe(339);
+    expect(margeCompleteParPaquet(2839, 3942)).toBe(-1103); // vend en dessous de son coût complet
+  });
+  it("sans vente ou sans production : null", () => {
+    expect(margeCompleteParPaquet(null, 2500)).toBeNull();
+    expect(margeCompleteParPaquet(2839, null)).toBeNull();
   });
 });

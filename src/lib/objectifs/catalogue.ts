@@ -25,6 +25,9 @@ export const OBJECTIFS: Record<string, DefinitionObjectif[]> = {
     d("papier_kg", "Papier transformé", "kg", true),
     d("marge_brute", "Marge brute", "gnf", true),
     d("encaissements", "Encaissements", "gnf", true),
+    d("resultat", "Résultat d'exploitation", "gnf", true),
+    d("cout_complet_paquet", "Coût complet par paquet (maximum)", "gnf", false, false),
+    d("otif", "Commandes livrées à temps et complètes (OTIF)", "pct", false),
   ],
   ventes: [
     d("ca_ttc", "Chiffre d'affaires TTC", "gnf", true),

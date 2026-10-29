@@ -5,6 +5,8 @@ import { ecartPoints, ecartRelatif, Indicateur, jourCourt } from "@/components/u
 import type { SyntheseDirection } from "@/lib/direction/synthese";
 import { formaterPoids, formaterStockProduitFini, kg, type Paquets } from "@/lib/metier/unites";
 import { bfrGnf } from "@/lib/metier/finance";
+import { margeCompleteParPaquet, type IndicateursLivraison } from "@/lib/metier/performance";
+import type { CoutsUsine } from "@/lib/performance/charger";
 import { minutes, pct } from "@/lib/production/affichage";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 
@@ -24,38 +26,130 @@ function Section({ titre, lien, children }: { titre: string; lien?: string; chil
   );
 }
 
+/** Un groupe de deux chiffres clés, introduit par la question à laquelle il répond. */
+function Question({ titre, children }: { titre: string; children: ReactNode }) {
+  return (
+    <section className="flex flex-col gap-2 break-inside-avoid">
+      <h2 className="text-[0.95rem] font-bold text-gray-800">{titre}</h2>
+      <div className="grid flex-1 gap-3 sm:grid-cols-2">{children}</div>
+    </section>
+  );
+}
+
 /**
- * Les 8 chiffres clés du tableau de bord (ce que le CA, la marge, la trésorerie et la production du haut ne disent pas) :
- * argent qui rentre, retards de paiement, commandes, usine, stock, terrain. Chaque tuile ouvre l'application concernée.
+ * Les 8 chiffres clés du PDG, rangés par question (ce que le CA, la marge, la trésorerie et la production du haut ne disent pas) :
+ * gagne-t-on de l'argent, combien coûte un paquet, l'usine tourne-t-elle bien, les clients sont-ils servis.
+ * Coûts de l'usine et livraisons : toute l'usine (ils ne se découpent ni par gamme ni par commercial).
  */
-export function IndicateursEssentiels({ s }: { s: SyntheseDirection }) {
+export function IndicateursEssentiels({
+  s,
+  couts,
+  coutsPrec,
+  livraison,
+  livraisonPrec,
+  filtre,
+}: {
+  s: SyntheseDirection;
+  couts: CoutsUsine;
+  coutsPrec: CoutsUsine;
+  livraison: IndicateursLivraison;
+  livraisonPrec: IndicateursLivraison;
+  /** Un filtre gamme ou commercial est actif : le résultat (marge filtrée − charges de toute l'usine) n'aurait pas de sens. */
+  filtre: boolean;
+}) {
   const v = s.ventes;
   const vp = s.ventesPrec;
   const p = s.production;
   const pp = s.productionPrec;
-  const pf = s.stock.produitsFinis.reduce((t, x) => t + x.paquets, 0);
+  const resultat = filtre ? null : s.marge.margeGnf - couts.chargesGnf;
+  const resultatPrec = filtre ? null : s.margePrec.margeGnf - coutsPrec.chargesGnf;
+  const coutPaquet = couts.parPaquet?.totalGnf ?? null;
+  const margePaquet = margeCompleteParPaquet(v.prixMoyenPaquetGnf, coutPaquet);
+  const toutes = filtre ? " · toute l'usine" : "";
   return (
-    <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <Indicateur libelle="Encaissements" valeur={gnf(v.encaisseGnf)} variation={{ ecart: ecartRelatif(v.encaisseGnf, vp.encaisseGnf) }} lien="/ventes/encaissements" />
-      <Indicateur libelle="Impayés (échus)" valeur={gnf(v.echuGnf)} detail={`Créances totales : ${gnf(v.creancesGnf)}`} ton={v.echuGnf > 0 ? "alerte" : "normal"} lien="/ventes/impayes" />
-      <Indicateur libelle="Commandes" valeur={nombre(v.nbCommandes)} variation={{ ecart: ecartRelatif(v.nbCommandes, vp.nbCommandes) }} detail={`${nombre(v.paquets)} paquets vendus`} lien="/ventes/commandes" />
-      <Indicateur libelle="Produits finis en stock" valeur={`${nombre(pf)} paquets`} lien="/magasin/articles" />
-      <Indicateur
-        libelle="Rendement réel / théorique"
-        valeur={pct(p.ratioRendement)}
-        variation={{ ecart: ecartPoints(p.ratioRendement, pp.ratioRendement), unite: "points" }}
-        ton={p.ratioRendement !== null && p.ratioRendement < s.seuils.rendementMin ? "danger" : "normal"}
-        lien="/production"
-      />
-      <Indicateur libelle="Pertes" valeur={pct(p.tauxPerte)} variation={{ ecart: ecartPoints(p.tauxPerte, pp.tauxPerte), unite: "points", hausseBonne: false }} ton={(p.tauxPerte ?? 0) > s.seuils.tauxPerteMax ? "danger" : "normal"} lien="/production" />
-      <Indicateur
-        libelle="Matière première"
-        valeur={s.stock.couvertureMpJours === null ? formaterPoids(kg(s.stock.kgMp)) : `${nombre(s.stock.couvertureMpJours, 0)} jours`}
-        detail={`${formaterPoids(kg(s.stock.kgMp))} en stock · ${formaterPoids(kg(s.stock.kgTransit))} en route`}
-        ton={s.stock.couvertureMpJours !== null && s.stock.couvertureMpJours < s.seuils.couvertureJours ? "alerte" : "normal"}
-        lien="/magasin"
-      />
-      <Indicateur libelle="Ruptures chez les points de vente" valeur={pct(s.distribution.tauxRupture)} variation={{ ecart: ecartPoints(s.distribution.tauxRupture, s.distributionPrec.tauxRupture), unite: "points", hausseBonne: false }} detail={`${nombre(s.distribution.pvaActifs)} points de vente`} ton={(s.distribution.tauxRupture ?? 0) > s.seuils.tauxRupture ? "alerte" : "normal"} lien="/commercial" />
+    <div className="mb-4 grid gap-4 lg:grid-cols-2">
+      <Question titre="Gagne-t-on de l'argent ?">
+        <Indicateur
+          libelle="Résultat d'exploitation"
+          valeur={resultat === null ? "—" : gnf(resultat)}
+          variation={{ ecart: ecartRelatif(resultat, resultatPrec) }}
+          detail={filtre ? "Non découpé par gamme ni par commercial" : `Marge ${gnf(s.marge.margeGnf)} − charges ${gnf(couts.chargesGnf)}`}
+          ton={resultat !== null && resultat < 0 ? "alerte" : "normal"}
+          lien="/finance/resultat"
+        />
+        <Indicateur
+          libelle="Encaissements"
+          valeur={gnf(v.encaisseGnf)}
+          variation={{ ecart: ecartRelatif(v.encaisseGnf, vp.encaisseGnf) }}
+          detail={v.echuGnf > 0 ? `Impayés échus : ${gnf(v.echuGnf)} (créances ${gnf(v.creancesGnf)})` : `Aucun impayé échu · créances ${gnf(v.creancesGnf)}`}
+          ton={v.echuGnf > 0 ? "alerte" : "normal"}
+          lien="/ventes/encaissements"
+        />
+      </Question>
+      <Question titre="Combien coûte un paquet ?">
+        <Indicateur
+          libelle="Coût complet par paquet"
+          valeur={coutPaquet === null ? "—" : gnf(coutPaquet)}
+          variation={{ ecart: ecartRelatif(coutPaquet, coutsPrec.parPaquet?.totalGnf ?? null), hausseBonne: false }}
+          detail={
+            margePaquet === null
+              ? coutPaquet === null
+                ? "Pas de production validée sur la période"
+                : "Pas de vente sur la période"
+              : `Vendu ${gnf(v.prixMoyenPaquetGnf)} : ${margePaquet >= 0 ? "gagne" : "perd"} ${gnf(Math.abs(margePaquet))} par paquet${toutes}`
+          }
+          ton={margePaquet !== null && margePaquet < 0 ? "danger" : "normal"}
+          lien="/production"
+        />
+        <Indicateur
+          libelle="Coût de l'énergie par tonne"
+          valeur={couts.energieParTonne === null ? "—" : gnf(couts.energieParTonne)}
+          variation={{ ecart: ecartRelatif(couts.energieParTonne, coutsPrec.energieParTonne), hausseBonne: false }}
+          detail={couts.energieParTonne === null ? "Pas de papier consommé sur la période" : `Énergie ${gnf(couts.energieGnf)} pour ${formaterPoids(kg(couts.papierKg))}`}
+          lien="/production"
+        />
+      </Question>
+      <Question titre="L'usine tourne-t-elle bien ?">
+        <Indicateur
+          libelle="Rendement réel / théorique"
+          valeur={pct(p.ratioRendement)}
+          variation={{ ecart: ecartPoints(p.ratioRendement, pp.ratioRendement), unite: "points" }}
+          detail={`Pertes ${pct(p.tauxPerte)} · ${nombre(p.paquetsBons)} paquets produits`}
+          ton={
+            (p.ratioRendement !== null && p.ratioRendement < s.seuils.rendementMin) || (p.tauxPerte ?? 0) > s.seuils.tauxPerteMax ? "danger" : "normal"
+          }
+          lien="/production"
+        />
+        <Indicateur
+          libelle="Matière première"
+          valeur={s.stock.couvertureMpJours === null ? formaterPoids(kg(s.stock.kgMp)) : `${nombre(s.stock.couvertureMpJours, 0)} jours`}
+          detail={`${formaterPoids(kg(s.stock.kgMp))} en stock · ${formaterPoids(kg(s.stock.kgTransit))} en route`}
+          ton={s.stock.couvertureMpJours !== null && s.stock.couvertureMpJours < s.seuils.couvertureJours ? "alerte" : "normal"}
+          lien="/magasin"
+        />
+      </Question>
+      <Question titre="Les clients sont-ils servis ?">
+        <Indicateur
+          libelle="Livrées à temps et complètes"
+          valeur={pct(livraison.otif)}
+          variation={{ ecart: ecartPoints(livraison.otif, livraisonPrec.otif), unite: "points" }}
+          detail={
+            livraison.commandes
+              ? `${nombre(livraison.otifOk)} sur ${nombre(livraison.commandes)} commande(s)${livraison.delaiMoyenJours === null ? "" : ` · délai moyen ${nombre(livraison.delaiMoyenJours, 1)} j`}${toutes}`
+              : "Aucune commande arrivée à échéance"
+          }
+          ton={livraison.otif !== null && livraison.otif < s.seuils.otifMin ? "alerte" : "normal"}
+          lien="/logistique"
+        />
+        <Indicateur
+          libelle="Ruptures chez les points de vente"
+          valeur={pct(s.distribution.tauxRupture)}
+          variation={{ ecart: ecartPoints(s.distribution.tauxRupture, s.distributionPrec.tauxRupture), unite: "points", hausseBonne: false }}
+          detail={`${nombre(s.distribution.pvaActifs)} points de vente`}
+          ton={(s.distribution.tauxRupture ?? 0) > s.seuils.tauxRupture ? "alerte" : "normal"}
+          lien="/commercial"
+        />
+      </Question>
     </div>
   );
 }

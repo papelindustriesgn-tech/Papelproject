@@ -87,3 +87,12 @@ export function indicateursLivraison(commandes: CommandeAEcheance[]): Indicateur
     livreesCompletes,
   };
 }
+
+/**
+ * Ce que rapporte (ou coûte) chaque paquet vendu : prix moyen de vente HT − coût complet par paquet produit.
+ * Négatif = l'usine vend en dessous de son coût complet. Null si l'un des deux manque.
+ */
+export function margeCompleteParPaquet(prixMoyenHtGnf: number | null, coutCompletGnf: number | null): number | null {
+  if (prixMoyenHtGnf === null || coutCompletGnf === null) return null;
+  return Math.round(prixMoyenHtGnf - coutCompletGnf);
+}

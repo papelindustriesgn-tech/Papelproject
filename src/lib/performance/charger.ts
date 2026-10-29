@@ -9,6 +9,8 @@ import { clientServeur } from "@/lib/supabase/serveur";
 
 export interface CoutsUsine {
   energieGnf: number;
+  /** Charges fixes et variables de la période (factures fournisseurs, hors achats stockés et investissements). */
+  chargesGnf: number;
   papierKg: number;
   paquets: number;
   energieParTonne: number | null;
@@ -24,6 +26,7 @@ export async function chargerCoutsUsine(du: string, au: string): Promise<CoutsUs
   const paquets = n(brut.paquets);
   return {
     energieGnf,
+    chargesGnf: n(brut.charges_gnf),
     papierKg,
     paquets,
     energieParTonne: coutEnergieParTonne(energieGnf, papierKg),

@@ -9,6 +9,7 @@ import { BoutonImprimer } from "@/components/ui/bouton-imprimer";
 import { CarteHero } from "@/components/ui/carte-hero";
 import { ecartRelatif, PastilleVariation } from "@/components/ui/indicateur";
 import { chargerSynthese } from "@/lib/direction/synthese";
+import { chargerCoutsUsine, chargerIndicateursLivraison } from "@/lib/performance/charger";
 import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { aujourdhui } from "@/lib/formulaires/dates";
 import { lireFiltresAnalyse, lirePeriode } from "@/lib/formulaires/filtres-analyse";
@@ -18,14 +19,22 @@ import { gnf } from "@/lib/stocks/libelles";
 export const metadata: Metadata = { title: "Tableau de bord" };
 
 /**
- * Tableau de bord de la Direction : l'essentiel de l'usine sur un écran (chiffre d'affaires, 8 chiffres clés,
- * objectifs). Le détail est dans chaque application (liens des tuiles) et dans le rapport de la semaine.
+ * Tableau de bord de la Direction : l'essentiel de l'usine sur un écran (chiffre d'affaires, 8 chiffres clés rangés
+ * par question : argent, coût du paquet, usine, clients ; objectifs). Le détail est dans chaque application (liens des tuiles) et dans le rapport de la semaine.
  */
 export default async function TableauDeBordDirection({ searchParams }: PageProps<"/direction">) {
   const sp = await searchParams;
   const periode = lirePeriode(sp, aujourdhui());
   const filtres = lireFiltresAnalyse(sp);
-  const [s, options] = await Promise.all([chargerSynthese(periode, filtres), chargerOptionsFiltres()]);
+  const [s, options, couts, coutsPrec, livraison, livraisonPrec] = await Promise.all([
+    chargerSynthese(periode, filtres),
+    chargerOptionsFiltres(),
+    chargerCoutsUsine(periode.du, periode.au),
+    chargerCoutsUsine(periode.precedente.du, periode.precedente.au),
+    chargerIndicateursLivraison(periode.du, periode.au),
+    chargerIndicateursLivraison(periode.precedente.du, periode.precedente.au),
+  ]);
+  const filtre = !!(filtres.produit || filtres.commercial);
   const filtresTexte = decrireFiltres(filtres, options);
 
   return (
@@ -64,18 +73,21 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
           <GraphiqueAnneau donnees={s.ventes.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="CA HT" />
         </Carte>
       </div>
-      <IndicateursEssentiels s={s} />
+      <IndicateursEssentiels s={s} couts={couts} coutsPrec={coutsPrec} livraison={livraison} livraisonPrec={livraisonPrec} filtre={filtre} />
       <CarteObjectifs
         espace="direction"
         du={periode.du}
         au={periode.au}
-        filtre={!!(filtres.produit || filtres.commercial)}
+        filtre={filtre}
         reels={{
           ca_ttc: s.ventes.caTtcGnf,
           paquets_produits: s.production.paquetsBons,
           papier_kg: s.production.tonnesConsommees * 1000,
           marge_brute: s.marge.margeGnf,
           encaissements: s.ventes.encaisseGnf,
+          resultat: filtre ? null : s.marge.margeGnf - couts.chargesGnf,
+          cout_complet_paquet: couts.parPaquet?.totalGnf ?? null,
+          otif: livraison.otif,
         }}
       />
     </>

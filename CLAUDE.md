@@ -378,6 +378,10 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
 - **OTIF** = commandes arrivées à échéance sur la période (date + `delai_livraison_promis_jours`, jusqu'à aujourd'hui) dont tous les paquets
   ont été remis au client (livrés − rapportés) au plus tard à la date promise ; **délai commande → livraison** = jusqu'à la remise qui complète
   la commande. Seuil `alerte_otif_min` (90 %). Tuiles et objectifs : Logistique. Sans donnée : « — », jamais 0.
+- **Tableau de bord du PDG** (`IndicateursEssentiels`) : 8 chiffres clés rangés par question, deux par question — « Gagne-t-on de l'argent ? »
+  (résultat d'exploitation = marge − charges, non calculé si un filtre est actif ; encaissements + impayés échus), « Combien coûte un paquet ? »
+  (coût complet comparé au prix moyen de vente, `margeCompleteParPaquet` ; énergie par tonne), « L'usine tourne-t-elle bien ? » (rendement +
+  pertes ; couverture matière), « Les clients sont-ils servis ? » (OTIF + délai ; ruptures chez les PVA).
 
 ## 7. Seuils d'alerte (paramétrables)
 

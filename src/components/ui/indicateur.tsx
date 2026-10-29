@@ -67,7 +67,8 @@ export function Indicateur({
           <IconeIndicateur libelle={libelle} />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
+          {/* Titre et badge passent à la ligne quand la tuile est étroite (le badge n'est jamais coupé). */}
+          <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
             <div className="text-[0.88rem] font-medium leading-snug text-gray-500">{libelle}</div>
             {ton === "danger" && (
               <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800">
