@@ -143,3 +143,11 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
   contact enregistré ; ouverture d'une démo refusée par la base (essai annulé, 0 clic) ; pages 200 / redirections ;
   aucune erreur d'exécution. Retour arrière : redéployer `dpl_4B3TfbdVKWiTHdPDEURdwE3PW5Di` (les démos restent
   marquées « Démo » et sans contact).
+
+## Application recentrée sur les offres (29/10, branche `claude/uny-offres-xf13tt`) — testée en local, NON déployée
+- ✅ Navigation : Découvrir (accueil = vitrine des offres) · Explorer (recherche, en magasin / à distance, catégories,
+  marques) · Ma carte · Favoris · Profil
+- ✅ Jobs, logement et marketplace masqués (décision du propriétaire) : pages redirigées vers les offres, liens retirés,
+  boutique partenaire masquée, textes publics et assistant alignés ; données conservées.
+  Réactivation : variable `NEXT_PUBLIC_UNY_OPPORTUNITES=1` puis nouveau déploiement (`src/lib/features.ts`)
+- Suite complète : 88 réussis, 4 ignorés (rubriques masquées) ; rubriques réactivées : 25 réussis — local
