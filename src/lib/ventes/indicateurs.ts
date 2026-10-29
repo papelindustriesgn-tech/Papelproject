@@ -21,6 +21,21 @@ export interface IndicateursVentes {
   dso: number | null;
   caParJour: Map<string, number>;
   topClients: { nom: string; caHtGnf: number }[];
+  /** Ventes de la période par client (CA HT net des avoirs), pour le classement des plus gros clients. */
+  clients: VentesClient[];
+}
+
+export interface VentesClient {
+  id: string;
+  nom: string;
+  code: string;
+  type: string;
+  commercialId: string | null;
+  caHtGnf: number;
+  paquets: number;
+  nbFactures: number;
+  /** Date de la dernière facture de la période (AAAA-MM-JJ). */
+  dernierAchat: string | null;
 }
 
 /**
@@ -40,7 +55,7 @@ export async function chargerIndicateursVentes(du: string, au: string, nbJours: 
   const [{ data: pieces }, { data: commandes }, { count: nbNouveaux }, { data: paiements }, { data: soldes }] = await Promise.all([
     supabase
       .from("pieces_vente")
-      .select("id, type_piece, client_id, commercial_id, date_piece, total_ht_gnf, total_ttc_gnf, clients(nom, commercial_id), lignes_piece(paquets, montant_ht_gnf, conditionnements(paquets_par_colis, produits(id, libelle)))")
+      .select("id, type_piece, client_id, commercial_id, date_piece, total_ht_gnf, total_ttc_gnf, clients(nom, code, commercial_id, types_clients(libelle)), lignes_piece(paquets, montant_ht_gnf, conditionnements(paquets_par_colis, produits(id, libelle)))")
       .in("type_piece", ["facture", "avoir"])
       .eq("statut", "valide")
       .gte("date_piece", du)
@@ -70,7 +85,7 @@ export async function chargerIndicateursVentes(du: string, au: string, nbJours: 
   let nbFactures = 0;
   const parProduit = new Map<string, { paquets: number; colis: number; caHtGnf: number }>();
   const caParJour = new Map<string, number>();
-  const parClient = new Map<string, { nom: string; caHtGnf: number }>();
+  const parClient = new Map<string, VentesClient>();
   const clientsActifs = new Set<string>();
   for (const p of pieces ?? []) {
     const lignes = p.lignes_piece.map((l) => ({ ...l, produitId: l.conditionnements?.produits?.id ?? null, montantHtGnf: l.montant_ht_gnf }));
@@ -88,8 +103,23 @@ export async function chargerIndicateursVentes(du: string, au: string, nbJours: 
       clientsActifs.add(p.client_id);
       nbFactures++;
     }
-    const c = parClient.get(p.client_id) ?? { nom: p.clients?.nom ?? "", caHtGnf: 0 };
+    const c = parClient.get(p.client_id) ?? {
+      id: p.client_id,
+      nom: p.clients?.nom ?? "",
+      code: p.clients?.code ?? "",
+      type: p.clients?.types_clients?.libelle ?? "",
+      commercialId: p.commercial_id ?? p.clients?.commercial_id ?? null,
+      caHtGnf: 0,
+      paquets: 0,
+      nbFactures: 0,
+      dernierAchat: null,
+    };
     c.caHtGnf += signe * ht;
+    c.paquets += signe * retenues.reduce((t, l) => t + l.paquets, 0);
+    if (p.type_piece === "facture") {
+      c.nbFactures++;
+      if (!c.dernierAchat || p.date_piece > c.dernierAchat) c.dernierAchat = p.date_piece;
+    }
     parClient.set(p.client_id, c);
     for (const l of retenues) {
       const libelle = l.conditionnements?.produits?.libelle ?? "?";
@@ -124,6 +154,7 @@ export async function chargerIndicateursVentes(du: string, au: string, nbJours: 
     // Les créances ne se découpent pas par gamme : pas de DSO quand une gamme est choisie.
     dso: caTtc > 0 && !filtres.produit ? calculerDso(creances, caTtc, nbJours) : null,
     caParJour,
-    topClients: [...parClient.values()].sort((a, b) => b.caHtGnf - a.caHtGnf).slice(0, 10),
+    topClients: [...parClient.values()].sort((a, b) => b.caHtGnf - a.caHtGnf).slice(0, 10).map((c) => ({ nom: c.nom, caHtGnf: c.caHtGnf })),
+    clients: [...parClient.values()],
   };
 }

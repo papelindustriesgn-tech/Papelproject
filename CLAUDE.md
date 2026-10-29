@@ -378,10 +378,17 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
 - **OTIF** = commandes arrivées à échéance sur la période (date + `delai_livraison_promis_jours`, jusqu'à aujourd'hui) dont tous les paquets
   ont été remis au client (livrés − rapportés) au plus tard à la date promise ; **délai commande → livraison** = jusqu'à la remise qui complète
   la commande. Seuil `alerte_otif_min` (90 %). Tuiles et objectifs : Logistique. Sans donnée : « — », jamais 0.
-- **Tableau de bord du PDG** (`IndicateursEssentiels`) : 8 chiffres clés rangés par question, deux par question — « Gagne-t-on de l'argent ? »
+- **Tableau de bord du PDG** (`TableauPdg`, `src/components/direction/tableau-pdg.tsx`) : une carte par question avec un verdict
+  (Ça va / À surveiller / Critique), 8 chiffres clés cliquables, deux par question, chacun avec un visuel (barre animée avec repère de seuil,
+  comparaison en barres, mini-courbe) ; montants abrégés avec `gnfCourt` (« 155,4 M GNF », valeur exacte au survol) — « Gagne-t-on de l'argent ? »
   (résultat d'exploitation = marge − charges, non calculé si un filtre est actif ; encaissements + impayés échus), « Combien coûte un paquet ? »
   (coût complet comparé au prix moyen de vente, `margeCompleteParPaquet` ; énergie par tonne), « L'usine tourne-t-elle bien ? » (rendement +
   pertes ; couverture matière), « Les clients sont-ils servis ? » (OTIF + délai ; ruptures chez les PVA).
+
+- **Nos plus gros clients** (Équipe commerciale, `PlusGrosClients`) : classement de la période par CA HT net des avoirs
+  (`classerClients`, `src/lib/metier/clients.ts`, testé ; 10 premiers, le reste regroupé), part du CA, évolution vs période précédente
+  (« Nouveau » sans achat avant), paquets, dernier achat, encours et échu ; alerte de dépendance si les 5 premiers font plus de 60 % du CA.
+  Suit les filtres gamme et commercial ; export Excel.
 
 ## 7. Seuils d'alerte (paramétrables)
 
@@ -440,7 +447,7 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
   1 bouton principal + 2 au plus, réglés par l'administrateur, données `accueil_elements` genre `action` ; sur téléphone le principal passe
   en premier sur toute la largeur) → **filtre de date** → **4 à 8 indicateurs, sans doublon avec la carte du haut** → `<CarteObjectifs>`
   (masquée s'il n'y a pas d'objectif) → au plus 1 ou 2 graphiques / tableaux utiles au travail du jour. Ce qui est une alerte va dans le menu
-  « Alertes », le détail dans les écrans du menu. Direction : CA + 8 chiffres clés (`IndicateursEssentiels`) ; les 5 blocs détaillés
+  « Alertes », le détail dans les écrans du menu. Direction : CA + 8 chiffres clés (`TableauPdg`) ; les 5 blocs détaillés
   (`BlocsIndicateurs`) restent dans le rapport de la semaine.
   **Menus** (`menus.ts`) : à plat, vue d'ensemble → Alertes → le travail de tous les jours → coordination (commandes, tâches) ;
   « Configuration » (roue dentée, repliée) pour les listes, objectifs mensuels et écrans rares. Pas d'entrée « Nouveau … » dans le menu

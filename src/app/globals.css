@@ -37,6 +37,22 @@ body {
     0 10px 28px -14px rgb(16 24 40 / 0.16);
 }
 
+/* Barres des tableaux de bord : se remplissent à l'affichage (sauf si l'utilisateur réduit les animations). */
+@keyframes remplir-barre {
+  from {
+    transform: scaleX(0);
+  }
+}
+@utility barre-animee {
+  transform-origin: left;
+  animation: remplir-barre 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .barre-animee {
+    animation: none;
+  }
+}
+
 /* Focus clavier toujours visible (accessibilité). */
 :focus-visible {
   outline: 3px solid var(--color-papel-500);

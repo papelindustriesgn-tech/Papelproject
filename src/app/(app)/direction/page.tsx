@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ActionsAppli } from "@/components/coque/entree-appli";
-import { IndicateursEssentiels } from "@/components/direction/sections";
+import { TableauPdg } from "@/components/direction/tableau-pdg";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { GraphiqueAnneau } from "@/components/graphiques/hero";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
@@ -13,8 +13,8 @@ import { chargerCoutsUsine, chargerIndicateursLivraison } from "@/lib/performanc
 import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
 import { aujourdhui } from "@/lib/formulaires/dates";
 import { lireFiltresAnalyse, lirePeriode } from "@/lib/formulaires/filtres-analyse";
-import { serieRegroupee } from "@/lib/formulaires/periode";
-import { gnf } from "@/lib/stocks/libelles";
+import { joursDeLaPeriode, serieRegroupee } from "@/lib/formulaires/periode";
+import { gnf, gnfCourt } from "@/lib/stocks/libelles";
 
 export const metadata: Metadata = { title: "Tableau de bord" };
 
@@ -64,8 +64,8 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
           format="gnf"
           lien="/ventes"
           stats={[
-            { libelle: "Marge brute", valeur: gnf(s.marge.margeGnf), detail: s.marge.taux === null ? undefined : `${(Math.round(s.marge.taux * 1000) / 10).toLocaleString("fr-FR")} % du CA` },
-            { libelle: "Trésorerie", valeur: gnf(s.finance.tresorerieGnf) },
+            { libelle: "Marge brute", valeur: gnfCourt(s.marge.margeGnf), detail: s.marge.taux === null ? undefined : `${(Math.round(s.marge.taux * 1000) / 10).toLocaleString("fr-FR")} % du CA` },
+            { libelle: "Trésorerie", valeur: gnfCourt(s.finance.tresorerieGnf), detail: s.finance.tresorerieGnf < 0 ? "Solde négatif : voir Finance" : undefined },
             { libelle: "Production", valeur: `${s.production.paquetsBons.toLocaleString("fr-FR")} paquets` },
           ]}
         />
@@ -73,7 +73,7 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
           <GraphiqueAnneau donnees={s.ventes.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="CA HT" />
         </Carte>
       </div>
-      <IndicateursEssentiels s={s} couts={couts} coutsPrec={coutsPrec} livraison={livraison} livraisonPrec={livraisonPrec} filtre={filtre} />
+      <TableauPdg s={s} couts={couts} coutsPrec={coutsPrec} livraison={livraison} livraisonPrec={livraisonPrec} filtre={filtre} jours={joursDeLaPeriode(periode)} />
       <CarteObjectifs
         espace="direction"
         du={periode.du}

@@ -43,3 +43,15 @@ const nf0 = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
 export const gnf = (n: number | null | undefined) => `${nf0.format(Math.round(Number(n ?? 0))).replace(/[  ]/g, " ")} GNF`;
 export const nombre = (n: number | null | undefined, decimales = 0) =>
   new Intl.NumberFormat("fr-FR", { maximumFractionDigits: decimales }).format(Number(n ?? 0)).replace(/[  ]/g, " ");
+
+/**
+ * Montant court pour les grands chiffres d'un tableau de bord : « 16,8 M GNF », « 1,25 M GNF », « 2,1 Md GNF » ;
+ * en dessous du million, le montant exact (« 3 942 GNF »). Le montant exact s'affiche au survol (`gnf`).
+ */
+export function gnfCourt(n: number | null | undefined): string {
+  const v = Math.round(Number(n ?? 0));
+  const a = Math.abs(v);
+  if (a >= 1e9) return `${nombre(v / 1e9, a >= 1e10 ? 1 : 2)} Md GNF`;
+  if (a >= 1e6) return `${nombre(v / 1e6, a >= 1e7 ? 1 : 2)} M GNF`;
+  return gnf(v);
+}

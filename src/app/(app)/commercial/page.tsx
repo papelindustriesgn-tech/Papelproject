@@ -7,7 +7,11 @@ import { CarteDynamique } from "@/components/carte/carte-dynamique";
 import { COULEURS_SERIES } from "@/lib/graphiques/couleurs";
 import { Carte as CarteUi, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
+import { PlusGrosClients } from "@/components/commercial/plus-gros-clients";
 import { chargerIndicateursCommerciaux } from "@/lib/commercial/indicateurs";
+import { exigerDonnees } from "@/lib/donnees/resultat";
+import { classerClients } from "@/lib/metier/clients";
+import { chargerIndicateursVentes } from "@/lib/ventes/indicateurs";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
 import { lireFiltresAnalyse, lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { chargerOptionsFiltres, decrireFiltres } from "@/lib/filtres/options";
@@ -24,12 +28,23 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
   const supabase = await clientServeur();
   let requetePva = supabase.from("pva_carte").select("id, nom, commercial_id, commercial_nom, type_libelle, latitude, longitude, derniere_visite, derniere_rupture").eq("actif", true);
   if (filtres.commercial) requetePva = requetePva.eq("commercial_id", filtres.commercial);
-  const [ind, { data: pva }, seuils, options] = await Promise.all([
+  let requeteSoldes = supabase.from("soldes_clients").select("client_id, encours_gnf, echu_gnf").gt("encours_gnf", 0);
+  if (filtres.commercial) requeteSoldes = requeteSoldes.eq("commercial_id", filtres.commercial);
+  const [ind, { data: pva }, seuils, options, ventes, ventesPrec, resSoldes] = await Promise.all([
     chargerIndicateursCommerciaux(periode.du, periode.au, periode.nbJours, filtres),
     requetePva,
     lireSeuils({ alerte_taux_rupture: 0.15, alerte_taux_hors_zone: 0.15 }),
     chargerOptionsFiltres(),
+    // Plus gros clients : ventes de la période et de la précédente (mêmes filtres gamme et commercial).
+    chargerIndicateursVentes(periode.du, periode.au, periode.nbJours, filtres),
+    chargerIndicateursVentes(periode.precedente.du, periode.precedente.au, periode.nbJours, filtres),
+    requeteSoldes,
   ]);
+  const soldes = new Map(
+    (exigerDonnees(resSoldes, "l'encours des clients") ?? []).map((x) => [x.client_id!, { encoursGnf: Number(x.encours_gnf ?? 0), echuGnf: Number(x.echu_gnf ?? 0) }]),
+  );
+  const classement = classerClients(ventes.clients, ventesPrec.clients);
+  const nomsCommerciaux = new Map(options.commerciaux.map((c) => [c.valeur, c.libelle]));
   const filtresTexte = decrireFiltres(filtres, options);
   // Couleur fixe par commercial (ordre alphabétique de toute l'équipe : un filtre ne repeint pas les autres).
   const couleur = new Map(options.commerciaux.map((c, i) => [c.valeur, COULEURS_SERIES[i % COULEURS_SERIES.length]]));
@@ -62,6 +77,7 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
         filtre={!!(filtres.produit || filtres.commercial)}
         reels={{ visites: ind.visites, nouveaux_pva: ind.nouveauxPva, taux_rupture: ind.tauxRupture, quartiers_couverts: ind.quartiersCouverts }}
       />
+      <PlusGrosClients classement={classement} commerciaux={nomsCommerciaux} soldes={soldes} du={periode.du} au={periode.au} />
       <CarteUi titre="Carte des points de vente" className="mb-4">
         <CarteDynamique points={points} hauteur={420} />
         <ul className="mt-2 flex flex-wrap gap-3 text-sm" aria-label="Légende">
