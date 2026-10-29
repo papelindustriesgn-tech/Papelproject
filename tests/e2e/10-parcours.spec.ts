@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { serviceRest, signUp } from "./helpers";
+import { serviceRest, signUp, OPPORTUNITIES } from "./helpers";
 
 test("parcours : une seule action principale, profil complété à la vérification, rubrique Avantages", async ({ page }) => {
   const s = await signUp(page);
@@ -35,13 +35,18 @@ test("parcours : une seule action principale, profil complété à la vérificat
   const [p] = await (await serviceRest(`profiles?email=eq.${email}&select=phone,study_level`)).json();
   expect(p).toEqual({ phone: `+224${s.phone}`, study_level: "Licence 2" });
 
-  // Rubrique Avantages : offres, codes et fidélité ; la marketplace est dans Opportunités
+  // Rubrique offres : offres, codes et fidélité (onglet « Explorer » ; « Avantages » si les opportunités sont réactivées)
   await page.goto("/avantages");
   await page.getByRole("navigation", { name: "Rubrique avantages" }).getByRole("link", { name: "Codes" }).click();
   await expect(page).toHaveURL(/\/avantages\/mes-codes/);
-  await expect(page.getByRole("link", { name: "Avantages" }).first()).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("link", { name: OPPORTUNITIES ? "Avantages" : "Explorer" }).first()).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
   await page.goto("/marketplace");
-  await expect(page.getByRole("link", { name: "Opportunités" }).first()).toHaveAttribute("aria-current", "page");
+  if (OPPORTUNITIES)
+    await expect(page.getByRole("link", { name: "Opportunités" }).first()).toHaveAttribute("aria-current", "page");
+  else await expect(page).toHaveURL(/\/avantages$/);
 
   // Étudiant vérifié : l'action suivante est le premier code promo
   await serviceRest(`profiles?email=eq.${email}`, { method: "PATCH", body: JSON.stringify({ verification_status: "verified" }) });

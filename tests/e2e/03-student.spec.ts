@@ -1,6 +1,6 @@
 import path from "node:path";
 import { expect, test } from "@playwright/test";
-import { ADMIN, expectNoHorizontalOverflow, login, logout, serviceRest, signUp, uniqueDocument } from "./helpers";
+import { ADMIN, expectNoHorizontalOverflow, login, logout, serviceRest, signUp, uniqueDocument, OPPORTUNITIES } from "./helpers";
 
 const fixture = (f: string) => path.join(__dirname, "..", "fixtures", f);
 
@@ -95,6 +95,7 @@ test("avantages : filtres, recherche, détail, favori", async ({ page }) => {
 });
 
 test("marketplace : publier avec photo, modifier, marquer vendu, supprimer", async ({ page }) => {
+  test.skip(!OPPORTUNITIES, "Marketplace masquée (Uny recentrée sur les offres)");
   await signUp(page);
   const title = `Calculatrice Casio E2E ${Date.now()}`;
   await page.goto("/marketplace/nouveau");

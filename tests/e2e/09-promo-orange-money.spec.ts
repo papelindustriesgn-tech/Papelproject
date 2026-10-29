@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ADMIN, adminAsPartnerMember, login, logout, serviceRest, signUp } from "./helpers";
+import { ADMIN, adminAsPartnerMember, login, logout, serviceRest, signUp, OPPORTUNITIES } from "./helpers";
 
 test("code promo : l'étudiant obtient son code, paie sur le code marchand Orange Money, le partenaire le valide", async ({
   page,
@@ -104,6 +104,7 @@ test("conditions générales : codes promo et paiement Orange Money", async ({ p
 });
 
 test("marketplace : les promos des partenaires s'affichent en premier avec le pourcentage", async ({ page }) => {
+  test.skip(!OPPORTUNITIES, "Marketplace masquée (Uny recentrée sur les offres)");
   const run = `${Date.now()}`.slice(-7);
   await adminAsPartnerMember();
   await login(page, ADMIN.email, ADMIN.password);

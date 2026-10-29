@@ -2,6 +2,8 @@ import fs from "node:fs";
 import { expect, type Page } from "@playwright/test";
 
 export const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";
+/** Jobs, logement et marketplace : masqués par défaut (src/lib/features.ts), testés quand ils sont réactivés. */
+export const OPPORTUNITIES = process.env.NEXT_PUBLIC_UNY_OPPORTUNITES === "1";
 export const ADMIN = { email: "admin@uny.local", password: "AdminUny2026" };
 
 export function uniqueStudent() {

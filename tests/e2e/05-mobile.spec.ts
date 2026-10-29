@@ -1,5 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { ADMIN, adminAsPartnerMember, adminAsUniversityMember, expectNoHorizontalOverflow, login, signUp } from "./helpers";
+import {
+  ADMIN,
+  adminAsPartnerMember,
+  adminAsUniversityMember,
+  expectNoHorizontalOverflow,
+  login,
+  signUp,
+  OPPORTUNITIES,
+} from "./helpers";
 
 const VIEWPORTS = [
   { name: "Android 360", width: 360, height: 780 },
@@ -25,9 +33,7 @@ const APP = [
   "/carte",
   "/carte/personnaliser",
   "/avantages",
-  "/marketplace",
-  "/marketplace/nouveau",
-  "/marketplace/mes-annonces",
+  ...(OPPORTUNITIES ? ["/marketplace", "/marketplace/nouveau", "/marketplace/mes-annonces"] : ["/avantages/explorer"]),
   "/avantages/mes-codes",
   "/avantages/fidelite",
   "/profil",
@@ -98,7 +104,7 @@ for (const vp of VIEWPORTS) {
       await expectNoHorizontalOverflow(page);
     }
     // Pages de détail
-    for (const list of ["/avantages", "/marketplace"]) {
+    for (const list of OPPORTUNITIES ? ["/avantages", "/marketplace"] : ["/avantages"]) {
       await page.goto(list);
       const href = await page
         .locator(`main a[href^="${list}/"]:not([href$="nouveau"]):not([href$="mes-annonces"])`)
@@ -111,7 +117,9 @@ for (const vp of VIEWPORTS) {
       // Navigation basse visible et complète sur mobile
       const nav = page.getByRole("navigation", { name: "Navigation principale" });
       await expect(nav).toBeVisible();
-      for (const l of ["Accueil", "Ma carte", "Avantages", "Profil"])
+      for (const l of OPPORTUNITIES
+        ? ["Accueil", "Ma carte", "Avantages", "Profil"]
+        : ["Découvrir", "Explorer", "Ma carte", "Favoris", "Profil"])
         await expect(nav.getByRole("link", { name: l })).toBeVisible();
     }
     await page.context().clearCookies();

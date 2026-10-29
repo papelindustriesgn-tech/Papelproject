@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ADMIN, adminAsPartnerMember, login, logout, serviceRest, signUp } from "./helpers";
+import { ADMIN, adminAsPartnerMember, login, logout, serviceRest, signUp, OPPORTUNITIES } from "./helpers";
 
 async function setVerified(unyId: string) {
   const res = await serviceRest(`profiles?uny_id=eq.${unyId}`, {
@@ -58,14 +58,19 @@ test("partenaire : demande → validation admin → publication → scan d'une c
   await expect(page).toHaveURL(/partenaire\/offres\?enregistre=1/);
   await expect(page.getByText(`Menu étudiant ${run}`)).toBeVisible();
 
-  // Article en boutique (marketplace)
-  await page.goto("/partenaire/boutique/nouveau");
-  await page.waitForLoadState("networkidle");
-  await page.fill("#title", `Sandwich ${run}`);
-  await page.selectOption("#category", "autres");
-  await page.fill("#price_gnf", "25000");
-  await page.getByRole("button", { name: "Publier" }).click();
-  await expect(page).toHaveURL(/partenaire\/boutique\?enregistre=1/);
+  // Article en boutique (marketplace) : rubrique masquée tant qu'Uny est recentrée sur les offres
+  if (OPPORTUNITIES) {
+    await page.goto("/partenaire/boutique/nouveau");
+    await page.waitForLoadState("networkidle");
+    await page.fill("#title", `Sandwich ${run}`);
+    await page.selectOption("#category", "autres");
+    await page.fill("#price_gnf", "25000");
+    await page.getByRole("button", { name: "Publier" }).click();
+    await expect(page).toHaveURL(/partenaire\/boutique\?enregistre=1/);
+  } else {
+    await page.goto("/partenaire/boutique/nouveau");
+    await expect(page.getByRole("heading", { name: "Page introuvable" })).toBeVisible();
+  }
 
   // 5. Scan (saisie du numéro) : étudiant non vérifié → refus
   await page.goto("/partenaire/scanner");
@@ -102,9 +107,11 @@ test("partenaire : demande → validation admin → publication → scan d'une c
   await expect(page.getByText("Carte Uny validée").first()).toBeVisible();
   await page.goto(`/avantages?q=${run}&ville=toutes`);
   await expect(page.getByText(`Menu étudiant ${run}`)).toBeVisible();
-  await page.goto(`/marketplace?q=${run}&ville=toutes`);
-  await expect(page.getByText(`Sandwich ${run}`)).toBeVisible();
-  await expect(page.getByText(business).first()).toBeVisible();
+  if (OPPORTUNITIES) {
+    await page.goto(`/marketplace?q=${run}&ville=toutes`);
+    await expect(page.getByText(`Sandwich ${run}`)).toBeVisible();
+    await expect(page.getByText(business).first()).toBeVisible();
+  }
 
   // Nettoyage : ce partenaire réel masquerait les exemples de démo utilisés par les autres tests
   await serviceRest(`partners?name=eq.${encodeURIComponent(business)}`, { method: "DELETE" });

@@ -1,12 +1,36 @@
 import { expect, test } from "@playwright/test";
-import { createAuthUser, serviceRest, signUp, uniqueStudent } from "./helpers";
+import { createAuthUser, serviceRest, signUp, uniqueStudent, OPPORTUNITIES } from "./helpers";
 
 /**
  * Parcours étudiants et commerçants : navigation à 5 onglets, Opportunités, carte hors ligne, signalement et
  * blocage sur la marketplace, caisse (caissier), refus de la caméra. Données 100 % fictives.
  */
 
+test("navigation centrée sur les offres : Découvrir · Explorer · Ma carte · Favoris · Profil", async ({ page }) => {
+  test.skip(OPPORTUNITIES, "Navigation avec Opportunités testée ci-dessous");
+  await signUp(page);
+  const nav = page.getByRole("navigation", { name: "Navigation principale" });
+  await expect(nav.getByRole("link")).toHaveText(["Découvrir", "Explorer", "Ma carte", "Favoris", "Profil"]);
+  await expect(page.getByTestId("home-exclusives").or(page.getByTestId("home-newest")).first()).toBeVisible();
+  await nav.getByRole("link", { name: "Explorer" }).click();
+  await expect(page).toHaveURL(/\/avantages\/explorer/);
+  await page
+    .getByTestId("explore-categories")
+    .getByRole("link", { name: /Restauration/ })
+    .click();
+  await expect(page).toHaveURL(/categorie=restauration/);
+  await expect(nav.getByRole("link", { name: "Explorer" })).toHaveAttribute("aria-current", "page");
+  // Rubriques masquées : redirigées vers les offres, rien dans la navigation
+  for (const url of ["/opportunites", "/jobs", "/logement", "/marketplace"]) {
+    await page.goto(url);
+    await expect(page).toHaveURL(/\/avantages$/);
+  }
+  await page.goto("/profil");
+  await expect(page.getByRole("link", { name: "Mes annonces" })).toHaveCount(0);
+});
+
 test("navigation : Accueil · Avantages · Ma carte · Opportunités · Profil", async ({ page }) => {
+  test.skip(!OPPORTUNITIES, "Opportunités masquées (Uny recentrée sur les offres)");
   await signUp(page);
   const nav = page.getByRole("navigation", { name: "Navigation principale" });
   await expect(nav.getByRole("link")).toHaveText(["Accueil", "Avantages", "Ma carte", "Opportunités", "Profil"]);
@@ -35,6 +59,7 @@ test("carte : hors connexion, la date de dernière actualisation est affichée",
 });
 
 test("marketplace : signaler une annonce puis bloquer le vendeur (ses annonces disparaissent)", async ({ page }) => {
+  test.skip(!OPPORTUNITIES, "Marketplace masquée (Uny recentrée sur les offres)");
   test.setTimeout(120_000);
   // Vendeur fictif avec une annonce
   const seller = uniqueStudent();
@@ -143,7 +168,8 @@ test.describe("petit écran", () => {
   test.use({ viewport: { width: 360, height: 720 } });
   test("barre du bas : aucun libellé tronqué à 360 px", async ({ page }) => {
     await signUp(page);
-    await page.goto("/opportunites");
+    await page.goto(OPPORTUNITIES ? "/opportunites" : "/avantages/explorer");
+    await page.waitForLoadState("networkidle");
     const truncated = await page
       .getByRole("navigation", { name: "Navigation principale" })
       .locator("a span:last-child")
