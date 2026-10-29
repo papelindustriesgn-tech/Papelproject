@@ -23,6 +23,7 @@ import {
   LayoutDashboard,
   LayoutGrid,
   ListChecks,
+  CircleHelp,
   LogOut,
   Map as IconeCarte,
   MapPin,
@@ -212,6 +213,14 @@ export function MenuLateral({
           ))}
         </details>
       )}
+
+      <Link
+        href="/applications/lexique"
+        onClick={() => setOuvert(false)}
+        className="mt-2 flex min-h-10 items-center gap-3 rounded-xl px-3 text-[0.95rem] text-gray-600 hover:bg-gray-50"
+      >
+        <CircleHelp size={18} className="text-gray-400" aria-hidden /> Les mots expliqués
+      </Link>
 
       <div className="mt-3 flex items-center gap-3 rounded-2xl bg-gray-50 p-2.5">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-papel-700 text-sm font-bold text-white">{utilisateur.initiales}</span>

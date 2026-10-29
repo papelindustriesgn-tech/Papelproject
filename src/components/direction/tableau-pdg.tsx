@@ -1,8 +1,10 @@
 import { AlertTriangle, CheckCircle2, ChevronRight, CircleAlert, Factory, Minus, Package, Users, Wallet, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Aide } from "@/components/ui/aide";
 import { ecartPoints, ecartRelatif, jourCourt, PastilleVariation, type Variation } from "@/components/ui/indicateur";
 import { Tendance } from "@/components/ui/tendance";
+import { aideDuLibelle } from "@/lib/aide/lexique";
 import type { SyntheseDirection } from "@/lib/direction/synthese";
 import { margeCompleteParPaquet, type IndicateursLivraison } from "@/lib/metier/performance";
 import { formaterPoids, kg } from "@/lib/metier/unites";
@@ -53,21 +55,30 @@ function Question({ titre, Icone, etat, children }: { titre: string; Icone: Luci
 
 /** Un chiffre de la question : libellé, valeur courte (exacte au survol), évolution, visuel, détail, lien. */
 function Chiffre({ libelle, valeur, exact, variation, visuel, detail, lien }: { libelle: string; valeur: string; exact?: string; variation?: Variation; visuel?: ReactNode; detail?: ReactNode; lien: string }) {
+  const explication = aideDuLibelle(libelle);
   return (
-    <Link href={lien} className="group flex min-w-0 flex-col gap-1.5 rounded-xl sm:pl-4 sm:first:pl-0">
-      <span className="text-[0.88rem] font-medium text-gray-500">{libelle}</span>
+    // Lien étiré (after:inset-0) : la bulle « ? » reste au-dessus, hors du lien.
+    <div className="group relative flex min-w-0 flex-col gap-1.5 rounded-xl sm:pl-4 sm:first:pl-0">
+      <span className="text-[0.88rem] font-medium text-gray-500">
+        {libelle}
+        {explication && <Aide mot={explication.mot} explication={explication.explication} className="ml-1" />}
+      </span>
       <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="text-[1.75rem] font-bold leading-tight tracking-tight text-gray-900" title={exact}>
           {valeur}
         </span>
         {variation && <PastilleVariation v={variation} />}
       </span>
-      {visuel}
+      {visuel && <div className="relative z-10">{visuel}</div>}
       {detail && <span className="text-sm leading-snug text-gray-600">{detail}</span>}
-      <span className="mt-auto flex items-center gap-0.5 pt-1 text-sm font-semibold text-papel-700 group-hover:underline print:hidden">
+      <Link
+        href={lien}
+        aria-label={`${libelle} : voir le détail`}
+        className="mt-auto flex items-center gap-0.5 pt-1 text-sm font-semibold text-papel-700 after:absolute after:inset-0 after:rounded-xl group-hover:underline print:hidden"
+      >
         Voir le détail <ChevronRight size={14} aria-hidden />
-      </span>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
@@ -162,7 +173,7 @@ export function TableauPdg({
     <div className="mb-4 grid gap-4 lg:grid-cols-2">
       <Question titre="Gagne-t-on de l'argent ?" Icone={Wallet} etat={pire(etatResultat, etatEncaisse)}>
         <Chiffre
-          libelle="Résultat d'exploitation"
+          libelle="Bénéfice (ou perte)"
           valeur={resultat === null ? "—" : gnfCourt(resultat)}
           exact={resultat === null ? undefined : gnf(resultat)}
           variation={{ ecart: ecartRelatif(resultat, resultatPrec) }}
@@ -170,7 +181,7 @@ export function TableauPdg({
             resultat === null ? undefined : (
               <Comparaison
                 lignes={[
-                  { libelle: "Marge brute", valeur: s.marge.margeGnf, couleur: "bg-papel-600" },
+                  { libelle: "Marge sur les ventes", valeur: s.marge.margeGnf, couleur: "bg-papel-600" },
                   { libelle: "Charges", valeur: couts.chargesGnf, couleur: "bg-gray-400" },
                 ]}
               />
@@ -180,7 +191,7 @@ export function TableauPdg({
           lien="/finance/resultat"
         />
         <Chiffre
-          libelle="Encaissements"
+          libelle="Paiements reçus"
           valeur={gnfCourt(v.encaisseGnf)}
           exact={gnf(v.encaisseGnf)}
           variation={{ ecart: ecartRelatif(v.encaisseGnf, s.ventesPrec.encaisseGnf) }}
@@ -236,7 +247,7 @@ export function TableauPdg({
 
       <Question titre="L'usine tourne-t-elle bien ?" Icone={Factory} etat={pire(etatRendement, etatMatiere)}>
         <Chiffre
-          libelle="Rendement réel / théorique"
+          libelle="Rendement"
           valeur={pct(p.ratioRendement)}
           variation={{ ecart: ecartPoints(p.ratioRendement, pp.ratioRendement), unite: "points" }}
           visuel={jours.length > 1 ? <Tendance points={jours.map((d) => ({ libelle: jourCourt(d), valeur: s.rendementParJour.get(d) ?? null }))} format="pct" /> : undefined}
@@ -244,7 +255,7 @@ export function TableauPdg({
           lien="/production"
         />
         <Chiffre
-          libelle="Matière première"
+          libelle="Jours de stock de matière"
           valeur={couverture === null ? formaterPoids(kg(s.stock.kgMp)) : `${nombre(couverture, 0)} jours`}
           visuel={couverture === null ? undefined : <Barre part={couverture / echelleCouverture} etat={etatMatiere} seuil={seuils.couvertureJours / echelleCouverture} libelleSeuil={`Seuil : ${seuils.couvertureJours} jours`} />}
           detail={`${formaterPoids(kg(s.stock.kgMp))} en stock · ${formaterPoids(kg(s.stock.kgTransit))} en route · seuil ${seuils.couvertureJours} j`}

@@ -29,7 +29,7 @@ export default async function TableauDeBordFinance({ searchParams }: PageProps<"
       <TitrePage titre="Finance" sousTitre="Trésorerie, créances, dettes et résultat de gestion" action={<ActionsAppli espace="finance" />} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/finance/tresorerie" libelle="Trésorerie disponible" valeur={gnf(s.tresorerieGnf)} detail="Tous comptes (USD au taux du jour)" ton={s.tresorerieGnf < 0 ? "danger" : "normal"} />
-        <Indicateur lien="/ventes/impayes" libelle="Créances clients" valeur={gnf(s.creancesGnf)} detail={`dont échu : ${gnf(s.creancesEchuesGnf)}`} ton={s.creancesEchuesGnf > 0 ? "alerte" : "normal"} />
+        <Indicateur lien="/ventes/impayes" libelle="Ce que les clients nous doivent" valeur={gnf(s.creancesGnf)} detail={`dont échu : ${gnf(s.creancesEchuesGnf)}`} ton={s.creancesEchuesGnf > 0 ? "alerte" : "normal"} />
         <Indicateur lien="/finance/fournisseurs" libelle="Dettes fournisseurs" valeur={gnf(s.dettesGnf)} detail={`dont échu : ${gnf(s.dettesEchuesGnf)}`} ton={s.dettesEchuesGnf > 0 ? "alerte" : "normal"} />
         <Indicateur
           libelle="Trésorerie dans 13 semaines"
@@ -40,9 +40,9 @@ export default async function TableauDeBordFinance({ searchParams }: PageProps<"
       </div>
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Indicateur lien="/finance/resultat" libelle="Chiffre d'affaires HT" valeur={gnf(r.caHtGnf)} />
-        <Indicateur lien="/finance/resultat" libelle="Marge brute" valeur={gnf(r.margeBruteGnf)} detail={r.caHtGnf ? `${pct(r.margeBruteGnf / r.caHtGnf)} du CA` : undefined} />
-        <Indicateur lien="/finance/resultat" libelle="Résultat d'exploitation" valeur={gnf(r.resultatGnf)} detail={`${pct(r.tauxResultat)} du CA`} ton={r.resultatGnf < 0 ? "danger" : "normal"} />
+        <Indicateur lien="/finance/resultat" libelle="Ventes (hors taxes)" valeur={gnf(r.caHtGnf)} />
+        <Indicateur lien="/finance/resultat" libelle="Marge sur les ventes" valeur={gnf(r.margeBruteGnf)} detail={r.caHtGnf ? `${pct(r.margeBruteGnf / r.caHtGnf)} des ventes` : undefined} />
+        <Indicateur lien="/finance/resultat" libelle="Bénéfice (ou perte)" valeur={gnf(r.resultatGnf)} detail={`${pct(r.tauxResultat)} des ventes`} ton={r.resultatGnf < 0 ? "danger" : "normal"} />
         <Indicateur lien="/finance/resultat" libelle="Seuil de rentabilité" valeur={seuil === null ? "—" : gnf(seuil)} detail={pm ? `Atteint au jour ${pm} de la période` : seuil === null ? "Marge sur coûts variables négative" : "Non atteint sur la période"} ton={pm ? "normal" : "alerte"} />
       </div>
       <CarteObjectifs

@@ -25,7 +25,7 @@ export function FormulaireProduction({ ficheId, conditionnements }: { ficheId: s
   return (
     <form action={action} className="flex flex-wrap items-end gap-2">
       <Retour etat={etat} />
-      <Selection libelle="Produit et colis" name="conditionnement_id" value={condId} onChange={(ev) => setCondId(ev.target.value)} erreur={e.conditionnement_id} className="basis-56 flex-1">
+      <Selection libelle="Produit et format de colis" name="conditionnement_id" value={condId} onChange={(ev) => setCondId(ev.target.value)} erreur={e.conditionnement_id} className="basis-56 flex-1">
         <option value="">— Choisir —</option>
         {conditionnements.map((c) => (
           <option key={c.id} value={c.id}>
@@ -33,11 +33,11 @@ export function FormulaireProduction({ ficheId, conditionnements }: { ficheId: s
           </option>
         ))}
       </Selection>
-      <Champ libelle="Colis complets" name="colis" inputMode="numeric" defaultValue={v.colis} erreur={e.colis} className="basis-28 flex-1" aide={cond ? `1 colis = ${cond.paquetsParColis} paquets` : undefined} />
-      <Champ libelle="Paquets en vrac" name="paquets_vrac" inputMode="numeric" defaultValue={v.paquets_vrac} erreur={e.paquets_vrac} className="basis-28 flex-1" />
-      <Champ libelle="Rebuts (kg)" name="rebuts_kg" inputMode="decimal" defaultValue={v.rebuts_kg} erreur={e.rebuts_kg} className="basis-28 flex-1" />
+      <Champ libelle="Colis fermés" name="colis" inputMode="numeric" placeholder="0" defaultValue={v.colis} erreur={e.colis} className="basis-28 flex-1" aide={cond ? `1 colis = ${cond.paquetsParColis} paquets` : "Choisissez d'abord le produit"} />
+      <Champ libelle="Paquets hors colis" name="paquets_vrac" inputMode="numeric" placeholder="0" defaultValue={v.paquets_vrac} erreur={e.paquets_vrac} className="basis-28 flex-1" aide="Paquets pas encore mis en colis" />
+      <Champ libelle="Déchets (kg)" name="rebuts_kg" inputMode="decimal" placeholder="0" defaultValue={v.rebuts_kg} erreur={e.rebuts_kg} className="basis-28 flex-1" aide="Papier jeté, pesé" />
       <Bouton type="submit" disabled={enCours}>
-        Ajouter
+        {enCours ? "Enregistrement…" : "Ajouter cette production"}
       </Bouton>
     </form>
   );
@@ -60,7 +60,7 @@ export function FormulaireConsommation({
   return (
     <form action={action} className="flex flex-wrap items-end gap-2">
       <Retour etat={etat} />
-      <Selection libelle="Article" name="article_id" value={articleId} onChange={(ev) => setArticleId(ev.target.value)} erreur={e.article_id} className="basis-56 flex-1">
+      <Selection libelle="Quoi ?" name="article_id" value={articleId} onChange={(ev) => setArticleId(ev.target.value)} erreur={e.article_id} className="basis-56 flex-1">
         <option value="">— Choisir —</option>
         {articles.map((a) => (
           <option key={a.id} value={a.id}>
@@ -69,7 +69,7 @@ export function FormulaireConsommation({
         ))}
       </Selection>
       {article?.suiviParLot && (
-        <Selection libelle="Bobine" name="lot_id" defaultValue={v.lot_id ?? ""} erreur={e.lot_id} className="basis-56 flex-1">
+        <Selection libelle="Numéro de la bobine" name="lot_id" defaultValue={v.lot_id ?? ""} erreur={e.lot_id} className="basis-56 flex-1">
           <option value="">— Choisir —</option>
           {lots
             .filter((l) => l.articleId === article.id)
@@ -80,9 +80,17 @@ export function FormulaireConsommation({
             ))}
         </Selection>
       )}
-      <Champ libelle={`Quantité${article ? ` (${article.unite})` : ""}`} name="quantite" inputMode="decimal" defaultValue={v.quantite} erreur={e.quantite} className="basis-28 flex-1" />
+      <Champ
+        libelle={`Quantité utilisée${article ? ` (${article.unite})` : ""}`}
+        name="quantite"
+        inputMode="decimal"
+        defaultValue={v.quantite}
+        erreur={e.quantite}
+        className="basis-28 flex-1"
+        aide={article?.suiviParLot ? "Poids de papier déroulé sur la machine" : undefined}
+      />
       <Bouton type="submit" disabled={enCours}>
-        Ajouter
+        {enCours ? "Enregistrement…" : "Ajouter"}
       </Bouton>
     </form>
   );
@@ -95,7 +103,7 @@ export function FormulaireArret({ ficheId, causes }: { ficheId: string; causes: 
   return (
     <form action={action} className="flex flex-wrap items-end gap-2">
       <Retour etat={etat} />
-      <Selection libelle="Cause" name="cause_id" defaultValue={v.cause_id ?? ""} erreur={e.cause_id} className="basis-56 flex-1">
+      <Selection libelle="Pourquoi ?" name="cause_id" defaultValue={v.cause_id ?? ""} erreur={e.cause_id} className="basis-56 flex-1">
         <option value="">— Choisir —</option>
         {causes.map((c) => (
           <option key={c.id} value={c.id}>
@@ -103,11 +111,11 @@ export function FormulaireArret({ ficheId, causes }: { ficheId: string; causes: 
           </option>
         ))}
       </Selection>
-      <Champ libelle="Durée (min)" name="duree_min" inputMode="numeric" defaultValue={v.duree_min} erreur={e.duree_min} className="basis-24 flex-1" />
-      <Champ libelle="Début" name="heure_debut" type="time" defaultValue={v.heure_debut} erreur={e.heure_debut} className="basis-28 flex-1" />
-      <Champ libelle="Commentaire" name="commentaire" defaultValue={v.commentaire} erreur={e.commentaire} className="basis-56 flex-1" />
+      <Champ libelle="Combien de minutes ?" name="duree_min" inputMode="numeric" defaultValue={v.duree_min} erreur={e.duree_min} className="basis-24 flex-1" />
+      <Champ libelle="À quelle heure ? (facultatif)" name="heure_debut" type="time" defaultValue={v.heure_debut} erreur={e.heure_debut} className="basis-28 flex-1" />
+      <Champ libelle="Remarque (facultatif)" name="commentaire" defaultValue={v.commentaire} erreur={e.commentaire} className="basis-56 flex-1" />
       <Bouton type="submit" disabled={enCours}>
-        Ajouter
+        {enCours ? "Enregistrement…" : "Ajouter cet arrêt"}
       </Bouton>
     </form>
   );
@@ -126,10 +134,10 @@ export function FormulaireOperateurs({ ficheId, operateurs, presents, modifiable
           </label>
         ))}
       </div>
-      {!operateurs.length && <p className="text-gray-700">Aucun opérateur : ajoutez-les dans Listes de référence → Opérateurs.</p>}
+      {!operateurs.length && <p className="text-gray-700">Aucune personne dans la liste : demandez au chef de production de les ajouter (Configuration → Opérateurs).</p>}
       {modifiable && operateurs.length > 0 && (
         <Bouton type="submit" variante="secondaire" disabled={enCours} className="self-start">
-          Enregistrer les présences
+          {enCours ? "Enregistrement…" : "Enregistrer les présents"}
         </Bouton>
       )}
     </form>
@@ -162,7 +170,7 @@ export function FormulaireEnTete({
           </option>
         ))}
       </Selection>
-      <Selection libelle="Ordre de fabrication" name="of_id" defaultValue={v.of_id} disabled={!modifiable} className="basis-56 flex-1">
+      <Selection libelle="Ordre de production (facultatif)" name="of_id" defaultValue={v.of_id} disabled={!modifiable} className="basis-56 flex-1">
         <option value="">— Aucun —</option>
         {ordres.map((o) => (
           <option key={o.id} value={o.id}>
@@ -170,10 +178,10 @@ export function FormulaireEnTete({
           </option>
         ))}
       </Selection>
-      <Champ libelle="Notes du poste" name="notes" defaultValue={v.notes} disabled={!modifiable} erreur={etat.erreurs?.notes} className="basis-64 flex-1" />
+      <Champ libelle="Remarque sur le poste (facultatif)" name="notes" defaultValue={v.notes} disabled={!modifiable} erreur={etat.erreurs?.notes} className="basis-64 flex-1" />
       {modifiable && (
         <Bouton type="submit" variante="secondaire" disabled={enCours}>
-          Enregistrer
+          {enCours ? "Enregistrement…" : "Enregistrer ces informations"}
         </Bouton>
       )}
     </form>
@@ -188,7 +196,8 @@ export function BoutonValider({ ficheId, avertissements }: { ficheId: string; av
     <div className="flex flex-col gap-2 rounded border border-amber-300 bg-amber-50 p-3">
       {etat.message && <Message ton="erreur">{etat.message}</Message>}
       <p>
-        La validation sort les bobines et emballages du stock et entre les produits finis au coût de revient. <strong>Elle est définitive.</strong>
+        En validant, les bobines et emballages utilisés <strong>sortent du stock</strong> et les paquets produits <strong>entrent en stock</strong>.
+        Ensuite, la saisie ne peut plus être modifiée : vérifiez les étapes 1 à 4.
       </p>
       {avertissements.map((a) => (
         <p key={a} className="font-semibold text-amber-900">
@@ -197,15 +206,15 @@ export function BoutonValider({ ficheId, avertissements }: { ficheId: string; av
       ))}
       {!confirmer ? (
         <Bouton type="button" onClick={() => setConfirmer(true)} className="self-start">
-          Valider la fiche
+          Terminer et valider
         </Bouton>
       ) : (
         <form action={action} className="flex flex-wrap gap-2">
           <Bouton type="submit" disabled={enCours}>
-            {enCours ? "Validation…" : "Oui, valider définitivement"}
+            {enCours ? "Validation…" : "Oui, c'est juste : valider"}
           </Bouton>
           <Bouton type="button" variante="discret" onClick={() => setConfirmer(false)}>
-            Annuler
+            Non, je vérifie encore
           </Bouton>
         </form>
       )}

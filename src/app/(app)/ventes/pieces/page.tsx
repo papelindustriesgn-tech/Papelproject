@@ -10,7 +10,7 @@ import { exigerDonnees } from "@/lib/donnees/resultat";
 import { clientServeur } from "@/lib/supabase/serveur";
 import type { Database } from "@/lib/supabase/types";
 
-export const metadata: Metadata = { title: "Pièces de vente" };
+export const metadata: Metadata = { title: "Devis, commandes et factures" };
 
 export default async function PagePieces({ searchParams }: PageProps<"/ventes/pieces">) {
   const sp = await searchParams;
@@ -29,7 +29,7 @@ export default async function PagePieces({ searchParams }: PageProps<"/ventes/pi
   if (q) requete = requete.or(`numero.ilike.${motifRecherche(q)}`);
   if (statut) requete = requete.eq("statut", statut as Database["public"]["Enums"]["statut_piece"]);
   const [resPieces, resEtats] = await Promise.all([requete, type === "facture" ? supabase.from("factures_etat").select("id, solde_gnf, jours_retard") : Promise.resolve({ data: [], error: null })]);
-  const data = exigerDonnees(resPieces, "les pièces de vente");
+  const data = exigerDonnees(resPieces, "les devis, commandes et factures");
   const etats = exigerDonnees(resEtats, "l'état des factures");
   const etat = new Map((etats ?? []).map((e) => [e.id, { solde_gnf: Number(e.solde_gnf ?? 0), jours_retard: Number(e.jours_retard ?? 0) }]));
   const pieces = data ?? [];
@@ -70,7 +70,7 @@ export default async function PagePieces({ searchParams }: PageProps<"/ventes/pi
               <tr key={p.id}>
                 <Cellule>
                   <Link href={`/ventes/pieces/${p.id}`} className="font-mono font-semibold text-papel-700 hover:underline">
-                    {p.numero ?? "Brouillon"}
+                    {p.numero ?? "En cours de saisie"}
                   </Link>
                 </Cellule>
                 <Cellule className="whitespace-nowrap">{formaterDate(p.date_piece)}</Cellule>

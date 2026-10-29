@@ -21,7 +21,7 @@ describe("rapport hebdomadaire", () => {
   it("points d'attention : le plus grave d'abord, rien d'inutile", () => {
     expect(pointsAttention(D)).toEqual([
       "1 non-conformité(s) critique(s) ouverte(s)",
-      "Créances clients échues : 159 298 302 GNF",
+      "Impayés en retard de paiement : 159 298 302 GNF",
       "Stock – Courroie de plieuse : sous le seuil",
       "1 ordre(s) de travail de maintenance ouvert(s)",
     ]);

@@ -24,7 +24,7 @@ export function GraphiqueRendement({ donnees, seuilPct }: { donnees: { date: str
         <XAxis dataKey="date" tickFormatter={jourCourt} {...axe} minTickGap={16} />
         <YAxis domain={["dataMin - 3", "dataMax + 3"]} tickFormatter={(v) => `${Math.round(v)} %`} {...axe} width={56} />
         <ReferenceLine y={seuilPct} stroke={ENCRE} strokeDasharray="4 4" label={{ value: `Seuil ${fmt(seuilPct)} %`, position: "insideBottomRight", fill: ENCRE, fontSize: 12 }} />
-        <Tooltip formatter={(v) => [`${fmt(v)} %`, "Rendement / théorique"]} labelFormatter={(l) => `Le ${jourCourt(String(l))}`} />
+        <Tooltip formatter={(v) => [`${fmt(v)} %`, "Rendement"]} labelFormatter={(l) => `Le ${jourCourt(String(l))}`} />
         <Line type="monotone" dataKey="ratio" stroke={COULEURS_SERIES[0]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} connectNulls={false} isAnimationActive={false} />
       </LineChart>
     </ResponsiveContainer>

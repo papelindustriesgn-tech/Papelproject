@@ -78,8 +78,8 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
           lien="/production/fiches"
           stats={[
             { libelle: "Papier consommé", valeur: formaterPoids(kg(ind.tonnesConsommees * 1000)) },
-            { libelle: "Rendement / théorique", valeur: pct(ind.ratioRendement), detail: `Seuil ${pct(seuils.ratioRendementMin, 0)}` },
-            { libelle: "TRS", valeur: pct(ind.trs), detail: `Pertes ${pct(ind.tauxPerte)}` },
+            { libelle: "Rendement", valeur: pct(ind.ratioRendement), detail: `Seuil ${pct(seuils.ratioRendementMin, 0)}` },
+            { libelle: "Efficacité des machines", valeur: pct(ind.trs), detail: `Pertes ${pct(ind.tauxPerte)}` },
           ]}
         />
         <Carte titre="Production par produit">
@@ -88,7 +88,7 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
       </div>
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur
-          libelle="Rendement réel / théorique"
+          libelle="Rendement"
           valeur={pct(ind.ratioRendement)}
           variation={{ ecart: ecartPoints(ind.ratioRendement, indPrec.ratioRendement), unite: "points" }}
           tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.get(d)?.indicateurs.ratioRendement ?? null }))}
@@ -98,7 +98,7 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
           lien="/production/fiches"
         />
         <Indicateur
-          libelle="Taux de perte"
+          libelle="Pertes"
           valeur={pct(ind.tauxPerte)}
           variation={{ ecart: ecartPoints(ind.tauxPerte, indPrec.tauxPerte), unite: "points", hausseBonne: false }}
           tendance={jours.map((d) => ({ libelle: jourCourt(d), valeur: parJour.get(d)?.indicateurs.tauxPerte ?? null }))}
@@ -152,7 +152,7 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
       />
 
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
-        <Carte titre="Rendement réel / théorique par jour">
+        <Carte titre="Rendement par jour">
           <GraphiqueRendement donnees={donneesRendement} seuilPct={seuils.ratioRendementMin * 100} />
         </Carte>
         <Carte titre="Paquets produits par jour">

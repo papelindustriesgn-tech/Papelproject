@@ -44,7 +44,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
       libelle: "Configuration",
       enfants: [
         { href: "/magasin/listes", libelle: "Listes de référence" },
-        { href: "/magasin/non-conformites", libelle: "Non-conformités" },
+        { href: "/magasin/non-conformites", libelle: "Problèmes qualité" },
         { href: "/magasin/objectifs", libelle: "Objectifs mensuels" },
       ],
     },
@@ -52,8 +52,8 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   production: [
     { libelle: "Vue d'ensemble", href: "/production" },
     { libelle: "Alertes", href: "/production/alertes" },
-    { libelle: "Fiches de poste", href: "/production/fiches" },
-    { libelle: "Ordres de fabrication", href: "/production/ordres" },
+    { libelle: "Saisies de production", href: "/production/fiches" },
+    { libelle: "Ordres de production", href: "/production/ordres" },
     { libelle: "Commandes clients", href: "/production/commandes" },
     { libelle: "Pannes", href: "/production/pannes" },
     { libelle: "Tâches", href: "/production/taches" },
@@ -61,7 +61,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
       libelle: "Configuration",
       enfants: [
         { href: "/production/listes", libelle: "Postes, équipes, lignes, cadences…" },
-        { href: "/production/non-conformites", libelle: "Non-conformités" },
+        { href: "/production/non-conformites", libelle: "Problèmes qualité" },
         { href: "/production/demandes", libelle: "Demandes d'achat" },
         { href: "/production/objectifs", libelle: "Objectifs mensuels" },
       ],
@@ -75,10 +75,10 @@ export const MENUS: Record<string, EntreeMenu[]> = {
     { libelle: "Devis", href: "/ventes/pieces?type=devis" },
     { libelle: "Clients", href: "/ventes/clients" },
     // Argent : encaissements reçus, ce qui reste dû, avoirs (corrections) et dotations à remettre.
-    { libelle: "Encaissements", href: "/ventes/encaissements" },
+    { libelle: "Paiements reçus", href: "/ventes/encaissements" },
     { libelle: "Impayés", href: "/ventes/impayes" },
-    { libelle: "Avoirs", href: "/ventes/pieces?type=avoir" },
-    { libelle: "Dotations", href: "/ventes/dotations" },
+    { libelle: "Avoirs (annulations)", href: "/ventes/pieces?type=avoir" },
+    { libelle: "Paquets offerts", href: "/ventes/dotations" },
     { libelle: "Suivi des commandes", href: "/ventes/commandes" },
     { libelle: "Tâches", href: "/ventes/taches" },
     {
@@ -93,7 +93,7 @@ export const MENUS: Record<string, EntreeMenu[]> = {
     { libelle: "Carte et chiffres", href: "/commercial" },
     { libelle: "Alertes", href: "/commercial/alertes" },
     { libelle: "Visites", href: "/commercial/visites" },
-    { libelle: "Portefeuilles", href: "/commercial/portefeuilles" },
+    { libelle: "Répartition des clients", href: "/commercial/portefeuilles" },
     { libelle: "Tournées et objectifs", href: "/commercial/planification" },
     { libelle: "Suivi des commandes", href: "/commercial/commandes" },
     { libelle: "Réclamations", href: "/commercial/reclamations" },
@@ -139,13 +139,13 @@ export const MENUS: Record<string, EntreeMenu[]> = {
     { libelle: "Vue d'ensemble", href: "/qualite" },
     { libelle: "Alertes", href: "/qualite/alertes" },
     { libelle: "Contrôles", href: "/qualite/controles" },
-    { libelle: "Non-conformités", href: "/qualite/non-conformites" },
-    { libelle: "Traçabilité", href: "/qualite/tracabilite" },
+    { libelle: "Problèmes qualité", href: "/qualite/non-conformites" },
+    { libelle: "Retrouver un lot", href: "/qualite/tracabilite" },
     { libelle: "Tâches", href: "/qualite/taches" },
     {
       libelle: "Configuration",
       enfants: [
-        { href: "/qualite/listes", libelle: "Critères et types de NC" },
+        { href: "/qualite/listes", libelle: "Critères de contrôle, types de problèmes" },
         { href: "/qualite/objectifs", libelle: "Objectifs mensuels" },
       ],
     },
@@ -153,8 +153,8 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   maintenance: [
     { libelle: "Vue d'ensemble", href: "/maintenance" },
     { libelle: "Alertes", href: "/maintenance/alertes" },
-    { libelle: "Ordres de travail", href: "/maintenance/interventions" },
-    { libelle: "Préventif", href: "/maintenance/preventif" },
+    { libelle: "Interventions", href: "/maintenance/interventions" },
+    { libelle: "Entretiens prévus", href: "/maintenance/preventif" },
     { libelle: "Équipements", href: "/maintenance/equipements" },
     { libelle: "Tâches", href: "/maintenance/taches" },
     {

@@ -35,8 +35,8 @@ export default async function PageEquipement({ params, searchParams }: PageProps
       <SelecteurPeriode periode={periode} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Pannes" valeur={nombre(f?.fiabilite.nbPannes ?? 0)} />
-        <Indicateur libelle="MTBF" valeur={f?.fiabilite.mtbfHeures == null ? "—" : `${nombre(f.fiabilite.mtbfHeures, 0)} h`} />
-        <Indicateur libelle="MTTR" valeur={f?.fiabilite.mttrMinutes == null ? "—" : minutes(f.fiabilite.mttrMinutes)} />
+        <Indicateur libelle="Temps moyen entre deux pannes" valeur={f?.fiabilite.mtbfHeures == null ? "—" : `${nombre(f.fiabilite.mtbfHeures, 0)} h`} />
+        <Indicateur libelle="Temps moyen de réparation" valeur={f?.fiabilite.mttrMinutes == null ? "—" : minutes(f.fiabilite.mttrMinutes)} />
         <Indicateur libelle="Disponibilité" valeur={pct(f?.fiabilite.disponibilite)} detail={`Coût : ${gnf(f?.coutGnf ?? 0)}`} />
       </div>
       <div className="flex flex-col gap-4">
@@ -76,7 +76,7 @@ export default async function PageEquipement({ params, searchParams }: PageProps
           )}
         </Carte>
         <Carte titre="Historique des interventions">
-          <Tableau entetes={["OT", "Date", "Type", "Description", "Arrêt", "Statut"]}>
+          <Tableau entetes={["N° d'intervention", "Date", "Type", "Description", "Arrêt", "Statut"]}>
             {(historique ?? []).map((o) => (
               <tr key={o.id}>
                 <Cellule><Link href={`/maintenance/interventions/${o.id}`} className="font-mono text-papel-700 hover:underline">{o.numero}</Link></Cellule>

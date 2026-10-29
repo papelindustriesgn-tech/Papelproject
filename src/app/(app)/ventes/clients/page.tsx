@@ -48,12 +48,12 @@ export default async function PageClients({ searchParams }: PageProps<"/ventes/c
           action={
             <ExportCsv
               nomFichier="clients"
-              entetes={["Code", "Nom", "Type", "Téléphone", "Quartier", "Commercial", "Condition", "Plafond (GNF)", "Encours (GNF)", "Échu (GNF)"]}
+              entetes={["Code", "Nom", "Type", "Téléphone", "Quartier", "Commercial", "Condition", "Plafond (GNF)", "Reste à payer (GNF)", "Échu (GNF)"]}
               lignes={clients.map((c) => [c.code, c.nom, c.types_clients?.libelle, c.telephone, c.quartiers?.nom ?? "", c.profils ? `${c.profils.prenom} ${c.profils.nom}` : "", c.condition_paiement, c.plafond_credit_gnf, solde.get(c.id)?.encours_gnf ?? 0, solde.get(c.id)?.echu_gnf ?? 0])}
             />
           }
         />
-        <Tableau entetes={["Client", "Type", "Téléphone", "Commercial", "Encours", "Échu"]}>
+        <Tableau entetes={["Client", "Type", "Téléphone", "Commercial", "Reste à payer", "Échu"]}>
           {clients.map((c) => {
             const s = solde.get(c.id);
             return (

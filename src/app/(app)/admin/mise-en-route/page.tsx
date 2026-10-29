@@ -64,7 +64,7 @@ export default async function MiseEnRoute() {
       etapes: [
         { titre: "Stock de départ", detail: "Faites un inventaire : chaque article compté devient le stock de départ.", lien: "/magasin/inventaires", etat: n(mouvements) > 0 ? "fait" : "a_faire" },
         { titre: "Opérateurs", detail: "Les opérateurs de chaque équipe (sans compte informatique).", lien: "/production/listes/operateurs", etat: n(operateurs) > 0 ? "fait" : "a_faire" },
-        { titre: "Cadences des machines", detail: "Paquets par minute par ligne et par produit : nécessaires au calcul du TRS.", lien: "/production/listes/cadences", etat: n(cadences) > 0 ? "fait" : "a_faire" },
+        { titre: "Cadences des machines", detail: "Paquets par minute par ligne et par produit : nécessaires au calcul de l'efficacité des machines.", lien: "/production/listes/cadences", etat: n(cadences) > 0 ? "fait" : "a_faire" },
         { titre: "Équipements", detail: "Machines de la ligne, pour la maintenance et les pannes.", lien: "/maintenance/listes/equipements", etat: n(equipements) > 0 ? "fait" : "a_faire" },
       ],
     },

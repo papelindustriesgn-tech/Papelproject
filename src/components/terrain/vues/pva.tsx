@@ -63,20 +63,20 @@ export function VueListePva() {
   return (
     <div>
       <EnTeteVue
-        titre="Prospects et clients"
+        titre="Points de vente et clients"
         retour={null}
         sousTitre={donnees ? `${donnees.pva.filter((p) => !p.clientId).length} prospects · ${donnees.nbClients} clients` : undefined}
         action={
-          <button type="button" onClick={() => aller("pva-nouveau")} className="flex size-11 items-center justify-center rounded-full bg-white/15 active:bg-white/30" aria-label="Nouveau PVA">
+          <button type="button" onClick={() => aller("pva-nouveau")} className="flex size-11 items-center justify-center rounded-full bg-white/15 active:bg-white/30" aria-label="Nouveau point de vente">
             <Plus size={24} />
           </button>
         }
       />
-      <div className="mb-2 grid grid-cols-3 gap-1 rounded-2xl bg-gray-200 p-1" role="group" aria-label="Prospects ou clients">
+      <div className="mb-2 grid grid-cols-3 gap-1 rounded-2xl bg-gray-200 p-1" role="group" aria-label="Points de vente ou clients">
         {(
           [
             ["tous", "Tous"],
-            ["prospects", "Prospects"],
+            ["prospects", "Pas encore clients"],
             ["clients", "Clients"],
           ] as const
         ).map(([code, libelle]) => (

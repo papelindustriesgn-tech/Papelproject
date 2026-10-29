@@ -165,8 +165,8 @@ export function VueAccueil() {
 
       {/* Raccourcis */}
       <div className="grid grid-cols-2 gap-2">
-        <Tuile libelle="Prospects et clients" detail={`${donnees.nbPva} points de vente`} onClick={() => aller("pva")} icone={<Store size={22} />} />
-        <Tuile libelle="Nouveau PVA" detail="Avec position GPS" onClick={() => aller("pva-nouveau")} icone={<PlusCircle size={22} />} />
+        <Tuile libelle="Points de vente et clients" detail={`${donnees.nbPva} points de vente`} onClick={() => aller("pva")} icone={<Store size={22} />} />
+        <Tuile libelle="Nouveau point de vente" detail="Avec position GPS" onClick={() => aller("pva-nouveau")} icone={<PlusCircle size={22} />} />
         <Tuile libelle="Facture, commande, devis" detail="Même sans réseau" onClick={() => aller("document-nouveau")} icone={<FilePlus2 size={22} />} />
         <Tuile libelle="Mes ventes" detail="Et dates de livraison" onClick={() => aller("documents")} icone={<Receipt size={22} />} />
       </div>
@@ -202,7 +202,7 @@ export function VueAccueil() {
           <h2 className="text-lg font-bold text-gray-900">Mes objectifs du mois</h2>
           <Progression libelle="Visites" realise={donnees.realise.visites} cible={donnees.objectifs.visites} />
           <Progression libelle="Colis facturés" realise={donnees.realise.colis} cible={donnees.objectifs.colis} />
-          <Progression libelle="CA HT facturé" realise={donnees.realise.caHt} cible={donnees.objectifs.ca_ht_gnf} format={gnfCourt} />
+          <Progression libelle="Ventes facturées (HT)" realise={donnees.realise.caHt} cible={donnees.objectifs.ca_ht_gnf} format={gnfCourt} />
         </section>
       )}
     </div>

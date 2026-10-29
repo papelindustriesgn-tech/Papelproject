@@ -27,7 +27,7 @@ export default async function FicheClient({ params }: PageProps<"/ventes/clients
       <TitrePage
         fil={[{ libelle: "Clients", href: "/ventes/clients" }]}
         titre={c.nom}
-        sousTitre={`${c.code} · ${c.types_clients?.libelle}${c.types_clients?.dotation ? " · reçoit la dotation" : ""}`}
+        sousTitre={`${c.code} · ${c.types_clients?.libelle}${c.types_clients?.dotation ? " · reçoit des paquets offerts" : ""}`}
         action={
           <div className="flex flex-wrap gap-2">
             {!c.actif && <Badge ton="neutre">Archivé</Badge>}
@@ -41,9 +41,9 @@ export default async function FicheClient({ params }: PageProps<"/ventes/clients
         }
       />
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
-        <Indicateur libelle="Encours (reste à payer)" valeur={gnf(solde?.encours_gnf ?? 0)} ton={depassement ? "alerte" : "normal"} detail={c.condition_paiement === "credit" ? `Plafond : ${c.plafond_credit_gnf ? gnf(c.plafond_credit_gnf) : "aucun"} · ${c.delai_paiement_jours} j` : "Paiement comptant"} />
+        <Indicateur libelle="Reste à payer" valeur={gnf(solde?.encours_gnf ?? 0)} ton={depassement ? "alerte" : "normal"} detail={c.condition_paiement === "credit" ? `Plafond : ${c.plafond_credit_gnf ? gnf(c.plafond_credit_gnf) : "aucun"} · ${c.delai_paiement_jours} j` : "Paiement comptant"} />
         <Indicateur libelle="Échu (en retard)" valeur={gnf(solde?.echu_gnf ?? 0)} ton={(solde?.echu_gnf ?? 0) > 0 ? "danger" : "normal"} detail={solde?.retard_max_jours ? `Retard maximum : ${solde.retard_max_jours} j` : undefined} />
-        <Indicateur libelle="Pièces" valeur={pieces?.length ?? 0} />
+        <Indicateur libelle="Devis, commandes et factures" valeur={pieces?.length ?? 0} />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         <Carte titre="Fiche client">

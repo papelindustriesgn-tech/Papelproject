@@ -53,7 +53,7 @@ export default async function PageArticles({ searchParams }: PageProps<"/magasin
           action={
             <ExportCsv
               nomFichier="articles-stock"
-              entetes={["Code", "Libellé", "Famille", "Catégorie", "Unité", "Stock", "Seuil d'alerte", "Consommation/jour", "Jours de couverture", "CMP (GNF)", "Valeur (GNF)"]}
+              entetes={["Code", "Libellé", "Famille", "Catégorie", "Unité", "Stock", "Seuil d'alerte", "Consommation/jour", "Jours de stock", "Coût moyen (GNF)", "Valeur (GNF)"]}
               lignes={lignes.map((l) => [
                 l.code, l.libelle, LIBELLES_FAMILLES[l.famille!], nomCategorie.get(l.categorie_id ?? "") ?? "", l.unite,
                 Number(l.quantite), Number(l.seuil_alerte), Number(l.conso_jour), l.jours_couverture === null ? "" : Number(l.jours_couverture),
@@ -62,7 +62,7 @@ export default async function PageArticles({ searchParams }: PageProps<"/magasin
             />
           }
         />
-        <Tableau entetes={["Code", "Article", "Famille", "Stock", "Couverture", "Valeur"]}>
+        <Tableau entetes={["Code", "Article", "Famille", "Stock", "Jours de stock", "Valeur"]}>
           {lignes.map((l) => {
             const bas = Number(l.seuil_alerte) > 0 && Number(l.quantite) <= Number(l.seuil_alerte);
             return (

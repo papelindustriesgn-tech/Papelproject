@@ -45,7 +45,7 @@ export function PlusGrosClients({
         premiers.length > 0 && (
           <ExportCsv
             nomFichier={`plus-gros-clients-${du}-${au}`}
-            entetes={["Rang", "Code", "Client", "Type", "Commercial", "CA HT (GNF)", "Part du CA (%)", "CA période précédente (GNF)", "Paquets", "Factures", "Dernier achat", "Encours (GNF)", "Échu (GNF)"]}
+            entetes={["Rang", "Code", "Client", "Type", "Commercial", "Ventes HT (GNF)", "Part des ventes (%)", "Ventes période précédente (GNF)", "Paquets", "Factures", "Dernier achat", "Reste à payer (GNF)", "Échu (GNF)"]}
             lignes={premiers.map((p) => [
               p.rang,
               p.client.code,
@@ -68,7 +68,7 @@ export function PlusGrosClients({
       {premiers.length === 0 ? (
         <p className="text-gray-700">Aucune facture sur la période.</p>
       ) : (
-        <Tableau entetes={["#", "Client", "Commercial", "Chiffre d'affaires HT", "Évolution", "Paquets", "Dernier achat", "Encours"]}>
+        <Tableau entetes={["#", "Client", "Commercial", "Ventes (hors taxes)", "Évolution", "Paquets", "Dernier achat", "Reste à payer"]}>
           {premiers.map((p) => {
             const solde = soldes.get(p.client.id);
             return (

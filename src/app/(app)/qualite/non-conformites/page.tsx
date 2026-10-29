@@ -9,7 +9,7 @@ import { formaterDate } from "@/lib/formulaires/dates";
 import { GRAVITES_NC, ORIGINES_NC, STATUTS_NC } from "@/lib/qualite/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 
-export const metadata: Metadata = { title: "Non-conformités" };
+export const metadata: Metadata = { title: "Problèmes qualité" };
 
 const options = (r: Record<string, string | { libelle: string }>) => Object.entries(r).map(([valeur, v]) => ({ valeur, libelle: typeof v === "string" ? v : v.libelle }));
 
@@ -34,7 +34,7 @@ export default async function PageNonConformites({ searchParams }: PageProps<"/q
   const lignes = data ?? [];
   return (
     <>
-      <TitrePage titre="Non-conformités" />
+      <TitrePage titre="Problèmes qualité" />
       <Carte titre="Déclarer une non-conformité" className="mb-4">
         <FormulaireNc espace="qualite" origine="interne" {...opts} />
       </Carte>

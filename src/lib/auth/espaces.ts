@@ -49,7 +49,7 @@ export interface Espace {
 export const ESPACES: Espace[] = [
   { code: "direction", libelle: "Tableau de bord", description: "Vue globale et alertes du jour", roles: ["direction"], disponibilite: "Phase 1 – étape 6" },
   { code: "magasin", libelle: "Stocks", description: "Matières premières, emballages, produits finis", roles: ["magasin"], disponibilite: "Phase 1 – étape 2" },
-  { code: "production", libelle: "Production", description: "Ordres de fabrication et fiches de poste", roles: ["production"], disponibilite: "Phase 1 – étape 3" },
+  { code: "production", libelle: "Production", description: "Ordres de production et fiches de poste", roles: ["production"], disponibilite: "Phase 1 – étape 3" },
   { code: "ventes", libelle: "Ventes", description: "Clients, devis, factures, paiements", roles: ["finance", "responsable_commercial"], disponibilite: "Phase 1 – étape 4" },
   { code: "terrain", libelle: "Terrain", description: "Points de vente, visites, devis et factures", roles: ["commercial_terrain"], disponibilite: "Phase 1 – étape 5" },
   { code: "commercial", libelle: "Équipe commerciale", description: "Commerciaux, carte des PVA, visites", roles: ["responsable_commercial"], disponibilite: "Phase 1 – étape 5" },

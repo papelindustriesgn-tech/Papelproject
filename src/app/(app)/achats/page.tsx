@@ -80,7 +80,7 @@ export default async function TableauDeBordAchats({ searchParams }: PageProps<"/
         </ul>
         {!conteneurs?.length && <p className="text-gray-700">Aucun conteneur en cours.</p>}
       </Carte>
-      <Carte titre="Coût de revient des conteneurs livrés sur la période" className="mt-4">
+      <Carte titre="Coût réel des conteneurs arrivés sur la période" className="mt-4">
         <Tableau entetes={["Conteneur", "Livré le", "Marchandise", "Frais", "Coût réel / kg", "Prévu / kg", "Écart"]}>
           {livres
             .sort((a, b) => (b.date_livraison_reelle ?? "").localeCompare(a.date_livraison_reelle ?? ""))

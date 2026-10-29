@@ -270,7 +270,7 @@ export async function enregistrerPaiement(factureId: string, _e: EtatFormulaire,
   if (error) return { message: messageErreurBase(error), valeurs };
   rafraichir();
   revalidatePath("/finance", "layout");
-  return { ok: true, message: "Paiement enregistré. La dotation éventuelle est recalculée." };
+  return { ok: true, message: "Paiement enregistré. Les paquets offerts éventuels sont recalculés." };
 }
 
 // Remboursement d'un crédit client (argent rendu) : jamais automatique, saisi par la finance.
@@ -307,7 +307,7 @@ export async function remettreDotation(dotationId: string, _e: EtatFormulaire, f
   const { error } = await supabase.rpc("remettre_dotation", { p_dotation: dotationId, p_conditionnement: conditionnement, p_paquets: n });
   if (error) return { message: messageErreurBase(error), valeurs };
   rafraichir();
-  return { ok: true, message: `${n} paquets de dotation remis : sortie de stock enregistrée.` };
+  return { ok: true, message: `${n} paquets offerts remis : sortie de stock enregistrée.` };
 }
 
 const schemaRelance = z.object({

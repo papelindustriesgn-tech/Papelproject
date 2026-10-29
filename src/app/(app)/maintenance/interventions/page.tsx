@@ -10,7 +10,7 @@ import { gnf } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { FormulaireOt } from "./formulaire";
 
-export const metadata: Metadata = { title: "Ordres de travail" };
+export const metadata: Metadata = { title: "Interventions" };
 
 export default async function PageInterventions({ searchParams }: PageProps<"/maintenance/interventions">) {
   const sp = await searchParams;
@@ -27,7 +27,7 @@ export default async function PageInterventions({ searchParams }: PageProps<"/ma
   const optionsEq = (equipements ?? []).map((e) => ({ id: e.id, libelle: `${e.code} – ${e.libelle}` }));
   return (
     <>
-      <TitrePage titre="Ordres de travail" />
+      <TitrePage titre="Interventions" />
       <Carte titre="Nouvel ordre de travail" className="mb-4">
         <FormulaireOt equipements={optionsEq} />
       </Carte>
@@ -42,12 +42,12 @@ export default async function PageInterventions({ searchParams }: PageProps<"/ma
           action={
             <ExportCsv
               nomFichier="ordres-de-travail"
-              entetes={["OT", "Signalé le", "Équipement", "Type", "Priorité", "Description", "Arrêt machine", "Début", "Fin", "Durée (min)", "Intervenant", "Cause", "Travaux", "Main-d'œuvre (GNF)", "Externe (GNF)", "Pièces (GNF)", "Statut"]}
+              entetes={["N° d'intervention", "Signalé le", "Équipement", "Type", "Priorité", "Description", "Arrêt machine", "Début", "Fin", "Durée (min)", "Intervenant", "Cause", "Travaux", "Main-d'œuvre (GNF)", "Externe (GNF)", "Pièces (GNF)", "Statut"]}
               lignes={lignes.map((o) => [o.numero, o.signale_le, o.equipement_code, TYPES_INTERVENTION[o.type_intervention!], PRIORITES[o.priorite!].libelle, o.description, o.arret_machine ? "oui" : "non", o.debut ?? "", o.fin ?? "", o.duree_min ?? "", o.intervenant, o.cause, o.travaux, Number(o.cout_main_oeuvre_gnf), Number(o.cout_externe_gnf), Number(o.cout_pieces_gnf), STATUTS_INTERVENTION[o.statut!].libelle])}
             />
           }
         />
-        <Tableau entetes={["OT", "Signalé", "Équipement", "Type", "Description", "Arrêt", "Coût", "Statut"]}>
+        <Tableau entetes={["N° d'intervention", "Signalé", "Équipement", "Type", "Description", "Arrêt", "Coût", "Statut"]}>
           {lignes.map((o) => (
             <tr key={o.id}>
               <Cellule><Link href={`/maintenance/interventions/${o.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{o.numero}</Link></Cellule>

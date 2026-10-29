@@ -26,7 +26,7 @@ export function FormulaireBc({ fournisseurs, demandes, dateDuJour }: { fournisse
         <Champ libelle="Date de commande" name="date_commande" type="date" defaultValue={v.date_commande ?? dateDuJour} erreur={e.date_commande} />
         <Champ libelle="Incoterm" name="incoterm" defaultValue={v.incoterm} placeholder="CFR Conakry" erreur={e.incoterm} />
         <Champ libelle="Livraison prévue à l'usine" name="date_livraison_prevue" type="date" defaultValue={v.date_livraison_prevue} erreur={e.date_livraison_prevue} />
-        <Champ libelle="Frais d'approche estimés (GNF)" name="frais_estimes_gnf" inputMode="numeric" defaultValue={v.frais_estimes_gnf} erreur={e.frais_estimes_gnf} aide="Pour comparer coût prévu et coût réel" />
+        <Champ libelle="Frais d'arrivée prévus (GNF)" name="frais_estimes_gnf" inputMode="numeric" defaultValue={v.frais_estimes_gnf} erreur={e.frais_estimes_gnf} aide="Pour comparer coût prévu et coût réel" />
         <Champ libelle="Notes" name="notes" defaultValue={v.notes} className="sm:col-span-3" />
       </div>
       {demandes.length > 0 && (

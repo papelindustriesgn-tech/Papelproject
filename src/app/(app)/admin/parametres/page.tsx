@@ -9,7 +9,7 @@ const CATEGORIES: Record<string, string> = {
   entreprise: "Entreprise (devis et factures)",
   production: "Production",
   stock: "Stock",
-  ventes: "Ventes et dotation",
+  ventes: "Ventes et paquets offerts",
   terrain: "Application terrain et alertes commerciales",
   logistique: "Logistique",
   qualite: "Qualité",

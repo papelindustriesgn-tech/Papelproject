@@ -453,6 +453,18 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
   « Configuration » (roue dentée, repliée) pour les listes, objectifs mensuels et écrans rares. Pas d'entrée « Nouveau … » dans le menu
   (bouton « + Nouveau » sur la liste ; écrans de création gardés dans `catalogueEcrans` pour les réglages). Les genres `etape` / `tache`
   d'`accueil_elements` : `tache` alimente « Alertes », `etape` n'est plus affiché.
+- **Mots simples** (demande du 29/10/2026 : « des termes que je ne comprends pas ») : à l'écran, jamais de sigle ni de jargon
+  (OTIF, TRS, DSO, BFR, CMP, MTBF, PVA, OF, NC, encours, créances, dotation, rebuts, fiche de poste…) : « Livrées à temps et complètes »,
+  « Efficacité des machines », « Délai moyen de paiement des clients », « Reste à payer », « Paquets offerts », « Déchets », « Saisie de
+  production », « Problèmes qualité », « Ordre de production », « Interventions »… (les codes SQL et les noms de route ne changent pas).
+  Un terme inévitable a son explication dans le **lexique** `src/lib/aide/lexique.ts` (testé) : bulle « ? » (`Aide`) déduite du libellé
+  (`aideDuLibelle`, automatique sur `Indicateur` et `TableauPdg`, `aide={false}` pour la retirer) et page `/applications/lexique`
+  (« Les mots expliqués », lien dans le menu latéral et sur l'accueil). Nouveau mot technique → une entrée du lexique + sa règle.
+  Tuile cliquable = lien « étiré » (`after:absolute after:inset-0`) pour que la bulle « ? » et la mini-courbe restent hors du lien.
+- **Saisie guidée** : un formulaire de saisie quotidienne = des **étapes numérotées posées comme des questions** (« Qui a travaillé ? »,
+  « Combien avez-vous produit ? »…), coche verte quand c'est rempli, champs facultatifs marqués « (facultatif) », aide sous les champs,
+  boutons qui disent ce qu'ils font (« Ajouter cette production », « Terminer et valider »), valeurs proposées d'office (poste en cours
+  d'après l'heure), résultats calculés **après** la saisie. Choix exclusifs en grands boutons expliqués plutôt qu'une liste (type de vente).
 - **Filtres des vues d'ensemble** (`SelecteurPeriode` avec `params`, `filtres`, `gammes`, `commerciaux`) : **un seul bouton de date qui se déroule** (`ChoixPeriode` : sous-filtres Jour, Semaine, Mois, Année, Dates, puis la liste des choix ; `?periode=&jour=&mois=&annee=`, `lirePeriode`) + **gamme de produits**
   (table `produits`, archivées comprises) + **commercial** (rôle commercial terrain ; liste lisible par Direction, responsable commercial,
   finance), dans l'adresse (`?periode=&produit=&commercial=`, `lireFiltresAnalyse`, options `chargerOptionsFiltres`).

@@ -41,7 +41,7 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
     requeteSoldes,
   ]);
   const soldes = new Map(
-    (exigerDonnees(resSoldes, "l'encours des clients") ?? []).map((x) => [x.client_id!, { encoursGnf: Number(x.encours_gnf ?? 0), echuGnf: Number(x.echu_gnf ?? 0) }]),
+    (exigerDonnees(resSoldes, "ce que doivent les clients") ?? []).map((x) => [x.client_id!, { encoursGnf: Number(x.encours_gnf ?? 0), echuGnf: Number(x.echu_gnf ?? 0) }]),
   );
   const classement = classerClients(ventes.clients, ventesPrec.clients);
   const nomsCommerciaux = new Map(options.commerciaux.map((c) => [c.valeur, c.libelle]));
@@ -68,7 +68,7 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
         <Indicateur lien="/commercial/visites" libelle="Visites" valeur={nombre(ind.visites)} detail={`${nombre(ind.visitesParJour, 1)} par jour · ${ind.horsZone} hors zone`} ton={ind.visites && ind.horsZone / ind.visites > seuils.alerte_taux_hors_zone ? "alerte" : "normal"} />
         <Indicateur lien="/commercial/visites" libelle="Taux de rupture" valeur={pct(ind.tauxRupture)} detail={`${ind.ruptures} visite(s) avec rupture`} ton={(ind.tauxRupture ?? 0) > seuils.alerte_taux_rupture ? "alerte" : "normal"} />
         <Indicateur lien="/commercial/portefeuilles" libelle="Points de vente" valeur={nombre(ind.pvaActifs)} detail={`${ind.nouveauxPva} nouveau(x) sur la période`} />
-        <Indicateur lien="/commercial/portefeuilles" libelle="Couverture géographique" valeur={`${ind.quartiersCouverts} / ${ind.quartiersTotal} quartiers`} detail={`${ind.communesCouvertes} commune(s) couverte(s)`} />
+        <Indicateur lien="/commercial/portefeuilles" libelle="Quartiers visités" valeur={`${ind.quartiersCouverts} / ${ind.quartiersTotal} quartiers`} detail={`${ind.communesCouvertes} commune(s) couverte(s)`} />
       </div>
       <CarteObjectifs
         espace="commercial"
@@ -93,7 +93,7 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
         </ul>
       </CarteUi>
       <CarteUi titre="Par commercial">
-        <Tableau entetes={["Commercial", "Visites", "Hors zone", "Ruptures", "Nouveaux PVA", "Pièces", "CA HT", "Objectif CA du mois"]}>
+        <Tableau entetes={["Commercial", "Visites", "Hors zone", "Ruptures", "Nouveaux points de vente", "Documents de vente", "Ventes HT", "Objectif de ventes du mois"]}>
           {ind.parCommercial.map((c) => (
             <tr key={c.id}>
               <Cellule className="font-semibold">{c.nom}</Cellule>
@@ -107,7 +107,7 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
             </tr>
           ))}
         </Tableau>
-        {filtres.produit && <p className="mt-2 text-sm text-gray-600">Pièces et CA : lignes de la gamme choisie seulement ; les objectifs restent toutes gammes.</p>}
+        {filtres.produit && <p className="mt-2 text-sm text-gray-600">Ventes : lignes de la gamme choisie seulement ; les objectifs restent toutes gammes.</p>}
         <p className="mt-2 text-sm text-gray-600">Les objectifs du mois se comparent sur la période choisie ; choisissez « Ce mois » pour un suivi exact.</p>
       </CarteUi>
     </>

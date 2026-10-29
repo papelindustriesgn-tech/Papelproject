@@ -10,7 +10,7 @@ export default async function NouvellePiece({ searchParams }: PageProps<"/ventes
   return (
     <>
       <TitrePage
-        fil={[{ libelle: "Pièces", href: "/ventes/pieces" }]} titre="Nouvelle pièce de vente" sousTitre="Les prix sont repris automatiquement de la grille en vigueur pour le type du client." />
+        fil={[{ libelle: "Devis, commandes et factures", href: "/ventes/pieces" }]} titre="Nouvelle vente" sousTitre="Trois questions, puis les produits. Les prix se remplissent tout seuls selon le client." />
       <Carte>
         <FormulaireNouvellePiece
           clients={(clients ?? []).map((c) => ({ id: c.id, libelle: `${c.nom} (${c.code})` }))}

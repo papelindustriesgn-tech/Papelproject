@@ -38,7 +38,7 @@ export default async function FicheArticle({ params }: PageProps<"/magasin/artic
       />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Stock actuel" valeur={stock(Number(etat.quantite))} ton={Number(a.seuil_alerte) > 0 && Number(etat.quantite) <= Number(a.seuil_alerte) ? "danger" : "normal"} detail={`Seuil d'alerte : ${stock(Number(a.seuil_alerte))}`} />
-        <Indicateur libelle="Jours de couverture" valeur={etat.jours_couverture === null ? "—" : `${nombre(etat.jours_couverture, 1)} j`} detail={`Consommation : ${stock(Number(etat.conso_jour))} / jour`} />
+        <Indicateur libelle="Jours de stock" valeur={etat.jours_couverture === null ? "—" : `${nombre(etat.jours_couverture, 1)} j`} detail={`Consommation : ${stock(Number(etat.conso_jour))} / jour`} />
         <Indicateur libelle="Coût moyen pondéré" valeur={gnf(etat.cmp_gnf)} detail={`par ${a.unite}`} />
         <Indicateur libelle="Valeur du stock" valeur={gnf(etat.valeur_gnf)} />
       </div>

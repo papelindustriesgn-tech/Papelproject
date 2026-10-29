@@ -95,7 +95,7 @@ export function VueFormulairePva({ id }: { id?: string }) {
   const libelle = "mb-1 block font-medium text-gray-800";
   return (
     <form onSubmit={(e) => void enregistrer(e)} className="flex flex-col gap-3" noValidate>
-      <EnTeteVue titre={pva ? "Modifier le PVA" : "Nouveau point de vente"} retour={pva ? `pva/${pva.id}` : "pva"} />
+      <EnTeteVue titre={pva ? "Modifier le point de vente" : "Nouveau point de vente"} retour={pva ? `pva/${pva.id}` : "pva"} />
       <div>
         <label htmlFor="nom" className={libelle}>Nom du point de vente *</label>
         <input id="nom" name="nom" defaultValue={pva?.nom} className={champ} aria-invalid={erreurs.nom ? true : undefined} />

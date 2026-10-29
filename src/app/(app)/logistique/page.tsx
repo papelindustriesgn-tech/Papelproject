@@ -45,7 +45,7 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
         <Indicateur libelle="Coût par colis livré" valeur={coutParColis(b.depensesGnf, b.colisLivres) === null ? "—" : gnf(coutParColis(b.depensesGnf, b.colisLivres))} detail={`${nombre(b.nbTournees)} tournée(s) · dépenses ${gnf(b.depensesGnf)}${b.kmParcourus === null ? "" : ` · ${nombre(b.kmParcourus)} km`}`} />
         <Indicateur
           lien="/logistique/commandes"
-          libelle="Livrées à temps et complètes (OTIF)"
+          libelle="Livrées à temps et complètes"
           valeur={pct(liv.otif)}
           variation={{ ecart: ecartPoints(liv.otif, livPrec.otif), unite: "points" }}
           detail={liv.commandes ? `${nombre(liv.otifOk)} sur ${nombre(liv.commandes)} commande(s) à échéance · promis sous ${liv.delaiPromisJours} j` : "Aucune commande arrivée à échéance"}

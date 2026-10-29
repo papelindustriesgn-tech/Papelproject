@@ -21,8 +21,8 @@ test.describe("ventes", () => {
 
   test("tableau de bord : CA, volumes, créances, DSO", async ({ page }) => {
     await page.goto("/ventes");
-    await expect(page.getByText("Chiffre d'affaires HT", { exact: true })).toBeVisible();
-    await expect(page.getByText("Délai moyen de paiement (DSO)")).toBeVisible();
+    await expect(page.getByText("Ventes (hors taxes)", { exact: true })).toBeVisible();
+    await expect(page.getByText("Délai moyen de paiement des clients")).toBeVisible();
     await expect(page.getByText(/\d+ paquets$/).first()).toBeVisible();
   });
 
@@ -30,10 +30,10 @@ test.describe("ventes", () => {
     const nom = `Grossiste E2E ${Date.now() % 100000}`;
     await creerClient(page, nom);
     await page.getByRole("link", { name: "+ Commande" }).click();
-    await page.getByRole("button", { name: "Créer et ajouter les produits" }).click();
+    await page.getByRole("button", { name: "Continuer : choisir les produits" }).click();
 
     // 50 colis de 100 Petit 100 = 5 000 paquets × 2 839 GNF HT
-    await page.getByLabel("Produit et colis").selectOption({ label: "Petit 100 – Colis de 100" });
+    await page.getByLabel("Produit et format de colis").selectOption({ label: "Petit 100 – Colis de 100" });
     await page.getByLabel("Colis", { exact: true }).fill("50");
     await page.getByRole("button", { name: "Ajouter" }).click();
     await expect(page.getByText("Ligne ajoutée.")).toBeVisible();
@@ -78,9 +78,9 @@ test.describe("ventes", () => {
     const nom = `Client plafond ${Date.now() % 100000}`;
     await creerClient(page, nom, "1 000 000");
     await page.getByRole("link", { name: "+ Commande" }).click();
-    await page.getByLabel("Type").selectOption("facture");
-    await page.getByRole("button", { name: "Créer et ajouter les produits" }).click();
-    await page.getByLabel("Produit et colis").selectOption({ label: "Grand 100 – Colis de 30" });
+    await page.getByLabel(/Facture tout de suite/).check();
+    await page.getByRole("button", { name: "Continuer : choisir les produits" }).click();
+    await page.getByLabel("Produit et format de colis").selectOption({ label: "Grand 100 – Colis de 30" });
     await page.getByLabel("Colis", { exact: true }).fill("10");
     await page.getByRole("button", { name: "Ajouter" }).click();
     await expect(page.getByText("Ligne ajoutée.")).toBeVisible();

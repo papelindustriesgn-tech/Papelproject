@@ -9,7 +9,7 @@ import { libelleAlerte, minutes, pct } from "@/lib/production/affichage";
 import { chargerFiches } from "@/lib/production/indicateurs";
 import { nombre } from "@/lib/stocks/libelles";
 
-export const metadata: Metadata = { title: "Fiches de poste" };
+export const metadata: Metadata = { title: "Saisies de production" };
 
 export default async function PageFiches({ searchParams }: PageProps<"/production/fiches">) {
   const sp = await searchParams;
@@ -22,7 +22,7 @@ export default async function PageFiches({ searchParams }: PageProps<"/productio
   return (
     <>
       <TitrePage
-        titre="Fiches de poste"
+        titre="Saisies de production"
         sousTitre="Une fiche par jour, par poste et par ligne. La validation met à jour les stocks."
         action={
           <Link href="/production/fiches/nouvelle" className="min-h-11 inline-flex items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">
@@ -44,14 +44,14 @@ export default async function PageFiches({ searchParams }: PageProps<"/productio
             <span className="text-sm font-medium text-gray-700">Statut</span>
             <select name="statut" defaultValue={statut ?? ""} className="min-h-11 rounded border border-gray-300 bg-white px-3 md:min-h-9">
               <option value="">Tous</option>
-              <option value="brouillon">Brouillon</option>
+              <option value="brouillon">En cours de saisie</option>
               <option value="validee">Validée</option>
             </select>
           </label>
           <button className="min-h-11 rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">Filtrer</button>
           <ExportCsv
             nomFichier="fiches-production"
-            entetes={["Date", "Poste", "Équipe", "Statut", "Papier (kg)", "Paquets", "Rendement / théorique", "Taux de perte", "Arrêts non planifiés (min)", "TRS", "Alertes"]}
+            entetes={["Date", "Poste", "Équipe", "Statut", "Papier (kg)", "Paquets", "Rendement", "Pertes", "Arrêts non planifiés (min)", "Efficacité des machines", "Alertes"]}
             lignes={fiches.map((f) => [
               f.date, f.poste, f.equipe ?? "", f.statut, f.papierKg, f.indicateurs.paquetsBons,
               f.indicateurs.ratioRendement === null ? "" : Math.round(f.indicateurs.ratioRendement * 1000) / 10,
@@ -61,7 +61,7 @@ export default async function PageFiches({ searchParams }: PageProps<"/productio
             ])}
           />
         </form>
-        <Tableau entetes={["Date", "Poste", "Papier", "Paquets", "Rendement", "Perte", "Arrêts", "TRS", ""]}>
+        <Tableau entetes={["Date", "Poste", "Papier", "Paquets", "Rendement", "Perte", "Arrêts", "Efficacité des machines", ""]}>
           {fiches.map((f) => (
             <tr key={f.id}>
               <Cellule className="whitespace-nowrap">
@@ -80,7 +80,7 @@ export default async function PageFiches({ searchParams }: PageProps<"/productio
               <Cellule className={f.alertes.some((a) => a.type === "arret_long") ? "font-bold text-red-700" : ""}>{minutes(f.indicateurs.minutesArretNonPlanifie)}</Cellule>
               <Cellule>{pct(f.indicateurs.trs)}</Cellule>
               <Cellule>
-                {f.statut === "brouillon" ? <Badge ton="alerte">Brouillon</Badge> : f.alertes.length ? <Badge ton="erreur">{f.alertes.length} alerte(s)</Badge> : <Badge ton="succes">Validée</Badge>}
+                {f.statut === "brouillon" ? <Badge ton="alerte">En cours de saisie</Badge> : f.alertes.length ? <Badge ton="erreur">{f.alertes.length} alerte(s)</Badge> : <Badge ton="succes">Validée</Badge>}
               </Cellule>
             </tr>
           ))}

@@ -7,7 +7,7 @@ import { nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { DecisionLot } from "./decision";
 
-export const metadata: Metadata = { title: "Traçabilité" };
+export const metadata: Metadata = { title: "Retrouver un lot" };
 
 type Livraison = { livraison_id: string; numero: string; date_livraison: string; client_nom: string; conditionnement: string; paquets: number; code_lot?: string };
 
@@ -131,7 +131,7 @@ export default async function PageTracabilite({ searchParams }: PageProps<"/qual
 
   return (
     <>
-      <TitrePage titre="Traçabilité" sousTitre="Bobine (n° de lot) → lots de produits finis → clients, ou lot de produits finis → bobines et clients." />
+      <TitrePage titre="Retrouver un lot" sousTitre="Bobine (n° de lot) → lots de produits finis → clients, ou lot de produits finis → bobines et clients." />
       <form className="mb-4 flex flex-wrap items-end gap-2">
         <label className="flex min-w-0 flex-1 flex-col">
           <span className="text-sm font-medium text-gray-700">N° de bobine ou code de lot (ex. JB-0012, PF261001-1)</span>

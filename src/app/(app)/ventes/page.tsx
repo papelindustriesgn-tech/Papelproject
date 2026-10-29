@@ -36,7 +36,7 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
       <div className="mb-4 grid gap-4 xl:grid-cols-3">
         <CarteHero
           className="xl:col-span-2"
-          titre="Chiffre d'affaires HT"
+          titre="Ventes (hors taxes)"
           valeur={gnf(v.caHtGnf)}
           sousTitre={
             <span className="flex flex-wrap items-center gap-2">
@@ -53,14 +53,14 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
           ]}
         />
         <Carte titre="Ventes par produit">
-          <GraphiqueAnneau donnees={v.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="CA HT" />
+          <GraphiqueAnneau donnees={v.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="Ventes HT" />
         </Carte>
       </div>
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Commandes" valeur={nombre(v.nbCommandes)} variation={{ ecart: ecartRelatif(v.nbCommandes, prec.nbCommandes) }} lien="/ventes/pieces?type=commande" />
         <Indicateur libelle="Clients actifs" valeur={nombre(v.clientsActifs)} variation={{ ecart: ecartRelatif(v.clientsActifs, prec.clientsActifs) }} detail={`${v.nouveauxClients} nouveau(x) client(s)${toutesGammes}`} lien="/ventes/clients" />
-        <Indicateur libelle="Créances clients" valeur={gnf(v.creancesGnf)} detail={`Dont échu : ${gnf(v.echuGnf)}${toutesGammes}`} ton={v.echuGnf > 0 ? "alerte" : "normal"} lien="/ventes/impayes" />
-        <Indicateur libelle="Délai moyen de paiement (DSO)" valeur={v.dso === null ? "—" : `${nombre(v.dso, 0)} jours`} variation={{ ecart: ecartRelatif(v.dso, prec.dso), hausseBonne: false }} detail={filtres.produit ? "Non calculé par gamme (créances par client)" : undefined} lien="/ventes/impayes" />
+        <Indicateur libelle="Ce que les clients nous doivent" valeur={gnf(v.creancesGnf)} detail={`Dont échu : ${gnf(v.echuGnf)}${toutesGammes}`} ton={v.echuGnf > 0 ? "alerte" : "normal"} lien="/ventes/impayes" />
+        <Indicateur libelle="Délai moyen de paiement des clients" valeur={v.dso === null ? "—" : `${nombre(v.dso, 0)} jours`} variation={{ ecart: ecartRelatif(v.dso, prec.dso), hausseBonne: false }} detail={filtres.produit ? "Non calculé par gamme (créances par client)" : undefined} lien="/ventes/impayes" />
       </div>
       <CarteObjectifs
         espace="ventes"
@@ -71,7 +71,7 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
       />
       <div className="grid gap-4">
         <Carte titre="Meilleurs clients de la période">
-          <Tableau entetes={["Client", "CA HT", "Part"]}>
+          <Tableau entetes={["Client", "Ventes HT", "Part"]}>
             {v.topClients.map((c) => (
               <tr key={c.nom}>
                 <Cellule>{c.nom}</Cellule>

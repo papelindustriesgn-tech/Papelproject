@@ -96,7 +96,7 @@ const schemaProduction = z.object({
   conditionnement_id: uuid("Choisissez le produit et le colis."),
   colis: nombre(0, "Nombre de colis invalide.", true),
   paquets_vrac: nombre(0, "Nombre de paquets invalide.", true),
-  rebuts_kg: nombre(0, "Rebuts invalides (kg)."),
+  rebuts_kg: nombre(0, "Déchets invalides (kg)."),
 });
 
 export async function ajouterProduction(ficheId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
@@ -110,7 +110,7 @@ export async function ajouterProduction(ficheId: string, _e: EtatFormulaire, fd:
   if (!c) return { message: "Conditionnement introuvable.", valeurs };
   // Conversion centralisée : colis complets → paquets, puis ajout des paquets en vrac (même unité).
   const total = somme(colisVersPaquets(colis(d.colis), { paquetsParColis: c.paquets_par_colis }), paq(d.paquets_vrac));
-  if (total === 0 && d.rebuts_kg === 0) return { erreurs: { colis: "Saisissez des colis, des paquets ou des rebuts." }, valeurs };
+  if (total === 0 && d.rebuts_kg === 0) return { erreurs: { colis: "Saisissez des colis, des paquets ou des déchets." }, valeurs };
   const { error } = await supabase.from("fiche_productions").insert({ fiche_id: ficheId, conditionnement_id: d.conditionnement_id, paquets: total, rebuts_kg: d.rebuts_kg });
   if (error) {
     const message = error.code === "23505" ? "Ce produit est déjà saisi sur la fiche : supprimez la ligne pour la corriger." : messageErreurBase(error);

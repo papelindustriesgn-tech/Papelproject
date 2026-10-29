@@ -33,20 +33,20 @@ export default async function PageResultat() {
   const mois = derniersMois(aujourdhui());
   const resultats = await Promise.all(mois.map((m) => chargerResultat(m.du, m.au, joursDeLaPeriode(m).length)));
   const lignes: { libelle: string; valeur: (r: (typeof resultats)[number]) => number; gras?: boolean; signe?: string }[] = [
-    { libelle: "Chiffre d'affaires HT", valeur: (r) => r.caHtGnf, gras: true },
+    { libelle: "Ventes (hors taxes)", valeur: (r) => r.caHtGnf, gras: true },
     { libelle: "Coût matière des produits vendus", valeur: (r) => -r.coutVentesGnf, signe: "−" },
-    { libelle: "Marge brute", valeur: (r) => r.margeBruteGnf, gras: true },
+    { libelle: "Marge sur les ventes", valeur: (r) => r.margeBruteGnf, gras: true },
     { libelle: "Charges variables", valeur: (r) => -r.chargesVariablesGnf },
     { libelle: "Marge sur coûts variables", valeur: (r) => r.margeSurCoutsVariablesGnf, gras: true },
     { libelle: "Charges fixes", valeur: (r) => -r.chargesFixesGnf },
-    { libelle: "Résultat d'exploitation", valeur: (r) => r.resultatGnf, gras: true },
+    { libelle: "Bénéfice (ou perte)", valeur: (r) => r.resultatGnf, gras: true },
   ];
   const categories = [...new Set(resultats.flatMap((r) => r.chargesParCategorie.map((c) => c.libelle)))];
   const dernierComplet = resultats[resultats.length - 2];
   const seuil = seuilRentabiliteGnf(dernierComplet.chargesFixesGnf, dernierComplet.tauxMcv);
   return (
     <>
-      <TitrePage titre="Compte de résultat de gestion" sousTitre="Ventes HT − coût matière (CMP) − charges des factures fournisseurs (HT, hors achats stockés)." action={<BoutonImprimer />} />
+      <TitrePage titre="Compte de résultat de gestion" sousTitre="Ventes hors taxes − coût des matières des paquets vendus − dépenses (factures fournisseurs hors taxes, sauf achats mis en stock)." action={<BoutonImprimer />} />
       <Carte className="mb-4">
         <div className="mb-2 print:hidden">
           <ExportCsv

@@ -21,7 +21,7 @@ export const JEUX_EXCEL: JeuExcel[] = [
   },
   {
     code: "paiements",
-    libelle: "Encaissements",
+    libelle: "Paiements reçus",
     description: "Paiements reçus des clients",
     periode: true,
     colonnes: ["Date", "Facture", "Client", "Mode", "Montant", "Référence"],
@@ -31,7 +31,7 @@ export const JEUX_EXCEL: JeuExcel[] = [
     libelle: "Stock actuel",
     description: "Quantité et valeur de chaque article, aujourd'hui",
     periode: false,
-    colonnes: ["Code", "Article", "Famille", "Unité", "Quantité", "Valeur", "Coût moyen", "Seuil d'alerte", "Jours de couverture"],
+    colonnes: ["Code", "Article", "Famille", "Unité", "Quantité", "Valeur", "Coût moyen", "Seuil d'alerte", "Jours de stock"],
   },
   {
     code: "achats",
@@ -52,7 +52,7 @@ export const JEUX_EXCEL: JeuExcel[] = [
     libelle: "Production",
     description: "Paquets produits et rebuts par poste",
     periode: true,
-    colonnes: ["Date", "Poste", "Lot", "Produit", "Conditionnement", "Paquets", "Colis", "Rebuts (kg)"],
+    colonnes: ["Date", "Poste", "Lot", "Produit", "Format de colis", "Paquets", "Colis", "Déchets (kg)"],
   },
 ];
 

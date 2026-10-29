@@ -6,7 +6,7 @@ const BOBINE = "JB-2026-0025"; // bobine de démonstration en cours d'utilisatio
 test("qualité : contrôle à réception non conforme → NC, bobine bloquée, traçabilité, libération, clôture", async ({ page }) => {
   await connecter(page, "qualite");
   await expect(page).toHaveURL(/\/qualite$/);
-  await expect(page.getByText("Non-conformités ouvertes")).toBeVisible();
+  await expect(page.getByText("Problèmes qualité en cours")).toBeVisible();
 
   // 1. Contrôle de la bobine
   await page.goto("/qualite/controles");

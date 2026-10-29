@@ -61,7 +61,7 @@ export function VueMoi() {
         <Chiffre libelle="Colis vendus" valeur={donnees.colis} />
         <Chiffre libelle="Factures" valeur={donnees.factures} />
         <Chiffre libelle="Visites" valeur={donnees.visites} />
-        <Chiffre libelle="PVA couverts" valeur={`${donnees.pvaVisites} / ${donnees.nbPva}`} />
+        <Chiffre libelle="Points de vente visités" valeur={`${donnees.pvaVisites} / ${donnees.nbPva}`} />
         <Chiffre libelle="Ruptures vues" valeur={donnees.ruptures} ton={donnees.ruptures > 0 ? "alerte" : "normal"} />
       </div>
       {donnees.horsZone > 0 && <p className="rounded-2xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{donnees.horsZone} visite(s) hors zone ce mois : faites le check-in devant la boutique.</p>}
@@ -71,7 +71,7 @@ export function VueMoi() {
           <h2 className="text-lg font-bold">Mes objectifs</h2>
           <Progression libelle="Visites" realise={donnees.visites} cible={donnees.objectifs.visites} />
           <Progression libelle="Colis facturés" realise={donnees.colis} cible={donnees.objectifs.colis} />
-          <Progression libelle="CA HT facturé" realise={donnees.caHt} cible={donnees.objectifs.ca_ht_gnf} format={gnfCourt} />
+          <Progression libelle="Ventes facturées (HT)" realise={donnees.caHt} cible={donnees.objectifs.ca_ht_gnf} format={gnfCourt} />
         </section>
       ) : (
         <p className="rounded-2xl border border-gray-200 bg-white p-3 text-gray-600">Pas d&apos;objectif fixé ce mois-ci.</p>

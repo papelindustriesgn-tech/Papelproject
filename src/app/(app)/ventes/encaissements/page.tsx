@@ -9,7 +9,7 @@ import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 
-export const metadata: Metadata = { title: "Encaissements" };
+export const metadata: Metadata = { title: "Paiements reçus" };
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -55,7 +55,7 @@ export default async function PageEncaissements({ searchParams }: PageProps<"/ve
 
   return (
     <>
-      <TitrePage fil={[{ libelle: "Ventes", href: "/ventes" }]} titre="Encaissements" sousTitre={`Paiements reçus du ${formaterDate(du)} au ${formaterDate(au)}`} />
+      <TitrePage fil={[{ libelle: "Ventes", href: "/ventes" }]} titre="Paiements reçus" sousTitre={`Paiements reçus du ${formaterDate(du)} au ${formaterDate(au)}`} />
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
         <Indicateur libelle="Encaissé sur la période" valeur={gnf(total)} detail={`${nombre(paiements.length)} paiement(s)`} />
         <Indicateur libelle="Mode le plus utilisé" valeur={modePrincipal ? modePrincipal[0] : "—"} detail={modePrincipal ? gnf(modePrincipal[1]) : undefined} />

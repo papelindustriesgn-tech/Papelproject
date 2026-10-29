@@ -30,11 +30,11 @@ export async function SignalerNc({ espace, origine }: { espace: string; origine:
   ]);
   return (
     <>
-      <TitrePage titre="Non-conformités" sousTitre="Signalez tout problème de qualité, de matière, de fabrication ou de réclamation client." />
+      <TitrePage titre="Problèmes qualité" sousTitre="Signalez tout problème de qualité, de matière, de fabrication ou de réclamation client." />
       <Carte titre="Signaler une non-conformité" className="mb-4">
         <FormulaireNc espace={espace} origine={origine} {...options} />
       </Carte>
-      <Carte titre="Non-conformités récentes">
+      <Carte titre="Problèmes qualité récents">
         <Tableau entetes={["Numéro", "Date", "Origine", "Gravité", "Description", "Statut"]}>
           {(data ?? []).map((n) => (
             <tr key={n.id}>

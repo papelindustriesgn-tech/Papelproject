@@ -23,7 +23,7 @@ export default async function PageNc({ params }: PageProps<"/qualite/non-conform
   return (
     <>
       <TitrePage
-        fil={[{ libelle: "Non-conformités", href: "/qualite/non-conformites" }]}
+        fil={[{ libelle: "Problèmes qualité", href: "/qualite/non-conformites" }]}
         titre={`Non-conformité ${n.numero}`}
         sousTitre={`${formaterDate(n.date_constat)} · ${ORIGINES_NC[n.origine]}${n.types_non_conformite ? ` · ${n.types_non_conformite.libelle}` : ""}`}
         action={

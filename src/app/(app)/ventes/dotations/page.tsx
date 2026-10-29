@@ -6,7 +6,7 @@ import { nombre } from "@/lib/stocks/libelles";
 import { exigerDonnees } from "@/lib/donnees/resultat";
 import { clientServeur } from "@/lib/supabase/serveur";
 
-export const metadata: Metadata = { title: "Dotations" };
+export const metadata: Metadata = { title: "Paquets offerts" };
 
 export default async function PageDotations() {
   const supabase = await clientServeur();
@@ -21,7 +21,7 @@ export default async function PageDotations() {
 
   return (
     <>
-      <TitrePage titre="Dotations" sousTitre="Paquets offerts calculés sur les montants encaissés. La remise se fait depuis la facture (sortie de stock)." />
+      <TitrePage titre="Paquets offerts" sousTitre="Paquets offerts calculés sur les montants encaissés. La remise se fait depuis la facture (sortie de stock)." />
       <Carte titre={`À remettre : ${nombre(aRemettre.reduce((s, d) => s + d.reste, 0))} paquets`}>
         <div className="mb-3">
           <ExportCsv
@@ -46,7 +46,7 @@ export default async function PageDotations() {
             </tr>
           ))}
         </Tableau>
-        {!lignes.length && <p className="py-4 text-gray-700">Aucune dotation.</p>}
+        {!lignes.length && <p className="py-4 text-gray-700">Aucun paquet offert.</p>}
       </Carte>
     </>
   );

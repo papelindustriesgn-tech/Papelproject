@@ -19,8 +19,8 @@ async function factureLivree(page: Page, nom: string) {
   await page.getByRole("button", { name: "Créer le client" }).click();
   await expect(page.getByRole("heading", { name: nom })).toBeVisible();
   await page.getByRole("link", { name: "+ Commande" }).click();
-  await page.getByRole("button", { name: "Créer et ajouter les produits" }).click();
-  await page.getByLabel("Produit et colis").selectOption({ label: "Petit 100 – Colis de 100" });
+  await page.getByRole("button", { name: "Continuer : choisir les produits" }).click();
+  await page.getByLabel("Produit et format de colis").selectOption({ label: "Petit 100 – Colis de 100" });
   await page.getByLabel("Colis", { exact: true }).fill("1");
   await page.getByRole("button", { name: "Ajouter" }).click();
   await expect(page.getByText("Ligne ajoutée.")).toBeVisible();
@@ -89,11 +89,11 @@ test.describe("ventes : sécurité des factures, avoirs et encaissements", () =>
     await page.goto("/ventes");
     await page.getByRole("button", { name: "Ouvrir le menu" }).click();
     const menu = page.getByRole("dialog", { name: "Menu" });
-    await expect(menu.getByRole("link", { name: "Encaissements" })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Paiements reçus" })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Avoirs" })).toBeVisible();
-    await expect(menu.getByRole("link", { name: "Dotations" })).toBeVisible();
-    await menu.getByRole("link", { name: "Encaissements" }).click();
-    await expect(page.getByRole("heading", { name: "Encaissements" })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Paquets offerts" })).toBeVisible();
+    await menu.getByRole("link", { name: "Paiements reçus" }).click();
+    await expect(page.getByRole("heading", { name: "Paiements reçus" })).toBeVisible();
     await expect(page.getByText("Encaissé sur la période")).toBeVisible();
   });
 });

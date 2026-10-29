@@ -18,7 +18,7 @@ export async function SignalerPanne({ espace }: { espace: string }) {
         <FormulairePanne espace={espace} equipements={(equipements ?? []).map((e) => ({ id: e.id, libelle: `${e.code} – ${e.libelle}` }))} />
       </Carte>
       <Carte titre="Pannes récentes">
-        <Tableau entetes={["OT", "Signalée le", "Équipement", "Description", "Statut"]}>
+        <Tableau entetes={["N° d'intervention", "Signalée le", "Équipement", "Description", "Statut"]}>
           {(ot ?? []).map((o) => (
             <tr key={o.id}>
               <Cellule className="font-mono">{o.numero}</Cellule>

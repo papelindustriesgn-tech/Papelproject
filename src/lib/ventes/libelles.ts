@@ -7,7 +7,7 @@ export const TYPES_PIECE: Record<string, { singulier: string; pluriel: string; p
 };
 
 export const STATUTS_PIECE: Record<string, { libelle: string; ton: "alerte" | "succes" | "neutre" }> = {
-  brouillon: { libelle: "Brouillon", ton: "alerte" },
+  brouillon: { libelle: "En cours de saisie", ton: "alerte" },
   valide: { libelle: "Validé", ton: "succes" },
   annule: { libelle: "Annulé", ton: "neutre" },
 };

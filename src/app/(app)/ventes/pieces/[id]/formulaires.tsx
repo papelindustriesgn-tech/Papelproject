@@ -26,7 +26,7 @@ export function FormulaireLigne({ pieceId, conditionnements }: { pieceId: string
   return (
     <form action={action} className="flex flex-wrap items-end gap-2">
       <Retour etat={etat} />
-      <Selection libelle="Produit et colis" name="conditionnement_id" value={cond} onChange={(ev) => setCond(ev.target.value)} erreur={e.conditionnement_id} className="basis-56 flex-1">
+      <Selection libelle="Produit et format de colis" name="conditionnement_id" value={cond} onChange={(ev) => setCond(ev.target.value)} erreur={e.conditionnement_id} className="basis-56 flex-1">
         <option value="">— Choisir —</option>
         {conditionnements.map((x) => (
           <option key={x.id} value={x.id}>

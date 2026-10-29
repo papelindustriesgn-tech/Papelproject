@@ -37,15 +37,15 @@ export default async function PageConteneur({ params }: PageProps<"/achats/conte
       </Carte>
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur libelle="Marchandise" valeur={gnf(cout.marchandise_gnf)} detail={`${formaterPoids(kg(Number(c.poids_net_prevu_kg)))} déclarés`} />
-        <Indicateur libelle="Frais d'approche" valeur={gnf(cout.frais_gnf)} />
-        <Indicateur libelle="Coût de revient complet" valeur={`${gnf(cout.cout_kg_gnf)} / kg`} detail={`soit ${gnf(Number(cout.cout_kg_gnf) * 1000)} / t`} />
+        <Indicateur libelle="Frais d'arrivée (transport, douane…)" valeur={gnf(cout.frais_gnf)} />
+        <Indicateur libelle="Coût réel complet" valeur={`${gnf(cout.cout_kg_gnf)} / kg`} detail={`soit ${gnf(Number(cout.cout_kg_gnf) * 1000)} / t`} />
         <Indicateur libelle="Écart réel / prévu" valeur={pct(ecart)} ton={(ecart ?? 0) > 0.05 ? "alerte" : "normal"} detail={`Prévu : ${gnf(cout.cout_kg_prevu_gnf)} / kg`} />
       </div>
       <div className="flex flex-col gap-4">
         <Carte titre="Suivi (dates prévues et réelles)">
           <FormulaireSuivi conteneurId={c.id} dates={Object.fromEntries(Object.entries(c).filter(([k]) => k.startsWith("date_"))) as Record<string, string | null>} notes={c.notes} />
         </Carte>
-        <Carte titre="Frais d'approche">
+        <Carte titre="Frais d'arrivée (transport, douane…)">
           <Tableau entetes={["Type", "Date", "Montant", "En GNF", "Prestataire", ""]}>
             {(frais ?? []).map((f) => (
               <tr key={f.id}>

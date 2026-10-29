@@ -10,7 +10,7 @@ import type { Database } from "@/lib/supabase/types";
 import { changerStatutOrdre } from "../actions";
 import { FormulaireOrdre } from "./formulaire";
 
-export const metadata: Metadata = { title: "Ordres de fabrication" };
+export const metadata: Metadata = { title: "Ordres de production" };
 
 type Statut = Database["public"]["Enums"]["statut_of"];
 const STATUTS: Record<Statut, { libelle: string; ton: "info" | "alerte" | "succes" | "neutre" }> = {
@@ -36,7 +36,7 @@ export default async function PageOrdres({ searchParams }: PageProps<"/productio
 
   return (
     <>
-      <TitrePage titre="Ordres de fabrication" sousTitre="Planification par campagne. L'avancement se calcule à partir des fiches validées rattachées à l'ordre." />
+      <TitrePage titre="Ordres de production" sousTitre="Planification par campagne. L'avancement se calcule à partir des fiches validées rattachées à l'ordre." />
       <Carte titre={tous ? "Tous les ordres" : "Ordres en cours et planifiés"} className="mb-4" action={<a href={tous ? "?" : "?tous=1"} className="text-papel-700 underline">{tous ? "Masquer les ordres clos" : "Afficher aussi les ordres clos"}</a>}>
         <div className="mb-3">
           <ExportCsv

@@ -10,7 +10,7 @@ export const ETAPES_CONTENEUR = [
 export const LIBELLES_STATUT_CONTENEUR: Record<string, string> = Object.fromEntries(ETAPES_CONTENEUR.map((e) => [e.statut, e.libelle]));
 
 export const STATUTS_BC: Record<string, { libelle: string; ton: "alerte" | "info" | "succes" | "neutre" }> = {
-  brouillon: { libelle: "Brouillon", ton: "alerte" },
+  brouillon: { libelle: "En cours de saisie", ton: "alerte" },
   envoye: { libelle: "Envoyé", ton: "info" },
   recu: { libelle: "Reçu", ton: "succes" },
   annule: { libelle: "Annulé", ton: "neutre" },

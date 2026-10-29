@@ -36,7 +36,7 @@ export default async function PageCommandes() {
             <tr key={b.id}>
               <Cellule>
                 <Link href={`/achats/commandes/${b.id}`} className="font-mono font-semibold text-papel-700 hover:underline">
-                  {b.numero ?? "Brouillon"}
+                  {b.numero ?? "En cours de saisie"}
                 </Link>
               </Cellule>
               <Cellule>{formaterDate(b.date_commande)}</Cellule>

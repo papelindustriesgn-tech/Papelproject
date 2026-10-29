@@ -47,7 +47,7 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
       />
       <div className="flex flex-col gap-4">
         <Carte titre={`Ordres de travail ouverts (${ouverts?.length ?? 0})`}>
-          <Tableau entetes={["OT", "Équipement", "Description", "Priorité", "Signalé", "Statut"]}>
+          <Tableau entetes={["N° d'intervention", "Équipement", "Description", "Priorité", "Signalé", "Statut"]}>
             {(ouverts ?? []).map((o) => (
               <tr key={o.id}>
                 <Cellule><Link href={`/maintenance/interventions/${o.id}`} className="font-mono font-semibold text-papel-700 hover:underline">{o.numero}</Link></Cellule>

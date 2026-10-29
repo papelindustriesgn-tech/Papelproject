@@ -61,7 +61,7 @@ export function sujetRapport(d: DonneesRapport): string {
 export function pointsAttention(d: DonneesRapport): string[] {
   const p: string[] = [];
   if (d.nc_critiques) p.push(`${d.nc_critiques} non-conformité(s) critique(s) ouverte(s)`);
-  if (d.creances_echues_gnf > 0) p.push(`Créances clients échues : ${gnf(d.creances_echues_gnf)}`);
+  if (d.creances_echues_gnf > 0) p.push(`Impayés en retard de paiement : ${gnf(d.creances_echues_gnf)}`);
   if (d.dettes_echues_gnf > 0) p.push(`Dettes fournisseurs échues : ${gnf(d.dettes_echues_gnf)}`);
   if (d.bl_non_remis) p.push(`${d.bl_non_remis} bon(s) de livraison non remis depuis plus de 2 jours`);
   for (const a of d.alertes_stock) p.push(`Stock – ${a}`);
@@ -94,9 +94,9 @@ export function rapportHtml(d: DonneesRapport, lienErp: string): string {
 <div style="max-width:640px;margin:auto;background:#fff;border-radius:8px;overflow:hidden">
 <div style="background:#07524D;color:#fff;padding:16px"><strong>${echapperHtml(sujetRapport(d))}</strong></div>
 <table style="width:100%;border-collapse:collapse;font-size:14px">
-${ligne("Chiffre d'affaires HT", gnf(d.ca_ht_gnf), v ? `${v} vs semaine précédente` : "")}
+${ligne("Ventes (hors taxes)", gnf(d.ca_ht_gnf), v ? `${v} vs semaine précédente` : "")}
 ${ligne("Paquets vendus", entier(d.paquets_vendus))}
-${ligne("Encaissements", gnf(d.encaisse_gnf))}
+${ligne("Paiements reçus", gnf(d.encaisse_gnf))}
 ${ligne("Production", `${entier(d.paquets_produits)} paquets`, `${d.fiches} fiche(s), ${tonnes(d.kg_papier)} de papier`)}
 ${ligne("Stock matière première", tonnes(d.kg_mp), `en transit : ${tonnes(d.kg_transit)}`)}
 ${ligne("Trésorerie", gnf(d.tresorerie_gnf))}

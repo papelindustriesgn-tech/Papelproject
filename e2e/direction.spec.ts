@@ -10,7 +10,7 @@ test("tableau de bord Direction : cinq domaines, alertes, comparaison, période"
     await expect(page.getByRole("heading", { name: titre, exact: true })).toBeVisible();
   }
   await expect(page.getByRole("heading", { name: /Alertes prioritaires du jour/ })).toBeVisible();
-  await expect(page.getByText("Marge brute", { exact: true })).toBeVisible();
+  await expect(page.getByText("Marge sur les ventes", { exact: true })).toBeVisible();
   await expect(page.getByText(/vs période précédente/).first()).toBeVisible();
 
   await page.getByLabel("Période").selectOption("7j");

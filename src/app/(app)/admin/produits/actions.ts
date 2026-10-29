@@ -22,7 +22,7 @@ const schemaProduit = z.object({
   longueur_mm: nombre(10, 1000, "Longueur invalide (mm)."),
   largeur_mm: nombre(10, 1000, "Largeur invalide (mm)."),
   grammage_g_m2_pli: nombre(1, 100, "Grammage invalide (g/m²)."),
-  taux_perte_pct: nombre(0, 50, "Taux de perte entre 0 et 50 %."),
+  taux_perte_pct: nombre(0, 50, "Les pertes doivent être entre 0 et 50 %."),
 });
 
 export async function modifierProduit(produitId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {

@@ -1,6 +1,8 @@
 import { AlertTriangle, ArrowDownRight, ArrowUpRight, ChevronRight, CircleAlert, Minus } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { aideDuLibelle, type Mot } from "@/lib/aide/lexique";
+import { Aide } from "./aide";
 import { IconeIndicateur } from "./icone-indicateur";
 import { Tendance, type FormatTendance, type PointTendance } from "./tendance";
 
@@ -39,6 +41,7 @@ export function PastilleVariation({ v }: { v: Variation }) {
 /**
  * Tuile d'indicateur (KPI) : bulle d'icône, libellé, grand chiffre, évolution, mini-courbe et précision.
  * Cliquable (`lien`) pour ouvrir le détail. L'état (« À surveiller », « Critique ») est écrit, pas seulement coloré.
+ * Bulle « ? » d'explication déduite du libellé (`aideDuLibelle`), ou fournie par `aide` (`false` pour la retirer).
  */
 export function Indicateur({
   libelle,
@@ -49,6 +52,7 @@ export function Indicateur({
   variation,
   tendance,
   formatTendance,
+  aide,
 }: {
   libelle: string;
   valeur: ReactNode;
@@ -58,7 +62,9 @@ export function Indicateur({
   variation?: Variation;
   tendance?: PointTendance[];
   formatTendance?: FormatTendance;
+  aide?: Mot | false;
 }) {
+  const explication = aide === false ? null : (aide ?? aideDuLibelle(libelle));
   const bulle = ton === "danger" ? "bg-red-100 text-red-700" : ton === "alerte" ? "bg-amber-100 text-amber-800" : "bg-papel-100 text-papel-700";
   const contenu = (
     <>
@@ -69,7 +75,10 @@ export function Indicateur({
         <div className="min-w-0 flex-1">
           {/* Titre et badge passent à la ligne quand la tuile est étroite (le badge n'est jamais coupé). */}
           <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
-            <div className="text-[0.88rem] font-medium leading-snug text-gray-500">{libelle}</div>
+            <div className="text-[0.88rem] font-medium leading-snug text-gray-500">
+              {libelle}
+              {explication && <Aide mot={explication.mot} explication={explication.explication} className="ml-1" />}
+            </div>
             {ton === "danger" && (
               <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800">
                 <CircleAlert size={13} aria-hidden /> Critique
@@ -87,19 +96,28 @@ export function Indicateur({
           </div>
         </div>
       </div>
-      {tendance && <Tendance points={tendance} format={formatTendance} />}
+      {tendance && (
+        <div className="relative z-10">
+          <Tendance points={tendance} format={formatTendance} />
+        </div>
+      )}
       {detail && <div className="mt-2 text-sm leading-snug text-gray-500">{detail}</div>}
     </>
   );
   const classes = `ombre-carte group relative flex h-full flex-col rounded-2xl bg-white px-4 py-4 ${ton === "danger" ? "ring-1 ring-red-200" : ton === "alerte" ? "ring-1 ring-amber-200" : ""}`;
   if (!lien) return <div className={classes}>{contenu}</div>;
+  // Lien « étiré » sur toute la tuile (after:inset-0) : la bulle d'aide et la mini-courbe restent au-dessus, hors du lien.
   return (
-    <Link href={lien} className={`${classes} transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-papel-600`}>
+    <div className={`${classes} transition hover:-translate-y-0.5 hover:shadow-lg has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-papel-600`}>
       {contenu}
-      <span className="mt-auto flex items-center gap-0.5 pt-2 text-xs font-semibold text-papel-700 opacity-70 group-hover:opacity-100">
+      <Link
+        href={lien}
+        aria-label={`${libelle} : voir le détail`}
+        className="mt-auto flex items-center gap-0.5 pt-2 text-xs font-semibold text-papel-700 opacity-70 outline-none after:absolute after:inset-0 after:rounded-2xl group-hover:opacity-100"
+      >
         Voir le détail <ChevronRight size={14} aria-hidden />
-      </span>
-    </Link>
+      </Link>
+    </div>
   );
 }
 

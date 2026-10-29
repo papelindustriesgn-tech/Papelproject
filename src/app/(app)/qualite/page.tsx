@@ -38,7 +38,7 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/qualite/controles" libelle="Conformité à réception" valeur={pct(tauxConformite(c.filter((x) => x.etape === "reception")))} detail={`${c.filter((x) => x.etape === "reception").length} contrôle(s) de bobines`} />
         <Indicateur lien="/qualite/controles" libelle="Conformité en production" valeur={pct(tauxConformite(c.filter((x) => x.etape !== "reception")))} detail={`${c.filter((x) => x.etape !== "reception").length} contrôle(s)`} />
-        <Indicateur lien="/qualite/non-conformites?statut=ouverte" libelle="Non-conformités ouvertes" valeur={nombre(ouvertes?.length ?? 0)} detail={`${critiques} critique(s) · ${ncPeriode?.length ?? 0} déclarée(s) sur la période`} ton={critiques > 0 ? "danger" : (ouvertes?.length ?? 0) > 0 ? "alerte" : "normal"} />
+        <Indicateur lien="/qualite/non-conformites?statut=ouverte" libelle="Problèmes qualité en cours" valeur={nombre(ouvertes?.length ?? 0)} detail={`${critiques} critique(s) · ${ncPeriode?.length ?? 0} déclarée(s) sur la période`} ton={critiques > 0 ? "danger" : (ouvertes?.length ?? 0) > 0 ? "alerte" : "normal"} />
         <Indicateur lien="/qualite/non-conformites" libelle="Délai moyen de clôture" valeur={delaiMoyenClotureJours(ncPeriode ?? []) === null ? "—" : `${nombre(delaiMoyenClotureJours(ncPeriode ?? []), 1)} j`} detail={`Réclamations clients : ${(ncPeriode ?? []).filter((n) => n.origine === "client").length}`} />
       </div>
       <CarteObjectifs
@@ -52,7 +52,7 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
         }}
       />
       <div className="flex flex-col gap-4">
-        <Carte titre={`Non-conformités à traiter (${ouvertes?.length ?? 0})`}>
+        <Carte titre={`Problèmes qualité à traiter (${ouvertes?.length ?? 0})`}>
           <Tableau entetes={["Numéro", "Date", "Origine", "Gravité", "Description", "Statut"]}>
             {(ouvertes ?? []).map((n) => (
               <tr key={n.id}>
@@ -70,7 +70,7 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
         </Carte>
         <Carte titre={`Actions correctives en retard (${retard.length})`}>
           {retard.length ? (
-            <Tableau entetes={["NC", "Action", "Responsable", "Échéance"]}>
+            <Tableau entetes={["Problème", "Action", "Responsable", "Échéance"]}>
               {retard.map((a) => (
                 <tr key={a.id}>
                   <Cellule><Link href={`/qualite/non-conformites/${a.nc_id}`} className="font-mono text-papel-700 hover:underline">{a.non_conformites?.numero}</Link></Cellule>

@@ -19,7 +19,12 @@ export default async function PageApplications() {
         <div className="pointer-events-none absolute -bottom-24 left-1/3 size-64 rounded-full bg-white/5 blur-2xl" aria-hidden />
         <p className="relative text-sm capitalize text-white/75">{date}</p>
         <h1 className="relative mt-1 text-[1.9rem] font-bold leading-tight md:text-[2.3rem]">Bonjour {u.prenom || u.nom} 👋</h1>
-        <p className="relative mt-2 max-w-xl text-white/85">Touchez votre application pour commencer. Chaque service a sa couleur.</p>
+        <p className="relative mt-2 max-w-xl text-white/85">
+          Touchez votre application pour commencer. Un mot n&apos;est pas clair ?{" "}
+          <Link href="/applications/lexique" className="font-semibold text-white underline underline-offset-2">
+            Les mots expliqués
+          </Link>
+        </p>
         {(u.roles.includes("admin") || u.roles.includes("direction")) && (
           <Link href="/admin/mise-en-route" className="relative mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 font-semibold text-papel-800 hover:bg-white/90">
             Mise en route : saisir vos données <ArrowUpRight size={16} aria-hidden />

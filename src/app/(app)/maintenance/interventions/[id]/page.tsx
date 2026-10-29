@@ -28,7 +28,7 @@ export default async function PageIntervention({ params }: PageProps<"/maintenan
   return (
     <>
       <TitrePage
-        fil={[{ libelle: "Ordres de travail", href: "/maintenance/interventions" }]}
+        fil={[{ libelle: "Interventions", href: "/maintenance/interventions" }]}
         titre={`Ordre de travail ${o.numero}`}
         sousTitre={`${o.equipement_code} – ${o.equipement_libelle} · ${TYPES_INTERVENTION[o.type_intervention!]} · signalé le ${formaterDateHeure(o.signale_le!)}`}
         action={

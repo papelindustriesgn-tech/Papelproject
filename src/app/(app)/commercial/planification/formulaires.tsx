@@ -15,8 +15,8 @@ export function FormulaireObjectifs({ commercial, mois, valeurs }: { commercial:
     <form action={action} className="flex flex-wrap items-end gap-2 border-b border-gray-100 py-3">
       <div className="w-full font-semibold sm:w-40">{commercial.nom}</div>
       <Champ libelle="Visites" name="visites" inputMode="numeric" defaultValue={valeurs?.visites ?? 0} erreur={e.visites} className="basis-24 flex-1" />
-      <Champ libelle="Nouveaux PVA" name="nouveaux_pva" inputMode="numeric" defaultValue={valeurs?.nouveaux_pva ?? 0} erreur={e.nouveaux_pva} className="basis-24 flex-1" />
-      <Champ libelle="CA HT (GNF)" name="ca_ht_gnf" inputMode="numeric" defaultValue={valeurs?.ca_ht_gnf ?? 0} erreur={e.ca_ht_gnf} className="basis-36 flex-1" />
+      <Champ libelle="Nouveaux points de vente" name="nouveaux_pva" inputMode="numeric" defaultValue={valeurs?.nouveaux_pva ?? 0} erreur={e.nouveaux_pva} className="basis-24 flex-1" />
+      <Champ libelle="Ventes HT (GNF)" name="ca_ht_gnf" inputMode="numeric" defaultValue={valeurs?.ca_ht_gnf ?? 0} erreur={e.ca_ht_gnf} className="basis-36 flex-1" />
       <Champ libelle="Colis" name="colis" inputMode="numeric" defaultValue={valeurs?.colis ?? 0} erreur={e.colis} className="basis-24 flex-1" />
       <Bouton type="submit" variante="secondaire" disabled={enCours}>
         Enregistrer

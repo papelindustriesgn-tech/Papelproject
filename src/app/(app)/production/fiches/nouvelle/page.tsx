@@ -11,13 +11,23 @@ export default async function NouvelleFiche() {
     supabase.from("equipes").select("id, libelle").eq("actif", true).order("libelle"),
     supabase.from("of_avancement").select("id, numero, produit_libelle, conditionnement_libelle").in("statut", ["planifie", "en_cours"]).order("numero"),
   ]);
+  // Poste en cours d'après l'heure de Conakry (= UTC), un poste pouvant passer minuit : choisi d'office.
+  const maintenant = new Date().toISOString().slice(11, 16);
+  const posteActuel = (postes ?? []).find((p) => {
+    const debut = p.heure_debut.slice(0, 5);
+    const fin = p.heure_fin.slice(0, 5);
+    return debut <= fin ? maintenant >= debut && maintenant < fin : maintenant >= debut || maintenant < fin;
+  });
   return (
     <>
       <TitrePage
-        fil={[{ libelle: "Fiches de poste", href: "/production/fiches" }]} titre="Nouvelle fiche de poste" />
+        fil={[{ libelle: "Saisies de production", href: "/production/fiches" }]} titre="Nouvelle saisie de production"
+        sousTitre="Une saisie par poste et par ligne. Vérifiez les choix proposés, puis commencez."
+      />
       <Carte>
         <FormulaireNouvelleFiche
           dateDuJour={aujourdhui()}
+          posteParDefaut={posteActuel?.id}
           postes={(postes ?? []).map((p) => ({ id: p.id, libelle: `${p.libelle} (${p.heure_debut.slice(0, 5)} – ${p.heure_fin.slice(0, 5)})` }))}
           lignes={lignes ?? []}
           equipes={equipes ?? []}

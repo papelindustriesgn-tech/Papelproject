@@ -59,7 +59,7 @@ export default async function TableauDeBordMagasin({ searchParams }: PageProps<"
         <Indicateur lien="/magasin/bobines" libelle="Matière première disponible" valeur={formaterPoids(kg(kgMp))} detail={`${nbBobines} bobine(s) en stock`} />
         <Indicateur
           lien="/magasin/articles"
-          libelle="Jours de couverture MP"
+          libelle="Jours de stock de matière"
           valeur={couvertureMp === null ? "—" : `${nombre(couvertureMp, 1)} j`}
           detail={consoMpJour > 0 ? `Consommation moyenne : ${formaterPoids(kg(consoMpJour))}/jour` : "Pas de consommation récente"}
           ton={couvertureMp !== null && couvertureMp < seuilCouverture ? "alerte" : "normal"}
@@ -81,7 +81,7 @@ export default async function TableauDeBordMagasin({ searchParams }: PageProps<"
 
         <Carte titre={`Produits finis en stock${gamme ? ` · ${gamme}` : ""}`}>
           {pf.length ? (
-            <Tableau entetes={["Article", "Stock", "Couverture"]}>
+            <Tableau entetes={["Article", "Stock", "Jours de stock"]}>
               {pf.map((l) => (
                 <tr key={l.article_id}>
                   <Cellule>{l.libelle}</Cellule>

@@ -53,7 +53,7 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
       <div className="mb-4 grid gap-4 xl:grid-cols-3">
         <CarteHero
           className="xl:col-span-2"
-          titre="Chiffre d'affaires HT"
+          titre="Ventes (hors taxes)"
           valeur={gnf(s.ventes.caHtGnf)}
           sousTitre={
             <span className="flex flex-wrap items-center gap-2">
@@ -64,13 +64,13 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
           format="gnf"
           lien="/ventes"
           stats={[
-            { libelle: "Marge brute", valeur: gnfCourt(s.marge.margeGnf), detail: s.marge.taux === null ? undefined : `${(Math.round(s.marge.taux * 1000) / 10).toLocaleString("fr-FR")} % du CA` },
+            { libelle: "Marge sur les ventes", valeur: gnfCourt(s.marge.margeGnf), detail: s.marge.taux === null ? undefined : `${(Math.round(s.marge.taux * 1000) / 10).toLocaleString("fr-FR")} % des ventes` },
             { libelle: "Trésorerie", valeur: gnfCourt(s.finance.tresorerieGnf), detail: s.finance.tresorerieGnf < 0 ? "Solde négatif : voir Finance" : undefined },
             { libelle: "Production", valeur: `${s.production.paquetsBons.toLocaleString("fr-FR")} paquets` },
           ]}
         />
         <Carte titre="Chiffre d'affaires par produit" className="break-inside-avoid">
-          <GraphiqueAnneau donnees={s.ventes.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="CA HT" />
+          <GraphiqueAnneau donnees={s.ventes.parProduit.map((p) => ({ libelle: p.libelle, valeur: p.caHtGnf }))} format="gnf" libelleTotal="Ventes HT" />
         </Carte>
       </div>
       <TableauPdg s={s} couts={couts} coutsPrec={coutsPrec} livraison={livraison} livraisonPrec={livraisonPrec} filtre={filtre} jours={joursDeLaPeriode(periode)} />

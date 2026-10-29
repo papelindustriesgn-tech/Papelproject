@@ -29,7 +29,7 @@ export function FormulaireOrdre({
     <form action={action} className="flex flex-col gap-3">
       {etat.message && <Message ton={etat.ok ? "succes" : "erreur"}>{etat.message}</Message>}
       <div className="grid gap-3 sm:grid-cols-3">
-        <Selection libelle="Produit et colis" name="conditionnement_id" defaultValue={v.conditionnement_id ?? ""} erreur={e.conditionnement_id}>
+        <Selection libelle="Produit et format de colis" name="conditionnement_id" defaultValue={v.conditionnement_id ?? ""} erreur={e.conditionnement_id}>
           <option value="">— Choisir —</option>
           {liste(conditionnements)}
         </Selection>

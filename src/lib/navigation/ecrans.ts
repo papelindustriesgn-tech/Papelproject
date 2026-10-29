@@ -11,7 +11,7 @@ const ECRANS_SUPPLEMENTAIRES: Record<string, { href: string; libelle: string }[]
     { href: "/ventes/pieces?type=facture&statut=brouillon", libelle: "Factures en brouillon" },
   ],
   production: [
-    { href: "/production/fiches/nouvelle", libelle: "Nouvelle fiche de poste" },
+    { href: "/production/fiches/nouvelle", libelle: "Nouvelle saisie de production" },
     { href: "/production/fiches?statut=brouillon", libelle: "Fiches à valider" },
   ],
   magasin: [{ href: "/magasin/mouvements/nouveau", libelle: "Nouvelle entrée ou sortie" }],
@@ -22,8 +22,8 @@ const ECRANS_SUPPLEMENTAIRES: Record<string, { href: string; libelle: string }[]
     { href: "/logistique/tournees?statut=en_cours", libelle: "Tournées en cours" },
   ],
   qualite: [
-    { href: "/qualite/non-conformites?statut=ouverte", libelle: "Non-conformités ouvertes" },
-    { href: "/qualite/non-conformites?statut=en_traitement", libelle: "Non-conformités en traitement" },
+    { href: "/qualite/non-conformites?statut=ouverte", libelle: "Problèmes qualité en cours" },
+    { href: "/qualite/non-conformites?statut=en_traitement", libelle: "Problèmes qualité en traitement" },
   ],
   maintenance: [
     { href: "/maintenance/interventions?statut=demandee", libelle: "Ordres de travail demandés" },

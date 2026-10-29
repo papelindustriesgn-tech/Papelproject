@@ -78,7 +78,7 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
   const remboursements = exigerDonnees(resRemboursements, "les remboursements");
   // Barre d'étapes du document (à la Odoo).
   const etapes = [
-    { code: "brouillon", libelle: "Brouillon" },
+    { code: "brouillon", libelle: "En cours de saisie" },
     { code: "valide", libelle: p.type_piece === "facture" ? "Validée" : "Validé" },
     ...(p.type_piece === "facture" ? [{ code: "payee", libelle: "Payée" }] : []),
     ...(p.statut === "annule" ? [{ code: "annule", libelle: "Annulé" }] : []),
@@ -307,7 +307,7 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
                 <tr key={l.id}>
                   <Cellule>
                     <Link href={`/ventes/livraisons/${l.id}`} className="font-mono font-semibold text-papel-700 hover:underline">
-                      {l.numero ?? "Brouillon"}
+                      {l.numero ?? "En cours de saisie"}
                     </Link>
                   </Cellule>
                   <Cellule>{formaterDate(l.date_livraison)}</Cellule>
@@ -416,7 +416,7 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
                     })}
                   </ul>
                 ) : (
-                  <p className="text-gray-700">La dotation apparaîtra au premier paiement.</p>
+                  <p className="text-gray-700">Les paquets offerts apparaîtront au premier paiement.</p>
                 )}
               </Carte>
             )}

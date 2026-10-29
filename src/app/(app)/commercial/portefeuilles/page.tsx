@@ -6,7 +6,7 @@ import { formaterDate } from "@/lib/formulaires/dates";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { Reattribution } from "./formulaire";
 
-export const metadata: Metadata = { title: "Portefeuilles" };
+export const metadata: Metadata = { title: "Répartition des clients" };
 
 /**
  * Portefeuilles des commerciaux : chaque point de vente a UN commercial (pas deux commerciaux chez le même client).
@@ -47,7 +47,7 @@ export default async function PagePortefeuilles({ searchParams }: PageProps<"/co
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
         {commerciaux.map((c) => {
           const siens = (tous ?? []).filter((p) => p.commercial_id === c.id);
-          return <Indicateur key={c.id} libelle={c.nom} valeur={`${siens.length} PVA`} detail={`${siens.filter((p) => p.client_id).length} clients · ${siens.filter((p) => !p.client_id).length} prospects`} />;
+          return <Indicateur key={c.id} libelle={c.nom} valeur={`${siens.length} point(s) de vente`} detail={`${siens.filter((p) => p.client_id).length} clients · ${siens.filter((p) => !p.client_id).length} prospects`} />;
         })}
       </div>
       {partages.length > 0 && (
@@ -62,7 +62,7 @@ export default async function PagePortefeuilles({ searchParams }: PageProps<"/co
           valeurs={{ commercial, statut }}
           filtres={[
             { nom: "commercial", libelle: "Commercial", options: commerciaux.map((c) => ({ valeur: c.id, libelle: c.nom })) },
-            { nom: "statut", libelle: "Statut", options: [{ valeur: "prospect", libelle: "Prospects" }, { valeur: "client", libelle: "Clients" }] },
+            { nom: "statut", libelle: "Statut", options: [{ valeur: "prospect", libelle: "Pas encore clients" }, { valeur: "client", libelle: "Clients" }] },
           ]}
         />
         <Tableau entetes={["Point de vente", "Statut", "Quartier", "Dernière visite", "Commercial"]}>
@@ -72,7 +72,7 @@ export default async function PagePortefeuilles({ searchParams }: PageProps<"/co
                 {p.nom}
                 <span className="block text-sm text-gray-500">{p.type_libelle}</span>
               </Cellule>
-              <Cellule>{p.client_id ? <Badge ton="succes">Client</Badge> : <Badge ton="neutre">Prospect</Badge>}</Cellule>
+              <Cellule>{p.client_id ? <Badge ton="succes">Client</Badge> : <Badge ton="neutre">Pas encore client</Badge>}</Cellule>
               <Cellule>{[p.quartier_nom, p.commune_nom].filter(Boolean).join(", ") || "—"}</Cellule>
               <Cellule>{p.derniere_visite ? formaterDate(p.derniere_visite) : "Jamais"}</Cellule>
               <Cellule>
