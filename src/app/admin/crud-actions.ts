@@ -37,7 +37,7 @@ export async function saveEntity(entity: EntityKey, id: string | null, _prev: Fo
   if (res.error) return { error: `Enregistrement impossible : ${res.error.message}`, values: formValues(formData) };
   if (online) {
     const sync = await syncOnlineAccess(supabase, res.data.id, row.channel, online);
-    if (sync.error) return { error: "Offre enregistrée, mais le lien en ligne n'a pas pu l'être.", values: formValues(formData) };
+    if (sync.error) return { error: "Offre enregistrée, mais le contact à distance n'a pas pu l'être.", values: formValues(formData) };
   }
 
   updateTag(CONTENT_TAG);

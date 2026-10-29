@@ -106,14 +106,17 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
 - ⬜ Appareils réels (caméra, retour Android, zones iPhone, liens, signatures) : non exécutés
 
 ## Offres façon UNiDAYS (29/10, branche `claude/uny-offres-xf13tt`) — corrigées dans le code, testées en local, NON déployées
-- ✅ Vitrine des offres : Exclusivités Uny, Tendances (14 j : vues + codes + ouvertures), Flash, En ligne, Marques,
-  Nouveautés ; filtre « En ligne / En magasin » — local (24)
+- ✅ Vitrine des offres : Exclusivités Uny, Tendances (14 j : vues + codes + ouvertures), Flash, À distance, Marques,
+  Nouveautés ; filtre « À distance / En magasin » — local (24)
 - ✅ Pages des marques (`/avantages/marques`, `/avantages/marques/[id]`) — local (24)
-- ✅ Offres en ligne : canal (magasin / en ligne / les deux), lien https + mode (code personnel Uny, code de la
-  boutique, lien réservé) ; lien et code dans `deal_online_access`, jamais lisibles publiquement, révélés par
-  `open_online_offer` aux seuls étudiants vérifiés avec carte valable — local (24 + tests SQL fictifs)
+- ✅ Offres à distance, adaptées aux marques sans site : contact WhatsApp, appel, page Facebook/Instagram ou site s'il
+  existe ; code personnel Uny (recommandé, validé dans « Scanner ») ou code fixe ; message WhatsApp prérempli avec le
+  code. Contact et code dans `deal_online_access`, jamais lisibles publiquement, révélés par `open_online_offer` aux
+  seuls étudiants vérifiés avec carte valable — local (24 + tests SQL fictifs)
 - ✅ Exclusivité réservée à l'administration (déclencheur) ; statistiques par offre pour la marque (30 j : vues,
-  ouvertures en ligne, codes obtenus, utilisés) — local (24)
-- ✅ Politique de confidentialité : ouvertures d'offres en ligne mentionnées
+  ouvertures à distance, codes obtenus, utilisés) — local (24)
+- ✅ Politique de confidentialité : demandes de contact à distance mentionnées
+- ✅ Correctif annexe : l'analyste IA nettoie les titres d'alertes (emails, téléphones) avant envoi — local (19)
+- Suite complète : 90/90 en local
 - Migration `20261029000001_offers_catalog.sql` (non destructive) ; retour arrière `supabase/rollback/20261029_offres_rollback.sql`
-- ⬜ Recrutement de marques en ligne et premières exclusivités (action commerciale, hors code)
+- ⬜ Recrutement de marques et premières exclusivités (action commerciale, hors code)

@@ -2,13 +2,13 @@ import { expect, test } from "@playwright/test";
 import { ADMIN, adminAsPartnerMember, login, logout, serviceRest, signUp, userApi } from "./helpers";
 
 /**
- * Offres façon UNiDAYS (données fictives) : offre en ligne publiée par la marque, lien et code révélés aux
- * seuls étudiants vérifiés, vitrine (en ligne, exclusivités, marques), page de la marque, statistiques.
+ * Offres façon UNiDAYS adaptées à la Guinée (données fictives) : offre à distance d'une marque sans site
+ * (WhatsApp), contact et code révélés aux seuls étudiants vérifiés, vitrine, page de la marque, statistiques.
  */
-test("offre en ligne : publiée par la marque, révélée aux étudiants vérifiés, visible dans la vitrine", async ({ page }) => {
+test("offre à distance (WhatsApp) : publiée par une marque sans site, révélée aux étudiants vérifiés, visible dans la vitrine", async ({ page }) => {
   test.setTimeout(180_000);
   const run = `${Date.now()}`.slice(-7);
-  const title = `Casque audio en ligne ${run}`;
+  const title = `Casque audio livré ${run}`;
   const partnerId = await adminAsPartnerMember();
   const [partner] = await (await serviceRest(`partners?id=eq.${partnerId}&select=name`)).json();
 
@@ -24,7 +24,7 @@ test("offre en ligne : publiée par la marque, révélée aux étudiants vérifi
   ).toBeTruthy();
   await logout(page);
 
-  // La marque publie une offre en ligne avec le code de sa boutique
+  // La marque (sans site internet) publie une offre à distance : commande par WhatsApp, code personnel Uny
   await login(page, ADMIN.email, ADMIN.password);
   await page.goto("/partenaire/offres/nouveau");
   await page.waitForLoadState("networkidle");
@@ -32,26 +32,26 @@ test("offre en ligne : publiée par la marque, révélée aux étudiants vérifi
   await page.getByLabel("Où l'offre est-elle valable ?").selectOption("online");
   await page.getByLabel("Avantage (offre sans prix)").fill("-25 %");
   await page.getByRole("button", { name: "Publier" }).click();
-  await expect(page.getByText("Indique le lien de la boutique en ligne (https://…)")).toBeVisible();
-  await page.getByLabel("Lien de la boutique en ligne").fill("http://boutique.example/uny");
-  await page.getByLabel("Comment l'étudiant obtient la réduction en ligne ?").selectOption("shared");
+  await expect(page.getByText("Choisis comment l'étudiant te contacte")).toBeVisible();
+  await page.getByLabel("Comment l'étudiant te contacte pour commander ?").selectOption("whatsapp");
+  await page.getByLabel("Numéro ou lien de contact").fill("12 34");
+  await page.getByLabel("Comment l'étudiant prouve qu'il a droit à la réduction ?").selectOption("unique");
   await page.getByRole("button", { name: "Publier" }).click();
-  await expect(page.getByText("Indique le lien de la boutique en ligne (https://…)")).toBeVisible();
-  await expect(page.getByText("Indique le code de ta boutique")).toBeVisible();
-  await page.getByLabel("Lien de la boutique en ligne").fill("https://boutique.example/uny");
-  await page.getByLabel("Code de ta boutique en ligne").fill(`UNY${run}`);
+  await expect(page.getByText("Numéro guinéen invalide (ex. 620 00 00 00)")).toBeVisible();
+  await page.getByLabel("Numéro ou lien de contact").fill("+224 620 12 34 56");
   await page.getByRole("button", { name: "Publier" }).click();
   await expect(page).toHaveURL(/partenaire\/offres\?enregistre=1/);
   await expect(page.getByText(title)).toBeVisible();
   const [deal] = await (await serviceRest(`deals?title=eq.${encodeURIComponent(title)}&select=id,channel,online_code_mode`)).json();
-  expect(deal).toMatchObject({ channel: "online", online_code_mode: "shared" });
+  expect(deal).toMatchObject({ channel: "online", online_code_mode: "unique" });
+  const [access] = await (await serviceRest(`deal_online_access?deal_id=eq.${deal.id}&select=contact_kind,contact`)).json();
+  expect(access).toEqual({ contact_kind: "whatsapp", contact: "+224620123456" });
 
-  // Le lien et le code ne sont jamais lisibles directement, même par un étudiant vérifié
+  // Le contact n'est jamais lisible directement, même par un étudiant vérifié
   const api = await userApi(student.email, student.password);
   expect(await api.select(`deal_online_access?deal_id=eq.${deal.id}`)).toEqual([]);
   const [publicRow] = await api.select(`deals?id=eq.${deal.id}&select=*`);
-  expect(JSON.stringify(publicRow)).not.toContain(`UNY${run}`);
-  expect(JSON.stringify(publicRow)).not.toContain("boutique.example");
+  expect(JSON.stringify(publicRow)).not.toContain("620123456");
 
   // L'administration en fait une exclusivité
   await page.goto(`/admin/avantages/${deal.id}`);
@@ -76,7 +76,7 @@ test("offre en ligne : publiée par la marque, révélée aux étudiants vérifi
   await expect(page.getByTestId("rail-online").getByText(title)).toBeVisible();
   await expect(page.getByTestId("rail-brands").getByText(partner.name)).toBeVisible();
 
-  await page.goto("/avantages?canal=en-ligne&ville=toutes");
+  await page.goto("/avantages?canal=a-distance&ville=toutes");
   await expect(page.getByTestId("deal-showcase")).toHaveCount(0);
   await expect(page.getByText(title)).toBeVisible();
 
@@ -85,22 +85,44 @@ test("offre en ligne : publiée par la marque, révélée aux étudiants vérifi
   await page.getByText(title).click();
   await expect(page).toHaveURL(new RegExp(`/avantages/${deal.id}`));
   await expect(page.getByText("★ Exclu Uny")).toBeVisible();
-  await expect(page.getByText("Sur le site de la marque")).toBeVisible();
-  await page.getByRole("button", { name: "Obtenir mon code en ligne" }).click();
-  await expect(page.getByTestId("online-code")).toHaveText(`UNY${run}`);
-  await expect(page.getByTestId("online-link")).toHaveAttribute("href", "https://boutique.example/uny");
+  await expect(page.getByText("Commande à distance")).toBeVisible();
+  await page.getByRole("button", { name: "Obtenir mon code et le contact" }).click();
+  const codeEl = page.getByTestId("online-code");
+  await expect(codeEl).toHaveText(/^UNY-[0-9A-Z]{4}-[0-9A-Z]{2}$/);
+  const code = (await codeEl.textContent())!;
+  // Message WhatsApp prêt, avec le code personnel
+  const href = (await page.getByTestId("online-link").getAttribute("href"))!;
+  expect(href.startsWith("https://wa.me/224620123456?text=")).toBeTruthy();
+  expect(decodeURIComponent(href)).toContain(code);
+  await expect(page.getByTestId("online-link")).toContainText("Commander sur WhatsApp");
   await logout(page);
 
-  // Statistiques de la marque : l'ouverture en ligne est comptée
+  // La marque valide le code reçu sur WhatsApp dans son espace Uny, puis voit ses statistiques
   await login(page, ADMIN.email, ADMIN.password);
+  await page.goto("/partenaire/scanner");
+  await page.waitForLoadState("networkidle");
+  await page.fill("input[name=promo_code]", code);
+  await page.getByRole("button", { name: "Vérifier le code" }).click();
+  await expect(page.getByTestId("promo-result").getByText("Code valable")).toBeVisible();
   await page.goto("/partenaire/offres");
   const row = page.locator("li", { hasText: title });
-  await expect(row.getByText(/1 ouvertures en ligne/)).toBeVisible();
+  await expect(row.getByText(/1 ouvertures à distance/)).toBeVisible();
+  await expect(row.getByText(/1 codes obtenus/)).toBeVisible();
 
-  // Retour en magasin : le lien et le code sont supprimés
+  // Passage à un code fixe sur Facebook, puis retour en magasin : le contact est supprimé
   await page.goto(`/partenaire/offres/${deal.id}`);
   await page.waitForLoadState("networkidle");
-  await expect(page.getByLabel("Code de ta boutique en ligne")).toHaveValue(`UNY${run}`);
+  await expect(page.getByLabel("Numéro ou lien de contact")).toHaveValue("+224620123456");
+  await page.getByLabel("Comment l'étudiant te contacte pour commander ?").selectOption("facebook");
+  await page.getByLabel("Numéro ou lien de contact").fill("https://facebook.com/marque.test");
+  await page.getByLabel("Comment l'étudiant prouve qu'il a droit à la réduction ?").selectOption("shared");
+  await page.getByLabel("Code fixe").fill(`UNY${run}`);
+  await page.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(page).toHaveURL(/partenaire\/offres\?enregistre=1/);
+  const [fb] = await (await serviceRest(`deal_online_access?deal_id=eq.${deal.id}&select=contact_kind,code`)).json();
+  expect(fb).toEqual({ contact_kind: "facebook", code: `UNY${run}` });
+  await page.goto(`/partenaire/offres/${deal.id}`);
+  await page.waitForLoadState("networkidle");
   await page.getByLabel("Où l'offre est-elle valable ?").selectOption("in_store");
   await page.getByRole("button", { name: "Enregistrer" }).click();
   await expect(page).toHaveURL(/partenaire\/offres\?enregistre=1/);

@@ -1,13 +1,13 @@
 -- =============================================================================
 -- Offres façon UNiDAYS (non destructif).
---   • Canal de l'offre : en magasin (par défaut, comportement actuel), en ligne, ou les deux.
---   • Offre en ligne : lien vers le site de la marque + mode de code (lien et code dans une table protégée,
---     jamais lisible publiquement : un lien « réservé » ne fuit pas) :
+--   • Canal de l'offre : en magasin (par défaut, comportement actuel), à distance (« online »), ou les deux.
+--   • Offre à distance : la plupart des marques n'ont pas de site ; l'étudiant commande par WhatsApp, appel,
+--     page Facebook/Instagram ou site s'il existe. Contact et code dans une table protégée, jamais lisible
+--     publiquement. Mode de code :
 --       unique  → code personnel Uny (même circuit que le magasin, validé par la marque dans son espace) ;
---       shared  → code fourni par la marque, révélé uniquement aux étudiants vérifiés (table séparée) ;
---       link    → lien réservé, sans code.
+--       shared  → code fourni par la marque, révélé uniquement aux étudiants vérifiés.
 --   • Exclusivité Uny (réservée aux administrateurs, comme la mise en avant).
---   • Ouvertures d'offres en ligne journalisées (statistiques de la marque), tendances calculées en base.
+--   • Ouvertures d'offres à distance journalisées (statistiques de la marque), tendances calculées en base.
 -- =============================================================================
 
 alter table public.deals
@@ -19,14 +19,14 @@ alter table public.deals add constraint deals_channel_check
   check (channel in ('in_store', 'online', 'both')) not valid;
 alter table public.deals validate constraint deals_channel_check;
 alter table public.deals add constraint deals_online_mode_check
-  check (online_code_mode is null or online_code_mode in ('unique', 'shared', 'link')) not valid;
+  check (online_code_mode is null or online_code_mode in ('unique', 'shared')) not valid;
 alter table public.deals validate constraint deals_online_mode_check;
 alter table public.deals add constraint deals_online_complete
   check (channel = 'in_store' or online_code_mode is not null) not valid;
 alter table public.deals validate constraint deals_online_complete;
 create index if not exists deals_channel_idx on public.deals (channel) where is_active;
 
--- Une offre en magasin n'a pas de mode de code en ligne
+-- Une offre en magasin n'a pas de mode de code à distance
 create or replace function public.deals_normalize_channel()
 returns trigger
 language plpgsql
@@ -83,10 +83,15 @@ begin
 end;
 $$;
 
--- Lien et code partagé de l'offre en ligne : jamais lisibles par les étudiants (révélés par open_online_offer)
+-- Contact et code partagé de l'offre à distance : jamais lisibles par les étudiants (révélés par open_online_offer)
+--   whatsapp / phone : numéro guinéen au format +224XXXXXXXXX ; facebook / instagram / website : adresse https
 create table if not exists public.deal_online_access (
   deal_id uuid primary key references public.deals (id) on delete cascade,
-  url text not null check (url ~ '^https://[^[:space:]]+$' and char_length(url) <= 500),
+  contact_kind text not null check (contact_kind in ('whatsapp', 'phone', 'facebook', 'instagram', 'website')),
+  contact text not null check (
+    (contact_kind in ('whatsapp', 'phone') and contact ~ '^\+224[0-9]{8,9}$')
+    or (contact_kind in ('facebook', 'instagram', 'website') and contact ~ '^https://[^[:space:]]+$' and char_length(contact) <= 500)
+  ),
   code text check (code is null or char_length(code) between 2 and 40),
   updated_at timestamptz not null default now()
 );
@@ -96,7 +101,7 @@ create policy "deal_online_access_member" on public.deal_online_access for all t
   with check (exists (select 1 from public.deals d where d.id = deal_id and (public.is_partner_member(d.partner_id) or public.is_admin())));
 revoke all on public.deal_online_access from anon;
 
--- Ouvertures d'offres en ligne (statistiques ; pas de lecture directe hors administration)
+-- Ouvertures d'offres à distance (statistiques ; pas de lecture directe hors administration)
 create table if not exists public.deal_clicks (
   id bigint generated always as identity primary key,
   deal_id uuid not null references public.deals (id) on delete cascade,
@@ -108,7 +113,7 @@ alter table public.deal_clicks enable row level security;
 create policy "deal_clicks_admin_read" on public.deal_clicks for select to authenticated using (public.is_admin());
 revoke all on public.deal_clicks from anon;
 
--- Ouvrir une offre en ligne : mêmes conditions que le code en magasin (étudiant vérifié, carte valable, offre en cours)
+-- Ouvrir une offre à distance : mêmes conditions que le code en magasin (étudiant vérifié, carte valable, offre en cours)
 create or replace function public.open_online_offer(p_deal uuid)
 returns jsonb
 language plpgsql
@@ -128,13 +133,13 @@ begin
     raise exception 'Connexion requise.' using errcode = '42501';
   end if;
   select x.id, x.partner_id, x.is_active, x.valid_from, x.valid_until, x.flash_started_at, x.flash_ends_at,
-         x.channel, x.online_code_mode, p.is_active as partner_active, a.url, a.code as shared_code
+         x.channel, x.online_code_mode, p.is_active as partner_active, a.contact_kind, a.contact, a.code as shared_code
     into d
     from public.deals x join public.partners p on p.id = x.partner_id
     left join public.deal_online_access a on a.deal_id = x.id
    where x.id = p_deal;
-  if not found or not d.is_active or not d.partner_active or d.channel = 'in_store' or d.url is null then
-    raise exception 'Offre en ligne indisponible.' using errcode = 'P0001';
+  if not found or not d.is_active or not d.partner_active or d.channel = 'in_store' or d.contact is null then
+    raise exception 'Offre à distance indisponible.' using errcode = 'P0001';
   end if;
 
   if d.online_code_mode = 'unique' then
@@ -166,13 +171,13 @@ begin
   end if;
 
   insert into public.deal_clicks (deal_id, student_id) values (p_deal, v_user);
-  return jsonb_build_object('url', d.url, 'mode', d.online_code_mode, 'code', v_code, 'expires_at', v_expires);
+  return jsonb_build_object('contact_kind', d.contact_kind, 'contact', d.contact, 'mode', d.online_code_mode, 'code', v_code, 'expires_at', v_expires);
 end;
 $$;
 revoke all on function public.open_online_offer(uuid) from public, anon;
 grant execute on function public.open_online_offer(uuid) to authenticated;
 
--- Tendances (14 jours) : vues + codes obtenus + ouvertures en ligne ; uniquement des offres réelles en cours
+-- Tendances (14 jours) : vues + codes obtenus + ouvertures à distance ; uniquement des offres réelles en cours
 create or replace function public.deals_trending(p_limit integer default 10)
 returns table (deal_id uuid, score bigint)
 language sql
@@ -203,7 +208,7 @@ $$;
 revoke all on function public.deals_trending(integer) from public;
 grant execute on function public.deals_trending(integer) to anon, authenticated;
 
--- Statistiques par offre pour la marque (30 jours) : vues, ouvertures en ligne, codes obtenus, codes utilisés
+-- Statistiques par offre pour la marque (30 jours) : vues, ouvertures à distance, codes obtenus, codes utilisés
 create or replace function public.partner_deal_stats(p_partner uuid)
 returns jsonb
 language plpgsql

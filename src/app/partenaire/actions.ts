@@ -82,7 +82,7 @@ export async function savePartnerEntity(
           .single();
     if (res.error) return { error: `Enregistrement impossible : ${res.error.message}`, values: formValues(formData) };
     const sync = await syncOnlineAccess(supabase, res.data.id, row.channel, online);
-    if (sync.error) return { error: "Offre enregistrée, mais le lien en ligne n'a pas pu l'être. Réessaie.", values: formValues(formData) };
+    if (sync.error) return { error: "Offre enregistrée, mais le contact à distance n'a pas pu l'être. Réessaie.", values: formValues(formData) };
   }
 
   refresh(kind);

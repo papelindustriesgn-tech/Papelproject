@@ -1,7 +1,7 @@
 import { discountPercent } from "@/lib/orange-money";
 import Image from "@/components/ui/safe-image";
 import Link from "next/link";
-import { BadgeCheck, CalendarClock, Globe, MapPin, Wallet } from "lucide-react";
+import { BadgeCheck, CalendarClock, Smartphone, MapPin, Wallet } from "lucide-react";
 import { Badge, DemoBadge } from "@/components/ui/badge";
 import { FavoriteButton } from "@/components/content/favorite-button";
 import { cn } from "@/lib/cn";
@@ -92,14 +92,14 @@ export function DealCard({
           <p className="text-muted mt-2 flex items-center gap-1 text-xs">
             {deal.channel === "online" ? (
               <>
-                <Globe className="size-3.5 shrink-0" aria-hidden />
-                <span className="truncate">En ligne</span>
+                <Smartphone className="size-3.5 shrink-0" aria-hidden />
+                <span className="truncate">À distance</span>
               </>
             ) : (
               <>
                 <MapPin className="size-3.5 shrink-0" aria-hidden />
                 <span className="truncate">
-                  {deal.channel === "both" ? "En ligne et " : ""}
+                  {deal.channel === "both" ? "À distance et " : ""}
                   {[deal.district, deal.city?.name].filter(Boolean).join(", ") || "Guinée"}
                 </span>
               </>

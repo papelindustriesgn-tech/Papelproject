@@ -29,7 +29,7 @@ export const PARTNER_ENTITIES: Record<PartnerKind, Config> = {
     plural: "Offres étudiantes",
     emoji: "🏷️",
     intro:
-      "Réductions réservées aux étudiants Uny vérifiés, en magasin ou en ligne. En magasin, chaque étudiant obtient un code promo personnel : tu le valides dans « Scanner ». En ligne, l'étudiant vérifié ouvre ton lien avec son code.",
+      "Réductions réservées aux étudiants Uny vérifiés, en magasin ou à distance. Chaque étudiant obtient un code promo personnel : tu le valides dans « Scanner ». À distance, il te contacte par WhatsApp, appel ou réseaux sociaux avec son code.",
     fields: [
       {
         name: "title",

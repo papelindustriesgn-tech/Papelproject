@@ -794,21 +794,24 @@ export type Database = {
       deal_online_access: {
         Row: {
           code: string | null;
+          contact: string;
+          contact_kind: string;
           deal_id: string;
           updated_at: string;
-          url: string;
         };
         Insert: {
           code?: string | null;
+          contact: string;
+          contact_kind: string;
           deal_id: string;
           updated_at?: string;
-          url: string;
         };
         Update: {
           code?: string | null;
+          contact?: string;
+          contact_kind?: string;
           deal_id?: string;
           updated_at?: string;
-          url?: string;
         };
         Relationships: [
           {

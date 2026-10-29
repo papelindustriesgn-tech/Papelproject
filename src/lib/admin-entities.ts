@@ -1,4 +1,4 @@
-import { DEAL_CATEGORIES, DEAL_CHANNELS, ONLINE_CODE_MODES } from "@/lib/constants";
+import { CONTACT_KINDS, DEAL_CATEGORIES, DEAL_CHANNELS, ONLINE_CODE_MODES } from "@/lib/constants";
 
 export type FieldSpec =
   | {
@@ -93,7 +93,10 @@ export const DEAL_LABEL_FIELD: FieldSpec = {
   hint: "À remplir seulement si l'offre n'a pas de prix ; sinon le libellé est calculé (ex. « -20 % »).",
 };
 
-/** Canal de l'offre (magasin / en ligne) ; le code partagé est stocké à part et jamais affiché publiquement. */
+/**
+ * Canal de l'offre (magasin / à distance). À distance : l'étudiant commande par WhatsApp, appel, Facebook,
+ * Instagram ou site. Contact et code fixe stockés à part, jamais affichés publiquement.
+ */
 export const DEAL_ONLINE_FIELDS: FieldSpec[] = [
   {
     name: "channel",
@@ -103,26 +106,32 @@ export const DEAL_ONLINE_FIELDS: FieldSpec[] = [
     options: Object.entries(DEAL_CHANNELS).map(([value, c]) => ({ value, label: `${c.emoji} ${c.label}` })),
   },
   {
-    name: "online_url",
-    label: "Lien de la boutique en ligne",
-    type: "url",
+    name: "online_contact_kind",
+    label: "Comment l'étudiant te contacte pour commander ?",
+    type: "select",
+    options: Object.entries(CONTACT_KINDS).map(([value, c]) => ({ value, label: c.label })),
+  },
+  {
+    name: "online_contact",
+    label: "Numéro ou lien de contact",
+    type: "text",
     max: 500,
-    placeholder: "https://…",
-    hint: "Offre en ligne uniquement : page où l'étudiant utilise la réduction (adresse en https).",
+    placeholder: "620 00 00 00 ou https://facebook.com/…",
+    hint: "Offre à distance uniquement. WhatsApp ou appel : ton numéro. Facebook, Instagram ou site : le lien (https://…). Montré seulement aux étudiants vérifiés.",
   },
   {
     name: "online_code_mode",
-    label: "Comment l'étudiant obtient la réduction en ligne ?",
+    label: "Comment l'étudiant prouve qu'il a droit à la réduction ?",
     type: "select",
     options: Object.entries(ONLINE_CODE_MODES).map(([value, label]) => ({ value, label })),
   },
   {
     name: "online_code",
-    label: "Code de ta boutique en ligne",
+    label: "Code fixe",
     type: "text",
     max: 40,
     placeholder: "UNY20",
-    hint: "Seulement pour « Code de ma boutique en ligne ». Jamais affiché publiquement : révélé aux étudiants vérifiés.",
+    hint: "Seulement pour « Un code fixe que je choisis ». Jamais affiché publiquement : révélé aux étudiants vérifiés.",
   },
 ];
 

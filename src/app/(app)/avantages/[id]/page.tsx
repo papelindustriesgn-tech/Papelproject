@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "@/components/ui/safe-image";
 import { notFound } from "next/navigation";
-import { CalendarDays, Gift, Globe, MapPin, Phone, ShieldCheck, Ticket, Zap } from "lucide-react";
+import { CalendarDays, Gift, MapPin, Smartphone, Phone, ShieldCheck, Ticket, Zap } from "lucide-react";
 import { flashUntil, isFlashActive, isFlashOver } from "@/lib/flash";
 import { BackLink } from "@/components/ui/back-link";
 import { Badge, DemoBadge } from "@/components/ui/badge";
@@ -100,7 +100,7 @@ export default async function DealPage({ params }: Props) {
               {cat.emoji} {cat.label}
             </Badge>
             {deal.is_exclusive && <Badge tone="brand">★ Exclu Uny</Badge>}
-            {online && <Badge tone="mint">🌐 {deal.channel === "both" ? "En ligne et en magasin" : "En ligne"}</Badge>}
+            {online && <Badge tone="mint">📱 {deal.channel === "both" ? "À distance et en magasin" : "À distance"}</Badge>}
           </div>
           <h1 className="mt-2 text-2xl font-extrabold tracking-tight">{deal.title}</h1>
           {deal.partner && (
@@ -152,10 +152,10 @@ export default async function DealPage({ params }: Props) {
         <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[var(--shadow-card)]">
           {deal.channel === "online" ? (
             <>
-              <Globe className="text-brand-600 size-5 shrink-0" aria-hidden />
+              <Smartphone className="text-brand-600 size-5 shrink-0" aria-hidden />
               <div className="min-w-0 text-sm">
-                <p className="font-semibold">Sur le site de la marque</p>
-                <p className="text-muted">Partout en Guinée</p>
+                <p className="font-semibold">Commande à distance</p>
+                <p className="text-muted">WhatsApp, appel ou réseaux sociaux de la marque</p>
               </div>
             </>
           ) : (
@@ -221,8 +221,8 @@ export default async function DealPage({ params }: Props) {
           <div className="space-y-5">
             {online && deal.online_code_mode && (
               <section>
-                {deal.channel === "both" && <h2 className="mb-2 font-bold">🌐 En ligne</h2>}
-                <OnlinePanel dealId={deal.id} brand={deal.partner?.name ?? "la marque"} mode={deal.online_code_mode} />
+                {deal.channel === "both" && <h2 className="mb-2 font-bold">📱 À distance</h2>}
+                <OnlinePanel dealId={deal.id} brand={deal.partner?.name ?? "la marque"} title={deal.title} mode={deal.online_code_mode} />
               </section>
             )}
             {deal.channel !== "online" && (

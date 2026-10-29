@@ -33,7 +33,7 @@ async function load(kind: PartnerKind, partnerId: string): Promise<Row[]> {
         const online = d.channel !== "in_store";
         const parts = [
           `30 j : ${s?.views ?? 0} vues`,
-          online ? `${s?.clicks ?? 0} ouvertures en ligne` : null,
+          online ? `${s?.clicks ?? 0} ouvertures à distance` : null,
           `${s?.codes ?? 0} codes obtenus`,
           `${s?.used ?? 0} utilisés`,
         ].filter(Boolean);
@@ -42,7 +42,7 @@ async function load(kind: PartnerKind, partnerId: string): Promise<Row[]> {
           title: d.title,
           active: d.is_active,
           image: d.image_url,
-          badge: online ? `${d.discount_label} · ${d.channel === "online" ? "en ligne" : "en ligne + magasin"}` : d.discount_label,
+          badge: online ? `${d.discount_label} · ${d.channel === "online" ? "à distance" : "à distance + magasin"}` : d.discount_label,
           sub: `${parts.join(" · ")}${d.valid_until ? ` · jusqu'au ${formatDate(d.valid_until)}` : ""}`,
         };
       });

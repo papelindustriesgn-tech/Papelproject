@@ -5,6 +5,6 @@ begin;
 drop function if exists public.open_online_offer(uuid);
 drop function if exists public.deals_trending(integer);
 drop function if exists public.partner_deal_stats(uuid);
--- Les offres en ligne redeviennent invisibles pour l'ancien code : les désactiver évite une offre sans lien
+-- Les offres à distance redeviennent invisibles pour l'ancien code : les désactiver évite une offre sans contact
 update public.deals set is_active = false where channel = 'online' and is_active;
 commit;

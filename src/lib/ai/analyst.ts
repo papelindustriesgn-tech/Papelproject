@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { METRICS, UNAVAILABLE_METRICS, type Metrics, getMetrics } from "@/lib/metrics";
 import { runAgent, untrusted } from "@/lib/ai/client";
+import { redact } from "@/lib/ops/redact";
 
 const SYSTEM = `Tu es l'analyste de données de Uny (plateforme étudiante en Guinée). Tu rédiges en français un rapport
 court pour l'équipe d'administration, en lecture seule.
@@ -53,7 +54,8 @@ export async function generateAnalystReport(userId: string, days: number) {
     `## Indicateurs vérifiés\n${verified}`,
     `## Variations (période précédente de même durée)\n${delta}`,
     `## Indicateurs non disponibles\n${unavailable}`,
-    `## Alertes ouvertes\n${untrusted("ops_alerts", JSON.stringify(alerts ?? []))}`,
+    // Titres nettoyés (emails, téléphones…) : une alerte manuelle peut contenir une donnée personnelle
+    `## Alertes ouvertes\n${untrusted("ops_alerts", JSON.stringify((alerts ?? []).map((a) => ({ ...a, title: redact(a.title, 300) }))))}`,
   ].join("\n\n");
 
   const result = await runAgent({

@@ -79,7 +79,7 @@ async function _listDeals(
     page?: number;
     featured?: boolean;
     cityId?: number;
-    /** en-ligne : offres utilisables en ligne ; magasin : en magasin (les offres « les deux » apparaissent dans les deux). */
+    /** a-distance : offres utilisables à distance (WhatsApp, appel, réseaux) ; magasin : en magasin (les offres « les deux » apparaissent dans les deux). */
     channel?: string;
     exclusive?: boolean;
     flash?: boolean;
@@ -96,13 +96,13 @@ async function _listDeals(
     .or(`valid_until.is.null,valid_until.gte.${today()}`)
     .or(`flash_ends_at.is.null,flash_ends_at.gt.${new Date().toISOString()}`);
   if (await hasRealContent(supabase, "deals")) query = query.eq("is_demo", false);
-  if (cityId && channel !== "en-ligne") query = query.or(inCity(cityId));
+  if (cityId && channel !== "a-distance") query = query.or(inCity(cityId));
   if (category) query = query.eq("category", category as DealCategory);
   if (district) query = query.eq("district", district);
   if (featured) query = query.eq("is_featured", true);
   if (exclusive) query = query.eq("is_exclusive", true);
   if (flash) query = query.not("flash_ends_at", "is", null);
-  if (channel === "en-ligne") query = query.in("channel", ["online", "both"]);
+  if (channel === "a-distance") query = query.in("channel", ["online", "both"]);
   if (channel === "magasin") query = query.in("channel", ["in_store", "both"]);
   if (partnerId) query = query.eq("partner_id", partnerId);
   if (ids) query = query.in("id", ids.length ? ids : ["00000000-0000-0000-0000-000000000000"]);
@@ -254,7 +254,7 @@ type Opts<F> = F extends (s: AnyClient, o: infer O) => unknown ? O : never;
 
 export const listDeals = cached((o: Opts<typeof _listDeals>) => _listDeals(createPublicClient(), o), "deals");
 
-/** Vitrine des offres (façon UNiDAYS) : exclusivités, tendances, flash, en ligne, nouveautés et marques. */
+/** Vitrine des offres (façon UNiDAYS) : exclusivités, tendances, flash, à distance, nouveautés et marques. */
 async function _dealShowcase(supabase: AnyClient, { cityId }: { cityId?: number }) {
   const { data: trend } = await supabase.rpc("deals_trending", { p_limit: 12 });
   const trendIds = (trend ?? []).map((t) => t.deal_id);
@@ -262,7 +262,7 @@ async function _dealShowcase(supabase: AnyClient, { cityId }: { cityId?: number 
     _listDeals(supabase, { cityId, exclusive: true }),
     _listDeals(supabase, { cityId, ids: trendIds }),
     _listDeals(supabase, { cityId, flash: true }),
-    _listDeals(supabase, { channel: "en-ligne" }),
+    _listDeals(supabase, { channel: "a-distance" }),
     _listDeals(supabase, { cityId, newest: true }),
   ]);
   // Ordre des tendances : score décroissant (la requête trie par date)

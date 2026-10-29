@@ -28,17 +28,26 @@ export const DEAL_CATEGORIES: Record<DealCategory, { label: string; emoji: strin
 };
 
 export type DealChannel = "in_store" | "online" | "both";
+/** « online » = à distance : commande par WhatsApp, appel, réseaux sociaux ou site (rare en Guinée). */
 export const DEAL_CHANNELS: Record<DealChannel, { label: string; emoji: string }> = {
   in_store: { label: "En magasin", emoji: "🏬" },
-  online: { label: "En ligne", emoji: "🌐" },
-  both: { label: "En ligne et en magasin", emoji: "🛍️" },
+  online: { label: "À distance (WhatsApp, appel, réseaux)", emoji: "📱" },
+  both: { label: "À distance et en magasin", emoji: "🛍️" },
 };
 
-export type OnlineCodeMode = "unique" | "shared" | "link";
+export type OnlineCodeMode = "unique" | "shared";
 export const ONLINE_CODE_MODES: Record<OnlineCodeMode, string> = {
-  unique: "Code personnel Uny par étudiant (tu le valides dans ton espace)",
-  shared: "Code de ma boutique en ligne (montré seulement aux étudiants vérifiés)",
-  link: "Lien réservé, sans code",
+  unique: "Code personnel Uny par étudiant (recommandé : tu le valides dans ton espace Uny)",
+  shared: "Un code fixe que je choisis (montré seulement aux étudiants vérifiés)",
+};
+
+export type ContactKind = "whatsapp" | "phone" | "facebook" | "instagram" | "website";
+export const CONTACT_KINDS: Record<ContactKind, { label: string; action: string; phone: boolean }> = {
+  whatsapp: { label: "WhatsApp", action: "Commander sur WhatsApp", phone: true },
+  phone: { label: "Appel téléphonique", action: "Appeler", phone: true },
+  facebook: { label: "Page Facebook", action: "Ouvrir la page Facebook", phone: false },
+  instagram: { label: "Page Instagram", action: "Ouvrir la page Instagram", phone: false },
+  website: { label: "Site internet", action: "Aller sur le site", phone: false },
 };
 
 export const JOB_TYPES: Record<JobType, { label: string; emoji: string }> = {

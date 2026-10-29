@@ -21,7 +21,7 @@ import { CityPicker } from "@/components/ui/city-picker";
 export const metadata: Metadata = { title: "Avantages & réductions" };
 
 const CHANNEL_OPTIONS = [
-  { value: "en-ligne", label: "En ligne", emoji: "🌐" },
+  { value: "a-distance", label: "À distance", emoji: "📱" },
   { value: "magasin", label: "En magasin", emoji: "🏬" },
 ];
 
@@ -62,7 +62,7 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
       <DealsTabs current="/avantages" />
       <PageTitle
         title="Avantages"
-        subtitle="Réductions réservées aux étudiants vérifiés : en magasin avec ton code, en ligne avec le lien de la marque."
+        subtitle="Réductions réservées aux étudiants vérifiés : en magasin avec ton code, ou à distance par WhatsApp, appel ou réseaux sociaux."
       />
       <div className="space-y-3">
         <SearchBar
@@ -105,7 +105,7 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
           {rail("★ Exclusivités Uny", "rail-exclusives", showcase.exclusives)}
           {rail("🔥 Tendances", "rail-trending", showcase.trending)}
           {rail("⚡ Offres flash", "rail-flash", showcase.flash)}
-          {rail("🌐 En ligne", "rail-online", showcase.online, "/avantages?canal=en-ligne")}
+          {rail("📱 À distance", "rail-online", showcase.online, "/avantages?canal=a-distance")}
           {showcase.brands.length > 0 && (
             <section data-testid="rail-brands">
               <SectionHeader title="🏷️ Marques" href="/avantages/marques" linkLabel="Toutes les marques" />
@@ -122,7 +122,7 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
           <EmptyState
             emoji="🏷️"
             title="Aucune offre trouvée"
-            text="Essaie une autre catégorie, un autre quartier ou les offres en ligne."
+            text="Essaie une autre catégorie, un autre quartier ou les offres à distance."
             action={
               <LinkButton href="/avantages" variant="secondary">
                 Voir toutes les offres

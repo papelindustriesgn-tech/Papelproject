@@ -122,6 +122,18 @@ export function parseField(f: FieldSpec, formData: FormData, cities: City[]): Pa
   }
 }
 
+/** Contact d'une offre à distance : numéro guinéen → +224XXXXXXXXX ; page ou site → adresse https. */
+export function normalizeContact(kind: string, raw: string | null): string | null {
+  const s = (raw ?? "").trim();
+  if (!s) return null;
+  if (kind === "whatsapp" || kind === "phone") {
+    let d = s.replace(/[\s.\-()]/g, "").replace(/^(\+|00)/, "");
+    if (d.startsWith("224") && d.length > 9) d = d.slice(3);
+    return /^[0-9]{8,9}$/.test(d) ? `+224${d}` : null;
+  }
+  return /^https:\/\/\S+$/.test(s) && s.length <= 500 ? s : null;
+}
+
 /** Valide tous les champs ; renvoie la ligne à enregistrer ou les erreurs par champ. */
 export function parseFields(fields: FieldSpec[], formData: FormData, cities: City[]) {
   const row: Record<string, unknown> = {};
@@ -143,15 +155,25 @@ export function parseFields(fields: FieldSpec[], formData: FormData, cities: Cit
     else if (!row.discount_label) fieldErrors.discount_label = "Indique une réduction (avec le prix) ou l'avantage offert";
   }
   lower("price_gnf", "original_price_gnf");
-  // Offre en ligne : lien https + mode obligatoires ; code obligatoire pour le mode « code de la boutique »
+  // Offre à distance : contact (numéro guinéen ou lien https) + mode obligatoires ; code fixe pour le mode « shared »
   if (fields.some((f) => f.name === "channel")) {
     if (row.channel === "online" || row.channel === "both") {
-      if (typeof row.online_url !== "string" || !row.online_url.startsWith("https://"))
-        fieldErrors.online_url = "Indique le lien de la boutique en ligne (https://…)";
-      if (!row.online_code_mode) fieldErrors.online_code_mode = "Choisis comment l'étudiant obtient la réduction";
-      if (row.online_code_mode === "shared" && !row.online_code) fieldErrors.online_code = "Indique le code de ta boutique";
+      const kind = row.online_contact_kind as string | null;
+      if (!kind) fieldErrors.online_contact_kind = "Choisis comment l'étudiant te contacte";
+      else {
+        const contact = normalizeContact(kind, row.online_contact as string | null);
+        if (!contact)
+          fieldErrors.online_contact =
+            kind === "whatsapp" || kind === "phone"
+              ? "Numéro guinéen invalide (ex. 620 00 00 00)"
+              : "Indique le lien de la page (https://…)";
+        else row.online_contact = contact;
+      }
+      if (!row.online_code_mode) fieldErrors.online_code_mode = "Choisis comment l'étudiant prouve son droit à la réduction";
+      if (row.online_code_mode === "shared" && !row.online_code) fieldErrors.online_code = "Indique le code fixe";
     } else {
-      row.online_url = null;
+      row.online_contact_kind = null;
+      row.online_contact = null;
       row.online_code_mode = null;
       row.online_code = null;
     }
