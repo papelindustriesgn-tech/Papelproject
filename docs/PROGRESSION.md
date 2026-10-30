@@ -144,10 +144,17 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
   aucune erreur d'exécution. Retour arrière : redéployer `dpl_4B3TfbdVKWiTHdPDEURdwE3PW5Di` (les démos restent
   marquées « Démo » et sans contact).
 
-## Application recentrée sur les offres (29/10, branche `claude/uny-offres-xf13tt`) — testée en local, NON déployée
+## Application recentrée sur les offres (29/10) — déployée le 30/10
 - ✅ Navigation : Découvrir (accueil = vitrine des offres) · Explorer (recherche, en magasin / à distance, catégories,
   marques) · Ma carte · Favoris · Profil
 - ✅ Jobs, logement et marketplace masqués (décision du propriétaire) : pages redirigées vers les offres, liens retirés,
   boutique partenaire masquée, textes publics et assistant alignés ; données conservées.
   Réactivation : variable `NEXT_PUBLIC_UNY_OPPORTUNITES=1` puis nouveau déploiement (`src/lib/features.ts`)
 - Suite complète : 88 réussis, 4 ignorés (rubriques masquées) ; rubriques réactivées : 25 réussis — local
+- Accueil : bloc « Ma carte Uny » retiré (demande du propriétaire) ; carte accessible par l'en-tête et l'onglet.
+- Prod au 30/10 (autorisation du propriétaire) : code `fe34ac4`, déploiement `dpl_7qrEZP4FdYxEXkzhw4MqnvRKPUKC`, sans
+  changement de base. `NEXT_PUBLIC_UNY_OPPORTUNITES` absent de Vercel → rubriques masquées. Vérifié en prod : pages
+  publiques 200 avec les nouveaux textes (« Vends aussi à distance », plus de mention de la marketplace) ; pages
+  connectées redirigent vers la connexion ; surveillance 401 sans secret ; aucune erreur d'exécution. Non vérifié en
+  prod : écrans connectés (Découvrir, Explorer, redirections des rubriques masquées), testés en local.
+- Retour arrière : redéployer `dpl_DYnav2fJQjY1wVmTxNg7Jmtzep26`.
