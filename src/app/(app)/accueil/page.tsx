@@ -2,7 +2,6 @@ import { SURVEY_MIN_VERSION } from "@/lib/survey";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MessageSquareHeart } from "lucide-react";
-import { MiniPass } from "@/components/home/mini-pass";
 import { NextStepCard } from "@/components/home/journey";
 import { formatGNF, isoDateInDays } from "@/lib/format";
 import { Rail } from "@/components/home/rail";
@@ -11,7 +10,7 @@ import { BrandRail } from "@/components/content/brand-tile";
 import { SectionHeader } from "@/components/ui/section-header";
 import { FormMessage } from "@/components/ui/field";
 import { DemoNotice } from "@/components/ui/demo-notice";
-import { requireProfile, universityLabel } from "@/lib/auth";
+import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { dealShowcase, favoriteIds, listMarket, withoutBlockedSellers } from "@/lib/queries";
 import { OPPORTUNITIES_ENABLED } from "@/lib/features";
@@ -79,22 +78,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       )}
       {param(sp, "mdp") && <FormMessage type="success">Ton mot de passe a bien été modifié.</FormMessage>}
 
-      {/* Une seule action principale ; pas de doublon quand l'action est simplement d'ouvrir la carte (affichée juste en dessous) */}
+      {/* Une seule action principale ; la carte reste accessible par « Ma carte » (en-tête et barre du bas) */}
       {journey.next.href !== "/carte" && <NextStepCard journey={journey} />}
-
-      <section className="max-w-md space-y-2">
-        <MiniPass
-          first={profile.first_name}
-          last={profile.last_name}
-          avatar={profile.avatar_url}
-          unyId={profile.uny_id}
-          status={profile.verification_status}
-          university={universityLabel(profile)}
-        />
-        {journey.next.href === "/carte" && journey.savedGnf > 0 && (
-          <p className="text-mint-700 text-sm font-bold">💰 Tu as économisé {formatGNF(journey.savedGnf)} avec Uny</p>
-        )}
-      </section>
+      {journey.next.href === "/carte" && journey.savedGnf > 0 && (
+        <p className="text-mint-700 text-sm font-bold">💰 Tu as économisé {formatGNF(journey.savedGnf)} avec Uny</p>
+      )}
 
       {(announcements.data ?? []).length > 0 && (
         <section className="space-y-2">
