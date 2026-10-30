@@ -84,12 +84,13 @@ test("avantages : filtres, recherche, détail, favori", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Burger étudiant à -15 %");
   await expect(page.getByText("Contenu de démonstration.")).toBeVisible();
   await expect(page.getByRole("link", { name: /Vérifier mon statut/ })).toBeVisible();
-  // Attendre la réponse de la Server Action avant de quitter la page
-  await Promise.all([
-    page.waitForResponse((r) => r.request().method() === "POST"),
-    page.getByRole("button", { name: "Ajouter aux favoris" }).click(),
-  ]);
-  await expect(page.getByRole("button", { name: "Retirer des favoris" })).toBeVisible();
+  // Le bouton change tout de suite (affichage optimiste) et la page envoie aussi sa vue en POST : on attend que le
+  // favori soit réellement enregistré (toujours présent après rechargement) avant de quitter la page
+  await page.getByRole("button", { name: "Ajouter aux favoris" }).click();
+  await expect(async () => {
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Retirer des favoris" })).toBeVisible({ timeout: 2000 });
+  }).toPass({ timeout: 20_000 });
   await page.goto("/favoris");
   await expect(page.getByText("Burger étudiant à -15 %")).toBeVisible();
 });
