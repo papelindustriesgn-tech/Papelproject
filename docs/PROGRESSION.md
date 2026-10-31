@@ -158,3 +158,13 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
   connectées redirigent vers la connexion ; surveillance 401 sans secret ; aucune erreur d'exécution. Non vérifié en
   prod : écrans connectés (Découvrir, Explorer, redirections des rubriques masquées), testés en local.
 - Retour arrière : redéployer `dpl_DYnav2fJQjY1wVmTxNg7Jmtzep26`.
+
+## Lien de vérification des commandes à distance (31/10, branche `claude/uny-offres-xf13tt`) — testé en local, NON déployé
+- ✅ L'étudiant vérifié obtient son code personnel et un lien `https://www.unyafrica.com/p/<jeton>` (jeton aléatoire
+  de 128 bits), inclus dans le message WhatsApp ou à copier
+- ✅ Le commerçant ouvre le lien (dans l'application Android si installée, sinon le site) : page « Vérifier un
+  étudiant » de son espace — « Code valable », « Étudiant vérifié par Uny · carte valable », nom, identifiant Uny,
+  photo, offre ; bouton « Confirmer l'utilisation » ; le code ne resservira pas
+- ✅ Réservé aux membres de la marque du code (`promo_link_lookup`) : toute autre personne ne voit aucune donnée
+- ✅ Photo de l'étudiant aussi affichée dans « Vérifier le code » du Scanner
+- Migration `20261031000001_promo_verify_link.sql` (non destructive) ; suite complète 88 réussis, 4 ignorés — local

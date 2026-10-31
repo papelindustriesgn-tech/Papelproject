@@ -115,6 +115,7 @@ test("offre à distance (WhatsApp) : publiée par une marque sans site, révél�
   const result = page.getByTestId("promo-result");
   await expect(result.getByText("Code valable")).toBeVisible();
   await expect(result.getByText(`${student.first} ${student.last}`)).toBeVisible();
+  await expect(result.getByTestId("promo-student-verified")).toBeVisible();
   await expect(page.getByRole("textbox", { name: "Code promo" })).toHaveCount(0);
   await result.getByRole("button", { name: /Confirmer l'utilisation/ }).click();
   await expect(result.getByText("Code validé ✅")).toBeVisible();

@@ -98,6 +98,11 @@ export function PromoRedeem({
                 {r.first_name} {r.last_name} <span className="text-muted block font-mono text-xs">{r.uny_id}</span>
               </span>
             </dd>
+            {ok && (
+              <dd className="text-mint-700 font-semibold" data-testid="promo-student-verified">
+                ✅ Étudiant vérifié par Uny · carte valable
+              </dd>
+            )}
             <dd>
               <strong>{r.discount_label}</strong> · {r.deal_title}
             </dd>
@@ -148,8 +153,8 @@ export function PromoRedeem({
                   <Input id="ref" name="reference" defaultValue={r.payment_reference ?? ""} maxLength={60} />
                 </Field>
               </div>
-              <SubmitButton size="lg" className="w-full">
-                <BadgeCheck className="size-5" /> Confirmer l&apos;utilisation et appliquer la réduction
+              <SubmitButton size="lg" className="h-auto min-h-13 w-full py-3 text-center whitespace-normal">
+                <BadgeCheck className="size-5 shrink-0" /> Confirmer l&apos;utilisation et appliquer la réduction
               </SubmitButton>
             </form>
           )}
