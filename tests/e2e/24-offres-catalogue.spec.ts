@@ -95,19 +95,39 @@ test("offre à distance (WhatsApp) : publiée par une marque sans site, révél�
   expect(href.startsWith("https://wa.me/224620123456?text=")).toBeTruthy();
   expect(decodeURIComponent(href)).toContain(code);
   await expect(page.getByTestId("online-link")).toContainText("Commander sur WhatsApp");
+  // Lien de vérification Uny, inclus dans le message WhatsApp
+  const verifyLink = (await page.getByTestId("verify-link").getAttribute("data-link"))!;
+  expect(verifyLink).toMatch(/\/p\/[0-9a-f]{32}$/);
+  expect(decodeURIComponent(href)).toContain(verifyLink);
+  const verifyPath = new URL(verifyLink).pathname;
+  const token = verifyPath.split("/").pop()!;
+  // Un étudiant (même le titulaire) n'obtient ni le code ni l'identité par ce lien : réservé à la marque
+  const lookup = await (await api.rpc("promo_link_lookup", { p_token: token })).json();
+  expect(lookup).toEqual({ found: true, allowed: false, partner_name: partner.name });
+  await page.goto(verifyPath);
+  await expect(page).not.toHaveURL(/\/partenaire\/verifier/);
   await logout(page);
 
-  // La marque valide le code reçu sur WhatsApp dans son espace Uny, puis voit ses statistiques
+  // La marque ouvre le lien reçu sur WhatsApp : statut vérifié, code valable, photo/initiales et nom de l'étudiant
   await login(page, ADMIN.email, ADMIN.password);
-  await page.goto("/partenaire/scanner");
-  await page.waitForLoadState("networkidle");
-  await page.fill("input[name=promo_code]", code);
-  await page.getByRole("button", { name: "Vérifier le code" }).click();
-  await expect(page.getByTestId("promo-result").getByText("Code valable")).toBeVisible();
+  await page.goto(verifyPath);
+  await expect(page).toHaveURL(new RegExp(`/partenaire/verifier/${token}$`));
+  const result = page.getByTestId("promo-result");
+  await expect(result.getByText("Code valable")).toBeVisible();
+  await expect(result.getByText(`${student.first} ${student.last}`)).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Code promo" })).toHaveCount(0);
+  await result.getByRole("button", { name: /Confirmer l'utilisation/ }).click();
+  await expect(result.getByText("Code validé ✅")).toBeVisible();
+  await page.reload();
+  await expect(page.getByTestId("promo-result").getByText("Code déjà utilisé")).toBeVisible();
+  // Lien inconnu : aucune donnée
+  await page.goto(`/p/${"0".repeat(32)}`);
+  await expect(page.getByTestId("verify-link-refused")).toContainText("Lien de vérification inconnu");
   await page.goto("/partenaire/offres");
   const row = page.locator("li", { hasText: title });
   await expect(row.getByText(/1 ouvertures à distance/)).toBeVisible();
   await expect(row.getByText(/1 codes obtenus/)).toBeVisible();
+  await expect(row.getByText(/1 utilisés/)).toBeVisible();
 
   // Passage à un code fixe sur Facebook, puis retour en magasin : le contact est supprimé
   await page.goto(`/partenaire/offres/${deal.id}`);

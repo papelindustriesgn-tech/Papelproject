@@ -9,6 +9,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { formatDate, formatGNF } from "@/lib/format";
 import { PAYMENT_METHODS } from "@/lib/orange-money";
 import { cn } from "@/lib/cn";
+import Image from "@/components/ui/safe-image";
 import { redeemPromo, type PromoRedeemState } from "../actions";
 
 const STATE_LABEL = {
@@ -20,9 +21,20 @@ const STATE_LABEL = {
   blocked: "Réduction non applicable",
 } as const;
 
-/** Validation d'un code promo étudiant (UNY-XXXX-XX), avec le paiement reçu. */
-export function PromoRedeem({ merchantCode }: { merchantCode: string | null }) {
-  const [state, action] = useActionState<PromoRedeemState, FormData>(redeemPromo, {});
+/**
+ * Validation d'un code promo étudiant (UNY-XXXX-XX), avec le paiement reçu. Avec `initial` et `partnerId`, la page
+ * s'ouvre depuis un lien de vérification (commande à distance) : résultat affiché tout de suite, sans saisie.
+ */
+export function PromoRedeem({
+  merchantCode,
+  initial,
+  partnerId,
+}: {
+  merchantCode: string | null;
+  initial?: PromoRedeemState;
+  partnerId?: string;
+}) {
+  const [state, action] = useActionState<PromoRedeemState, FormData>(redeemPromo, initial ?? {});
   const [code, setCode] = useState("");
   const r = state.result;
   const ok = r?.found && (r.state === "active" || r.state === "redeemed");
@@ -33,21 +45,23 @@ export function PromoRedeem({ merchantCode }: { merchantCode: string | null }) {
         <Ticket className="text-brand-600 size-5" aria-hidden />
         <h2 className="font-bold">Valider un code promo</h2>
       </div>
-      <form action={action} className="flex gap-2">
-        <Input
-          name="promo_code"
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="UNY-XXXX-XX"
-          aria-label="Code promo"
-          autoComplete="off"
-          autoCapitalize="characters"
-          className="font-mono tracking-widest"
-        />
-        <SubmitButton className="shrink-0" aria-label="Vérifier le code">
-          <Search className="size-4" /> Vérifier
-        </SubmitButton>
-      </form>
+      {!partnerId && (
+        <form action={action} className="flex gap-2">
+          <Input
+            name="promo_code"
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            placeholder="UNY-XXXX-XX"
+            aria-label="Code promo"
+            autoComplete="off"
+            autoCapitalize="characters"
+            className="font-mono tracking-widest"
+          />
+          <SubmitButton className="shrink-0" aria-label="Vérifier le code">
+            <Search className="size-4" /> Vérifier
+          </SubmitButton>
+        </form>
+      )}
       {state.error && <FormMessage>{state.error}</FormMessage>}
 
       {r && !r.found && <FormMessage>Code introuvable pour ton établissement.</FormMessage>}
@@ -71,8 +85,18 @@ export function PromoRedeem({ merchantCode }: { merchantCode: string | null }) {
             <p className="bg-coral-50 text-ink px-4 py-2 text-sm font-semibold">{r.reason}</p>
           )}
           <dl className="space-y-1 p-4 text-sm">
-            <dd className="text-lg font-extrabold">
-              {r.first_name} {r.last_name} <span className="text-muted font-mono text-xs">{r.uny_id}</span>
+            <dd className="flex items-center gap-3 text-lg font-extrabold">
+              {/* Photo de l'étudiant : à comparer à la personne qui récupère la commande */}
+              <span className="bg-brand-50 text-brand-700 relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full text-base">
+                {r.avatar_url ? (
+                  <Image src={r.avatar_url} alt="" fill sizes="56px" className="object-cover" data-testid="promo-photo" />
+                ) : (
+                  `${r.first_name?.[0] ?? ""}${r.last_name?.[0] ?? ""}`
+                )}
+              </span>
+              <span className="min-w-0">
+                {r.first_name} {r.last_name} <span className="text-muted block font-mono text-xs">{r.uny_id}</span>
+              </span>
             </dd>
             <dd>
               <strong>{r.discount_label}</strong> · {r.deal_title}
@@ -100,6 +124,7 @@ export function PromoRedeem({ merchantCode }: { merchantCode: string | null }) {
             <form action={action} className="border-line space-y-3 border-t p-4">
               <input type="hidden" name="promo_code" value={r.code} />
               <input type="hidden" name="redeem" value="1" />
+              {partnerId && <input type="hidden" name="partner_id" value={partnerId} />}
               <Field label="Paiement reçu" htmlFor="pm">
                 <Select id="pm" name="payment_method" defaultValue={merchantCode ? "orange_money" : "cash"}>
                   {Object.entries(PAYMENT_METHODS).map(([v, l]) => (
@@ -133,7 +158,7 @@ export function PromoRedeem({ merchantCode }: { merchantCode: string | null }) {
               <LoyaltyBlock key={`${r.code}-${r.state}`} initial={r.loyalty} />
             </div>
           )}
-          {r.state === "redeemed" && (
+          {r.state === "redeemed" && !partnerId && (
             <div className="border-line border-t p-4">
               <Button variant="outline" className="w-full" onClick={() => setCode("")}>
                 Code suivant

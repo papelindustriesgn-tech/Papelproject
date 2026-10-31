@@ -2012,6 +2012,7 @@ export type Database = {
           student_id: string;
           used_at: string | null;
           used_by: string | null;
+          verify_token: string;
         };
         Insert: {
           amount_gnf?: number | null;
@@ -2027,6 +2028,7 @@ export type Database = {
           student_id: string;
           used_at?: string | null;
           used_by?: string | null;
+          verify_token?: string;
         };
         Update: {
           amount_gnf?: number | null;
@@ -2042,6 +2044,7 @@ export type Database = {
           student_id?: string;
           used_at?: string | null;
           used_by?: string | null;
+          verify_token?: string;
         };
         Relationships: [
           {
@@ -3304,6 +3307,7 @@ export type Database = {
       partner_use_reward: { Args: { p_card: string; p_partner: string }; Returns: Json };
       partner_validate_card: { Args: { p_deal?: string; p_partner: string; p_token?: string; p_uny_id?: string }; Returns: Json };
       partner_weekly_report: { Args: Record<PropertyKey, never>; Returns: number };
+      promo_link_lookup: { Args: { p_token: string }; Returns: Json };
       publish_card_template: {
         Args: { p_fields: string[]; p_labels?: Json; p_layout: string; p_university: number };
         Returns: {

@@ -24,6 +24,8 @@ export type OnlineOfferState = {
   code?: string | null;
   mode?: string;
   expiresAt?: string | null;
+  /** Jeton du lien de vérification à transmettre à la marque (code personnel). */
+  verifyToken?: string | null;
   error?: string;
 };
 
@@ -34,9 +36,23 @@ export async function openOnlineOffer(dealId: string, _prev: OnlineOfferState): 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("open_online_offer", { p_deal: dealId });
   if (error) return { error: error.code === "P0001" ? error.message : "Impossible d'ouvrir l'offre. Réessaie." };
-  const r = data as { contact_kind: string; contact: string; code: string | null; mode: string; expires_at: string | null };
+  const r = data as {
+    contact_kind: string;
+    contact: string;
+    code: string | null;
+    mode: string;
+    expires_at: string | null;
+    verify_token?: string | null;
+  };
   if (r.mode === "unique") revalidatePath("/avantages/mes-codes");
-  return { contactKind: r.contact_kind, contact: r.contact, code: r.code, mode: r.mode, expiresAt: r.expires_at };
+  return {
+    contactKind: r.contact_kind,
+    contact: r.contact,
+    code: r.code,
+    mode: r.mode,
+    expiresAt: r.expires_at,
+    verifyToken: r.verify_token ?? null,
+  };
 }
 
 export async function declarePromoPayment(prev: PromoState, formData: FormData): Promise<PromoState> {

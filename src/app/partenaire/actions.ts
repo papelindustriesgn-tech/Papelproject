@@ -229,7 +229,9 @@ export type PromoRedeemState = { result?: PromoCheck; error?: string; at?: numbe
 const PROMO_CODE = /^UNY-[2-9A-HJKMNP-TV-Z]{4}-[2-9A-HJKMNP-TV-Z]{2}$/;
 
 export async function redeemPromo(_prev: PromoRedeemState, formData: FormData): Promise<PromoRedeemState> {
-  const { partner } = await requirePartner();
+  const { partner: current, partners } = await requirePartner();
+  // Lien de vérification : la marque du code (parmi celles de l'utilisateur), sinon la marque sélectionnée
+  const partner = partners.find((p) => p.id === formData.get("partner_id")) ?? current;
   const raw = String(formData.get("promo_code") ?? "")
     .toUpperCase()
     .replace(/[^0-9A-Z]/g, "");

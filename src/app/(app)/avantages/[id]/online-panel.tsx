@@ -31,16 +31,14 @@ export function OnlinePanel({
 }) {
   const [state, action] = useActionState(openOnlineOffer.bind(null, dealId), {} as OnlineOfferState);
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Offre de démonstration : marque fictive, aucun contact réel (la base refuse aussi l'ouverture)
   if (demo)
     return (
-      <p
-        className="bg-canvas text-muted ring-line rounded-2xl p-4 text-center text-sm ring-1"
-        data-testid="online-panel-demo"
-      >
-        <strong className="text-ink">Exemple de démonstration.</strong> Pour une vraie marque, tu obtiendrais ici ton
-        code et le bouton pour commander sur WhatsApp ou appeler.
+      <p className="bg-canvas text-muted ring-line rounded-2xl p-4 text-center text-sm ring-1" data-testid="online-panel-demo">
+        <strong className="text-ink">Exemple de démonstration.</strong> Pour une vraie marque, tu obtiendrais ici ton code et le
+        bouton pour commander sur WhatsApp ou appeler.
       </p>
     );
 
@@ -61,9 +59,11 @@ export function OnlinePanel({
 
   const kind = state.contactKind as ContactKind;
   const info = CONTACT_KINDS[kind];
+  // Lien de vérification : la marque l'ouvre dans son espace Uny et voit tout de suite si l'étudiant est vérifié
+  const verifyLink = state.verifyToken ? `${window.location.origin}/p/${state.verifyToken}` : null;
   const message = `Bonjour ${brand}, je suis étudiant(e) vérifié(e) Uny. Je souhaite profiter de l'offre « ${title} »${
     state.code ? ` avec mon code ${state.code}` : ""
-  }.`;
+  }.${verifyLink ? ` Vérifie mon statut ici : ${verifyLink}` : ""}`;
   const href = contactHref(kind, state.contact, message);
   const external = kind !== "phone";
   const Icon = kind === "whatsapp" ? MessageCircle : kind === "phone" ? Phone : ExternalLink;
@@ -75,6 +75,15 @@ export function OnlinePanel({
       setCopied(true);
     } catch {
       setCopied(false);
+    }
+  };
+  const copyLink = async () => {
+    if (!verifyLink) return;
+    try {
+      await navigator.clipboard.writeText(verifyLink);
+      setLinkCopied(true);
+    } catch {
+      setLinkCopied(false);
     }
   };
 
@@ -101,8 +110,8 @@ export function OnlinePanel({
       )}
       <p className="text-ink/80 text-sm">
         {kind === "whatsapp"
-          ? "Le message est déjà prêt, avec ton code : envoie-le et commande directement."
-          : `Donne ton code à ${brand} au moment de commander${state.mode === "unique" ? " : la marque le valide dans son espace Uny" : ""}.`}
+          ? `Le message est déjà prêt, avec ton code${verifyLink ? " et ton lien de vérification" : ""} : envoie-le et commande directement.`
+          : `Donne ton code à ${brand} au moment de commander${verifyLink ? ", avec ton lien de vérification" : state.mode === "unique" ? " : la marque le valide dans son espace Uny" : ""}.`}
       </p>
       <a
         href={href}
@@ -114,6 +123,18 @@ export function OnlinePanel({
         {kind === "phone" ? ` ${brand}` : ""}
       </a>
       {info.phone && <p className="text-muted text-xs">{state.contact}</p>}
+      {verifyLink && (
+        <button
+          type="button"
+          onClick={copyLink}
+          className="text-brand-600 inline-flex items-center gap-1 text-sm font-semibold"
+          data-testid="verify-link"
+          data-link={verifyLink}
+        >
+          {linkCopied ? <Check className="size-4" aria-hidden /> : <Copy className="size-4" aria-hidden />}
+          {linkCopied ? "Lien copié" : "Copier mon lien de vérification"}
+        </button>
+      )}
     </div>
   );
 }
