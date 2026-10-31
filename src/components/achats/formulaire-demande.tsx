@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { Bouton, Champ, Message, Selection } from "@/components/ui";
 import { creerDemande } from "@/lib/achats/demandes";
 import { ETAT_INITIAL } from "@/lib/formulaires/etat";
+import { nomUnite } from "@/lib/metier/unites";
 
 /** Formulaire de demande d'achat (magasin, production, achats). */
 export function FormulaireDemande({ espace, articles }: { espace: string; articles: { id: string; libelle: string; unite: string }[] }) {
@@ -18,7 +19,7 @@ export function FormulaireDemande({ espace, articles }: { espace: string; articl
           <option value="">— Choisir —</option>
           {articles.map((a) => (
             <option key={a.id} value={a.id}>
-              {a.libelle} ({a.unite})
+              {a.libelle} ({nomUnite(a.unite)})
             </option>
           ))}
         </Selection>

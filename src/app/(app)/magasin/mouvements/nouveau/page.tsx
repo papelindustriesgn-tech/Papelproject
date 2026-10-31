@@ -13,7 +13,10 @@ export default async function NouveauMouvement({ searchParams }: PageProps<"/mag
   return (
     <>
       <TitrePage
-        fil={[{ libelle: "Mouvements", href: "/magasin/mouvements" }]} titre="Nouveau mouvement" sousTitre="Pour réceptionner une bobine jumbo, utilisez l'écran Bobines (n° de lot, poids, grammage)." />
+        fil={[{ libelle: "Entrées et sorties", href: "/magasin/mouvements" }]}
+        titre="Entrée ou sortie de stock"
+        sousTitre="Trois questions. Les bobines jumbo s'enregistrent à part : Bobines → Réceptionner (numéro et poids)."
+      />
       <Carte>
         <FormulaireMouvement
           articleInitial={typeof sp.article === "string" ? sp.article : undefined}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
+import { nomUnite,
   colis, colisVersPaquets, colisVersPalettes, equivalentColis, ErreurUnite, formaterPoids, formaterQuantite, formaterStockProduitFini, kg, kgVersTonnes,
   paquets, paquetsVersColis, palettes, palettesVersColis, poidsTotalBobines, somme, tonnes, tonnesVersKg,
 } from "../unites";
@@ -68,5 +68,15 @@ describe("affichage", () => {
   it("poids en kg ou en tonnes", () => {
     expect(formaterPoids(kg(16305))).toBe("16,31 t");
     expect(formaterPoids(kg(850))).toBe("850 kg");
+  });
+});
+describe("nomUnite", () => {
+  it("symbole pour ce qui se pèse, pluriel pour ce qui se compte", () => {
+    expect(nomUnite("kg")).toBe("kg");
+    expect(nomUnite("litre")).toBe("L");
+    expect(nomUnite("unite")).toBe("unités");
+    expect(nomUnite("paquet")).toBe("paquets");
+    expect(nomUnite("inconnue")).toBe("inconnue");
+    expect(nomUnite(null)).toBe("");
   });
 });

@@ -5,7 +5,7 @@ import { BarreEtapes, Bouton, Carte, Cellule, etapesStatut, Tableau, TitrePage }
 import { LIBELLES_STATUT_CONTENEUR, STATUTS_BC } from "@/lib/achats/libelles";
 import { formaterDate } from "@/lib/formulaires/dates";
 import { formaterMontant, usdCentimesVersGnf } from "@/lib/metier/devises";
-import { formaterPoids, kg } from "@/lib/metier/unites";
+import { nomUnite, formaterPoids, kg } from "@/lib/metier/unites";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { changerStatutBc, supprimerLigneBc } from "../../actions";
@@ -38,9 +38,9 @@ export default async function PageBc({ params }: PageProps<"/achats/commandes/[i
             {b.lignes_bc.map((l) => (
               <tr key={l.id}>
                 <Cellule>{l.articles?.libelle}</Cellule>
-                <Cellule>{l.articles?.unite === "kg" ? formaterPoids(kg(Number(l.quantite))) : `${nombre(l.quantite, 3)} ${l.articles?.unite}`}</Cellule>
+                <Cellule>{l.articles?.unite === "kg" ? formaterPoids(kg(Number(l.quantite))) : `${nombre(l.quantite, 3)} ${nomUnite(l.articles?.unite)}`}</Cellule>
                 <Cellule>
-                  {nombre(l.prix_unitaire, 4)} {devise} / {l.articles?.unite}
+                  {nombre(l.prix_unitaire, 4)} {devise} / {nomUnite(l.articles?.unite)}
                   {l.articles?.unite === "kg" && <span className="block text-sm text-gray-600">soit {nombre(Number(l.prix_unitaire) * 1000, 2)} {devise} / t</span>}
                 </Cellule>
                 <Cellule className="font-semibold">{formaterMontant(l.montant_devise, devise)}</Cellule>

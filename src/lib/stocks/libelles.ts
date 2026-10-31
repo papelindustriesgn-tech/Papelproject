@@ -14,23 +14,27 @@ export const UNITES_STOCK: { valeur: CodeUnite; libelle: string }[] = [
 
 export interface DefinitionTypeMouvement {
   libelle: string;
+  /** Une phrase simple pour choisir le bon cas. */
+  explication: string;
   /** +1 entrée, −1 sortie, 0 au choix (correction). */
   sens: 1 | -1 | 0;
   /** Proposé dans le formulaire de saisie manuelle du magasin. */
   saisieManuelle: boolean;
+  /** Cas courant (grand bouton) ; sinon rangé dans « Autres cas » (d'habitude fait automatiquement ailleurs). */
+  courant?: boolean;
 }
 
 export const TYPES_MOUVEMENT: Record<string, DefinitionTypeMouvement> = {
-  reception: { libelle: "Réception", sens: 1, saisieManuelle: true },
-  production: { libelle: "Entrée de production", sens: 1, saisieManuelle: true },
-  retour: { libelle: "Retour", sens: 1, saisieManuelle: true },
-  consommation: { libelle: "Consommation", sens: -1, saisieManuelle: true },
-  sortie: { libelle: "Sortie diverse", sens: -1, saisieManuelle: true },
-  vente: { libelle: "Vente / livraison", sens: -1, saisieManuelle: true },
-  dotation: { libelle: "Dotation offerte", sens: -1, saisieManuelle: true },
-  rebut: { libelle: "Mise au rebut", sens: -1, saisieManuelle: true },
-  ajustement: { libelle: "Ajustement", sens: 0, saisieManuelle: true },
-  inventaire: { libelle: "Écart d'inventaire", sens: 0, saisieManuelle: false },
+  reception: { libelle: "Arrivée de marchandise", explication: "Achat reçu d'un fournisseur.", sens: 1, saisieManuelle: true, courant: true },
+  consommation: { libelle: "Sortie pour l'usine", explication: "Pris par la production : emballages, encre, cartons…", sens: -1, saisieManuelle: true, courant: true },
+  sortie: { libelle: "Autre sortie", explication: "Don, échantillon, prêt… Dites pourquoi.", sens: -1, saisieManuelle: true, courant: true },
+  rebut: { libelle: "Jeté (abîmé)", explication: "Marchandise abîmée et jetée. Dites pourquoi.", sens: -1, saisieManuelle: true, courant: true },
+  ajustement: { libelle: "Correction", explication: "Corriger une erreur de stock, en plus ou en moins. Dites pourquoi.", sens: 0, saisieManuelle: true, courant: true },
+  retour: { libelle: "Retour d'un client", explication: "Marchandise rapportée par un client.", sens: 1, saisieManuelle: true },
+  production: { libelle: "Entrée de production", explication: "D'habitude automatique : la validation d'une saisie de production le fait.", sens: 1, saisieManuelle: true },
+  vente: { libelle: "Sortie pour une vente", explication: "D'habitude automatique : le bon de livraison le fait.", sens: -1, saisieManuelle: true },
+  dotation: { libelle: "Paquets offerts", explication: "D'habitude automatique depuis la facture du client.", sens: -1, saisieManuelle: true },
+  inventaire: { libelle: "Écart d'inventaire", explication: "Fait par la validation d'un inventaire.", sens: 0, saisieManuelle: false },
 };
 
 /** Quantité affichée selon l'article : produits finis en paquets + colis, poids en kg, etc. */

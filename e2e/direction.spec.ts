@@ -1,22 +1,24 @@
 import { expect, test } from "@playwright/test";
 import { connecter } from "./aide";
 
-test("tableau de bord Direction : cinq domaines, alertes, comparaison, période", async ({ page }) => {
+test("tableau de bord Direction : quatre questions, verdicts, explications, période", async ({ page }) => {
   await connecter(page, "pdg");
   await expect(page).toHaveURL(/\/applications$/);
   await page.getByRole("link", { name: "Tableau de bord" }).first().click();
   await expect(page).toHaveURL(/\/direction$/);
-  for (const titre of ["Commercial", "Production", "Stock", "Finance", "Distribution"]) {
-    await expect(page.getByRole("heading", { name: titre, exact: true })).toBeVisible();
+  for (const question of ["Gagne-t-on de l'argent ?", "Combien coûte un paquet ?", "L'usine tourne-t-elle bien ?", "Les clients sont-ils servis ?"]) {
+    await expect(page.getByRole("heading", { name: question })).toBeVisible();
   }
-  await expect(page.getByRole("heading", { name: /Alertes prioritaires du jour/ })).toBeVisible();
-  await expect(page.getByText("Marge sur les ventes", { exact: true })).toBeVisible();
-  await expect(page.getByText(/vs période précédente/).first()).toBeVisible();
+  await expect(page.getByText(/Ça va|À surveiller|Critique|Pas encore de données/).first()).toBeVisible();
+  await expect(page.getByText("Marge sur les ventes").first()).toBeVisible();
 
-  await page.getByLabel("Période").selectOption("7j");
-  await page.getByRole("button", { name: "Afficher" }).click();
-  await expect(page).toHaveURL(/periode=7j/);
-  await expect(page.getByText(/Rendement réel \/ théorique/).first()).toBeVisible();
+  // Bulle « ? » : explique le mot sans quitter la page.
+  await page.getByRole("button", { name: /Que veut dire « Rendement »/ }).first().click();
+  await expect(page.getByRole("note")).toContainText("tonne de papier");
+  await expect(page).toHaveURL(/\/direction$/);
+
+  await page.goto("/direction?periode=semaine");
+  await expect(page.getByText(/Rendement/).first()).toBeVisible();
 });
 
 test("rapport hebdomadaire imprimable", async ({ page }) => {

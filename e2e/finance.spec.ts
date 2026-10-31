@@ -11,7 +11,7 @@ test("finance : facture fournisseur réglée, caisse protégée, résultat, pré
   await page.goto("/finance/fournisseurs/nouvelle");
   await page.getByLabel("Bénéficiaire (sans fiche)").fill("EDG Coyah (E2E)");
   await page.getByLabel("Libellé").fill("Électricité septembre");
-  await page.getByLabel("Catégorie").selectOption({ label: "Énergie : électricité, carburant du groupe (variable)" });
+  await page.getByLabel("Catégorie").selectOption({ label: "Énergie : électricité, carburant du groupe (fixe)" });
   await page.getByLabel("Montant HT").fill("2 500 000");
   await page.getByRole("button", { name: "Enregistrer la facture" }).click();
   await page.waitForURL(/\/finance\/fournisseurs\/[0-9a-f-]{36}/);
@@ -37,12 +37,12 @@ test("finance : facture fournisseur réglée, caisse protégée, résultat, pré
 
   // 3. Résultat et prévisionnel
   await page.goto("/finance/resultat");
-  await expect(page.getByRole("cell", { name: "Résultat d'exploitation" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "Bénéfice (ou perte)" })).toBeVisible();
   await page.goto("/finance/previsionnel");
   await expect(page.getByText("Solde de départ")).toBeVisible();
 
   // 4. Export du journal des ventes : CSV « ; » équilibré
-  await page.goto("/finance/exports");
+  await page.goto("/finance/exports?du=2000-01-01&au=2099-12-31");
   const lien = page.getByRole("link", { name: "Télécharger" }).first();
   const reponse = await page.request.get((await lien.getAttribute("href"))!);
   expect(reponse.status()).toBe(200);

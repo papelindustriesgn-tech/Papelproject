@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { Badge, BarreEtapes, Bouton, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { formaterDate, formaterDateHeure } from "@/lib/formulaires/dates";
-import { formaterStockProduitFini, type Paquets } from "@/lib/metier/unites";
+import { nomUnite, formaterStockProduitFini, type Paquets } from "@/lib/metier/unites";
 import { libelleAlerte, minutes, pct } from "@/lib/production/affichage";
 import { chargerFiches } from "@/lib/production/indicateurs";
 import { gnf, nombre } from "@/lib/stocks/libelles";
@@ -192,7 +192,7 @@ export default async function PageFiche({ params }: PageProps<"/production/fiche
                   <Cellule>{c.articles?.libelle}</Cellule>
                   <Cellule className="font-mono">{c.lots?.numero_lot ?? "—"}</Cellule>
                   <Cellule className="font-semibold">
-                    {nombre(c.quantite, 3)} {c.articles?.unite}
+                    {nombre(c.quantite, 3)} {nomUnite(c.articles?.unite)}
                   </Cellule>
                   <Cellule>{modifiable && <BoutonSupprimerLigne table="fiche_consommations" id={c.id} ficheId={f.id} />}</Cellule>
                 </tr>

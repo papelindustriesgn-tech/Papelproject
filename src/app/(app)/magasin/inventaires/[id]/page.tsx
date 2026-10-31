@@ -3,6 +3,7 @@ import { BarreEtapes, Carte, TitrePage } from "@/components/ui";
 import { formaterDate } from "@/lib/formulaires/dates";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { FeuilleComptage } from "../formulaires";
+import { nomUnite } from "@/lib/metier/unites";
 
 export default async function PageInventaire({ params }: PageProps<"/magasin/inventaires/[id]">) {
   const { id } = await params;
@@ -18,7 +19,7 @@ export default async function PageInventaire({ params }: PageProps<"/magasin/inv
       id: l.id,
       libelle: `${l.articles?.code} – ${l.articles?.libelle}`,
       lot: l.lots?.numero_lot ?? null,
-      unite: l.articles?.unite ?? "",
+      unite: nomUnite(l.articles?.unite),
       theorique: Number(l.quantite_theorique),
       comptee: l.quantite_comptee === null ? null : Number(l.quantite_comptee),
     }))
@@ -29,7 +30,7 @@ export default async function PageInventaire({ params }: PageProps<"/magasin/inv
       <TitrePage
         fil={[{ libelle: "Inventaires", href: "/magasin/inventaires" }]}
         titre={inv.libelle}
-        sousTitre={`Ouvert le ${formaterDate(inv.date_inventaire)} · ${lignes.length} ligne(s)`}
+        sousTitre={`Commencé le ${formaterDate(inv.date_inventaire)} · ${lignes.length} article(s) à compter`}
         action={<BarreEtapes etapes={[{ code: "en_cours", libelle: "Comptage en cours" }, { code: "valide", libelle: "Validé" }]} courante={inv.statut === "valide" ? "valide" : "en_cours"} />}
       />
       <Carte>

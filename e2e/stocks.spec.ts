@@ -10,7 +10,7 @@ test.describe("magasin", () => {
     await page.goto("/magasin");
     await expect(page.getByText("Matière première disponible")).toBeVisible();
     await expect(page.getByText(/\d+,\d+ t/).first()).toBeVisible();
-    await expect(page.getByText(/Jours de couverture MP/)).toBeVisible();
+    await expect(page.getByText(/Jours de stock de matière/)).toBeVisible();
     await expect(page.getByText(/paquets \(\d+ colis/).first()).toBeVisible();
   });
 
@@ -26,12 +26,12 @@ test.describe("magasin", () => {
 
     // Consommation de 300 kg sur cette bobine
     await page.goto("/magasin/mouvements/nouveau");
-    await page.getByLabel("Type de mouvement").selectOption("consommation");
-    await page.getByLabel("Article").selectOption({ label: "MP-BOB-13 – Bobine jumbo 13 g/m² – 3 plis" });
+    await page.getByLabel(/Sortie pour l'usine/).check();
+    await page.getByLabel("2. Quel article ?").selectOption({ label: "MP-BOB – Bobine jumbo pâte vierge 13 g/m²" });
     await page.getByLabel("Bobine (n° de lot)").selectOption({ label: `${lot} — reste 1050.5 kg` });
-    await page.getByLabel(/Quantité/).fill("300");
-    await page.getByRole("button", { name: "Enregistrer le mouvement" }).click();
-    await expect(page.getByText("Consommation enregistrée. Le stock est à jour.")).toBeVisible();
+    await page.getByLabel(/Combien/).fill("300");
+    await page.getByRole("button", { name: /(Ajouter au|Retirer du) stock/ }).click();
+    await expect(page.getByText("C'est enregistré (sortie pour l'usine). Le stock est à jour.")).toBeVisible();
 
     await page.goto(`/magasin/bobines?q=${lot}`);
     await expect(page.getByRole("row", { name: new RegExp(lot) })).toContainText("750,5 kg");
@@ -39,22 +39,22 @@ test.describe("magasin", () => {
 
   test("une sortie supérieure au stock est refusée avec un message clair", async ({ page }) => {
     await page.goto("/magasin/mouvements/nouveau");
-    await page.getByLabel("Type de mouvement").selectOption("sortie");
-    await page.getByLabel("Article").selectOption({ label: "EMB-ENCRE – Encre d'impression" });
-    await page.getByLabel(/Quantité/).fill("100000");
-    await page.getByLabel("Motif / référence").fill("Test");
-    await page.getByRole("button", { name: "Enregistrer le mouvement" }).click();
+    await page.getByLabel(/Autre sortie/).check();
+    await page.getByLabel("2. Quel article ?").selectOption({ label: "EMB-ENCRE – Encre d'impression" });
+    await page.getByLabel(/Combien/).fill("100000");
+    await page.getByLabel("Pourquoi ?").fill("Test");
+    await page.getByRole("button", { name: /(Ajouter au|Retirer du) stock/ }).click();
     await expect(page.getByText(/Stock insuffisant pour « Encre d'impression »/)).toBeVisible();
   });
 
   test("un ajustement sans motif est refusé", async ({ page }) => {
     await page.goto("/magasin/mouvements/nouveau");
-    await page.getByLabel("Type de mouvement").selectOption("ajustement");
-    await page.getByLabel("Sens").selectOption("entree");
-    await page.getByLabel("Article").selectOption({ label: "EMB-SAC – Sac de colis" });
-    await page.getByLabel(/Quantité/).fill("5");
-    await page.getByRole("button", { name: "Enregistrer le mouvement" }).click();
-    await expect(page.getByText("Le motif est obligatoire pour ce type de mouvement.")).toBeVisible();
+    await page.getByLabel(/^Correction/).check();
+    await page.getByLabel("Il y en a en plus").check();
+    await page.getByLabel("2. Quel article ?").selectOption({ label: "EMB-SAC – Sac de colis" });
+    await page.getByLabel(/Combien/).fill("5");
+    await page.getByRole("button", { name: /(Ajouter au|Retirer du) stock/ }).click();
+    await expect(page.getByText(/Dites en quelques mots pourquoi/)).toBeVisible();
   });
 
   test("création d'un article, puis entrée en stock", async ({ page }) => {
@@ -69,11 +69,11 @@ test.describe("magasin", () => {
     await expect(page.getByRole("heading", { name: "Étiquettes colis" })).toBeVisible();
 
     await page.getByRole("link", { name: "+ Mouvement" }).click();
-    await page.getByLabel("Type de mouvement").selectOption("reception");
-    await page.getByLabel(/Quantité/).fill("500");
-    await page.getByLabel(/Coût unitaire/).fill("250");
-    await page.getByRole("button", { name: "Enregistrer le mouvement" }).click();
-    await expect(page.getByText("Réception enregistrée. Le stock est à jour.")).toBeVisible();
+    await page.getByLabel(/Arrivée de marchandise/).check();
+    await page.getByLabel(/Combien/).fill("500");
+    await page.getByLabel(/Prix payé par/).fill("250");
+    await page.getByRole("button", { name: /(Ajouter au|Retirer du) stock/ }).click();
+    await expect(page.getByText("C'est enregistré (arrivée de marchandise). Le stock est à jour.")).toBeVisible();
     await page.goto(`/magasin/articles?q=${code}`);
     await expect(page.getByRole("row", { name: new RegExp(code) })).toContainText("500 unités");
   });
@@ -81,8 +81,8 @@ test.describe("magasin", () => {
   test("inventaire des emballages : comptage, écart, validation", async ({ page }) => {
     await page.goto("/magasin/inventaires");
     await page.getByLabel("Nom de l'inventaire").fill("Inventaire test e2e");
-    await page.getByLabel("Périmètre").selectOption("emballage");
-    await page.getByRole("button", { name: "Ouvrir l'inventaire" }).click();
+    await page.getByLabel("Quoi compter ?").selectOption("emballage");
+    await page.getByRole("button", { name: "Préparer la feuille de comptage" }).click();
     await expect(page.getByRole("heading", { name: "Inventaire test e2e" })).toBeVisible();
 
     // Recopie le théorique partout, sauf pour l'encre : 58 litres comptés.
@@ -91,13 +91,14 @@ test.describe("magasin", () => {
     for (let i = 0; i < n; i++) {
       const ligne = cases.nth(i).locator("xpath=ancestor::li");
       const texte = (await ligne.innerText()).replace(/ | /g, " ");
-      const theorique = /Théorique : ([\d ,]+)/.exec(texte)![1].replace(/ /g, "");
-      await cases.nth(i).fill(texte.includes("Encre") ? "58" : theorique);
+      const theorique = /Dans l'ERP : ([\d ,]+)/.exec(texte)![1].replace(/ /g, "");
+      await cases.nth(i).fill(texte.includes("Encre d'impression") ? "58" : theorique);
     }
-    await page.getByRole("button", { name: "Enregistrer les comptages" }).click();
+    await page.getByRole("button", { name: "Enregistrer et continuer plus tard" }).click();
     await expect(page.getByText("Comptages enregistrés.")).toBeVisible();
     await page.getByRole("button", { name: "Valider l'inventaire" }).click();
-    await expect(page.getByText(/Inventaire validé : 1 écart/)).toBeVisible();
+    await page.getByRole("button", { name: "Oui, valider" }).click();
+    await expect(page.getByText(/Inventaire validé : 1 article/)).toBeVisible();
   });
 
   test("le magasinier enrichit une liste de référence", async ({ page }) => {

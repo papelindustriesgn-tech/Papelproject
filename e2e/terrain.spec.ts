@@ -20,7 +20,7 @@ test("commercial hors ligne : PVA, check-in, facture numérotée, puis synchroni
   await expect(page.getByText("● Hors ligne — vous pouvez continuer à travailler")).toBeVisible();
 
   const nom = `Boutique hors ligne ${Date.now() % 100000}`;
-  await page.getByRole("button", { name: /Nouveau PVA/ }).first().click();
+  await page.getByRole("button", { name: /Nouveau point de vente/ }).first().click();
   await page.getByLabel("Nom du point de vente *").fill(nom);
   await page.getByLabel("Type *").selectOption({ label: "Détaillant" });
   await page.getByLabel("Repère (pour retrouver la boutique)").fill("À côté de la pharmacie");
@@ -56,7 +56,7 @@ test("commercial hors ligne : PVA, check-in, facture numérotée, puis synchroni
   await page.getByRole("button", { name: "Valider la facture" }).click();
   await expect(page.getByText(/Document FA-\d{4}-C01-\d{5} validé/)).toBeVisible();
   const numero = (await page.getByText(/Document FA-\d{4}-C01-\d{5} validé/).innerText()).match(/FA-\d{4}-C01-\d{5}/)![0];
-  await expect(page.getByText("Deux-cent-mille").or(page.getByText(/Quatre-cent-un-mille-deux-cents francs guinéens/))).toBeVisible();
+  await expect(page.getByText("Trois-cent-trente-cinq-mille-deux francs guinéens")).toBeVisible();
 
   await page.getByRole("button", { name: "Retour" }).click();
   await page.getByRole("navigation", { name: "Onglets" }).getByRole("button", { name: "Accueil" }).click();
@@ -86,16 +86,16 @@ test("commercial : ma journée, points de vente, onglets", async ({ page }) => {
   await connecter(page, "commercial1");
   await expect(page.getByRole("heading", { name: "Tournée du jour" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Mes objectifs du mois" })).toBeVisible({ timeout: 30_000 });
-  await page.getByRole("button", { name: /Prospects et clients/ }).click();
+  await page.getByRole("button", { name: /Points de vente et clients/ }).click();
   await expect(page.getByRole("button", { name: /Ets Diallo & Frères/ }).first()).toBeVisible();
   // Liste des clients (encours, vendre) puis fiche client.
-  await page.getByRole("group", { name: "Prospects ou clients" }).getByRole("button", { name: "Clients" }).click();
+  await page.getByRole("group", { name: "Points de vente ou clients" }).getByRole("button", { name: "Clients", exact: true }).click();
   await page.getByRole("button", { name: /Ets Diallo & Frères \(démo\)/ }).click();
   await expect(page.getByRole("button", { name: /Nouvelle facture \/ devis/ })).toBeVisible();
   await expect(page.getByText("Reste à payer")).toBeVisible();
   // Prospects, filtre « En rupture », puis onglet « Moi ».
   await page.getByRole("navigation", { name: "Onglets" }).getByRole("button", { name: "Clients" }).click();
-  await page.getByRole("button", { name: "Prospects", exact: true }).click();
+  await page.getByRole("button", { name: "Pas encore clients", exact: true }).click();
   await page.getByRole("button", { name: "En rupture" }).click();
   await page.getByRole("navigation", { name: "Onglets" }).getByRole("button", { name: "Moi" }).click();
   await expect(page.getByRole("heading", { name: "Mes objectifs" })).toBeVisible();

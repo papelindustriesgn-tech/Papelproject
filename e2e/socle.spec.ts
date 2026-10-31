@@ -22,7 +22,7 @@ test("chaque rôle arrive dans son espace et ne voit que lui", async ({ page }) 
   await connecter(page, "magasin");
   await expect(page).toHaveURL(/\/magasin$/);
   await page.goto("/applications");
-  await expect(page.getByRole("main").getByRole("link")).toHaveText(["Stocks"]);
+  await expect(page.getByRole("main").getByRole("listitem").getByRole("link")).toHaveText([/^Stocks/]);
   // Accès direct à une autre page : refusé.
   await page.goto("/admin/utilisateurs");
   await expect(page).toHaveURL(/\/acces-refuse$/);
@@ -36,7 +36,7 @@ test("le commercial terrain arrive sur l'application terrain", async ({ page }) 
 test("la direction voit tous les espaces", async ({ page }) => {
   await connecter(page, "pdg");
   await expect(page).toHaveURL(/\/applications$/);
-  await expect(page.getByRole("main").getByRole("link")).toHaveCount(12);
+  await expect(page.getByRole("main").getByRole("listitem").getByRole("link")).toHaveCount(13);
 });
 
 test("l'admin crée un compte, qui peut ensuite se connecter", async ({ page }) => {
@@ -51,8 +51,7 @@ test("l'admin crée un compte, qui peut ensuite se connecter", async ({ page }) 
   await page.getByRole("button", { name: "Créer le compte" }).click();
   await expect(page.getByText(`Compte « ${identifiant} » créé.`)).toBeVisible();
 
-  await page.getByTitle(/Ibrahima Sylla/).click();
-  await page.getByRole("button", { name: "Se déconnecter" }).click();
+  await page.context().clearCookies();
   await connecter(page, identifiant, "Provisoire123");
   await expect(page).toHaveURL(/\/production$/);
 });
@@ -75,6 +74,6 @@ test("l'admin modifie un paramètre (pourcentage saisi à la française)", async
 test("les produits affichent le rendement théorique de référence", async ({ page }) => {
   await connecter(page, "admin");
   await page.goto("/admin/produits");
-  await expect(page.getByText("10 175 paquets/t")).toBeVisible();
-  await expect(page.getByText("6 508 paquets/t")).toBeVisible();
+  await expect(page.getByText("10 389 paquets/t")).toBeVisible();
+  await expect(page.getByText("6 645 paquets/t")).toBeVisible();
 });

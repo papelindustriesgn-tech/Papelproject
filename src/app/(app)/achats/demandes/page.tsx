@@ -6,6 +6,7 @@ import { formaterDate } from "@/lib/formulaires/dates";
 import { nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { FormulaireTraitement } from "./formulaire-traitement";
+import { nomUnite } from "@/lib/metier/unites";
 
 export const metadata: Metadata = { title: "Demandes d'achat" };
 
@@ -25,7 +26,7 @@ export default async function PageDemandes() {
               <Cellule className="font-mono">{d.numero}</Cellule>
               <Cellule>{d.articles?.libelle}</Cellule>
               <Cellule>
-                {nombre(d.quantite, 3)} {d.articles?.unite}
+                {nombre(d.quantite, 3)} {nomUnite(d.articles?.unite)}
               </Cellule>
               <Cellule>{formaterDate(d.date_besoin)}</Cellule>
               <Cellule>{d.profils ? `${d.profils.prenom} ${d.profils.nom}` : "—"}</Cellule>

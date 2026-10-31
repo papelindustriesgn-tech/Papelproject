@@ -4,6 +4,7 @@ import { formaterDate } from "@/lib/formulaires/dates";
 import { nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { FormulaireDemande } from "./formulaire-demande";
+import { nomUnite } from "@/lib/metier/unites";
 
 /** Demandes d'achat d'un service (magasin, production, maintenance) : nouvelle demande et suivi de ses demandes (RLS : le demandeur voit les siennes). */
 export async function MesDemandes({ espace }: { espace: string }) {
@@ -26,7 +27,7 @@ export async function MesDemandes({ espace }: { espace: string }) {
               <Cellule>{formaterDate(d.created_at)}</Cellule>
               <Cellule>{d.articles?.libelle}</Cellule>
               <Cellule>
-                {nombre(d.quantite, 3)} {d.articles?.unite}
+                {nombre(d.quantite, 3)} {nomUnite(d.articles?.unite)}
               </Cellule>
               <Cellule>{formaterDate(d.date_besoin)}</Cellule>
               <Cellule>{d.motif}</Cellule>

@@ -105,7 +105,7 @@ export async function basculerArticle(id: string, actif: boolean): Promise<void>
 // Mouvements
 // -----------------------------------------------------------------------------
 const schemaMouvement = z.object({
-  type: z.string().refine((t) => TYPES_MOUVEMENT[t]?.saisieManuelle, "Choisissez un type de mouvement."),
+  type: z.string().refine((t) => TYPES_MOUVEMENT[t]?.saisieManuelle, "Choisissez ce qui se passe (question 1)."),
   sens: z.enum(["entree", "sortie"]).optional(),
   article_id: z.string().regex(/^[0-9a-f-]{36}$/i, "Choisissez un article."),
   lot_id: uuidOptionnel,
@@ -124,7 +124,7 @@ export async function enregistrerMouvement(_e: EtatFormulaire, fd: FormData): Pr
   const def = TYPES_MOUVEMENT[d.type];
   if (def.sens === 0 && !d.sens) return { erreurs: { sens: "Précisez s'il s'agit d'une entrée ou d'une sortie." }, valeurs };
   const signe = def.sens !== 0 ? def.sens : d.sens === "entree" ? 1 : -1;
-  if (["ajustement", "sortie", "rebut"].includes(d.type) && !d.motif) return { erreurs: { motif: "Le motif est obligatoire pour ce type de mouvement." }, valeurs };
+  if (["ajustement", "sortie", "rebut"].includes(d.type) && !d.motif) return { erreurs: { motif: "Dites en quelques mots pourquoi (obligatoire pour une sortie, un déchet ou une correction)." }, valeurs };
 
   const supabase = await clientServeur();
   const { error } = await supabase.from("mouvements_stock").insert({
@@ -140,7 +140,7 @@ export async function enregistrerMouvement(_e: EtatFormulaire, fd: FormData): Pr
   });
   if (error) return { message: messageErreurBase(error), valeurs };
   rafraichir();
-  return { ok: true, message: `${def.libelle} enregistrée. Le stock est à jour.` };
+  return { ok: true, message: `C'est enregistré (${def.libelle.toLowerCase()}). Le stock est à jour.` };
 }
 
 // -----------------------------------------------------------------------------
@@ -224,9 +224,8 @@ export async function ouvrirInventaire(_e: EtatFormulaire, fd: FormData): Promis
   redirect(`/magasin/inventaires/${data}`);
 }
 
-export async function enregistrerComptages(inventaireId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
-  await exigerEspace("magasin");
-  const supabase = await clientServeur();
+/** Enregistre les cases de la feuille de comptage (une case vide = pas encore comptée). Null si tout va bien. */
+async function sauverComptages(supabase: Awaited<ReturnType<typeof clientServeur>>, inventaireId: string, fd: FormData): Promise<EtatFormulaire | null> {
   const erreurs: Record<string, string> = {};
   const majs: { id: string; quantite_comptee: number | null }[] = [];
   for (const [cle, brut] of fd.entries()) {
@@ -240,20 +239,40 @@ export async function enregistrerComptages(inventaireId: string, _e: EtatFormula
     if (n === null || n < 0) erreurs[cle] = "Quantité invalide.";
     else majs.push({ id, quantite_comptee: n });
   }
-  if (Object.keys(erreurs).length) return { erreurs, valeurs: valeursFormulaire(fd), message: "Certaines quantités sont invalides." };
+  if (Object.keys(erreurs).length) return { erreurs, valeurs: valeursFormulaire(fd), message: "Certaines quantités sont invalides : corrigez les cases en rouge." };
   for (const m of majs) {
     const { error } = await supabase.from("inventaire_lignes").update({ quantite_comptee: m.quantite_comptee }).eq("id", m.id).eq("inventaire_id", inventaireId);
     if (error) return { message: messageErreurBase(error), valeurs: valeursFormulaire(fd) };
   }
-  revalidatePath(`/magasin/inventaires/${inventaireId}`);
-  return { ok: true, message: "Comptages enregistrés." };
+  return null;
 }
 
-export async function validerInventaire(inventaireId: string, _e: EtatFormulaire): Promise<EtatFormulaire> {
+export async function enregistrerComptages(inventaireId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
   await exigerEspace("magasin");
   const supabase = await clientServeur();
+  const erreur = await sauverComptages(supabase, inventaireId, fd);
+  if (erreur) return erreur;
+  revalidatePath(`/magasin/inventaires/${inventaireId}`);
+  return { ok: true, message: "Comptages enregistrés. Vous pouvez continuer plus tard." };
+}
+
+/**
+ * Valide l'inventaire en une fois : enregistre les cases saisies, puis les lignes laissées vides gardent leur stock
+ * actuel (compté = stock de l'ERP, donc aucun écart), puis passe les écarts en stock. Un comptage partiel n'est plus bloquant.
+ */
+export async function validerInventaire(inventaireId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
+  await exigerEspace("magasin");
+  const supabase = await clientServeur();
+  const erreur = await sauverComptages(supabase, inventaireId, fd);
+  if (erreur) return erreur;
+  const { data: vides, error: errVides } = await supabase.from("inventaire_lignes").select("id, quantite_theorique").eq("inventaire_id", inventaireId).is("quantite_comptee", null);
+  if (errVides) return { message: messageErreurBase(errVides) };
+  for (const l of vides ?? []) {
+    const { error } = await supabase.from("inventaire_lignes").update({ quantite_comptee: l.quantite_theorique }).eq("id", l.id).eq("inventaire_id", inventaireId);
+    if (error) return { message: messageErreurBase(error) };
+  }
   const { data, error } = await supabase.rpc("valider_inventaire", { p_inventaire: inventaireId });
   if (error) return { message: messageErreurBase(error) };
   rafraichir();
-  redirect(avecSucces(`/magasin/inventaires/${inventaireId}`, `Inventaire validé : ${data} écart(s) passé(s) en stock.`));
+  redirect(avecSucces(`/magasin/inventaires/${inventaireId}`, data ? `Inventaire validé : ${data} article(s) mis à jour dans le stock.` : "Inventaire validé : aucun écart, le stock ne change pas."));
 }

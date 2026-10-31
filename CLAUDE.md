@@ -124,6 +124,12 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
 - Unité, famille et suivi par lot d'un article sont **définitifs** (sinon créer un nouvel article).
 - Jours de couverture = stock ÷ (sorties consommation/vente/sortie/dotation/rebut des N derniers jours ÷ N), N = `stock_periode_consommation_jours`.
 - Inventaire : photo du théorique à l'ouverture, comptage, validation → un mouvement « inventaire » par écart.
+  **Un comptage partiel ne bloque pas** (constat du 31/10/2026 : un inventaire réel resté ouvert 2 semaines, stock à zéro) : la validation
+  (`validerInventaire`) enregistre les cases saisies, puis les cases **vides gardent le stock de l'ERP** (compté = théorique, aucun écart),
+  puis appelle `valider_inventaire` (inchangée). Une seule feuille : « Enregistrer et continuer plus tard » ou « Valider » (confirmation).
+  Les bobines ne passent pas par un premier inventaire : on les réceptionne (numéro + poids) ; l'écran le dit, Mise en route aussi.
+- Saisie manuelle d'un mouvement : grands choix expliqués (`TYPES_MOUVEMENT` : `libelle` simple + `explication`, `courant` = grand bouton,
+  les cas d'habitude automatiques rangés dans « Autres cas »). Unité affichée avec `nomUnite()` (`unites.ts`) : jamais le code brut (« unite »).
 - Écritures sensibles par fonctions SQL atomiques : `receptionner_bobine`, `ouvrir_inventaire`, `valider_inventaire`.
 
 ## 6 ter. Production (étape 3)

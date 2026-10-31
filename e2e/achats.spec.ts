@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { connecter } from "./aide";
 
-const ARTICLE_BOBINE = "Bobine jumbo 13 g/m² – 3 plis (kg)";
+const ARTICLE_BOBINE = "Bobine jumbo pâte vierge 13 g/m² (kg)";
 
 test.describe("achats", () => {
   test("de la demande du magasin à la réception des bobines au coût de revient complet", async ({ browser }) => {
@@ -33,7 +33,7 @@ test.describe("achats", () => {
 
     await achats.goto("/achats/commandes/nouveau");
     await achats.getByLabel("Fournisseur").selectOption({ label: "Fournisseur pâte A (démo) (USD)" });
-    await achats.getByLabel("Frais d'approche estimés (GNF)").fill("10 000 000");
+    await achats.getByLabel("Frais d'arrivée prévus (GNF)").fill("10 000 000");
     await achats.getByRole("checkbox", { name: new RegExp(numero) }).check();
     await achats.getByRole("button", { name: "Créer et ajouter les lignes" }).click();
     await achats.waitForURL(/\/achats\/commandes\/[0-9a-f-]{36}/);
@@ -71,7 +71,7 @@ test.describe("achats", () => {
     await magasin.goto("/magasin/bobines");
     const choixConteneur = magasin.getByLabel("Conteneur", { exact: true });
     await choixConteneur.selectOption((await choixConteneur.locator("option", { hasText: reference }).getAttribute("value"))!);
-    await magasin.getByLabel("Article", { exact: true }).selectOption({ label: "Bobine jumbo 13 g/m² – 3 plis" });
+    await magasin.getByLabel("Article", { exact: true }).selectOption({ label: "Bobine jumbo pâte vierge 13 g/m²" });
     await magasin.getByLabel("N° de lot").fill(lot);
     await magasin.getByLabel("Poids net (kg)").fill("1 000");
     await magasin.getByRole("button", { name: "Réceptionner la bobine" }).click();

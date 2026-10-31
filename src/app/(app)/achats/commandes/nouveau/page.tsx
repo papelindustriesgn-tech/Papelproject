@@ -3,6 +3,7 @@ import { aujourdhui } from "@/lib/formulaires/dates";
 import { nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { FormulaireBc } from "./formulaire";
+import { nomUnite } from "@/lib/metier/unites";
 
 export default async function NouveauBc() {
   const supabase = await clientServeur();
@@ -18,7 +19,7 @@ export default async function NouveauBc() {
         <FormulaireBc
           dateDuJour={aujourdhui()}
           fournisseurs={fournisseurs ?? []}
-          demandes={(demandes ?? []).map((d) => ({ id: d.id, libelle: `${d.numero} – ${d.articles?.libelle} : ${nombre(d.quantite, 3)} ${d.articles?.unite}` }))}
+          demandes={(demandes ?? []).map((d) => ({ id: d.id, libelle: `${d.numero} – ${d.articles?.libelle} : ${nombre(d.quantite, 3)} ${nomUnite(d.articles?.unite)}` }))}
         />
       </Carte>
     </>

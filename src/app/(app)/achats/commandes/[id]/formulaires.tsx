@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { Bouton, Champ, Message, Selection } from "@/components/ui";
 import { ETAT_INITIAL } from "@/lib/formulaires/etat";
 import { ajouterConteneur, ajouterLigneBc, envoyerBc } from "../../actions";
+import { nomUnite } from "@/lib/metier/unites";
 
 export function FormulaireLigneBc({ bcId, devise, articles }: { bcId: string; devise: string; articles: { id: string; libelle: string; unite: string }[] }) {
   const [etat, action, enCours] = useActionState(ajouterLigneBc.bind(null, bcId), ETAT_INITIAL);
@@ -19,7 +20,7 @@ export function FormulaireLigneBc({ bcId, devise, articles }: { bcId: string; de
       <Selection libelle="Article" name="article_id" value={articleId} onChange={(ev) => setArticleId(ev.target.value)} erreur={e.article_id} className="basis-56 flex-1">
         <option value="">— Choisir —</option>
         {articles.map((a) => (
-          <option key={a.id} value={a.id}>{a.libelle} ({a.unite})</option>
+          <option key={a.id} value={a.id}>{a.libelle} ({nomUnite(a.unite)})</option>
         ))}
       </Selection>
       {article?.unite === "kg" ? (
@@ -30,7 +31,7 @@ export function FormulaireLigneBc({ bcId, devise, articles }: { bcId: string; de
       ) : (
         <input type="hidden" name="unite_saisie" value="stock" />
       )}
-      <Champ libelle={`Quantité${article ? ` (${enTonnes ? "t" : article.unite})` : ""}`} name="quantite" inputMode="decimal" defaultValue={v.quantite} erreur={e.quantite} className="basis-28 flex-1" />
+      <Champ libelle={`Quantité${article ? ` (${enTonnes ? "t" : nomUnite(article.unite)})` : ""}`} name="quantite" inputMode="decimal" defaultValue={v.quantite} erreur={e.quantite} className="basis-28 flex-1" />
       <Champ libelle={`Prix (${devise} / ${enTonnes ? "t" : (article?.unite ?? "unité")})`} name="prix_unitaire" inputMode="decimal" defaultValue={v.prix_unitaire} erreur={e.prix_unitaire} className="basis-36 flex-1" />
       <Bouton type="submit" disabled={enCours}>Ajouter</Bouton>
     </form>

@@ -163,6 +163,17 @@ const espaces = (t: string) => t.replace(/[\u202f\u00a0]/g, " ");
 /** Unités pouvant avoir des décimales (poids, volumes, longueurs). */
 const UNITES_DECIMALES: CodeUnite[] = ["kg", "tonne", "litre", "metre"];
 
+/**
+ * Nom court d'une unité à côté d'un nombre ou d'une case de saisie : symbole pour les poids et volumes (« kg », « L »),
+ * pluriel pour ce qui se compte (« unités », « paquets »). Code inconnu : renvoyé tel quel.
+ */
+export function nomUnite(code: string | null | undefined): string {
+  if (!code) return "";
+  const l = LIBELLES_UNITES[code as CodeUnite];
+  if (!l) return code;
+  return UNITES_DECIMALES.includes(code as CodeUnite) ? l.symbole : l.pluriel;
+}
+
 /** Formate une quantité avec son unité, ex. « 1 250 paquets », « 3,25 t », « 12,5 L ». */
 export function formaterQuantite(valeur: number, unite: CodeUnite): string {
   const l = LIBELLES_UNITES[unite];

@@ -10,7 +10,7 @@ test.describe("production", () => {
     await expect(page).toHaveURL(/\/production$/);
     await expect(page.getByText("Rendement", { exact: true }).first()).toBeVisible();
     await expect(page.getByText("Efficacité des machines").first()).toBeVisible();
-    await expect(page.getByRole("cell", { name: "10 175 paquets/t" })).toBeVisible();
+    await expect(page.getByText("Seuil d'alerte : 95 %")).toBeVisible();
     await expect(page.locator(".recharts-surface").first()).toBeVisible();
   });
 

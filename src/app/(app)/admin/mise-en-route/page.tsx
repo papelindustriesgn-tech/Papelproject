@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { TitrePage } from "@/components/ui";
 import { exigerConnexion } from "@/lib/auth/session";
+import { formaterDate } from "@/lib/formulaires/dates";
 import { clientServeur } from "@/lib/supabase/serveur";
 
 export const metadata: Metadata = { title: "Mise en route" };
@@ -23,7 +24,7 @@ export default async function MiseEnRoute() {
   const u = await exigerConnexion();
   const supabase = await clientServeur();
   const compter = { count: "exact" as const, head: true };
-  const [entreprise, comptes, soldes, fournisseurs, mouvements, cadences, operateurs, clients, commerciaux, employes, vehicules, equipements, objectif] = await Promise.all([
+  const [entreprise, comptes, soldes, fournisseurs, mouvements, cadences, operateurs, clients, commerciaux, employes, vehicules, equipements, objectif, bobines, comptageEnCours] = await Promise.all([
     supabase.from("parametres").select("cle, valeur").in("cle", ["entreprise_telephone", "entreprise_nif", "entreprise_rccm"]),
     supabase.from("profils").select("id", compter).eq("actif", true),
     supabase.from("comptes_tresorerie").select("id", compter).eq("actif", true).neq("solde_initial", 0).neq("libelle", "Banque – financement du projet"),
@@ -37,6 +38,8 @@ export default async function MiseEnRoute() {
     supabase.from("vehicules").select("id", compter),
     supabase.from("equipements").select("id", compter),
     supabase.from("objectifs_services").select("mois").order("mois").limit(1).maybeSingle(),
+    supabase.from("lots").select("id", compter),
+    supabase.from("inventaires").select("id, libelle, date_inventaire").eq("statut", "en_cours").order("date_inventaire").limit(1).maybeSingle(),
   ]);
   const n = (r: { count: number | null }) => r.count ?? 0;
   const infosEntreprise = (entreprise.data ?? []).every((p) => String(p.valeur ?? "").replace(/"/g, "").trim() !== "");
@@ -62,7 +65,20 @@ export default async function MiseEnRoute() {
     {
       titre: "3. Usine",
       etapes: [
-        { titre: "Stock de départ", detail: "Faites un inventaire : chaque article compté devient le stock de départ.", lien: "/magasin/inventaires", etat: n(mouvements) > 0 ? "fait" : "a_faire" },
+        { titre: "Bobines en stock", detail: "Enregistrez chaque bobine présente à l'usine (numéro et poids) : Bobines → Réceptionner.", lien: "/magasin/bobines", etat: n(bobines) > 0 ? "fait" : "a_faire" },
+        comptageEnCours.data
+          ? {
+              titre: "Stock de départ : comptage à terminer",
+              detail: `« ${comptageEnCours.data.libelle} », commencé le ${formaterDate(comptageEnCours.data.date_inventaire)}, n'est pas validé : le stock reste à zéro. Ouvrez-le et validez (les cases vides gardent leur stock).`,
+              lien: `/magasin/inventaires/${comptageEnCours.data.id}`,
+              etat: "a_faire" as const,
+            }
+          : {
+              titre: "Stock de départ (emballages, produits finis)",
+              detail: "Faites un inventaire : chaque quantité comptée devient le stock de départ.",
+              lien: "/magasin/inventaires",
+              etat: n(mouvements) > 0 ? ("fait" as const) : ("a_faire" as const),
+            },
         { titre: "Opérateurs", detail: "Les opérateurs de chaque équipe (sans compte informatique).", lien: "/production/listes/operateurs", etat: n(operateurs) > 0 ? "fait" : "a_faire" },
         { titre: "Cadences des machines", detail: "Paquets par minute par ligne et par produit : nécessaires au calcul de l'efficacité des machines.", lien: "/production/listes/cadences", etat: n(cadences) > 0 ? "fait" : "a_faire" },
         { titre: "Équipements", detail: "Machines de la ligne, pour la maintenance et les pannes.", lien: "/maintenance/listes/equipements", etat: n(equipements) > 0 ? "fait" : "a_faire" },
