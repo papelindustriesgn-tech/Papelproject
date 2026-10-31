@@ -8,7 +8,9 @@ import { schemaDateIso } from "@/lib/formulaires/dates";
 import { erreursZod, messageErreurBase, valeursFormulaire, type EtatFormulaire } from "@/lib/formulaires/etat";
 import { lireNombre } from "@/lib/formulaires/nombres";
 import { avecSucces } from "@/lib/formulaires/succes";
+import { analyserImport, cleDoublon } from "@/lib/import/collage";
 import { calculerBulletin } from "@/lib/metier/rh";
+import { DOUBLON_EMPLOYE, chargerImportEmployes } from "@/lib/rh/import";
 import { finMois } from "@/lib/rh/libelles";
 import { chargerReglesPaie, elementsVariables } from "@/lib/rh/paie";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -38,6 +40,36 @@ function rafraichir() {
 // -----------------------------------------------------------------------------
 // Employés
 // -----------------------------------------------------------------------------
+/**
+ * « Coller depuis Excel » : le texte collé est relu ici avec les listes de la base (même analyse que l'aperçu),
+ * et seules les lignes sans erreur sont créées, en une fois. Les employés déjà présents sont refusés.
+ */
+export async function importerEmployes(_e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
+  await exigerEspace("rh");
+  const supabase = await clientServeur();
+  const { colonnes, existants } = await chargerImportEmployes(supabase);
+  const r = analyserImport(String(fd.get("texte") ?? ""), colonnes, { doublon: cleDoublon(DOUBLON_EMPLOYE), existants: new Set(existants) });
+  if (!r.valides.length) return { message: "Aucune ligne prête : corrigez les lignes en rouge, puis recollez-les." };
+  const { error } = await supabase.from("employes").insert(
+    r.valides.map(({ valeurs: v }) => ({
+      nom: String(v.nom),
+      prenom: String(v.prenom ?? ""),
+      sexe: (v.sexe as string | null) ?? null,
+      telephone: String(v.telephone ?? ""),
+      departement_id: (v.departement_id as string | null) ?? null,
+      fonction_id: (v.fonction_id as string | null) ?? null,
+      type_contrat_id: (v.type_contrat_id as string | null) ?? null,
+      date_embauche: String(v.date_embauche),
+      salaire_base_gnf: Number(v.salaire_base_gnf ?? 0),
+      numero_cnss: String(v.numero_cnss ?? ""),
+    })),
+  );
+  if (error) return { message: messageErreurBase(error) };
+  rafraichir();
+  const reste = r.lignes.length - r.valides.length;
+  return { ok: true, message: `${r.valides.length} employé(s) créé(s), avec leur matricule.${reste ? ` ${reste} ligne(s) en erreur non créée(s).` : ""}` };
+}
+
 const schemaEmploye = z
   .object({
     nom: z.string().trim().min(1, "Nom obligatoire.").max(60),

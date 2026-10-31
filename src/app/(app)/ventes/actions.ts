@@ -10,6 +10,8 @@ import { lireNombre } from "@/lib/formulaires/nombres";
 import { avecSucces } from "@/lib/formulaires/succes";
 import { clientServeur } from "@/lib/supabase/serveur";
 import type { Database } from "@/lib/supabase/types";
+import { analyserImport, cleDoublon } from "@/lib/import/collage";
+import { chargerImportClients, DOUBLON_CLIENT } from "@/lib/ventes/import";
 
 type TypePiece = Database["public"]["Enums"]["type_piece"];
 
@@ -68,6 +70,39 @@ export async function enregistrerClient(id: string | null, _e: EtatFormulaire, f
   if (error) return { message: messageErreurBase(error), valeurs };
   rafraichir();
   return { ok: true, message: "Client enregistré." };
+}
+
+/**
+ * « Coller depuis Excel » : relit le collage avec les listes de la base (même analyse que l'aperçu) et crée
+ * les clients sans erreur en une fois (code CL- automatique). Un client du même nom est refusé.
+ */
+export async function importerClients(_e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
+  await exigerEspace("ventes");
+  const { colonnes, existants } = await chargerImportClients();
+  const r = analyserImport(String(fd.get("texte") ?? ""), colonnes, { doublon: cleDoublon(DOUBLON_CLIENT), existants: new Set(existants) });
+  if (!r.valides.length) return { message: "Aucune ligne prête : corrigez les lignes en rouge, puis recollez-les." };
+  const lignes = r.valides.map(({ valeurs: v }) => {
+    const credit = v.condition_paiement === "credit";
+    return {
+      nom: String(v.nom),
+      type_client_id: String(v.type_client_id),
+      responsable: String(v.responsable ?? ""),
+      telephone: String(v.telephone ?? ""),
+      adresse: String(v.adresse ?? ""),
+      quartier_id: (v.quartier_id as string | null) ?? null,
+      nif: String(v.nif ?? ""),
+      commercial_id: (v.commercial_id as string | null) ?? null,
+      condition_paiement: credit ? "credit" : "comptant",
+      delai_paiement_jours: credit ? Math.min(180, Number(v.delai_paiement_jours ?? 0)) : 0,
+      plafond_credit_gnf: Number(v.plafond_credit_gnf ?? 0),
+    };
+  });
+  const supabase = await clientServeur();
+  const { error } = await supabase.from("clients").insert(lignes);
+  if (error) return { message: messageErreurBase(error) };
+  rafraichir();
+  const reste = r.lignes.length - r.valides.length;
+  return { ok: true, message: `${r.valides.length} client(s) créé(s), avec leur code.${reste ? ` ${reste} ligne(s) en erreur non créée(s).` : ""}` };
 }
 
 export async function basculerClient(id: string, actif: boolean): Promise<void> {

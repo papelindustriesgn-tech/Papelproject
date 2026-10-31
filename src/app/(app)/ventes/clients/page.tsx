@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ExportCsv } from "@/components/donnees/export-csv";
 import { BarreFiltres, lireParam, motifRecherche } from "@/components/donnees/filtres";
-import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
+import { Badge, Carte, Cellule, classesBouton, Tableau, TitrePage } from "@/components/ui";
 import { gnf } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 
@@ -31,9 +31,14 @@ export default async function PageClients({ searchParams }: PageProps<"/ventes/c
       <TitrePage
         titre="Clients"
         action={
-          <Link href="/ventes/clients/nouveau" className="min-h-11 inline-flex items-center rounded bg-papel-700 px-4 font-medium text-white hover:bg-papel-800 md:min-h-9">
-            + Nouveau client
-          </Link>
+          <>
+            <Link href="/ventes/clients/importer" className={classesBouton("secondaire")}>
+              Coller depuis Excel
+            </Link>
+            <Link href="/ventes/clients/nouveau" className={classesBouton()}>
+              + Nouveau client
+            </Link>
+          </>
         }
       />
       <Carte>

@@ -87,10 +87,10 @@ export default async function MiseEnRoute() {
     {
       titre: "4. Ventes et personnel",
       etapes: [
-        { titre: "Clients", detail: "Grossistes, semi-grossistes… avec leur plafond de crédit.", lien: "/ventes/clients", etat: n(clients) > 0 ? "fait" : "a_faire" },
+        { titre: "Clients", detail: "Grossistes, semi-grossistes… avec leur plafond de crédit. Liste dans Excel ? « Coller depuis Excel » les crée tous d'un coup.", lien: n(clients) > 0 ? "/ventes/clients" : "/ventes/clients/importer", etat: n(clients) > 0 ? "fait" : "a_faire" },
         { titre: "Commerciaux terrain", detail: "Un compte « commercial terrain » par commercial, avec sa série de factures.", lien: "/admin/utilisateurs", etat: n(commerciaux) > 0 ? "fait" : "a_faire" },
         { titre: "Véhicules et chauffeurs", detail: "Pour organiser les livraisons.", lien: "/logistique/listes/vehicules", etat: n(vehicules) > 0 ? "fait" : "a_faire" },
-        { titre: "Employés", detail: "Dossiers du personnel pour les présences, congés et la paie.", lien: "/rh/employes", etat: n(employes) > 0 ? "fait" : "a_faire" },
+        { titre: "Employés", detail: "Dossiers du personnel pour les présences, congés et la paie. Liste dans Excel ? « Coller depuis Excel » les crée tous d'un coup.", lien: n(employes) > 0 ? "/rh/employes" : "/rh/employes/importer", etat: n(employes) > 0 ? "fait" : "a_faire" },
       ],
     },
     {

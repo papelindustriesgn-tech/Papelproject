@@ -471,6 +471,12 @@ ou la Direction (inscription publique désactivée), via les fonctions SQL `cree
   « Combien avez-vous produit ? »…), coche verte quand c'est rempli, champs facultatifs marqués « (facultatif) », aide sous les champs,
   boutons qui disent ce qu'ils font (« Ajouter cette production », « Terminer et valider »), valeurs proposées d'office (poste en cours
   d'après l'heure), résultats calculés **après** la saisie. Choix exclusifs en grands boutons expliqués plutôt qu'une liste (type de vente).
+- **Coller depuis Excel** (saisie en masse : employés `/rh/employes/importer`, clients `/ventes/clients/importer`) : `ImportCollage`
+  (`src/components/donnees/import-collage.tsx`) + analyse pure et testée `analyserImport` (`src/lib/import/collage.ts`) : tabulations d'Excel
+  ou « ; », ligne de titres reconnue dans n'importe quel ordre (sinon ordre du modèle), dates JJ/MM/AAAA, montants « 1 500 000 GNF »,
+  valeurs des listes de l'ERP reconnues par leur libellé, erreur expliquée par ligne, **doublons refusés** (en base ou dans le collage :
+  recoller est sans danger). L'action serveur **rejoue la même analyse** sur le texte avec les listes lues en base, puis insère les lignes
+  prêtes en une fois. Nouvel import = une fonction de colonnes (`chargerImport…`) + une action + une page.
 - **Filtres des vues d'ensemble** (`SelecteurPeriode` avec `params`, `filtres`, `gammes`, `commerciaux`) : **un seul bouton de date qui se déroule** (`ChoixPeriode` : sous-filtres Jour, Semaine, Mois, Année, Dates, puis la liste des choix ; `?periode=&jour=&mois=&annee=`, `lirePeriode`) + **gamme de produits**
   (table `produits`, archivées comprises) + **commercial** (rôle commercial terrain ; liste lisible par Direction, responsable commercial,
   finance), dans l'adresse (`?periode=&produit=&commercial=`, `lireFiltresAnalyse`, options `chargerOptionsFiltres`).

@@ -40,9 +40,14 @@ export default async function PageEmployes({ searchParams }: PageProps<"/rh/empl
         titre="Employés"
         sousTitre={`${lignes.length} employé(s)`}
         action={
-          <Link href="/rh/employes/nouveau" className={classesBouton()}>
-            Nouvel employé
-          </Link>
+          <>
+            <Link href="/rh/employes/importer" className={classesBouton("secondaire")}>
+              Coller depuis Excel
+            </Link>
+            <Link href="/rh/employes/nouveau" className={classesBouton()}>
+              Nouvel employé
+            </Link>
+          </>
         }
       />
       <Carte>
@@ -86,7 +91,7 @@ export default async function PageEmployes({ searchParams }: PageProps<"/rh/empl
             );
           })}
         </Tableau>
-        {!lignes.length && <p className="py-4 text-gray-700">Aucun employé. Créez le premier avec « Nouvel employé ».</p>}
+        {!lignes.length && <p className="py-4 text-gray-700">Aucun employé. Ajoutez-les un par un (« Nouvel employé ») ou tous d&apos;un coup depuis votre liste Excel (« Coller depuis Excel »).</p>}
       </Carte>
     </>
   );
