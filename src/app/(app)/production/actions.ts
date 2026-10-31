@@ -186,7 +186,24 @@ export async function enregistrerOperateurs(ficheId: string, _e: EtatFormulaire,
     if (e2) return { message: messageErreurBase(e2) };
   }
   rafraichirFiche(ficheId);
-  return { ok: true, message: `${ids.length} opérateur(s) présent(s).` };
+  return { ok: true, message: `${ids.length} personne(s) présente(s), enregistré.` };
+}
+
+/** Ajoute une personne absente de la liste des opérateurs, depuis la saisie, et la coche présente sur ce poste. */
+export async function ajouterOperateurPresent(ficheId: string, equipeId: string | null, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
+  await exigerEspace("production");
+  const prenom = String(fd.get("prenom") ?? "").trim();
+  const nom = String(fd.get("nom") ?? "").trim();
+  if (!nom) return { erreurs: { nom: "Le nom est obligatoire." }, valeurs: valeursFormulaire(fd) };
+  if (nom.length > 80 || prenom.length > 80) return { message: "Nom ou prénom trop long.", valeurs: valeursFormulaire(fd) };
+  const supabase = await clientServeur();
+  const id = crypto.randomUUID();
+  const { error: e1 } = await supabase.from("operateurs").insert({ id, nom, prenom, equipe_id: equipeId });
+  if (e1) return { message: messageErreurBase(e1), valeurs: valeursFormulaire(fd) };
+  const { error: e2 } = await supabase.from("fiche_operateurs").insert({ fiche_id: ficheId, operateur_id: id });
+  if (e2) return { message: messageErreurBase(e2) };
+  rafraichirFiche(ficheId);
+  return { ok: true, message: `${prenom} ${nom} ajouté(e) et coché(e) présent(e).`.trim() };
 }
 
 // -----------------------------------------------------------------------------

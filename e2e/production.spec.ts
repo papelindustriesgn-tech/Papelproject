@@ -49,8 +49,14 @@ test.describe("production", () => {
     await expect(page.getByText("94,6 %", { exact: true })).toBeVisible();
 
     await page.getByLabel(/Mohamed Camara/).check();
-    await page.getByRole("button", { name: "Enregistrer les présents" }).click();
-    await expect(page.getByText("1 opérateur(s) présent(s).")).toBeVisible();
+    await expect(page.getByText("1 personne(s) présente(s), enregistré.")).toBeVisible();
+    // Une personne absente de la liste s'ajoute sans quitter la saisie, déjà cochée.
+    await page.getByText("+ Ajouter une personne qui n'est pas dans la liste").click();
+    await page.getByLabel("Prénom").fill("Awa");
+    await page.getByLabel("Nom", { exact: true }).fill("Camara");
+    await page.getByRole("button", { name: "Ajouter et cocher présent" }).click();
+    await expect(page.getByText("Awa Camara ajouté(e) et coché(e) présent(e).")).toBeVisible();
+    await expect(page.getByLabel(/Awa Camara/)).toBeChecked();
 
     await page.getByRole("button", { name: "Terminer et valider" }).click();
     await page.getByRole("button", { name: "Oui, c'est juste : valider" }).click();

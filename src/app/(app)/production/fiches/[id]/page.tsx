@@ -10,7 +10,7 @@ import { chargerFiches } from "@/lib/production/indicateurs";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { supprimerFiche, supprimerLigneFiche } from "../../actions";
-import { BoutonValider, FormulaireArret, FormulaireConsommation, FormulaireEnTete, FormulaireOperateurs, FormulaireProduction } from "./formulaires";
+import { AjoutOperateur, BoutonValider, FormulaireArret, FormulaireConsommation, FormulaireEnTete, FormulaireOperateurs, FormulaireProduction } from "./formulaires";
 
 function BoutonSupprimerLigne({ table, id, ficheId }: { table: "fiche_consommations" | "fiche_productions" | "fiche_arrets"; id: string; ficheId: string }) {
   return (
@@ -155,6 +155,7 @@ export default async function PageFiche({ params }: PageProps<"/production/fiche
             presents={f.fiche_operateurs.map((o) => o.operateur_id)}
             operateurs={(operateurs ?? []).map((o) => ({ id: o.id, libelle: `${o.prenom} ${o.nom}`, equipe: o.equipes?.libelle ?? "" }))}
           />
+          {modifiable && <AjoutOperateur ficheId={f.id} equipeId={f.equipe_id} ouvert={!operateurs?.length} />}
         </Etape>
 
         <Etape numero={2} titre="Combien avez-vous produit ?" question="Comptez les colis fermés, puis les paquets qui restent hors colis. Pesez les déchets." faite={faites.production} modifiable={modifiable}>

@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { Bouton, Champ, Message, Selection } from "@/components/ui";
 import { ETAT_INITIAL, type EtatFormulaire } from "@/lib/formulaires/etat";
-import { ajouterArret, ajouterConsommation, ajouterProduction, enregistrerOperateurs, modifierEnTete, validerFiche } from "../../actions";
+import { ajouterArret, ajouterConsommation, ajouterOperateurPresent, ajouterProduction, enregistrerOperateurs, modifierEnTete, validerFiche } from "../../actions";
 
 type Option = { id: string; libelle: string };
 
@@ -129,17 +129,22 @@ export function FormulaireOperateurs({ ficheId, operateurs, presents, modifiable
       <div className="grid gap-1 sm:grid-cols-2">
         {operateurs.map((o) => (
           <label key={o.id} className="flex min-h-11 items-center gap-2 rounded border border-gray-200 px-3">
-            <input type="checkbox" name="operateurs" value={o.id} defaultChecked={presents.includes(o.id)} disabled={!modifiable} className="size-5 accent-papel-700" />
+            <input
+              type="checkbox"
+              name="operateurs"
+              value={o.id}
+              defaultChecked={presents.includes(o.id)}
+              disabled={!modifiable}
+              // Enregistré dès qu'on coche : pas de bouton à ne pas oublier.
+              onChange={(e) => e.currentTarget.form?.requestSubmit()}
+              className="size-5 accent-papel-700"
+            />
             {o.libelle} <span className="text-sm text-gray-600">{o.equipe}</span>
           </label>
         ))}
       </div>
-      {!operateurs.length && <p className="text-gray-700">Aucune personne dans la liste : demandez au chef de production de les ajouter (Configuration → Opérateurs).</p>}
-      {modifiable && operateurs.length > 0 && (
-        <Bouton type="submit" variante="secondaire" disabled={enCours} className="self-start">
-          {enCours ? "Enregistrement…" : "Enregistrer les présents"}
-        </Bouton>
-      )}
+      {!operateurs.length && <p className="text-gray-700">La liste est vide : ajoutez les personnes ci-dessous, une seule fois. Elles seront proposées aux prochains postes.</p>}
+      {modifiable && operateurs.length > 0 && <p className="text-sm text-gray-600">{enCours ? "Enregistrement…" : "Chaque case cochée est enregistrée tout de suite."}</p>}
     </form>
   );
 }
@@ -219,5 +224,24 @@ export function BoutonValider({ ficheId, avertissements }: { ficheId: string; av
         </form>
       )}
     </div>
+  );
+}
+
+/** Ajouter une personne qui n'est pas encore dans la liste, sans quitter la saisie (elle est cochée présente). */
+export function AjoutOperateur({ ficheId, equipeId, ouvert }: { ficheId: string; equipeId: string | null; ouvert: boolean }) {
+  const [etat, action, enCours] = useActionState(ajouterOperateurPresent.bind(null, ficheId, equipeId), ETAT_INITIAL);
+  const v = etat.ok ? {} : (etat.valeurs ?? {});
+  return (
+    <details className="mt-3 rounded-xl border border-dashed border-gray-300 px-3" open={ouvert || (!!etat.message && !etat.ok)}>
+      <summary className="min-h-11 cursor-pointer py-2.5 font-semibold text-papel-700">+ Ajouter une personne qui n&apos;est pas dans la liste</summary>
+      <form action={action} className="flex flex-wrap items-end gap-2 pb-3" key={etat.ok ? etat.message : "saisie"}>
+        <Retour etat={etat} />
+        <Champ libelle="Prénom" name="prenom" defaultValue={v.prenom} className="basis-36 flex-1" autoComplete="off" />
+        <Champ libelle="Nom" name="nom" defaultValue={v.nom} erreur={etat.erreurs?.nom} className="basis-36 flex-1" autoComplete="off" />
+        <Bouton type="submit" disabled={enCours}>
+          {enCours ? "Ajout…" : "Ajouter et cocher présent"}
+        </Bouton>
+      </form>
+    </details>
   );
 }
