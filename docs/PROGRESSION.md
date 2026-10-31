@@ -159,7 +159,7 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
   prod : écrans connectés (Découvrir, Explorer, redirections des rubriques masquées), testés en local.
 - Retour arrière : redéployer `dpl_DYnav2fJQjY1wVmTxNg7Jmtzep26`.
 
-## Lien de vérification des commandes à distance (31/10, branche `claude/uny-offres-xf13tt`) — testé en local, NON déployé
+## Lien de vérification des commandes à distance (31/10) — déployé le 31/10
 - ✅ L'étudiant vérifié obtient son code personnel et un lien `https://www.unyafrica.com/p/<jeton>` (jeton aléatoire
   de 128 bits), inclus dans le message WhatsApp ou à copier
 - ✅ Le commerçant ouvre le lien (dans l'application Android si installée, sinon le site) : page « Vérifier un
@@ -168,3 +168,11 @@ Dernière mise à jour : 22/10/2026. Branche : `claude/uny-audit-securite-xf13tt
 - ✅ Réservé aux membres de la marque du code (`promo_link_lookup`) : toute autre personne ne voit aucune donnée
 - ✅ Photo de l'étudiant aussi affichée dans « Vérifier le code » du Scanner
 - Migration `20261031000001_promo_verify_link.sql` (non destructive) ; suite complète 88 réussis, 4 ignorés — local
+- Prod au 31/10 (autorisation du propriétaire) : sauvegarde automatique du jour `uny-2026-10-31-03-10-21` (aucun code
+  créé depuis ; sauvegarde supplémentaire impossible, secret des tâches non disponible dans la session), migration
+  `20261031000001`, code `5025596`, déploiement `dpl_DrT1qJwpzZC9AFknqfwNXvVYvsa4`. Vérifié en prod : 3 codes existants
+  avec un jeton unique ; vérification refusée aux visiteurs anonymes ; compte hors marque → aucune donnée (essai
+  annulé) ; lien inconnu → « introuvable » ; `/p/…` redirige vers la page de vérification (connexion demandée) ;
+  QR des cartes `/v/…` inchangé ; aucune erreur d'exécution. Non rejoué en prod : parcours connecté complet
+  (testé en local).
+- Retour arrière : redéployer `dpl_7qrEZP4FdYxEXkzhw4MqnvRKPUKC` (la colonne `verify_token` peut rester).
