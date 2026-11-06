@@ -102,11 +102,16 @@ FORM_RATE_LIMIT_MAX=1000 npm run test:e2e       # ajouter PW_CHROMIUM_PATH=… s
 
 Les tests de bout en bout couvrent : 10 pages publiques × 5 largeurs (360 → 1536 px) sans défilement horizontal ni erreur console, gammes non commercialisées masquées, brouillons introuvables, menu mobile, SEO (sitemap, robots, canonical, Open Graph, JSON-LD), 404, formulaires professionnel et contact (erreurs puis succès), protection de l'admin (sans session, mauvais mot de passe, compte non admin), suivi d'un prospect et export CSV (avec neutralisation des formules), WhatsApp contextuel, modification d'un produit visible sur le site, publication d'une actualité.
 
-## Déploiement Vercel (non effectué — à lancer après validation)
+## État du déploiement (6 novembre 2026)
 
-1. Créer un **projet Supabase dédié** (ne pas réutiliser celui d'Uny), puis appliquer les migrations : `npx supabase link --project-ref <ref>` puis `npx supabase db push`.
+- **Base de données** : migrations appliquées sur le projet Supabase `papel-erp-test` (`shnwwgbcrmfswzaecmeo`, eu-west-3), choisi faute de place gratuite pour un projet dédié. Les tables du site (`products`, `leads`, `site_settings`…) sont distinctes de celles de l'ERP (noms français) ; aucune donnée ERP n'a été modifiée. **Recommandé** : migrer plus tard vers un projet dédié (rejouer les 3 migrations).
+- **Vercel** : projet `papel-site` **non créé** (l'API a refusé : 403). Voir ci-dessous.
+
+## Déploiement Vercel
+
+1. Base de données : voir ci-dessus (migrations déjà appliquées). Pour un projet dédié : `npx supabase link --project-ref <ref>` puis `npx supabase db push`.
 2. Dans Supabase › Authentication : désactiver « Allow new users to sign up », garder le fournisseur e-mail actif ; renseigner l'URL du site.
-3. Créer le premier administrateur : `npm run admin:create -- …` avec les variables de production dans `.env.local` (le temps de la commande).
+3. Premier administrateur : créer l'utilisateur dans Supabase › Authentication › Users (e-mail + mot de passe, « Auto confirm »), puis l'ajouter à `admin_users` : `insert into public.admin_users (user_id) select id from auth.users where email = '<email>';` (ou `npm run admin:create`).
 4. Vercel › nouveau projet sur ce dépôt, **Root Directory = `papel-site`**, framework Next.js, variables ci-dessus.
 5. Brancher le domaine, mettre `NEXT_PUBLIC_SITE_URL` à jour, vérifier `/sitemap.xml` et le déclarer dans Google Search Console.
 
