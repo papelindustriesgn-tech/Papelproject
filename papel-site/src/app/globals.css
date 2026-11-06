@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+/*
+ * Design system Papel Industries
+ * Couleurs relevées sur le logo officiel et l'emballage Papel Doux :
+ *   vert Papel (logo)        #095146
+ *   vert profond (logo)      #25473E
+ *   vert anis (logo)         #CEDB7B
+ *   vert feuille (emballage) #1E7A3C
+ *   rouge (emballage)        #E04A2C
+ *   jaune (emballage)        #F1B435
+ */
+@theme {
+  --color-papel-50: #eef6f3;
+  --color-papel-100: #d5e9e2;
+  --color-papel-200: #a9d2c5;
+  --color-papel-300: #74b3a1;
+  --color-papel-500: #1d7a68;
+  --color-papel-600: #0f6457;
+  --color-papel-700: #095146;
+  --color-papel-800: #0a4239;
+  --color-papel-900: #25473e;
+  --color-papel-950: #05261f;
+
+  --color-anis: #cedb7b;
+  --color-anis-soft: #eef2cf;
+  --color-feuille: #1e7a3c;
+  --color-corail: #e04a2c;
+  --color-soleil: #f1b435;
+
+  --color-sable: #f7f5ef;
+  --color-ink: #0f1d19;
+  --color-muted: #55645f;
+  --color-line: #e4e8e5;
+
+  --font-sans: var(--font-dmsans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-urbanist), var(--font-dmsans), ui-sans-serif, sans-serif;
+
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 2px rgb(5 38 31 / 0.04), 0 8px 24px -12px rgb(5 38 31 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(5 38 31 / 0.05), 0 20px 40px -18px rgb(5 38 31 / 0.3);
+
+  --animate-rise: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-white font-sans text-ink antialiased;
+    overflow-x: clip;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight text-balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-papel-500);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--color-anis);
+    color: var(--color-papel-950);
+  }
+}
+
+@utility container-page {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 80rem;
+  padding-inline: 1rem;
+  @media (min-width: 640px) {
+    padding-inline: 1.5rem;
+  }
+  @media (min-width: 1024px) {
+    padding-inline: 2rem;
+  }
+}
+
+@utility eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-papel-600);
+}
+
+/* Motif feuillage discret, inspiré de l'emballage */
+@utility leaf-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23cedb7b' stroke-opacity='.18' stroke-width='1.5'%3E%3Cpath d='M20 70c10-22 30-30 46-30-4 18-18 34-46 30z'/%3E%3Cpath d='M20 70c14-10 26-18 46-30'/%3E%3Cpath d='M78 108c4-16 18-24 32-24-2 12-14 24-32 24z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

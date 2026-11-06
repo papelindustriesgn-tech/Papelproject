@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Site Papel Industries : application Next.js autonome avec sa propre configuration
+    "papel-site/**",
     "mobile/**",
   ]),
 ]);
