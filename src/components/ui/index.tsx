@@ -37,9 +37,9 @@ export function Bouton({
 }
 
 /** Carte blanche arrondie (ombre douce, sans bordure) avec titre facultatif. */
-export function Carte({ titre, action, children, className }: { titre?: ReactNode; action?: ReactNode; children: ReactNode; className?: string }) {
+export function Carte({ titre, action, children, className, id }: { titre?: ReactNode; action?: ReactNode; children: ReactNode; className?: string; id?: string }) {
   return (
-    <section className={cx("ombre-carte min-w-0 rounded-2xl bg-white p-4 md:p-5", className)}>
+    <section id={id} className={cx("ombre-carte min-w-0 rounded-2xl bg-white p-4 md:p-5", className)}>
       {(titre || action) && (
         <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
           {titre && <h2 className="text-[1.08rem] font-semibold text-gray-900">{titre}</h2>}

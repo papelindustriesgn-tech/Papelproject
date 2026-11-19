@@ -98,10 +98,17 @@ export async function AccueilTravail({ espace }: { espace: string }) {
               <ul className="divide-y divide-gray-100">
                 {recents.evenements.map((e, i) => (
                   <li key={i}>
-                    <Link href={e.lien} className="flex min-h-11 items-start gap-3 py-2 hover:bg-papel-50">
-                      <span className="w-24 shrink-0 pt-0.5 text-xs text-gray-500">{formaterDateHeure(e.quand)}</span>
-                      <span className="min-w-0 flex-1 text-sm leading-snug text-gray-900">{e.texte}</span>
-                    </Link>
+                    {e.lien ? (
+                      <Link href={e.lien} className="flex min-h-11 items-start gap-3 py-2 hover:bg-papel-50">
+                        <span className="w-24 shrink-0 pt-0.5 text-xs text-gray-500">{formaterDateHeure(e.quand)}</span>
+                        <span className="min-w-0 flex-1 text-sm leading-snug text-gray-900">{e.texte}</span>
+                      </Link>
+                    ) : (
+                      <p className="flex min-h-11 items-start gap-3 py-2">
+                        <span className="w-24 shrink-0 pt-0.5 text-xs text-gray-500">{formaterDateHeure(e.quand)}</span>
+                        <span className="min-w-0 flex-1 text-sm leading-snug text-gray-900">{e.texte}</span>
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>

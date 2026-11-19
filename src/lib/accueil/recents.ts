@@ -11,7 +11,8 @@ import { clientServeur } from "@/lib/supabase/serveur";
 export interface Evenement {
   quand: string;
   texte: string;
-  lien: string;
+  /** Écran où voir le détail ; null si le service n'y a pas accès. */
+  lien: string | null;
 }
 
 export interface Recents {
@@ -21,7 +22,10 @@ export interface Recents {
 }
 
 type Client = Awaited<ReturnType<typeof clientServeur>>;
-type Source = (s: Client) => Promise<Evenement[]>;
+type Source = (s: Client, espace: string) => Promise<Evenement[]>;
+
+/** Écran du bon de livraison dans l'application de celui qui regarde (chaque service a le sien). */
+const ECRAN_LIVRAISON: Record<string, string> = { magasin: "/magasin/livraisons", logistique: "/logistique/livraisons" };
 
 const NOMS_PIECES: Record<string, string> = { devis: "Devis enregistré", commande: "Commande enregistrée", facture: "Facture enregistrée", avoir: "Avoir (annulation) enregistré" };
 
@@ -31,7 +35,7 @@ function ou<T>(r: { data: T | null; error: unknown }): T {
   return r.data as T;
 }
 
-const mouvements: Source = async (s) => {
+const mouvements: Source = async (s, espace) => {
   const lignes = ou(
     await s
       .from("mouvements_stock")
@@ -46,7 +50,8 @@ const mouvements: Source = async (s) => {
     return {
       quand: m.created_at,
       texte: `${TYPES_MOUVEMENT[m.type]?.libelle ?? m.type} : ${q < 0 ? "−" : "+"}${qte} · ${a?.libelle ?? "article"}`,
-      lien: "/magasin/mouvements",
+      // La production ne voit pas le journal du magasin : le fait reste affiché, sans lien.
+      lien: espace === "production" ? null : "/magasin/mouvements",
     };
   });
 };
@@ -83,7 +88,7 @@ const pieces: Source = async (s) => {
   }));
 };
 
-const livraisons: Source = async (s) => {
+const livraisons: Source = async (s, espace) => {
   const lignes = ou(
     await s
       .from("livraisons")
@@ -98,7 +103,7 @@ const livraisons: Source = async (s) => {
     return {
       quand: (remis ? l.remise_le : l.valide_le) ?? l.valide_le!,
       texte: `Bon de livraison ${l.numero} ${remis ? REMISE[l.statut_remise!] ?? "remis" : "prêt : colis sortis du stock"} · ${l.pieces_vente?.clients?.nom ?? ""}`,
-      lien: `/ventes/livraisons/${l.id}`,
+      lien: `${ECRAN_LIVRAISON[espace] ?? "/ventes/livraisons"}/${l.id}`,
     };
   });
 };
@@ -143,7 +148,7 @@ export const chargerRecents = cache(async (espace: string, nombreMax = 6): Promi
   const sources = SOURCES[espace];
   if (!sources) return null;
   const s = await clientServeur();
-  const resultats = await Promise.allSettled(sources.map((f) => f(s)));
+  const resultats = await Promise.allSettled(sources.map((f) => f(s, espace)));
   const evenements = resultats
     .flatMap((r) => (r.status === "fulfilled" ? r.value : []))
     .sort((a, b) => b.quand.localeCompare(a.quand))
