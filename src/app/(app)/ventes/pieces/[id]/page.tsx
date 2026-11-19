@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, BarreEtapes, Bouton, Carte, Cellule, classesBouton, Message, Tableau, TitrePage } from "@/components/ui";
+import { ConfirmerDate } from "@/components/commandes/confirmer-date";
+import { ProchaineEtape } from "@/components/commandes/prochaine-etape";
+import { estimerCoordination, type Brut } from "@/lib/coordination/estimer";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
+import { etatCommande } from "@/lib/metier/commandes";
 import { exigerDonnees } from "@/lib/donnees/resultat";
 import { nouvelleCle } from "@/lib/formulaires/cle";
 import { calculerTotaux } from "@/lib/metier/tva";
@@ -61,7 +65,7 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
   const estCommande = p.type_piece === "commande" && p.statut === "valide";
   const estFacture = p.type_piece === "facture" && p.statut === "valide";
   const [{ data: livraisons }, { data: reste }, resEtat, resPaiements, { data: modes }, { data: dotations }, { data: relances }, resRemboursements] = await Promise.all([
-    estCommande ? supabase.from("livraisons").select("id, numero, date_livraison, statut").eq("commande_id", p.id).order("created_at") : Promise.resolve({ data: [] }),
+    estCommande ? supabase.from("livraisons").select("id, numero, date_livraison, statut, statut_remise").eq("commande_id", p.id).order("created_at") : Promise.resolve({ data: [] }),
     estCommande ? supabase.from("reste_a_livrer").select("conditionnement_id, paquets_restants").eq("commande_id", p.id) : Promise.resolve({ data: [] }),
     estFacture ? supabase.from("factures_etat").select("*").eq("id", p.id).maybeSingle() : Promise.resolve({ data: null }),
     estFacture ? supabase.from("paiements").select("id, date_paiement, montant_gnf, reference, modes_paiement(libelle)").eq("facture_id", p.id).order("date_paiement") : Promise.resolve({ data: [] }),
@@ -72,6 +76,18 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
       ? supabase.from("remboursements_clients").select("id, date_remboursement, montant_gnf, reference, modes_paiement(libelle)").eq("facture_id", p.id).order("date_remboursement")
       : Promise.resolve({ data: [], error: null }),
   ]);
+  // Suivi d'une commande : dates, factures liées et stock (même règle que le téléphone du commercial).
+  const facturesLiees = (derivees ?? []).filter((d) => d.type_piece === "facture" && d.statut === "valide");
+  const [resSuivi, resEtatsFactures, resCoordination] = estCommande
+    ? await Promise.all([
+        supabase.from("suivi_commandes").select("date_souhaitee, date_confirmee, confirmee_le, note, profils:confirmee_par(nom, prenom)").eq("commande_id", p.id).maybeSingle(),
+        facturesLiees.length ? supabase.from("factures_etat").select("id, total_ttc_gnf, avoirs_gnf, solde_gnf").in("id", facturesLiees.map((f) => f.id)) : Promise.resolve({ data: [], error: null }),
+        supabase.rpc("coordination_commandes"),
+      ])
+    : [{ data: null, error: null }, { data: [], error: null }, { data: null, error: null }];
+  const suivi = exigerDonnees(resSuivi, "le suivi de la commande");
+  const etatsFactures = exigerDonnees(resEtatsFactures, "les factures de la commande") ?? [];
+  const attenteStock = !resCoordination.error && resCoordination.data ? estimerCoordination(resCoordination.data as unknown as Brut).commandes.some((c) => c.id === p.id && c.etat !== "en_stock") : false;
   // Montants d'argent : une lecture en échec ne doit pas faire croire à une facture soldée ou impayée.
   const etat = exigerDonnees(resEtat, "l'état de la facture");
   const paiements = exigerDonnees(resPaiements, "les paiements");
@@ -85,6 +101,21 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
   ];
   const etapeCourante = estFacture && Number(etat?.solde_gnf ?? 1) <= 0 ? "payee" : p.statut;
   const resteALivrer = (reste ?? []).reduce((s, r) => s + Number(r.paquets_restants ?? 0), 0);
+  const paquetsCommandes = p.lignes_piece.reduce((t, l) => t + l.paquets, 0);
+  const etatSuivi = estCommande || p.type_piece === "commande"
+    ? etatCommande({
+        envoi: "recue",
+        annulee: p.statut === "annule",
+        dateSouhaitee: suivi?.date_souhaitee ?? null,
+        dateConfirmee: suivi?.date_confirmee ?? null,
+        paquetsCommandes,
+        paquetsLivres: paquetsCommandes - Math.max(0, resteALivrer),
+        livraisonEnRoute: (livraisons ?? []).some((l) => l.statut === "validee" && l.statut_remise === "a_livrer"),
+        factureTtcGnf: etatsFactures.reduce((t, f) => t + Number(f.total_ttc_gnf ?? 0) - Number(f.avoirs_gnf ?? 0), 0),
+        resteAPayerGnf: etatsFactures.reduce((t, f) => t + Math.max(0, Number(f.solde_gnf ?? 0)), 0),
+        attenteStock,
+      })
+    : null;
   const factureExiste = (derivees ?? []).some((d) => d.type_piece === "facture" && d.statut !== "annule");
   const commandeExiste = (derivees ?? []).some((d) => d.type_piece === "commande" && d.statut !== "annule");
   const solde = Number(etat?.solde_gnf ?? 0);
@@ -155,6 +186,20 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
             </span>
           ))}
         </p>
+      )}
+
+      {etatSuivi && p.statut !== "brouillon" && (
+        <ProchaineEtape
+          etat={etatSuivi}
+          details={
+            <>
+              Livraison souhaitée : <strong>{suivi?.date_souhaitee ? formaterDate(suivi.date_souhaitee) : "non précisée"}</strong> · date promise :{" "}
+              <strong>{suivi?.date_confirmee ? formaterDate(suivi.date_confirmee) : "pas encore confirmée"}</strong>
+              {suivi?.confirmee_le && suivi.profils && ` (confirmée par ${suivi.profils.prenom} ${suivi.profils.nom})`}
+              {suivi?.note && ` · ${suivi.note}`}
+            </>
+          }
+        />
       )}
 
       <div className="flex flex-col gap-4">
@@ -297,6 +342,12 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
                 </>
               )}
             </div>
+          </Carte>
+        )}
+
+        {estCommande && resteALivrer > 0 && (
+          <Carte titre={suivi?.date_confirmee ? "Changer la date de livraison promise" : "Confirmer la date de livraison au client"}>
+            <ConfirmerDate commandeId={p.id} proposee={suivi?.date_confirmee ?? suivi?.date_souhaitee ?? aujourdhui()} min={p.date_piece} />
           </Carte>
         )}
 

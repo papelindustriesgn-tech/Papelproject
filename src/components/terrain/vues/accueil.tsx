@@ -3,7 +3,7 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { FilePlus2, MapPin, Navigation, PlusCircle, Receipt, RefreshCw, Store } from "lucide-react";
 import { ecrireMeta, lireMeta } from "@/lib/terrain/base-locale";
-import { aujourdhuiConakry, Chiffre, dateHeure, gnfCourt, Progression, Tuile } from "../communs";
+import { aujourdhuiConakry, Chiffre, dateHeure, gnfCourt, Progression } from "../communs";
 import { useTerrain } from "../contexte";
 import { LivraisonsAConfirmer } from "./livraisons";
 
@@ -36,8 +36,10 @@ export function VueAccueil() {
     const visitesMois = visites.filter((v) => v.checkinAt.slice(0, 7) === mois);
     const visitesDuJour = visites.filter((v) => v.checkinAt.slice(0, 10) === jour);
     const visitesJour = new Set(visitesDuJour.map((v) => v.pvaId));
-    const facturesMois = pieces.filter((p) => p.typePiece === "facture" && p.datePiece.slice(0, 7) === mois && p.etat !== "rejetee");
-    const facturesJour = facturesMois.filter((p) => p.datePiece === jour);
+    // Ventes confirmées : commandes et factures reçues par le bureau (les envois en attente ne comptent pas encore).
+    const facturesMois = pieces.filter((p) => p.typePiece === "facture" && p.datePiece.slice(0, 7) === mois && p.etat === "synchronisee");
+    const commandesJour = pieces.filter((p) => p.typePiece !== "devis" && p.datePiece === jour && p.etat === "synchronisee");
+    const commandesMois = pieces.filter((p) => p.typePiece === "commande" && p.datePiece.slice(0, 7) === mois && p.etat === "synchronisee");
     const etapes = tournee.map((id) => pva.find((p) => p.id === id)).filter((p) => p !== undefined).map((p) => ({ ...p!, visite: visitesJour.has(p!.id) }));
     return {
       enAttente: operations.length + photos,
@@ -48,9 +50,11 @@ export function VueAccueil() {
       jour: {
         visites: visitesDuJour.length,
         ruptures: visitesDuJour.filter((v) => v.rupture).length,
-        caHt: facturesJour.reduce((s, p) => s + p.totalHtGnf, 0),
-        colis: facturesJour.reduce((s, p) => s + p.lignes.reduce((t, l) => t + l.quantiteColis, 0), 0),
+        caHt: commandesJour.reduce((s, p) => s + p.totalHtGnf, 0),
+        colis: commandesJour.reduce((s, p) => s + p.lignes.reduce((t, l) => t + l.quantiteColis, 0), 0),
+        aEnvoyer: pieces.filter((p) => p.etat === "en_attente").length,
       },
+      commandesEnCours: commandesMois.length,
       realise: {
         visites: visitesMois.length,
         caHt: facturesMois.reduce((s, p) => s + p.totalHtGnf, 0),
@@ -82,15 +86,15 @@ export function VueAccueil() {
       >
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className={`font-bold ${enLigne ? "text-green-800" : "text-amber-900"}`}>{enLigne ? "● En ligne" : "● Hors ligne — vous pouvez continuer à travailler"}</div>
+            <div className={`font-bold ${enLigne ? "text-green-800" : "text-amber-900"}`}>{enLigne ? "● Connecté" : "● Pas de réseau — continuez à travailler, tout est gardé"}</div>
             <div className="text-sm text-gray-700">
-              {donnees.enAttente > 0 ? `${donnees.enAttente} saisie(s) en attente d'envoi` : "Tout est envoyé"}
+              {donnees.enAttente > 0 ? `${donnees.enAttente} saisie(s) pas encore envoyée(s) au bureau` : "Tout est envoyé au bureau ✓"}
               {donnees.derniere && ` · dernière synchronisation ${dateHeure(donnees.derniere.date)}`}
             </div>
             {synchronisation.erreur && <div className="text-sm font-medium text-amber-900">{synchronisation.erreur}</div>}
             {donnees.rejets > 0 && (
               <button type="button" onClick={() => aller("documents")} className="text-sm font-semibold text-red-700 underline">
-                {donnees.rejets} saisie(s) refusée(s) par le serveur : voir le détail
+                {donnees.rejets} saisie(s) refusée(s) par le bureau : voir le détail
               </button>
             )}
           </div>
@@ -99,10 +103,29 @@ export function VueAccueil() {
             onClick={() => void lancerSynchronisation()}
             disabled={!enLigne || synchronisation.enCours}
             className="flex size-12 shrink-0 items-center justify-center rounded-full bg-papel-700 text-white disabled:bg-gray-300"
-            aria-label={synchronisation.enCours ? "Synchronisation…" : "Synchroniser"}
+            aria-label={synchronisation.enCours ? "Envoi en cours…" : "Envoyer et recevoir maintenant"}
           >
             <RefreshCw size={22} className={synchronisation.enCours ? "animate-spin" : ""} />
           </button>
+        </div>
+      </section>
+
+      {/* Que faire aujourd'hui : les 4 actions du commercial, la principale en premier. */}
+      <section aria-label="Actions" className="flex flex-col gap-2">
+        <button type="button" onClick={() => aller("document-nouveau")} className="flex min-h-16 items-center justify-center gap-2 rounded-2xl bg-papel-700 text-lg font-bold text-white shadow active:scale-[0.98]">
+          <FilePlus2 size={24} /> Prendre une commande
+        </button>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { libelle: "Nouveau client", onClick: () => aller("pva-nouveau"), Icone: PlusCircle },
+            { libelle: "Visite", onClick: () => aller(donnees.prochaine ? `visite/${donnees.prochaine.id}` : "pva"), Icone: MapPin },
+            { libelle: donnees.jour.aEnvoyer ? `Mes commandes (${donnees.jour.aEnvoyer} à envoyer)` : "Mes commandes", onClick: () => aller("documents"), Icone: Receipt },
+          ].map((a) => (
+            <button key={a.libelle} type="button" onClick={a.onClick} className="flex min-h-20 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl border border-gray-200 bg-white p-2 text-center text-sm font-bold leading-tight text-gray-900 shadow-sm active:bg-papel-50">
+              <a.Icone size={22} className="text-papel-700" aria-hidden />
+              <span className="break-words">{a.libelle}</span>
+            </button>
+          ))}
         </div>
       </section>
 
@@ -128,11 +151,11 @@ export function VueAccueil() {
 
       {/* Chiffres du jour */}
       <section aria-label="Aujourd'hui">
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">Aujourd&apos;hui</h2>
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">Aujourd&apos;hui (reçu par le bureau)</h2>
         <div className="grid grid-cols-2 gap-2">
           <Chiffre libelle="Visites" valeur={donnees.etapes.length ? `${donnees.jour.visites} / ${donnees.etapes.length}` : donnees.jour.visites} />
-          <Chiffre libelle="Ventes HT" valeur={gnfCourt(donnees.jour.caHt)} ton={donnees.jour.caHt > 0 ? "bon" : "normal"} />
-          <Chiffre libelle="Colis vendus" valeur={donnees.jour.colis} />
+          <Chiffre libelle="Commandé (hors taxes)" valeur={gnfCourt(donnees.jour.caHt)} ton={donnees.jour.caHt > 0 ? "bon" : "normal"} />
+          <Chiffre libelle="Colis commandés" valeur={donnees.jour.colis} />
           <Chiffre libelle="Ruptures vues" valeur={donnees.jour.ruptures} ton={donnees.jour.ruptures > 0 ? "alerte" : "normal"} />
         </div>
       </section>
@@ -163,13 +186,9 @@ export function VueAccueil() {
         </section>
       )}
 
-      {/* Raccourcis */}
-      <div className="grid grid-cols-2 gap-2">
-        <Tuile libelle="Points de vente et clients" detail={`${donnees.nbPva} points de vente`} onClick={() => aller("pva")} icone={<Store size={22} />} />
-        <Tuile libelle="Nouveau point de vente" detail="Avec position GPS" onClick={() => aller("pva-nouveau")} icone={<PlusCircle size={22} />} />
-        <Tuile libelle="Facture, commande, devis" detail="Même sans réseau" onClick={() => aller("document-nouveau")} icone={<FilePlus2 size={22} />} />
-        <Tuile libelle="Mes ventes" detail="Et dates de livraison" onClick={() => aller("documents")} icone={<Receipt size={22} />} />
-      </div>
+      <button type="button" onClick={() => aller("pva")} className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white font-semibold text-gray-800">
+        <Store size={18} /> Points de vente et clients ({donnees.nbPva})
+      </button>
 
       {/* Tournée */}
       <section className="rounded-2xl border border-gray-200 bg-white p-3">

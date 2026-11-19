@@ -13,6 +13,8 @@ export default defineConfig({
     locale: "fr-FR",
     timezoneId: "Africa/Conakry",
     screenshot: "only-on-failure",
+    // Navigateur déjà installé sur la machine (ex. environnement cloud) : PW_CHROMIUM=/chemin/vers/chrome.
+    ...(process.env.PW_CHROMIUM ? { launchOptions: { executablePath: process.env.PW_CHROMIUM } } : {}),
   },
   projects: [
     // Téléphone Android d'entrée de gamme.

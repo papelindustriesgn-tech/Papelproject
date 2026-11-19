@@ -71,7 +71,7 @@ export function ListeClients({ recherche }: { recherche: string }) {
                 </span>
               )}
               <button type="button" onClick={() => aller(`document-nouveau?client=${c.id}`)} className="flex min-h-11 items-center justify-center gap-1.5 bg-papel-50 active:bg-papel-100">
-                <FilePlus2 size={16} /> Vendre
+                <FilePlus2 size={16} /> Commander
               </button>
             </div>
           </li>
@@ -136,7 +136,7 @@ export function VueFicheClient({ id }: { id: string }) {
       </section>
 
       <button type="button" onClick={() => aller(`document-nouveau?client=${client.id}`)} className="flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-papel-700 text-lg font-bold text-white">
-        <FilePlus2 size={20} /> Nouvelle facture / devis
+        <FilePlus2 size={20} /> Prendre une commande
       </button>
 
       <section className="grid grid-cols-2 gap-2">

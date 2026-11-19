@@ -32,7 +32,7 @@ export function EnTeteVue({ titre, retour = "accueil", action, sousTitre }: { ti
 const ONGLETS = [
   { vue: "accueil", libelle: "Accueil", Icone: Home },
   { vue: "pva", libelle: "Clients", Icone: Store },
-  { vue: "document-nouveau", libelle: "Vendre", Icone: Plus, central: true },
+  { vue: "document-nouveau", libelle: "Commander", Icone: Plus, central: true },
   { vue: "documents", libelle: "Ventes", Icone: Receipt },
   { vue: "moi", libelle: "Moi", Icone: UserRound },
 ] as const;
@@ -47,7 +47,7 @@ export function BarreOnglets() {
         {ONGLETS.map((o) => (
           <li key={o.vue} className="flex justify-center">
             {"central" in o ? (
-              <button type="button" onClick={() => aller(o.vue)} className="-mt-5 flex flex-col items-center gap-0.5 text-xs font-semibold text-papel-800" aria-label="Nouvelle vente">
+              <button type="button" onClick={() => aller(o.vue)} className="-mt-5 flex flex-col items-center gap-0.5 text-xs font-semibold text-papel-800" aria-label="Prendre une commande">
                 <span className="flex size-14 items-center justify-center rounded-full bg-papel-700 text-white shadow-lg ring-4 ring-white active:scale-95">
                   <o.Icone size={28} />
                 </span>

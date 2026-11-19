@@ -17,10 +17,10 @@ test("commercial hors ligne : PVA, check-in, facture numérotée, puis synchroni
 
   // --- Coupure du réseau ---------------------------------------------------
   await context.setOffline(true);
-  await expect(page.getByText("● Hors ligne — vous pouvez continuer à travailler")).toBeVisible();
+  await expect(page.getByText(/Pas de réseau — continuez à travailler/)).toBeVisible();
 
   const nom = `Boutique hors ligne ${Date.now() % 100000}`;
-  await page.getByRole("button", { name: /Nouveau point de vente/ }).first().click();
+  await page.getByRole("button", { name: "Nouveau client", exact: true }).click();
   await page.getByLabel("Nom du point de vente *").fill(nom);
   await page.getByLabel("Type *").selectOption({ label: "Détaillant" });
   await page.getByLabel("Repère (pour retrouver la boutique)").fill("À côté de la pharmacie");
@@ -47,20 +47,25 @@ test("commercial hors ligne : PVA, check-in, facture numérotée, puis synchroni
   // Le PVA devient client, puis facture hors ligne.
   await page.getByRole("button", { name: "Créer comme client" }).click();
   await expect(page.getByText(/maintenant client/)).toBeVisible();
-  await page.getByRole("button", { name: "Facture / devis" }).click();
+  await page.getByRole("button", { name: "Prendre une commande" }).first().click();
+  // Facture immédiate : rangée dans « Plus d'options » (la commande est le choix par défaut).
+  await page.getByText("Plus d'options").click();
+  await page.getByRole("button", { name: "Facture tout de suite" }).click();
   // Quantité au compteur : 2 × « + » sur le Petit 100 en colis de 50.
   await page.getByRole("button", { name: "Plus (Colis — Petit 100 – Colis de 50)" }).click();
   await page.getByRole("button", { name: "Plus (Colis — Petit 100 – Colis de 50)" }).click();
   await expect(page.getByLabel("Colis — Petit 100 – Colis de 50", { exact: true })).toHaveValue("2");
   await expect(page.getByText("335 002 GNF")).toBeVisible(); // 100 paquets × 2 839 + 18 %
-  await page.getByRole("button", { name: "Valider la facture" }).click();
-  await expect(page.getByText(/Document FA-\d{4}-C01-\d{5} validé/)).toBeVisible();
-  const numero = (await page.getByText(/Document FA-\d{4}-C01-\d{5} validé/).innerText()).match(/FA-\d{4}-C01-\d{5}/)![0];
+  await page.getByRole("button", { name: "Vérifier la facture" }).click();
+  await page.getByRole("button", { name: "Envoyer la facture" }).click();
+  // Sans réseau : enregistrée sur le téléphone, jamais présentée comme reçue par le bureau.
+  await expect(page.getByText(/Facture FA-\d{4}-C01-\d{5} enregistrée sur ce téléphone/)).toBeVisible();
+  const numero = (await page.getByText(/Facture FA-\d{4}-C01-\d{5} enregistrée/).innerText()).match(/FA-\d{4}-C01-\d{5}/)![0];
   await expect(page.getByText("Trois-cent-trente-cinq-mille-deux francs guinéens")).toBeVisible();
 
   await page.getByRole("button", { name: "Retour" }).click();
   await page.getByRole("navigation", { name: "Onglets" }).getByRole("button", { name: "Accueil" }).click();
-  await expect(page.getByText(/saisie\(s\) en attente d'envoi/)).toBeVisible();
+  await expect(page.getByText(/pas encore envoyée\(s\) au bureau/)).toBeVisible();
 
   // --- Retour du réseau : synchronisation automatique ----------------------
   await context.setOffline(false);
@@ -91,7 +96,7 @@ test("commercial : ma journée, points de vente, onglets", async ({ page }) => {
   // Liste des clients (encours, vendre) puis fiche client.
   await page.getByRole("group", { name: "Points de vente ou clients" }).getByRole("button", { name: "Clients", exact: true }).click();
   await page.getByRole("button", { name: /Ets Diallo & Frères \(démo\)/ }).click();
-  await expect(page.getByRole("button", { name: /Nouvelle facture \/ devis/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Prendre une commande/ }).first()).toBeVisible();
   await expect(page.getByText("Reste à payer")).toBeVisible();
   // Prospects, filtre « En rupture », puis onglet « Moi ».
   await page.getByRole("navigation", { name: "Onglets" }).getByRole("button", { name: "Clients" }).click();

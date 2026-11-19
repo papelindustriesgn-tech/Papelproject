@@ -98,12 +98,14 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
     supabase.from("clients").select("id, code, nom, type_client_id, condition_paiement, plafond_credit_gnf, responsable, telephone, adresse, quartier_id").eq("commercial_id", utilisateurId).eq("actif", true),
     supabase.from("soldes_clients").select("client_id, encours_gnf"),
     supabase.from("visites_carte").select("*").eq("commercial_id", utilisateurId).gte("checkin_at", il_y_a_45j),
-    supabase.from("pieces_vente").select("id, type_piece, numero, client_id, date_piece, statut, total_ht_gnf, total_tva_gnf, total_ttc_gnf, tva_taux, notes, lignes_piece(conditionnement_id, quantite_colis, paquets_vrac, paquets, prix_paquet_gnf, montant_ht_gnf)").eq("commercial_id", utilisateurId).in("type_piece", ["devis", "commande", "facture"]).eq("statut", "valide").gte("date_piece", il_y_a_90j),
+    supabase.from("pieces_vente").select("id, type_piece, numero, client_id, date_piece, statut, origine_id, total_ht_gnf, total_tva_gnf, total_ttc_gnf, tva_taux, notes, lignes_piece(conditionnement_id, quantite_colis, paquets_vrac, paquets, prix_paquet_gnf, montant_ht_gnf)").eq("commercial_id", utilisateurId).in("type_piece", ["devis", "commande", "facture"]).eq("statut", "valide").gte("date_piece", il_y_a_90j),
     supabase.from("tournees").select("date_tournee, tournee_etapes(pva_id, ordre)").eq("commercial_id", utilisateurId).eq("date_tournee", jour).maybeSingle(),
     supabase.from("objectifs_commerciaux").select("visites, nouveaux_pva, ca_ht_gnf, colis").eq("commercial_id", utilisateurId).eq("mois", `${jour.slice(0, 7)}-01`).maybeSingle(),
   ]);
   // Points de vente des collègues (pour prévenir un doublon dès la saisie, même hors ligne).
-  const [collegues, livraisons, coordination] = await Promise.all([
+  const idsCommandes = (pieces.data ?? []).filter((p) => p.type_piece === "commande").map((p) => p.id);
+  const idsFactures = (pieces.data ?? []).filter((p) => p.type_piece === "facture").map((p) => p.id);
+  const [collegues, livraisons, coordination, suivis, restes, etatsFactures] = await Promise.all([
     supabase.rpc("pva_des_collegues"),
     supabase
       .from("livraisons")
@@ -111,9 +113,15 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
       .eq("statut", "validee")
       .gte("date_livraison", il_y_a_90j),
     supabase.rpc("coordination_commandes"),
+    // Suivi des commandes : dates souhaitée et confirmée, restes à livrer, factures et reste à payer.
+    idsCommandes.length ? supabase.from("suivi_commandes").select("commande_id, date_souhaitee, date_confirmee").in("commande_id", idsCommandes) : Promise.resolve({ data: [], error: null }),
+    idsCommandes.length ? supabase.from("reste_a_livrer").select("commande_id, paquets_restants, paquets_commandes").in("commande_id", idsCommandes) : Promise.resolve({ data: [], error: null }),
+    idsFactures.length ? supabase.from("factures_etat").select("id, total_ttc_gnf, avoirs_gnf, solde_gnf").in("id", idsFactures) : Promise.resolve({ data: [], error: null }),
   ]);
   // Date de livraison estimée de chaque commande encore à livrer (même calcul que l'écran « Commandes clients »).
-  const estimees = new Map(coordination.error || !coordination.data ? [] : estimerCoordination(coordination.data as unknown as Brut).commandes.map((c) => [c.id, c.dateLivraison] as const));
+  const commandesServies = coordination.error || !coordination.data ? [] : estimerCoordination(coordination.data as unknown as Brut).commandes;
+  const estimees = new Map(commandesServies.map((c) => [c.id, c.dateLivraison] as const));
+  const enAttenteDeStock = new Set(commandesServies.filter((c) => c.etat !== "en_stock").map((c) => c.id));
   const erreur = [produits, conditionnements, grille, types, pva, clients, visites, pieces].find((r) => r.error);
   if (erreur?.error) throw new Error(erreur.error.message);
 
@@ -199,11 +207,40 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
       })),
     );
 
+    // Suivi de chaque commande reçue (même calcul que le bureau : voir etatCommande). Sans données de suivi, rien n'est inventé.
+    const suiviParCommande = new Map((suivis.data ?? []).map((x) => [x.commande_id, x]));
+    const factures = (pieces.data ?? []).filter((x) => x.type_piece === "facture");
+    const etatFacture = new Map((etatsFactures.data ?? []).map((x) => [x.id!, x]));
+    const suiviDe = (commandeId: string): Pick<PieceLocale, "dateSouhaitee" | "suivi"> => {
+      const s = suiviParCommande.get(commandeId);
+      const lignesReste = (restes.data ?? []).filter((r) => r.commande_id === commandeId);
+      const commandes = lignesReste.reduce((t, r) => t + Number(r.paquets_commandes ?? 0), 0);
+      const restants = lignesReste.reduce((t, r) => t + Math.max(0, Number(r.paquets_restants ?? 0)), 0);
+      const sesFactures = factures.filter((f) => f.origine_id === commandeId).map((f) => etatFacture.get(f.id));
+      return {
+        dateSouhaitee: s?.date_souhaitee ?? null,
+        ...(restes.error || etatsFactures.error
+          ? {}
+          : {
+              suivi: {
+                dateConfirmee: s?.date_confirmee ?? null,
+                paquetsCommandes: commandes,
+                paquetsLivres: commandes - restants,
+                livraisonEnRoute: (livraisons.data ?? []).some((l) => l.commande_id === commandeId && l.statut_remise === "a_livrer"),
+                factureTtcGnf: sesFactures.reduce((t, f) => t + Number(f?.total_ttc_gnf ?? 0) - Number(f?.avoirs_gnf ?? 0), 0),
+                resteAPayerGnf: sesFactures.reduce((t, f) => t + Math.max(0, Number(f?.solde_gnf ?? 0)), 0),
+                attenteStock: enAttenteDeStock.has(commandeId),
+              },
+            }),
+      };
+    };
+
     const piecesServeur: PieceLocale[] = (pieces.data ?? []).map((p) => ({
       id: p.id, typePiece: p.type_piece as "devis" | "facture", numero: p.numero ?? "", clientId: p.client_id, datePiece: p.date_piece,
       lignes: p.lignes_piece.map((l) => ({ conditionnementId: l.conditionnement_id, quantiteColis: l.quantite_colis, paquetsVrac: l.paquets_vrac, paquets: l.paquets, prixPaquetGnf: l.prix_paquet_gnf, montantHtGnf: l.montant_ht_gnf })),
       totalHtGnf: p.total_ht_gnf, tvaGnf: p.total_tva_gnf, totalTtcGnf: p.total_ttc_gnf, tauxTva: Number(p.tva_taux), notes: p.notes, etat: "synchronisee",
       ...(p.type_piece === "commande" && !coordination.error ? { resteALivrer: estimees.has(p.id), livraisonEstimee: estimees.get(p.id) ?? null } : {}),
+      ...(p.type_piece === "commande" ? suiviDe(p.id) : {}),
     }));
     await base.pieces.filter((p) => p.etat === "synchronisee").delete();
     await base.pieces.bulkPut(piecesServeur);

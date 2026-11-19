@@ -7,6 +7,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { clientNavigateur } from "@/lib/supabase/navigateur";
 import { baseTerrain, type BaseTerrain } from "@/lib/terrain/base-locale";
+import { messageSimple } from "@/lib/terrain/messages";
 import { synchroniser, type BilanSynchronisation } from "@/lib/terrain/synchronisation";
 
 export interface Route {
@@ -47,7 +48,7 @@ export function FournisseurTerrain({ utilisateurId, children }: { utilisateurId:
       const bilan = await synchroniser(base, supabase, utilisateurId);
       setSynchronisation({ enCours: false, erreur: null, bilan });
     } catch (e) {
-      setSynchronisation((s) => ({ ...s, enCours: false, erreur: e instanceof Error ? e.message : "Synchronisation impossible." }));
+      setSynchronisation((s) => ({ ...s, enCours: false, erreur: messageSimple(e instanceof Error ? e.message : "") }));
     }
   }, [base, supabase, utilisateurId]);
 

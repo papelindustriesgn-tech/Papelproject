@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { distanceMetres, evaluerCheckin } from "./geo";
 import { dimensionsCible } from "./image";
+import { messageSimple } from "./messages";
 import { formaterNumero, prefixeSerie, prochainCompteur } from "./numerotation";
 
 describe("distance GPS", () => {
@@ -71,5 +72,18 @@ describe("doublons de points de vente entre commerciaux", async () => {
   });
   it("boutique voisine d'un autre nom → pas un doublon", () => {
     expect(trouverDoublon({ nom: "Kiosque Fatou", telephone: "", latitude: 9.5372, longitude: -13.6771 }, collegues, 30)).toBeNull();
+  });
+});
+
+describe("messageSimple", () => {
+  it("ne montre jamais un message technique au commercial", () => {
+    expect(messageSimple("TypeError: Failed to fetch")).toMatch(/^Pas de connexion pour le moment/);
+    expect(messageSimple("JWT expired")).toMatch(/^Votre connexion a expiré/);
+    expect(messageSimple('insert or update on table "lignes_piece" violates foreign key constraint')).toMatch(/^Le bureau n'a pas pu enregistrer/);
+    expect(messageSimple("")).toBe("Le bureau n'a pas accepté cet envoi.");
+  });
+  it("garde les refus métier écrits pour l'utilisateur", () => {
+    expect(messageSimple("Plafond de crédit dépassé pour ce client")).toBe("Plafond de crédit dépassé pour ce client.");
+    expect(messageSimple("Ce point de vente est déjà suivi par un collègue.")).toBe("Ce point de vente est déjà suivi par un collègue.");
   });
 });

@@ -88,7 +88,7 @@ export function VueFichePva({ id, visiteOk }: { id: string; visiteOk?: boolean }
       <div className="grid grid-cols-2 gap-2">
         {pva.clientId ? (
           <button type="button" onClick={() => aller(`document-nouveau?client=${pva.clientId}`)} className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border-2 border-papel-700 bg-white font-bold text-papel-800">
-            <FilePlus2 size={18} /> Facture / devis
+            <FilePlus2 size={18} /> Prendre une commande
           </button>
         ) : (
           <button type="button" onClick={() => void devenirClient()} className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border-2 border-papel-700 bg-white font-bold text-papel-800">

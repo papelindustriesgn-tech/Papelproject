@@ -2585,6 +2585,37 @@ isOneToOne: true
       referencedColumns: ["id"]
     }
                   ]
+                },"suivi_commandes": {
+                  Row: {
+                    "commande_id": string,"confirmee_le": string | null,"confirmee_par": string | null,"date_confirmee": string | null,"date_souhaitee": string | null,"note": string,"updated_at": string
+                  }
+                  Insert: {
+                    "commande_id": string,"confirmee_le"?: string | null,"confirmee_par"?: string | null,"date_confirmee"?: string | null,"date_souhaitee"?: string | null,"note"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "commande_id"?: string,"confirmee_le"?: string | null,"confirmee_par"?: string | null,"date_confirmee"?: string | null,"date_souhaitee"?: string | null,"note"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "suivi_commandes_commande_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: true
+      referencedRelation: "factures_etat"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "suivi_commandes_commande_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: true
+      referencedRelation: "pieces_vente"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "suivi_commandes_confirmee_par_fkey"
+      columns: ["confirmee_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"taches": {
                   Row: {
                     "compte_rendu": string,"created_at": string,"cree_par": string | null,"description": string,"echeance": string | null,"espace_destinataire": string,"espace_emetteur": string,"id": string,"lien": string,"priorite": string,"pris_par": string | null,"statut": string,"termine_le": string | null,"termine_par": string | null,"titre": string,"updated_at": string
@@ -3647,6 +3678,9 @@ isOneToOne: false
 "compte_du_mode":
 { Args: { "p_mode": string }; Returns: string
                            },
+"confirmer_date_livraison":
+{ Args: { "p_commande": string,"p_date": string,"p_note"?: string }; Returns: undefined
+                           },
 "confirmer_livraison":
 { Args: { "p_confirmation": string,"p_livraison": string,"p_note"?: string }; Returns: string
                            },
@@ -3679,6 +3713,9 @@ isOneToOne: false
                            },
 "dernier_numero_terrain":
 { Args: { "p_prefixe": string }; Returns: number
+                           },
+"enregistrer_date_souhaitee":
+{ Args: { "p_commande": string,"p_date": string }; Returns: undefined
                            },
 "enregistrer_paiement":
 { Args: { "p_cle"?: string,"p_date"?: string,"p_facture": string,"p_mode": string,"p_montant": number,"p_notes"?: string,"p_reference"?: string }; Returns: string

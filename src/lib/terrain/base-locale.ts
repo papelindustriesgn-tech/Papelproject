@@ -124,6 +124,18 @@ export interface PieceLocale {
   livraisonEstimee?: string | null;
   /** Commande : reste à livrer (false = entièrement livrée). */
   resteALivrer?: boolean;
+  /** Commande : date de livraison souhaitée par le client (saisie avec la commande). */
+  dateSouhaitee?: string | null;
+  /** Commande reçue par le bureau : faits de suivi (date confirmée, livré, facturé, payé), voir `etatCommande`. */
+  suivi?: {
+    dateConfirmee: string | null;
+    paquetsCommandes: number;
+    paquetsLivres: number;
+    livraisonEnRoute: boolean;
+    factureTtcGnf: number;
+    resteAPayerGnf: number;
+    attenteStock: boolean;
+  };
 }
 
 /** Bon de livraison d'une commande du commercial, à confirmer une fois remis au client. */
