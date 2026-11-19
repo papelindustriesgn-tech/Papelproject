@@ -4,7 +4,7 @@ ERP de **Papel Industries**, fabricant guinéen de mouchoirs en papier (usine de
 Chaîne couverte : achat MP → stock → production → stock produits finis → distribution → vente → encaissement → pilotage.
 
 > Ce fichier est la référence des règles métier et des conventions de code. Le tenir à jour à chaque phase.
-> État : **Phases 1, 2 et 3 livrées** (bilans : `docs/bilan-phase-1.md`, `docs/bilan-phase-2.md`, `docs/bilan-phase-3.md`). Plan : `docs/architecture.md`.
+> État : **Phases 1, 2 et 3 livrées** ; parcours quotidiens simplifiés (19/11/2026, branche `claude/erp-parcours-quotidiens`, pas encore en production) (bilans : `docs/bilan-phase-1.md`, `docs/bilan-phase-2.md`, `docs/bilan-phase-3.md`). Plan : `docs/architecture.md`.
 
 @AGENTS.md
 
@@ -395,6 +395,38 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
   (`classerClients`, `src/lib/metier/clients.ts`, testé ; 10 premiers, le reste regroupé), part du CA, évolution vs période précédente
   (« Nouveau » sans achat avant), paquets, dernier achat, encours et échu ; alerte de dépendance si les 5 premiers font plus de 60 % du CA.
   Suit les filtres gamme et commercial ; export Excel.
+
+## 6 sexdecies. Parcours quotidiens (commande → préparation → livraison → facture → paiement)
+
+- **Téléphone** : « Prendre une commande » en 3 étapes (client — recherche nom/téléphone ou « + Nouveau client » sans quitter,
+  opération `client` sans PVA ; produits au compteur avec colis, paquets par colis, prix du colis ; récapitulatif puis envoi).
+  Commande par défaut ; devis et « facture tout de suite » dans « Plus d'options ». Une pièce non envoyée est rangée à part
+  (« Pas encore envoyé au bureau »), jamais comptée dans les ventes. Messages : `messageSimple` (`src/lib/terrain/messages.ts`),
+  jamais de texte technique.
+- **Dates** : `suivi_commandes` (table à part, car une commande validée est figée) : date souhaitée (téléphone,
+  `enregistrer_date_souhaitee`), date promise (`confirmer_date_livraison` : ventes, magasin, logistique). Composant `ConfirmerDate`.
+- **État d'un document** : `etatCommande` / `etatFacture` (`src/lib/metier/commandes.ts`, testés) → libellé, prochaine étape, qui agit ;
+  affichés par `ProchaineEtape` + `HistoriqueDocument`, mêmes règles sur le téléphone et au bureau.
+- **Préparation** : le magasin prépare (`/magasin/commandes` → `BonLivraison`, livraison partielle, récapitulatif avant sortie de stock) ;
+  stock physique / réservé / disponible (`stocksProduitsFinis`). Produits **achetés** (`produits.fabrique = false`) : pas de production
+  demandée, le manque attend une réception (`aRecevoir`).
+- **Facturer ce qui est livré** : `facturer_livre(commande)` (reprend la facture en préparation, sinon la crée au prix de la commande),
+  vues `reste_a_facturer` / `commandes_a_facturer` (Ventes → À facturer) ; `valider_piece` refuse une facture qui dépasse la commande.
+- Action qui peut échouer sans changer de page : `BoutonAction` (message renvoyé, jamais d'exception vers `error.tsx`).
+- **Accueil de chaque service** : `AccueilTravail` en haut de la vue d'ensemble = « À faire aujourd'hui » (`ActionsDuJour`, boutons
+  `accueil_elements`), « En attente de vous » (alertes + tâches reçues), « Ce qui vient de se passer » (`chargerRecents` : liens vers
+  l'écran du service qui regarde ; pas de lien si le service n'y a pas accès). Puis le filtre de date et les chiffres.
+- **Synthèse du PDG** (`SynthesePdg`, `chargerComplementsPdg`) : 8 chiffres, chacun avec son état (`EtatDonnee` : validé, estimé,
+  données à compléter, indisponible, aucune activité — `src/lib/metier/chiffres.ts`, testé) et sa fiche « D'où vient ce chiffre ? »
+  (mesure, période, données, mise à jour, objectif). Production masquée tant qu'aucune saisie n'a été validée ; marge masquée si plus de
+  5 % des paquets vendus n'ont pas de coût. Zone « Données à compléter » avec un bouton vers l'écran où saisir. Analyse détaillée
+  (`TableauPdg`) sous « Plus de détails ».
+- **Vérifier la caisse et la banque** (Finance › Trésorerie) : `enregistrer_rapprochement` (solde réel ; la base calcule `solde_erp` à la
+  date et l'écart), table `rapprochements_tresorerie` en ajout seul, vue `derniers_rapprochements`. Trésorerie « validée » si chaque compte
+  est vérifié depuis moins de 7 jours.
+- **Jamais plus de 1 000 lignes par requête** (`max_rows` de l'API) : un `.limit(50000)` ne change rien. Tout calcul sur des lignes passe
+  par `lireTout(() => requete.order(<clé unique>))` (`src/lib/donnees/resultat.ts`), puis `exigerDonnees`.
+- Plusieurs formulaires sur une page : des noms de champs distincts (l'identifiant du champ = son nom).
 
 ## 7. Seuils d'alerte (paramétrables)
 
