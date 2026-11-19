@@ -3,6 +3,7 @@ import { alertesProduction, SEUILS_PRODUCTION_DEFAUT, type AlerteProduction, typ
 import { calculerIndicateursFiche, restreindreAuProduit, type Arret, type IndicateursFiche, type LigneProduction } from "@/lib/metier/production";
 import { kg } from "@/lib/metier/unites";
 import { clientServeur } from "@/lib/supabase/serveur";
+import { lireTout } from "@/lib/donnees/resultat";
 
 /** Données d'une fiche nécessaires aux calculs (chargées en une requête). */
 export interface FicheDetaillee {
@@ -51,7 +52,9 @@ export async function seuilsProduction(): Promise<SeuilsProduction> {
  */
 export async function chargerFiches(options: { du: string; au: string; inclureBrouillons?: boolean; ids?: string[]; produit?: string | null }): Promise<ResultatFiche[]> {
   const supabase = await clientServeur();
-  let requete = supabase
+  // Toutes les fiches (lecture par pages : l'API coupe à 1 000 lignes).
+  const requete = () => {
+    let r = supabase
     .from("fiches_production")
     .select(
       `id, date_production, statut, ligne_id, duree_poste_min,
@@ -63,11 +66,13 @@ export async function chargerFiches(options: { du: string; au: string; inclureBr
     .gte("date_production", options.du)
     .lte("date_production", options.au)
     .order("date_production")
-    .limit(2000);
-  if (!options.inclureBrouillons) requete = requete.eq("statut", "validee");
-  if (options.ids) requete = requete.in("id", options.ids);
+    .order("id");
+    if (!options.inclureBrouillons) r = r.eq("statut", "validee");
+    if (options.ids) r = r.in("id", options.ids);
+    return r;
+  };
 
-  const [{ data }, { data: cadences }, seuils] = await Promise.all([requete, supabase.from("cadences_nominales").select("ligne_id, produit_id, paquets_minute"), seuilsProduction()]);
+  const [{ data }, { data: cadences }, seuils] = await Promise.all([lireTout(requete), supabase.from("cadences_nominales").select("ligne_id, produit_id, paquets_minute"), seuilsProduction()]);
   const cadence = new Map((cadences ?? []).map((c) => [`${c.ligne_id}|${c.produit_id}`, Number(c.paquets_minute)]));
 
   return (data ?? []).flatMap((f) => {

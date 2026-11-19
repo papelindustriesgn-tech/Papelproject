@@ -2,6 +2,7 @@ import "server-only";
 import { SANS_FILTRE, type FiltresAnalyse } from "@/lib/formulaires/filtres-analyse";
 import { commercialDe, lignesRetenues, pieceRetenue } from "@/lib/metier/filtrage";
 import { clientServeur } from "@/lib/supabase/serveur";
+import { lireTout } from "@/lib/donnees/resultat";
 
 export interface IndicateursCommerciaux {
   visites: number;
@@ -37,11 +38,11 @@ export async function chargerIndicateursCommerciaux(du: string, au: string, nbJo
   const debut = `${du}T00:00:00Z`;
   const fin = `${au}T23:59:59Z`;
   const [{ data: visites }, { data: pva }, { count: quartiersTotal }, { data: commerciaux }, { data: pieces }, { data: objectifs }] = await Promise.all([
-    supabase.from("visites").select("commercial_id, dans_zone, rupture").gte("checkin_at", debut).lte("checkin_at", fin).limit(20000),
-    supabase.from("pva_carte").select("id, commercial_id, quartier_id, commune_nom, created_at, actif").limit(20000),
+    lireTout(() => supabase.from("visites").select("commercial_id, dans_zone, rupture").gte("checkin_at", debut).lte("checkin_at", fin).order("id")),
+    lireTout(() => supabase.from("pva_carte").select("id, commercial_id, quartier_id, commune_nom, created_at, actif").order("id")),
     supabase.from("quartiers").select("id", { count: "exact", head: true }),
     supabase.from("utilisateur_roles").select("profils(id, nom, prenom)").eq("role", "commercial_terrain"),
-    supabase.from("pieces_vente").select("commercial_id, type_piece, total_ht_gnf, clients(commercial_id), lignes_piece(montant_ht_gnf, conditionnements(produit_id))").eq("statut", "valide").in("type_piece", ["facture", "commande", "avoir"]).gte("date_piece", du).lte("date_piece", au).limit(20000),
+    lireTout(() => supabase.from("pieces_vente").select("commercial_id, type_piece, total_ht_gnf, clients(commercial_id), lignes_piece(montant_ht_gnf, conditionnements(produit_id))").eq("statut", "valide").in("type_piece", ["facture", "commande", "avoir"]).gte("date_piece", du).lte("date_piece", au).order("id")),
     supabase.from("objectifs_commerciaux").select("commercial_id, visites, nouveaux_pva, ca_ht_gnf, colis").eq("mois", `${au.slice(0, 7)}-01`),
   ]);
   const duCommercial = <T extends { commercial_id: string | null }>(x: T) => !filtres.commercial || x.commercial_id === filtres.commercial;

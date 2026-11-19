@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { lireSeuils } from "@/lib/parametres";
-import { ActionsAppli } from "@/components/coque/entree-appli";
+import { AccueilTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -30,7 +30,8 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
   const g = ind.global;
   return (
     <>
-      <TitrePage titre="Maintenance" sousTitre="Pannes, réparations et entretien des machines" action={<ActionsAppli espace="maintenance" />} />
+      <TitrePage titre="Maintenance" sousTitre="Pannes, réparations et entretien des machines" />
+      <AccueilTravail espace="maintenance" />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/maintenance/interventions" libelle="Pannes (arrêt machine)" valeur={nombre(g.nbPannes)} detail={`${minutes(g.heuresArret * 60)} d'arrêt au total`} />

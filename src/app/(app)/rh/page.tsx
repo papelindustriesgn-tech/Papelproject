@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import Link from "next/link";
-import { ActionsAppli } from "@/components/coque/entree-appli";
+import { AccueilTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { ecartPoints, ecartRelatif, Indicateur, jourCourt } from "@/components/ui/indicateur";
@@ -15,6 +15,7 @@ import { clientServeur } from "@/lib/supabase/serveur";
 
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { joursDeLaPeriode } from "@/lib/formulaires/periode";
+import { lireTout } from "@/lib/donnees/resultat";
 
 export const metadata: Metadata = { title: "Ressources humaines" };
 
@@ -31,7 +32,7 @@ export default async function VueRh({ searchParams }: PageProps<"/rh">) {
   const limite = new Date(Date.parse(`${jour}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
   const [{ data: employes }, { data: pointages }, { data: absencesDuJour }, { count: demandes }, { data: periodes }] = await Promise.all([
     supabase.from("employes").select("id, matricule, nom, prenom, date_fin_contrat, departements(libelle), types_contrats(libelle)").eq("actif", true),
-    supabase.from("presences").select("employe_id, jour, statut").gte("jour", debutPrec).lte("jour", periodeChoisie.au).limit(50000),
+    lireTout(() => supabase.from("presences").select("employe_id, jour, statut").gte("jour", debutPrec).lte("jour", periodeChoisie.au).order("employe_id").order("jour")),
     supabase.from("absences").select("employe_id").eq("statut", "approuvee").lte("du", jour).gte("au", jour),
     supabase.from("absences").select("id", { count: "exact", head: true }).eq("statut", "demandee"),
     supabase.from("periodes_paie").select("mois, statut").order("mois", { ascending: false }).limit(2),
@@ -59,7 +60,8 @@ export default async function VueRh({ searchParams }: PageProps<"/rh">) {
 
   return (
     <>
-      <TitrePage titre="Ressources humaines" sousTitre={`${actifs.length} employé(s) actif(s)`} action={<ActionsAppli espace="rh" />} />
+      <TitrePage titre="Ressources humaines" sousTitre={`${actifs.length} employé(s) actif(s)`} />
+      <AccueilTravail espace="rh" />
       <SelecteurPeriode periode={periodeChoisie} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Indicateur libelle="Effectif actif" valeur={nombre(actifs.length)} detail={[...parService.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s, k]) => `${s} : ${k}`).join(" · ") || "—"} lien="/rh/employes" />

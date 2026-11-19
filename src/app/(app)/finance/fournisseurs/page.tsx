@@ -9,6 +9,7 @@ import { formaterDate } from "@/lib/formulaires/dates";
 import { gnf } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { BoutonChargesMois } from "./bouton-charges";
+import { lireTout } from "@/lib/donnees/resultat";
 
 export const metadata: Metadata = { title: "Fournisseurs et charges" };
 
@@ -34,7 +35,7 @@ export default async function PageFournisseurs({ searchParams }: PageProps<"/fin
   const [{ data }, { data: categories }, { data: dettes }, { alerte_dette_jours: seuilDette }] = await Promise.all([
     requete,
     supabase.from("categories_charges").select("id, libelle").order("ordre"),
-    supabase.from("factures_fournisseurs_etat").select("solde_gnf, jours_retard").gt("solde_gnf", 0).limit(20000),
+    lireTout(() => supabase.from("factures_fournisseurs_etat").select("solde_gnf, jours_retard").gt("solde_gnf", 0).order("id")),
     lireSeuils({ alerte_dette_jours: 30 }),
   ]);
   const lignes = data ?? [];

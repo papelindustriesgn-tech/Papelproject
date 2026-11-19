@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ActionsAppli } from "@/components/coque/entree-appli";
+import { AccueilTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
@@ -31,7 +31,8 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
 
   return (
     <>
-      <TitrePage titre="Ventes" sousTitre={filtresTexte ? `Filtré : ${filtresTexte}` : "Facturation, encaissements et clients"} action={<ActionsAppli espace="ventes" />} />
+      <TitrePage titre="Ventes" sousTitre={filtresTexte ? `Filtré : ${filtresTexte}` : "Facturation, encaissements et clients"} />
+      <AccueilTravail espace="ventes" />
       <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} commerciaux={options.commerciaux} />
       <div className="mb-4 grid gap-4 xl:grid-cols-3">
         <CarteHero

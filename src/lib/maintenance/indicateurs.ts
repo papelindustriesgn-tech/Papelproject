@@ -2,6 +2,7 @@ import "server-only";
 import { joursDeLaPeriode, type Periode } from "@/lib/formulaires/periode";
 import { calculerFiabilite, type Fiabilite } from "@/lib/metier/maintenance";
 import { clientServeur } from "@/lib/supabase/serveur";
+import { lireTout } from "@/lib/donnees/resultat";
 
 export interface IndicateursMaintenance {
   global: Fiabilite;
@@ -17,13 +18,15 @@ export async function chargerIndicateursMaintenance(p: Pick<Periode, "du" | "au"
   const [{ data: param }, { data: equipements }, { data: interventions }] = await Promise.all([
     supabase.from("parametres").select("valeur").eq("cle", "maintenance_heures_ouverture_jour").maybeSingle(),
     supabase.from("equipements").select("id, code, libelle, criticite").eq("actif", true).order("code"),
-    supabase
+    lireTout(() =>
+      supabase
       .from("interventions_etat")
       .select("equipement_id, type_intervention, arret_machine, duree_min, cout_main_oeuvre_gnf, cout_externe_gnf, cout_pieces_gnf")
       .eq("statut", "terminee")
       .gte("debut", `${p.du}T00:00:00Z`)
       .lte("debut", `${p.au}T23:59:59Z`)
-      .limit(5000),
+      .order("id"),
+    ),
   ]);
   const heures = Number(param?.valeur ?? 16);
   const jours = joursDeLaPeriode(p).length;

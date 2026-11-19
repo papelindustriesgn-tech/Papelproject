@@ -1,6 +1,6 @@
 import "server-only";
 import { ecrituresAchat, ecrituresTresorerie, ecrituresVente, type ComptesParametres, type Ecriture } from "@/lib/metier/comptabilite";
-import { exigerDonnees } from "@/lib/donnees/resultat";
+import { exigerDonnees, lireTout } from "@/lib/donnees/resultat";
 import { clientServeur } from "@/lib/supabase/serveur";
 
 export const JOURNAUX = {
@@ -30,7 +30,7 @@ export async function chargerEcritures(journal: CodeJournal, du: string, au: str
   const supabase = await clientServeur();
   const c = await lireComptes();
   if (journal === "ventes") {
-    const { data, error } = await supabase
+    const { data, error } = await lireTout(() => supabase
       .from("pieces_vente")
       .select("type_piece, numero, date_piece, total_ht_gnf, total_tva_gnf, total_ttc_gnf, clients(code, nom)")
       .in("type_piece", ["facture", "avoir"])
@@ -39,7 +39,7 @@ export async function chargerEcritures(journal: CodeJournal, du: string, au: str
       .lte("date_piece", au)
       .order("date_piece")
       .order("numero")
-      .limit(20000);
+      .order("id"));
     exigerDonnees({ data, error }, "les factures et avoirs à exporter");
     return (data ?? []).flatMap((p) =>
       ecrituresVente(
@@ -49,7 +49,7 @@ export async function chargerEcritures(journal: CodeJournal, du: string, au: str
     );
   }
   if (journal === "achats") {
-    const { data, error } = await supabase
+    const { data, error } = await lireTout(() => supabase
       .from("factures_fournisseurs_etat")
       .select("numero, date_facture, beneficiaire, libelle, compte_charge, montant_ht_gnf, montant_tva_gnf")
       .neq("statut", "annulee")
@@ -57,13 +57,13 @@ export async function chargerEcritures(journal: CodeJournal, du: string, au: str
       .lte("date_facture", au)
       .order("date_facture")
       .order("numero")
-      .limit(20000);
+      .order("id"));
     exigerDonnees({ data, error }, "les factures fournisseurs à exporter");
     return (data ?? []).flatMap((f) =>
       ecrituresAchat({ numero: f.numero ?? "", date: f.date_facture!, tiers: f.beneficiaire ?? "", libelle: f.libelle!, compteCharge: f.compte_charge ?? "", htGnf: Number(f.montant_ht_gnf), tvaGnf: Number(f.montant_tva_gnf) }, c),
     );
   }
-  const { data, error } = await supabase
+  const { data, error } = await lireTout(() => supabase
     .from("mouvements_tresorerie")
     .select(
       "id, date_operation, sens, montant_gnf, origine, libelle, reference, comptes_tresorerie(compte_comptable), categories_charges(compte_comptable), paiements(pieces_vente(clients(code))), remboursements_clients(pieces_vente(clients(code))), reglements_fournisseurs(factures_fournisseurs(tiers, fournisseurs(nom)))",
@@ -72,7 +72,7 @@ export async function chargerEcritures(journal: CodeJournal, du: string, au: str
     .lte("date_operation", au)
     .order("date_operation")
     .order("created_at")
-    .limit(50000);
+    .order("id"));
   exigerDonnees({ data, error }, "le journal de trésorerie à exporter");
   return (data ?? []).flatMap((m) =>
     ecrituresTresorerie(

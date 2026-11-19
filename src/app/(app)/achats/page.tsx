@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { lireSeuils } from "@/lib/parametres";
-import { ActionsAppli } from "@/components/coque/entree-appli";
+import { AccueilTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { EtapesConteneur } from "@/components/achats/etapes";
@@ -41,7 +41,8 @@ export default async function TableauDeBordAchats({ searchParams }: PageProps<"/
 
   return (
     <>
-      <TitrePage titre="Achats et approvisionnement" action={<ActionsAppli espace="achats" />} />
+      <TitrePage titre="Achats et approvisionnement" />
+      <AccueilTravail espace="achats" />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/achats/conteneurs" libelle="En transit" valeur={formaterPoids(kg(Number(transit?.kg_en_transit ?? 0)))} detail={`${transit?.nb_conteneurs ?? 0} conteneur(s) non livré(s)`} />

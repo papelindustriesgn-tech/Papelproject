@@ -1,11 +1,12 @@
 import "server-only";
 import { agregerTournees, type BilanTournee } from "@/lib/metier/logistique";
 import { clientServeur } from "@/lib/supabase/serveur";
+import { lireTout } from "@/lib/donnees/resultat";
 
 /** Tournées terminées ou en cours d'une période, agrégées. */
 export async function chargerBilanLogistique(du: string, au: string): Promise<BilanTournee & { nbTournees: number }> {
   const supabase = await clientServeur();
-  const { data } = await supabase.from("tournees_livraison_etat").select("*").in("statut", ["en_cours", "terminee"]).gte("date_tournee", du).lte("date_tournee", au).limit(2000);
+  const { data } = await lireTout(() => supabase.from("tournees_livraison_etat").select("*").in("statut", ["en_cours", "terminee"]).gte("date_tournee", du).lte("date_tournee", au).order("id"));
   const liste = (data ?? []).map((t) => ({
     nbLivraisons: Number(t.nb_livraisons),
     nbLivrees: Number(t.nb_livrees),

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { lireSeuils } from "@/lib/parametres";
-import { ActionsAppli } from "@/components/coque/entree-appli";
+import { AccueilTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { ecartRelatif, Indicateur } from "@/components/ui/indicateur";
@@ -10,7 +10,7 @@ import { aujourdhui } from "@/lib/formulaires/dates";
 import { lireFiltresAnalyse, lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { formaterPoids, kg } from "@/lib/metier/unites";
 import { afficherStock, gnf, nombre } from "@/lib/stocks/libelles";
-import { exigerDonnees } from "@/lib/donnees/resultat";
+import { exigerDonnees, lireTout } from "@/lib/donnees/resultat";
 import { clientServeur } from "@/lib/supabase/serveur";
 
 export const metadata: Metadata = { title: "Stocks" };
@@ -22,7 +22,7 @@ export default async function TableauDeBordMagasin({ searchParams }: PageProps<"
   const supabase = await clientServeur();
   // Mouvements de produits finis de la période (entrées de production, livraisons, dotations, retours).
   const mouvementsPf = (du: string, au: string) =>
-    supabase.from("mouvements_stock").select("type, quantite, articles!inner(famille, produit_id)").eq("articles.famille", "produit_fini").in("type", ["production", "vente", "dotation", "retour"]).gte("date_operation", du).lte("date_operation", au).limit(50000);
+    lireTout(() => supabase.from("mouvements_stock").select("type, quantite, articles!inner(famille, produit_id)").eq("articles.famille", "produit_fini").in("type", ["production", "vente", "dotation", "retour"]).gte("date_operation", du).lte("date_operation", au).order("id"));
   const [resEtat, resTransit, resMvts, resMvtsPrec, options] = await Promise.all([
     supabase.from("etat_stock").select("*").eq("actif", true),
     supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
@@ -53,7 +53,8 @@ export default async function TableauDeBordMagasin({ searchParams }: PageProps<"
 
   return (
     <>
-      <TitrePage titre="Stocks" sousTitre="Ce qu'il y a dans l'usine, en temps réel" action={<ActionsAppli espace="magasin" />} />
+      <TitrePage titre="Stocks" sousTitre="Ce qu'il y a dans l'usine, en temps réel" />
+      <AccueilTravail espace="magasin" />
       <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/magasin/bobines" libelle="Matière première disponible" valeur={formaterPoids(kg(kgMp))} detail={`${nbBobines} bobine(s) en stock`} />

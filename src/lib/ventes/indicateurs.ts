@@ -4,6 +4,7 @@ import { lignesRetenues, partRetenue, pieceRetenue } from "@/lib/metier/filtrage
 import { calculerDso, prixMoyenPaquet } from "@/lib/metier/ventes";
 import { paquetsVersColis, type Paquets } from "@/lib/metier/unites";
 import { clientServeur } from "@/lib/supabase/serveur";
+import { exigerDonnees, lireTout } from "@/lib/donnees/resultat";
 
 export interface IndicateursVentes {
   caHtGnf: number;
@@ -47,37 +48,46 @@ export interface VentesClient {
 export async function chargerIndicateursVentes(du: string, au: string, nbJours: number, filtres: FiltresAnalyse = SANS_FILTRE): Promise<IndicateursVentes> {
   const supabase = await clientServeur();
   let nouveaux = supabase.from("clients").select("id", { count: "exact", head: true }).gte("created_at", `${du}T00:00:00Z`).lte("created_at", `${au}T23:59:59Z`);
-  let soldesRequete = supabase.from("soldes_clients").select("encours_gnf, echu_gnf");
-  if (filtres.commercial) {
-    nouveaux = nouveaux.eq("commercial_id", filtres.commercial);
-    soldesRequete = soldesRequete.eq("commercial_id", filtres.commercial);
-  }
-  const [{ data: pieces }, { data: commandes }, { count: nbNouveaux }, { data: paiements }, { data: soldes }] = await Promise.all([
-    supabase
-      .from("pieces_vente")
-      .select("id, type_piece, client_id, commercial_id, date_piece, total_ht_gnf, total_ttc_gnf, clients(nom, code, commercial_id, types_clients(libelle)), lignes_piece(paquets, montant_ht_gnf, conditionnements(paquets_par_colis, produits(id, libelle)))")
-      .in("type_piece", ["facture", "avoir"])
-      .eq("statut", "valide")
-      .gte("date_piece", du)
-      .lte("date_piece", au)
-      .limit(5000),
-    supabase
-      .from("pieces_vente")
-      .select("commercial_id, clients(commercial_id), lignes_piece(montant_ht_gnf, conditionnements(produit_id))")
-      .eq("type_piece", "commande")
-      .eq("statut", "valide")
-      .gte("date_piece", du)
-      .lte("date_piece", au)
-      .limit(5000),
+  if (filtres.commercial) nouveaux = nouveaux.eq("commercial_id", filtres.commercial);
+  // Toutes les lignes (lecture par pages : l'API coupe à 1 000) ; une lecture en échec arrête la page, jamais un zéro.
+  const [resPieces, resCommandes, resNouveaux, resPaiements, resSoldes] = await Promise.all([
+    lireTout(() =>
+      supabase
+        .from("pieces_vente")
+        .select("id, type_piece, client_id, commercial_id, date_piece, total_ht_gnf, total_ttc_gnf, clients(nom, code, commercial_id, types_clients(libelle)), lignes_piece(paquets, montant_ht_gnf, conditionnements(paquets_par_colis, produits(id, libelle)))")
+        .in("type_piece", ["facture", "avoir"])
+        .eq("statut", "valide")
+        .gte("date_piece", du)
+        .lte("date_piece", au)
+        .order("id"),
+    ),
+    lireTout(() =>
+      supabase
+        .from("pieces_vente")
+        .select("id, commercial_id, clients(commercial_id), lignes_piece(montant_ht_gnf, conditionnements(produit_id))")
+        .eq("type_piece", "commande")
+        .eq("statut", "valide")
+        .gte("date_piece", du)
+        .lte("date_piece", au)
+        .order("id"),
+    ),
     nouveaux,
-    supabase
-      .from("paiements")
-      .select("montant_gnf, pieces_vente(commercial_id, clients(commercial_id), lignes_piece(montant_ht_gnf, conditionnements(produit_id)))")
-      .gte("date_paiement", du)
-      .lte("date_paiement", au)
-      .limit(10000),
-    soldesRequete,
+    lireTout(() =>
+      supabase
+        .from("paiements")
+        .select("id, montant_gnf, pieces_vente(commercial_id, clients(commercial_id), lignes_piece(montant_ht_gnf, conditionnements(produit_id)))")
+        .gte("date_paiement", du)
+        .lte("date_paiement", au)
+        .order("id"),
+    ),
+    lireTout(() => (filtres.commercial ? supabase.from("soldes_clients").select("client_id, encours_gnf, echu_gnf").eq("commercial_id", filtres.commercial) : supabase.from("soldes_clients").select("client_id, encours_gnf, echu_gnf")).order("client_id")),
   ]);
+  const pieces = exigerDonnees(resPieces, "les factures et avoirs de la période");
+  const commandes = exigerDonnees(resCommandes, "les commandes de la période");
+  exigerDonnees(resNouveaux, "les nouveaux clients");
+  const nbNouveaux = resNouveaux.count;
+  const paiements = exigerDonnees(resPaiements, "les paiements reçus");
+  const soldes = exigerDonnees(resSoldes, "ce que les clients doivent");
 
   let caHt = 0;
   let caTtc = 0;

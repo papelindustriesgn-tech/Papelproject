@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ActionsAppli } from "@/components/coque/entree-appli";
+import { AccueilTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { GraphiqueArrets, GraphiqueProduction, GraphiqueRendement } from "@/components/graphiques/production";
@@ -60,7 +60,8 @@ export default async function TableauDeBordProduction({ searchParams }: PageProp
 
   return (
     <>
-      <TitrePage titre="Production" sousTitre={gamme ? `Filtré : ${gamme} (fiches mixtes au prorata du papier)` : "Ce que l'usine a produit et comment"} action={<ActionsAppli espace="production" />} />
+      <TitrePage titre="Production" sousTitre={gamme ? `Filtré : ${gamme} (fiches mixtes au prorata du papier)` : "Ce que l'usine a produit et comment"} />
+      <AccueilTravail espace="production" />
       <SelecteurPeriode periode={periode} params={sp} filtres={{ ...filtres, commercial: null }} gammes={options.produits} />
 
       <div className="mb-4 grid gap-4 xl:grid-cols-3">

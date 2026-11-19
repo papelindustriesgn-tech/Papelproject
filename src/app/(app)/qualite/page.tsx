@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
-import { ActionsAppli } from "@/components/coque/entree-appli";
+import { AccueilTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -12,6 +12,7 @@ import { pct } from "@/lib/production/affichage";
 import { GRAVITES_NC, ORIGINES_NC, STATUTS_NC } from "@/lib/qualite/libelles";
 import { nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
+import { lireTout } from "@/lib/donnees/resultat";
 
 export const metadata: Metadata = { title: "Qualité" };
 
@@ -21,8 +22,8 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
   const periode = lirePeriode(sp, jour);
   const supabase = await clientServeur();
   const [{ data: controles }, { data: ncPeriode }, { data: ouvertes }, { data: actions }, { data: bloquees }] = await Promise.all([
-    supabase.from("controles_qualite").select("etape, resultat").gte("date_controle", periode.du).lte("date_controle", periode.au).limit(5000),
-    supabase.from("non_conformites").select("date_constat, cloturee_le, origine").gte("date_constat", periode.du).lte("date_constat", periode.au).limit(5000),
+    lireTout(() => supabase.from("controles_qualite").select("etape, resultat").gte("date_controle", periode.du).lte("date_controle", periode.au).order("id")),
+    lireTout(() => supabase.from("non_conformites").select("date_constat, cloturee_le, origine").gte("date_constat", periode.du).lte("date_constat", periode.au).order("id")),
     supabase.from("non_conformites").select("id, numero, date_constat, origine, gravite, description, statut").neq("statut", "cloturee").order("date_constat"),
     supabase.from("actions_correctives").select("id, description, responsable, echeance, realisee_le, nc_id, non_conformites(numero)").is("realisee_le", null),
     supabase.from("etat_lots").select("id, numero_lot, poids_restant_kg, date_reception").eq("statut", "bloque").order("date_reception"),
@@ -33,7 +34,8 @@ export default async function TableauDeBordQualite({ searchParams }: PageProps<"
 
   return (
     <>
-      <TitrePage titre="Qualité" sousTitre="Contrôles, non-conformités et traçabilité" action={<ActionsAppli espace="qualite" />} />
+      <TitrePage titre="Qualité" sousTitre="Contrôles, non-conformités et traçabilité" />
+      <AccueilTravail espace="qualite" />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/qualite/controles" libelle="Conformité à réception" valeur={pct(tauxConformite(c.filter((x) => x.etape === "reception")))} detail={`${c.filter((x) => x.etape === "reception").length} contrôle(s) de bobines`} />

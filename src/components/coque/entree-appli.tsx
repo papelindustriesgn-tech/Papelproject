@@ -118,3 +118,38 @@ export async function ActionsAppli({ espace }: { espace: string }) {
     </div>
   );
 }
+
+/**
+ * « À faire aujourd'hui » de l'accueil d'un service : les gestes quotidiens en grandes tuiles (4 au plus),
+ * le premier mis en avant. Mêmes boutons que `ActionsAppli`, réglés par l'administrateur.
+ */
+export async function ActionsDuJour({ espace }: { espace: string }) {
+  const { actions } = await chargerEntree(espace);
+  if (!actions.length) return null;
+  return (
+    <ul className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+      {actions.slice(0, 4).map((a, i) => {
+        const Icone = ICONES[a.icone] ?? FileText;
+        const principal = i === 0;
+        return (
+          <li key={a.id} className={principal ? "col-span-2 lg:col-span-1" : ""}>
+            <Link
+              href={a.ecran}
+              className={`flex h-full min-h-14 items-center gap-3 rounded-2xl px-4 py-3 font-semibold leading-tight transition hover:-translate-y-0.5 ${
+                principal ? "bg-papel-700 text-base text-white shadow-md hover:bg-papel-800" : "ombre-carte bg-white text-sm text-gray-900 hover:bg-papel-50"
+              }`}
+            >
+              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${principal ? "bg-white/20" : "bg-papel-50 text-papel-700"}`}>
+                <Icone size={19} aria-hidden />
+              </span>
+              <span className="min-w-0">
+                <span className="block">{a.libelle}</span>
+                {a.description && <span className={`mt-0.5 block text-xs font-normal ${principal ? "text-white/85" : "text-gray-600"}`}>{a.description}</span>}
+              </span>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}

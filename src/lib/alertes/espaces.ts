@@ -6,6 +6,7 @@ import { chargerCoordination } from "@/lib/coordination/charger";
 import { aujourdhui, ilYA } from "@/lib/formulaires/dates";
 import { CALCULS } from "@/lib/navigation/calculs";
 import { clientServeur } from "@/lib/supabase/serveur";
+import { lireTout } from "@/lib/donnees/resultat";
 
 export type { AlerteEspace };
 
@@ -111,7 +112,7 @@ export async function chargerPastilles(espaces: string[]): Promise<Record<string
   const groupe = avecAlertes.join(",");
   const [alertes, { data: taches }] = await Promise.all([
     Promise.all(avecAlertes.map(async (e) => [e, (await assembler(e, groupe)).length] as const)),
-    s.from("taches").select("espace_destinataire").in("statut", ["a_faire", "en_cours"]).in("espace_destinataire", avecAlertes).limit(2000),
+    lireTout(() => s.from("taches").select("espace_destinataire").in("statut", ["a_faire", "en_cours"]).in("espace_destinataire", avecAlertes).order("id")),
   ]);
   const pastilles: Record<string, number> = {};
   for (const [e, n] of alertes) if (n) pastilles[`/${e}/alertes`] = n;

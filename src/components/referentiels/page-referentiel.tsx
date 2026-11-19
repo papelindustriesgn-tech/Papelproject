@@ -8,6 +8,7 @@ import { basculerActif } from "@/lib/referentiels/actions";
 import { referentiel, referentielsDeLEspace } from "@/lib/referentiels/definitions";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { BoutonSupprimer, FormulaireLigne, type OptionsReferences } from "./formulaire-ligne";
+import { lireTout } from "@/lib/donnees/resultat";
 
 const PAR_PAGE = 100;
 
@@ -50,7 +51,8 @@ export async function PageReferentiel({
   for (const c of def.champs) {
     if (c.type === "reference" && c.reference) {
       const cle = c.reference.cle ?? "id";
-      const { data } = await supabase.from(c.reference.table).select(`${cle}, ${c.reference.libelle}`).order(c.reference.libelle).limit(2000);
+      const ref = c.reference;
+      const { data } = await lireTout(() => supabase.from(ref.table).select(`${cle}, ${ref.libelle}`).order(ref.libelle).order(cle));
       options[c.nom] = ((data ?? []) as unknown as Record<string, string>[]).map((d) => ({ valeur: d[cle], libelle: d[c.reference!.libelle] }));
     }
   }

@@ -5,6 +5,7 @@ import { coutEstimeParGamme } from "@/lib/metier/filtrage";
 import { compteDeResultat, tresoreriePrevisionnelle, type CompteResultat, type Flux, type SemainePrevision } from "@/lib/metier/finance";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { chargerIndicateursVentes, type IndicateursVentes } from "@/lib/ventes/indicateurs";
+import { exigerDonnees, lireTout } from "@/lib/donnees/resultat";
 
 /**
  * Coût de revient des produits sortis pour la vente ou offerts (dotation), moins les retours, sur une période.
@@ -14,13 +15,14 @@ import { chargerIndicateursVentes, type IndicateursVentes } from "@/lib/ventes/i
  */
 export async function coutDesVentes(du: string, au: string, filtres: FiltresAnalyse = SANS_FILTRE, ventes?: Pick<IndicateursVentes, "parProduit">): Promise<number> {
   const supabase = await clientServeur();
-  const { data } = await supabase
+  const resultat = await lireTout(() => supabase
     .from("mouvements_stock")
     .select("valeur_gnf, quantite, articles(produit_id, produits(libelle))")
     .in("type", ["vente", "dotation", "retour"])
     .gte("date_operation", du)
     .lte("date_operation", au)
-    .limit(50000);
+    .order("id"));
+  const data = exigerDonnees(resultat, "le coût des produits vendus");
   const lignes = (data ?? []).filter((m) => !filtres.produit || m.articles?.produit_id === filtres.produit);
   if (filtres.commercial && ventes) {
     // Sorties : quantité et valeur négatives ; on les remet en positif (paquets sortis, coût).
@@ -39,11 +41,12 @@ export interface ResultatPeriode extends CompteResultat {
 export async function chargerResultat(du: string, au: string, nbJours: number): Promise<ResultatPeriode> {
   const supabase = await clientServeur();
   // Les achats stockés et les investissements n'entrent pas dans le résultat de gestion.
-  const [ventes, cout, { data: factures }] = await Promise.all([
+  const [ventes, cout, resFactures] = await Promise.all([
     chargerIndicateursVentes(du, au, nbJours),
     coutDesVentes(du, au),
-    supabase.from("factures_fournisseurs_etat").select("montant_ht_gnf, nature, categorie_libelle, compte_charge").neq("statut", "annulee").in("nature", ["variable", "fixe"]).gte("date_facture", du).lte("date_facture", au).limit(20000),
+    lireTout(() => supabase.from("factures_fournisseurs_etat").select("montant_ht_gnf, nature, categorie_libelle, compte_charge").neq("statut", "annulee").in("nature", ["variable", "fixe"]).gte("date_facture", du).lte("date_facture", au).order("id")),
   ]);
+  const factures = exigerDonnees(resFactures, "les charges de la période");
   const parCategorie = new Map<string, { libelle: string; nature: string; compte: string; montantGnf: number }>();
   for (const f of factures ?? []) {
     const cle = f.categorie_libelle!;
@@ -68,12 +71,17 @@ export interface SituationFinanciere {
 
 export async function chargerSituation(): Promise<SituationFinanciere> {
   const supabase = await clientServeur();
-  const [{ data: comptes }, { data: creances }, { data: dettes }, { data: stocks }] = await Promise.all([
+  const [resComptes, resCreances, resDettes, resStocks] = await Promise.all([
     supabase.from("soldes_tresorerie").select("id, libelle, devise, solde, taux_actuel, type_compte, actif").eq("actif", true).order("ordre"),
-    supabase.from("factures_etat").select("solde_gnf, jours_retard").gt("solde_gnf", 0).limit(20000),
-    supabase.from("factures_fournisseurs_etat").select("solde_gnf, jours_retard").gt("solde_gnf", 0).limit(20000),
+    lireTout(() => supabase.from("factures_etat").select("solde_gnf, jours_retard").gt("solde_gnf", 0).order("id")),
+    lireTout(() => supabase.from("factures_fournisseurs_etat").select("solde_gnf, jours_retard").gt("solde_gnf", 0).order("id")),
     supabase.from("etat_stock").select("valeur_gnf").eq("actif", true),
   ]);
+  // Trésorerie, créances, dettes : une lecture en échec n'est jamais montrée comme un solde à zéro.
+  const comptes = exigerDonnees(resComptes, "les soldes de caisse et de banque");
+  const creances = exigerDonnees(resCreances, "ce que les clients doivent");
+  const dettes = exigerDonnees(resDettes, "ce que l'usine doit aux fournisseurs");
+  const stocks = exigerDonnees(resStocks, "la valeur du stock");
   const lignes = (comptes ?? []).map((c) => {
     const solde = Number(c.solde);
     // USD : solde en centimes × taux du jour.
@@ -102,8 +110,8 @@ export async function chargerPrevisionnel(nbSemaines = 13): Promise<{ semaines: 
   const debut = aujourdhui();
   const situation = await chargerSituation();
   const [{ data: clients }, { data: fournisseurs }, { data: recurrentes }, { data: generees }, { data: bc }] = await Promise.all([
-    supabase.from("factures_etat").select("solde_gnf, date_echeance").gt("solde_gnf", 0).limit(20000),
-    supabase.from("factures_fournisseurs_etat").select("solde_gnf, date_echeance").gt("solde_gnf", 0).limit(20000),
+    lireTout(() => supabase.from("factures_etat").select("solde_gnf, date_echeance").gt("solde_gnf", 0).order("id")),
+    lireTout(() => supabase.from("factures_fournisseurs_etat").select("solde_gnf, date_echeance").gt("solde_gnf", 0).order("id")),
     supabase.from("charges_recurrentes").select("id, montant_gnf, jour_echeance, date_debut, date_fin").eq("actif", true),
     supabase.from("factures_fournisseurs").select("recurrente_id, mois_recurrence").not("recurrente_id", "is", null).gte("mois_recurrence", debut.slice(0, 8) + "01"),
     supabase.from("bons_commande").select("id, devise, taux_change, date_livraison_prevue, lignes_bc(montant_devise), factures_fournisseurs(id)").eq("statut", "envoye"),

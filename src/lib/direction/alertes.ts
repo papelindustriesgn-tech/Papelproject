@@ -5,6 +5,7 @@ import { lireSeuils } from "@/lib/parametres";
 import { libelleAlerte } from "@/lib/production/affichage";
 import { chargerFiches } from "@/lib/production/indicateurs";
 import { clientServeur } from "@/lib/supabase/serveur";
+import { lireTout } from "@/lib/donnees/resultat";
 
 export interface Alerte {
   gravite: "critique" | "importante";
@@ -33,7 +34,7 @@ export const chargerAlertes = cache(async (au: string = aujourdhui(), tauxRuptur
     supabase.from("non_conformites").select("id, numero, description").eq("gravite", "critique").neq("statut", "cloturee"),
     supabase.from("pieces_critiques_alerte").select("article_id, libelle, equipements"),
     tauxRupture === undefined
-      ? supabase.from("visites").select("rupture").gte("checkin_at", `${joursAvant(au, 6)}T00:00:00Z`).lte("checkin_at", `${au}T23:59:59Z`).limit(20000)
+      ? lireTout(() => supabase.from("visites").select("rupture").gte("checkin_at", `${joursAvant(au, 6)}T00:00:00Z`).lte("checkin_at", `${au}T23:59:59Z`).order("id"))
       : Promise.resolve({ data: null }),
   ]);
   const v = visites.data;

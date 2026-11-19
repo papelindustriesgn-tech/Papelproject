@@ -6,6 +6,7 @@ import { libelleMois } from "@/lib/rh/libelles";
 import { gnf } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { FormulairePreparerPaie } from "../formulaires";
+import { lireTout } from "@/lib/donnees/resultat";
 
 export const metadata: Metadata = { title: "Paie" };
 
@@ -13,7 +14,7 @@ export default async function PagePaie() {
   const supabase = await clientServeur();
   const [{ data: periodes }, { data: bulletins }] = await Promise.all([
     supabase.from("periodes_paie").select("*").order("mois", { ascending: false }).limit(36),
-    supabase.from("bulletins").select("mois, brut_gnf, net_gnf, cnss_employeur_gnf").limit(20000),
+    lireTout(() => supabase.from("bulletins").select("mois, brut_gnf, net_gnf, cnss_employeur_gnf").order("id")),
   ]);
   const totaux = new Map<string, { n: number; brut: number; net: number; cout: number }>();
   for (const b of bulletins ?? []) {

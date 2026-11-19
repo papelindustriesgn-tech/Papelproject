@@ -25,6 +25,8 @@ export const INDICATEURS: Indicateur[] = [
   { code: "pannes_en_cours", libelle: "Pannes signalées non terminées", domaine: "Production", ecran: "/production/pannes" },
   { code: "factures_clients_retard", libelle: "Factures clients en retard de paiement", domaine: "Ventes", ecran: "/ventes/impayes" },
   { code: "commandes_a_livrer", libelle: "Commandes clients avec un reste à livrer", domaine: "Ventes", ecran: "/ventes/pieces?type=commande" },
+  { code: "commandes_a_facturer", libelle: "Commandes livrées pas encore facturées", domaine: "Ventes", ecran: "/ventes/a-facturer" },
+  { code: "commandes_date_a_confirmer", libelle: "Commandes sans date de livraison confirmée", domaine: "Ventes", ecran: "/ventes/commandes" },
   { code: "pieces_brouillon", libelle: "Devis, commandes, factures en brouillon", domaine: "Ventes", ecran: "/ventes/pieces?type=facture&statut=brouillon" },
   { code: "reclamations_ouvertes", libelle: "Réclamations clients non clôturées", domaine: "Équipe commerciale", ecran: "/commercial/reclamations" },
   { code: "pva_sans_gps", libelle: "Points de vente sans position GPS", domaine: "Équipe commerciale", ecran: "/commercial/portefeuilles" },

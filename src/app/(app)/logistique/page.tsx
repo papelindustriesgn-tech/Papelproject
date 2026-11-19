@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { lireSeuils } from "@/lib/parametres";
-import { ActionsAppli } from "@/components/coque/entree-appli";
+import { AccueilTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -36,7 +36,8 @@ export default async function TableauDeBordLogistique({ searchParams }: PageProp
 
   return (
     <>
-      <TitrePage titre="Logistique" sousTitre="Tournées de livraison depuis l'usine de Coyah" action={<ActionsAppli espace="logistique" />} />
+      <TitrePage titre="Logistique" sousTitre="Tournées de livraison depuis l'usine de Coyah" />
+      <AccueilTravail espace="logistique" />
       <SelecteurPeriode periode={periode} params={sp} />
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Indicateur lien="/logistique/tournees/nouvelle" libelle="Bons à planifier" valeur={nombre(aPlanifier ?? 0)} detail="Bons de livraison validés sans tournée" ton={(aPlanifier ?? 0) > 0 ? "alerte" : "normal"} />

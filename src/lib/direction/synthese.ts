@@ -9,6 +9,7 @@ import type { IndicateursFiche } from "@/lib/metier/production";
 import { chargerIndicateursVentes, type IndicateursVentes } from "@/lib/ventes/indicateurs";
 import { lireSeuils } from "@/lib/parametres";
 import { clientServeur } from "@/lib/supabase/serveur";
+import { exigerDonnees, lireTout } from "@/lib/donnees/resultat";
 import { chargerAlertes, type Alerte } from "./alertes";
 
 export type { Alerte } from "./alertes";
@@ -67,7 +68,7 @@ export async function chargerSynthese(p: Periode, filtres: FiltresAnalyse = SANS
     supabase.from("etat_stock").select("famille, unite, quantite, valeur_gnf, conso_jour, libelle, paquets_par_colis, produit_id").eq("actif", true),
     chargerIndicateursCommerciaux(p.du, p.au, p.nbJours, filtres),
     chargerIndicateursCommerciaux(p.precedente.du, p.precedente.au, p.nbJours, filtres),
-    supabase.from("pva_carte").select("type_libelle, actif, commercial_id"),
+    lireTout(() => supabase.from("pva_carte").select("type_libelle, actif, commercial_id").order("id")),
     supabase.from("transit").select("kg_en_transit, nb_conteneurs").maybeSingle(),
     chargerSituation(),
   ]);
@@ -79,7 +80,10 @@ export async function chargerSynthese(p: Periode, filtres: FiltresAnalyse = SANS
   for (const f of fiches) parJour.set(f.date, [...(parJour.get(f.date) ?? []), f]);
 
   // Stock
-  const lignes = etat.data ?? [];
+  // Une lecture en échec affiche « données non chargées », jamais un stock ou un réseau à zéro.
+  const lignes = exigerDonnees(etat, "l'état du stock") ?? [];
+  const pvaLus = exigerDonnees(pva, "les points de vente") ?? [];
+  const transitLu = exigerDonnees(transit, "la marchandise en transit");
   const mp = lignes.filter((l) => l.famille === "matiere_premiere" && l.unite === "kg");
   const kgMp = mp.reduce((s, l) => s + Number(l.quantite), 0);
   const consoMp = mp.reduce((s, l) => s + Number(l.conso_jour), 0);
@@ -88,7 +92,7 @@ export async function chargerSynthese(p: Periode, filtres: FiltresAnalyse = SANS
   const alertes: Alerte[] = await chargerAlertes(p.au, filtres.commercial ? undefined : distribution.tauxRupture);
 
   const m = margeBrute(ventes.caHtGnf, cout);
-  const actifs = (pva.data ?? []).filter((x) => x.actif && (!filtres.commercial || x.commercial_id === filtres.commercial));
+  const actifs = pvaLus.filter((x) => x.actif && (!filtres.commercial || x.commercial_id === filtres.commercial));
   return {
     ventes,
     ventesPrec,
@@ -100,8 +104,8 @@ export async function chargerSynthese(p: Periode, filtres: FiltresAnalyse = SANS
     margePrec: margeBrute(ventesPrec.caHtGnf, coutPrec),
     stock: {
       kgMp,
-      kgTransit: Number(transit.data?.kg_en_transit ?? 0),
-      conteneursTransit: Number(transit.data?.nb_conteneurs ?? 0),
+      kgTransit: Number(transitLu?.kg_en_transit ?? 0),
+      conteneursTransit: Number(transitLu?.nb_conteneurs ?? 0),
       couvertureMpJours: consoMp > 0 ? kgMp / consoMp : null,
       valeurGnf: lignes.reduce((s, l) => s + Number(l.valeur_gnf), 0),
       produitsFinis: lignes.filter((l) => l.famille === "produit_fini" && Number(l.quantite) > 0 && (!filtres.produit || l.produit_id === filtres.produit)).map((l) => ({ libelle: l.libelle!, paquets: Number(l.quantite), paquetsParColis: l.paquets_par_colis })),

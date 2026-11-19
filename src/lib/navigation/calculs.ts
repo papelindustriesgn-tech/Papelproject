@@ -1,6 +1,7 @@
 import "server-only";
 import { lireSeuils } from "@/lib/parametres";
 import type { clientServeur } from "@/lib/supabase/serveur";
+import { lireTout } from "@/lib/donnees/resultat";
 
 type Client = Awaited<ReturnType<typeof clientServeur>>;
 const compter = { count: "exact", head: true } as const;
@@ -21,8 +22,18 @@ export const CALCULS: Record<string, (s: Client, jour: string) => Promise<number
   pannes_en_cours: async (s) => n(await s.from("interventions").select("id", compter).eq("type_intervention", "curative").in("statut", ["demandee", "en_cours"])),
   factures_clients_retard: async (s) => n(await s.from("factures_etat").select("id", compter).gt("solde_gnf", 0).gt("jours_retard", 0)),
   commandes_a_livrer: async (s) => {
-    const { data } = await s.from("reste_a_livrer").select("commande_id").gt("paquets_restants", 0).limit(5000);
+    const { data } = await lireTout(() => s.from("reste_a_livrer").select("commande_id").gt("paquets_restants", 0).order("commande_id").order("conditionnement_id"));
     return new Set((data ?? []).map((l) => l.commande_id)).size;
+  },
+  commandes_a_facturer: async (s) => n(await s.from("commandes_a_facturer").select("commande_id", compter)),
+  commandes_date_a_confirmer: async (s) => {
+    // Commandes validées qui ont encore un reste à livrer et pas de date promise.
+    const [{ data: restes }, { data: suivis }] = await Promise.all([
+      lireTout(() => s.from("reste_a_livrer").select("commande_id").gt("paquets_restants", 0).order("commande_id").order("conditionnement_id")),
+      lireTout(() => s.from("suivi_commandes").select("commande_id").not("date_confirmee", "is", null).order("commande_id")),
+    ]);
+    const confirmees = new Set((suivis ?? []).map((x) => x.commande_id));
+    return new Set((restes ?? []).map((l) => l.commande_id).filter((id) => id && !confirmees.has(id))).size;
   },
   pieces_brouillon: async (s) => n(await s.from("pieces_vente").select("id", compter).eq("statut", "brouillon")),
   reclamations_ouvertes: async (s) => n(await s.from("non_conformites").select("id", compter).eq("origine", "client").neq("statut", "cloturee")),

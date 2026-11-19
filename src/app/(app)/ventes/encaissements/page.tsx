@@ -4,7 +4,7 @@ import { ExportCsv } from "@/components/donnees/export-csv";
 import { BarreFiltres, lireParam } from "@/components/donnees/filtres";
 import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
-import { exigerDonnees } from "@/lib/donnees/resultat";
+import { exigerDonnees, lireTout } from "@/lib/donnees/resultat";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
 import { gnf, nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -23,17 +23,19 @@ export default async function PageEncaissements({ searchParams }: PageProps<"/ve
   const q = (lireParam(sp, "q") ?? "").trim().toLowerCase();
 
   const supabase = await clientServeur();
-  let requete = supabase
+  const requete = () => {
+    const r = supabase
     .from("paiements")
     .select("id, date_paiement, montant_gnf, reference, mode_id, modes_paiement(libelle), pieces_vente(id, numero, clients(nom, code))")
     .gte("date_paiement", du)
     .lte("date_paiement", au)
     .order("date_paiement", { ascending: false })
     .order("created_at", { ascending: false })
-    .limit(2000);
-  if (mode) requete = requete.eq("mode_id", mode);
+    .order("id");
+    return mode ? r.eq("mode_id", mode) : r;
+  };
   const [resPaiements, resRemboursements, resModes] = await Promise.all([
-    requete,
+    lireTout(requete),
     supabase.from("remboursements_clients").select("montant_gnf").gte("date_remboursement", du).lte("date_remboursement", au),
     supabase.from("modes_paiement").select("id, libelle").order("ordre"),
   ]);

@@ -3,6 +3,7 @@ import { joursOuvrables, type ReglesPaie } from "@/lib/metier/rh";
 import { lireSeuils } from "@/lib/parametres";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { finMois } from "./libelles";
+import { lireTout } from "@/lib/donnees/resultat";
 
 /** Règles de paie lues dans les paramètres (catégorie « rh ») et le barème RTS modifiable. */
 export async function chargerReglesPaie(): Promise<ReglesPaie> {
@@ -31,7 +32,7 @@ export async function elementsVariables(mois: string): Promise<Map<string, { heu
   const supabase = await clientServeur();
   const fin = finMois(mois);
   const [{ data: presences }, { data: absences }, { data: feries }] = await Promise.all([
-    supabase.from("presences").select("employe_id, statut, heures_sup").gte("jour", mois).lte("jour", fin).limit(20000),
+    lireTout(() => supabase.from("presences").select("employe_id, statut, heures_sup").gte("jour", mois).lte("jour", fin).order("employe_id").order("jour")),
     supabase.from("absences").select("employe_id, du, au, types_absences!inner(payee)").eq("statut", "approuvee").eq("types_absences.payee", false).lte("du", fin).gte("au", mois),
     supabase.from("jours_feries").select("jour").gte("jour", mois).lte("jour", fin),
   ]);
