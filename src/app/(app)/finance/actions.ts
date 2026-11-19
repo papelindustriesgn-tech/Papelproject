@@ -172,7 +172,8 @@ export async function enregistrerVirement(_e: EtatFormulaire, fd: FormData): Pro
 // Vérifier la caisse et la banque (rapprochement)
 // -----------------------------------------------------------------------------
 const schemaRapprochement = z.object({
-  compte_id: uuid("Choisissez le compte."),
+  // Nom distinct de « compte_id » : la page Trésorerie a plusieurs formulaires, chaque champ doit avoir son propre identifiant.
+  compte_verifie: uuid("Choisissez le compte."),
   date_releve: date,
   solde_releve: z
     .string()
@@ -189,11 +190,11 @@ export async function enregistrerRapprochement(_e: EtatFormulaire, fd: FormData)
   if (!lecture.success) return { erreurs: erreursZod(lecture.error), valeurs };
   const d = lecture.data;
   const supabase = await clientServeur();
-  const { data: compte, error: e1 } = await supabase.from("comptes_tresorerie").select("devise, libelle").eq("id", d.compte_id).single();
+  const { data: compte, error: e1 } = await supabase.from("comptes_tresorerie").select("devise, libelle").eq("id", d.compte_verifie).single();
   if (e1 || !compte) return { message: "Compte introuvable.", valeurs };
   // Même unité que le journal : GNF en unités, USD en centimes.
   const solde = compte.devise === "USD" ? Math.round(d.solde_releve * 100) : Math.round(d.solde_releve);
-  const { data: id, error } = await supabase.rpc("enregistrer_rapprochement", { p_compte: d.compte_id, p_date: d.date_releve, p_solde_releve: solde, p_note: d.note });
+  const { data: id, error } = await supabase.rpc("enregistrer_rapprochement", { p_compte: d.compte_verifie, p_date: d.date_releve, p_solde_releve: solde, p_note: d.note });
   if (error) return { message: messageErreurBase(error), valeurs };
   const { data: r } = await supabase.from("rapprochements_tresorerie").select("ecart").eq("id", id).single();
   rafraichir();

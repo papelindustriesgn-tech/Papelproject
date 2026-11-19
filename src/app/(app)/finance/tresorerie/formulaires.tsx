@@ -79,13 +79,13 @@ export function FormulaireRapprochement({ comptes, dateDuJour }: { comptes: Opti
     <form action={action} className="flex flex-col gap-3">
       {etat.message && <Message ton={etat.ok ? "succes" : "erreur"}>{etat.message}</Message>}
       <div className="grid gap-3 sm:grid-cols-3">
-        <Selection libelle="1. Quel compte avez-vous vérifié ?" name="compte_id" defaultValue={v.compte_id ?? ""} erreur={e.compte_id}>
+        <Selection libelle="1. Quel compte avez-vous vérifié ?" name="compte_verifie" defaultValue={v.compte_verifie ?? ""} erreur={e.compte_verifie}>
           <option value="">— Choisir —</option>
           {comptes.map((c) => (
             <option key={c.id} value={c.id}>{c.libelle}</option>
           ))}
         </Selection>
-        <Champ libelle="2. Montant réel (devise du compte)" name="solde_releve" inputMode="decimal" defaultValue={v.solde_releve} erreur={e.solde_releve} aide="Caisse : l'argent compté. Banque : le solde du relevé." />
+        <Champ libelle="2. Montant réel, dans la devise du compte" name="solde_releve" inputMode="decimal" defaultValue={v.solde_releve} erreur={e.solde_releve} aide="Caisse : l'argent compté. Banque : le solde du relevé." />
         <Champ libelle="3. À quelle date ?" name="date_releve" type="date" defaultValue={v.date_releve ?? dateDuJour} max={dateDuJour} erreur={e.date_releve} />
         <Champ libelle="Remarque (facultatif)" name="note" defaultValue={v.note} className="sm:col-span-3" placeholder="Relevé n°…, compté avec…" />
       </div>

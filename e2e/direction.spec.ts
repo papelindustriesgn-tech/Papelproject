@@ -6,6 +6,11 @@ test("tableau de bord Direction : quatre questions, verdicts, explications, pér
   await expect(page).toHaveURL(/\/applications$/);
   await page.getByRole("link", { name: "Tableau de bord" }).first().click();
   await expect(page).toHaveURL(/\/direction$/);
+  // Synthèse : les chiffres essentiels, chacun avec son état, puis l'analyse détaillée sous « Plus de détails ».
+  for (const chiffre of ["Ventes nettes (hors taxes)", "Argent reçu (encaissements)", "Trésorerie", "Impayés en retard", "Stock disponible à vendre", "Commandes à livrer"]) {
+    await expect(page.getByRole("heading", { name: chiffre, exact: true })).toBeVisible();
+  }
+  await page.getByText(/^Plus de détails/).click();
   for (const question of ["Gagne-t-on de l'argent ?", "Combien coûte un paquet ?", "L'usine tourne-t-elle bien ?", "Les clients sont-ils servis ?"]) {
     await expect(page.getByRole("heading", { name: question })).toBeVisible();
   }
@@ -18,6 +23,8 @@ test("tableau de bord Direction : quatre questions, verdicts, explications, pér
   await expect(page).toHaveURL(/\/direction$/);
 
   await page.goto("/direction?periode=semaine");
+  await expect(page.getByText(/^L'essentiel du /)).toBeVisible();
+  await page.getByText(/^Plus de détails/).click();
   await expect(page.getByText(/Rendement/).first()).toBeVisible();
 });
 

@@ -24,7 +24,7 @@ test("vérification de la caisse : écart calculé par l'ERP, date visible par l
   await page.goto("/finance/tresorerie");
   const ligne = page.locator("section, div", { has: page.getByRole("heading", { name: "Vérifier la caisse et la banque" }) }).last().getByRole("row", { name: /Caisse principale/ }).first();
   await page.getByLabel("1. Quel compte avez-vous vérifié ?").selectOption({ label: "Caisse principale" });
-  await page.getByLabel("2. Montant réel (devise du compte)").fill("1 000");
+  await page.getByLabel("2. Montant réel, dans la devise du compte").fill("1 000");
   await page.getByRole("button", { name: "Enregistrer la vérification" }).click();
   await expect(page.getByText(/Caisse principale vérifié/)).toBeVisible();
   await expect(ligne).not.toContainText("Jamais vérifié");
