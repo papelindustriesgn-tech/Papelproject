@@ -12,7 +12,7 @@ export type { BesoinProduction, CommandeAServir, Coordination, LigneCommandeClie
  */
 export const chargerCoordination = cache(async (): Promise<Coordination | null> => {
   const supabase = await clientServeur();
-  const { data, error } = await supabase.rpc("coordination_commandes");
+  const [{ data, error }, { data: produits }] = await Promise.all([supabase.rpc("coordination_commandes"), supabase.from("produits").select("id, fabrique")]);
   if (error || !data) return null;
-  return estimerCoordination(data as unknown as Brut);
+  return estimerCoordination(data as unknown as Brut, new Set((produits ?? []).filter((p) => !p.fabrique).map((p) => p.id)));
 });

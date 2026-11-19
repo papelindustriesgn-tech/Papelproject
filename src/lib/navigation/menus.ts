@@ -33,11 +33,11 @@ export const MENUS: Record<string, EntreeMenu[]> = {
   magasin: [
     { libelle: "Vue d'ensemble", href: "/magasin" },
     { libelle: "Alertes", href: "/magasin/alertes" },
-    { libelle: "Articles en stock", href: "/magasin/articles" },
+    { libelle: "Commandes à préparer", href: "/magasin/commandes" },
+    { libelle: "Réceptions (bobines)", href: "/magasin/bobines" },
     { libelle: "Entrées et sorties", href: "/magasin/mouvements" },
-    { libelle: "Bobines", href: "/magasin/bobines" },
-    { libelle: "Inventaires", href: "/magasin/inventaires" },
-    { libelle: "Commandes clients", href: "/magasin/commandes" },
+    { libelle: "Compter le stock", href: "/magasin/inventaires" },
+    { libelle: "Articles en stock", href: "/magasin/articles" },
     { libelle: "Demandes d'achat", href: "/magasin/demandes" },
     { libelle: "Tâches", href: "/magasin/taches" },
     {

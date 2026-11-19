@@ -2282,13 +2282,13 @@ isOneToOne: false
                   ]
                 },"produits": {
                   Row: {
-                    "actif": boolean,"code": string,"created_at": string,"grammage_g_m2_pli": number,"id": string,"largeur_mm": number,"libelle": string,"longueur_mm": number,"nb_mouchoirs": number,"ordre": number,"plis": number,"poids_paquet_g": number | null,"rendement_theorique_paquets_t": number | null,"taux_perte_ref": number,"updated_at": string
+                    "actif": boolean,"code": string,"created_at": string,"fabrique": boolean,"grammage_g_m2_pli": number,"id": string,"largeur_mm": number,"libelle": string,"longueur_mm": number,"nb_mouchoirs": number,"ordre": number,"plis": number,"poids_paquet_g": number | null,"rendement_theorique_paquets_t": number | null,"taux_perte_ref": number,"updated_at": string
                   }
                   Insert: {
-                    "actif"?: boolean,"code": string,"created_at"?: string,"grammage_g_m2_pli"?: number,"id"?: string,"largeur_mm": number,"libelle": string,"longueur_mm": number,"nb_mouchoirs": number,"ordre"?: number,"plis": number,"poids_paquet_g"?: never,"rendement_theorique_paquets_t"?: never,"taux_perte_ref"?: number,"updated_at"?: string
+                    "actif"?: boolean,"code": string,"created_at"?: string,"fabrique"?: boolean,"grammage_g_m2_pli"?: number,"id"?: string,"largeur_mm": number,"libelle": string,"longueur_mm": number,"nb_mouchoirs": number,"ordre"?: number,"plis": number,"poids_paquet_g"?: never,"rendement_theorique_paquets_t"?: never,"taux_perte_ref"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "actif"?: boolean,"code"?: string,"created_at"?: string,"grammage_g_m2_pli"?: number,"id"?: string,"largeur_mm"?: number,"libelle"?: string,"longueur_mm"?: number,"nb_mouchoirs"?: number,"ordre"?: number,"plis"?: number,"poids_paquet_g"?: never,"rendement_theorique_paquets_t"?: never,"taux_perte_ref"?: number,"updated_at"?: string
+                    "actif"?: boolean,"code"?: string,"created_at"?: string,"fabrique"?: boolean,"grammage_g_m2_pli"?: number,"id"?: string,"largeur_mm"?: number,"libelle"?: string,"longueur_mm"?: number,"nb_mouchoirs"?: number,"ordre"?: number,"plis"?: number,"poids_paquet_g"?: never,"rendement_theorique_paquets_t"?: never,"taux_perte_ref"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     

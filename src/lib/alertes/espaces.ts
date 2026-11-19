@@ -50,9 +50,14 @@ async function alertesCoordination(espace: string): Promise<AlerteEspace[]> {
   const alertes: AlerteEspace[] = [];
   if (c) {
     const prets = c.commandes.filter((x) => x.etat === "en_stock").length;
-    const aProduire = c.commandes.length - prets;
+    // Commandes qui attendent la production (produits fabriqués seulement).
+    const aProduire = c.commandes.filter((x) => x.lignes.some((l) => l.paquetsAProduire > 0 && l.source !== "reception")).length;
     if (prets && ["magasin", "logistique", "ventes"].includes(espace))
       alertes.push({ gravite: "importante", domaine: "Commandes", message: `${prets} commande(s) client prête(s) en stock, à préparer et livrer`, lien: `/${espace}/commandes`, nombre: prets });
+    // Produits achetés : le manque attend une réception de marchandise (magasin, achats), pas la production.
+    const aRecevoir = c.aRecevoir.reduce((t, x) => t + x.paquets, 0);
+    if (aRecevoir && ["magasin", "ventes", "direction"].includes(espace))
+      alertes.push({ gravite: "importante", domaine: "Commandes", message: `Des commandes attendent une réception de produits achetés (${aRecevoir.toLocaleString("fr-FR")} paquets)`, lien: `/${espace === "direction" ? "magasin" : espace}/commandes`, nombre: c.aRecevoir.length });
     if (aProduire && espace !== "logistique") {
       const colis = c.besoins.reduce((s, b) => s + Math.ceil(b.paquetsAProduire / b.paquetsParColis), 0);
       alertes.push({

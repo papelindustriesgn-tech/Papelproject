@@ -16,7 +16,8 @@ import { consequencesAvoir, lireAnalyseAvoir } from "@/lib/ventes/avoirs";
 import { CANAUX_RELANCE, TYPES_PIECE } from "@/lib/ventes/libelles";
 import { parametresVente } from "@/lib/ventes/parametres";
 import { clientServeur } from "@/lib/supabase/serveur";
-import { annulerPiece, preparerLivraison, supprimerBrouillon, supprimerLigne, transformerPiece } from "../../actions";
+import { preparerCommande } from "@/lib/livraisons/actions";
+import { annulerPiece, supprimerBrouillon, supprimerLigne, transformerPiece } from "../../actions";
 import { BoutonValiderPiece, FormulaireDotation, FormulaireLigne, FormulairePaiement, FormulaireQuantite, FormulaireRelance, FormulaireRemboursement, FormulaireRetourStock } from "./formulaires";
 
 export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[id]">) {
@@ -368,9 +369,9 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
             </Tableau>
             <p className="my-2 text-gray-700">{resteALivrer > 0 ? `Reste à livrer : ${nombre(resteALivrer)} paquets.` : "Commande entièrement livrée."}</p>
             <div className="flex flex-wrap gap-2">
-              {resteALivrer > 0 && !(livraisons ?? []).some((l) => l.statut === "brouillon") && (
-                <form action={preparerLivraison.bind(null, p.id)}>
-                  <Bouton type="submit">Préparer le bon de livraison</Bouton>
+              {resteALivrer > 0 && (
+                <form action={preparerCommande.bind(null, p.id, "ventes")}>
+                  <Bouton type="submit">{(livraisons ?? []).some((l) => l.statut === "brouillon") ? "Reprendre la préparation" : "Préparer les colis"}</Bouton>
                 </form>
               )}
               {!factureExiste && (

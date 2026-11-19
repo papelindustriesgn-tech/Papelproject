@@ -38,12 +38,27 @@ export interface BesoinProduction {
   depuis: string;
 }
 
+/** Stock d'un produit fini : physique (à l'usine), réservé (restes à livrer des commandes validées), disponible. */
+export interface StockProduitFini {
+  conditionnementId: string;
+  produit: string;
+  conditionnement: string;
+  paquetsParColis: number;
+  physique: number;
+  reserve: number;
+  /** Physique − réservé ; négatif = il manque ce nombre de paquets pour servir toutes les commandes. */
+  disponible: number;
+}
+
 export interface Coordination {
   jour: string;
   delaiLivraisonJours: number;
   joursReference: number;
   commandes: CommandeAServir[];
   besoins: BesoinProduction[];
+  stocks: StockProduitFini[];
+  /** Produits achetés : paquets manquants pour les commandes, en attente d'une réception de marchandise. */
+  aRecevoir: { conditionnementId: string; paquets: number }[];
 }
 
 export interface Brut {
@@ -58,8 +73,13 @@ export interface Brut {
   ordres: { numero: string; conditionnement_id: string; date_fin_prevue: string; paquets_restants: number }[];
 }
 
-export function estimerCoordination(b: Brut): Coordination {
+/**
+ * `achetes` : produits achetés prêts à vendre (non fabriqués). Leur manque attend une réception de marchandise :
+ * ni rythme de production, ni ordre, ni cadence, et ils ne comptent pas dans « à produire ».
+ */
+export function estimerCoordination(b: Brut, achetes: Set<string> = new Set()): Coordination {
   const conditionnements = new Map(b.conditionnements.map((c) => [c.id, c]));
+  const estAchete = (conditionnementId: string) => achetes.has(conditionnements.get(conditionnementId)?.produit_id ?? "");
   const lignes: LigneCommandeClient[] = b.lignes.map((l) => {
     const c = conditionnements.get(l.conditionnement_id);
     return {
@@ -77,17 +97,21 @@ export function estimerCoordination(b: Brut): Coordination {
     };
   });
   const cadenceProduit = new Map(b.cadences.map((x) => [x.produit_id, Number(x.paquets_jour)]));
-  const estimations = planifierCommandes(
+  const estimationsBrutes = planifierCommandes(
     lignes,
     {
       stock: new Map(b.stocks.map((s) => [s.conditionnement_id, Number(s.paquets)])),
-      rythmeReel: new Map(b.rythmes.map((r) => [r.conditionnement_id, Number(r.paquets_jour)])),
-      rythmeTheorique: new Map(b.conditionnements.map((c) => [c.id, cadenceProduit.get(c.produit_id) ?? 0])),
-      ordres: b.ordres.map((o) => ({ numero: o.numero, conditionnementId: o.conditionnement_id, dateFinPrevue: o.date_fin_prevue, paquetsRestants: Number(o.paquets_restants) })),
+      rythmeReel: new Map(b.rythmes.filter((r) => !estAchete(r.conditionnement_id)).map((r) => [r.conditionnement_id, Number(r.paquets_jour)])),
+      rythmeTheorique: new Map(b.conditionnements.filter((c) => !achetes.has(c.produit_id)).map((c) => [c.id, cadenceProduit.get(c.produit_id) ?? 0])),
+      ordres: b.ordres
+        .filter((o) => !estAchete(o.conditionnement_id))
+        .map((o) => ({ numero: o.numero, conditionnementId: o.conditionnement_id, dateFinPrevue: o.date_fin_prevue, paquetsRestants: Number(o.paquets_restants) })),
     },
     b.jour,
     Number(b.delai_livraison_jours),
   );
+  // Produit acheté : le manque attend une réception (pas de date tant qu'elle n'est pas annoncée).
+  const estimations = estimationsBrutes.map((e) => (e.paquetsAProduire > 0 && estAchete(e.ligne.conditionnementId) ? { ...e, source: "reception" as const, datePrete: null, dateLivraison: null } : e));
 
   const parCommande = new Map<string, EstimationLigne<LigneCommandeClient>[]>();
   for (const e of estimations) parCommande.set(e.ligne.commandeId, [...(parCommande.get(e.ligne.commandeId) ?? []), e]);
@@ -98,7 +122,7 @@ export function estimerCoordination(b: Brut): Coordination {
 
   const besoins = new Map<string, BesoinProduction>();
   for (const e of estimations) {
-    if (e.paquetsAProduire <= 0) continue;
+    if (e.paquetsAProduire <= 0 || e.source === "reception") continue;
     const l = e.ligne;
     const x = besoins.get(l.conditionnementId) ?? {
       conditionnementId: l.conditionnementId,
@@ -115,5 +139,29 @@ export function estimerCoordination(b: Brut): Coordination {
     if (l.datePiece < x.depuis) x.depuis = l.datePiece;
     besoins.set(l.conditionnementId, x);
   }
-  return { jour: b.jour, delaiLivraisonJours: Number(b.delai_livraison_jours), joursReference: Number(b.jours_reference), commandes, besoins: [...besoins.values()] };
+  const aRecevoir = new Map<string, number>();
+  for (const e of estimations) if (e.source === "reception") aRecevoir.set(e.ligne.conditionnementId, (aRecevoir.get(e.ligne.conditionnementId) ?? 0) + e.paquetsAProduire);
+  return {
+    jour: b.jour,
+    delaiLivraisonJours: Number(b.delai_livraison_jours),
+    joursReference: Number(b.jours_reference),
+    commandes,
+    besoins: [...besoins.values()],
+    stocks: stocksProduitsFinis(b),
+    aRecevoir: [...aRecevoir.entries()].map(([conditionnementId, paquets]) => ({ conditionnementId, paquets })),
+  };
+}
+
+/** Physique, réservé et disponible par produit fini (tous les conditionnements, même sans commande). */
+export function stocksProduitsFinis(b: Pick<Brut, "conditionnements" | "stocks" | "lignes">): StockProduitFini[] {
+  const physique = new Map(b.stocks.map((s) => [s.conditionnement_id, Number(s.paquets)]));
+  const reserve = new Map<string, number>();
+  for (const l of b.lignes) reserve.set(l.conditionnement_id, (reserve.get(l.conditionnement_id) ?? 0) + Math.max(0, Number(l.paquets_restants)));
+  return b.conditionnements
+    .map((c) => {
+      const p = physique.get(c.id) ?? 0;
+      const r = reserve.get(c.id) ?? 0;
+      return { conditionnementId: c.id, produit: c.produit, conditionnement: c.libelle, paquetsParColis: c.paquets_par_colis, physique: p, reserve: r, disponible: p - r };
+    })
+    .sort((a, b2) => a.produit.localeCompare(b2.produit) || a.paquetsParColis - b2.paquetsParColis);
 }

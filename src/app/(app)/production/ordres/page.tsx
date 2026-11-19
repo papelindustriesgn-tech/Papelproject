@@ -28,7 +28,7 @@ export default async function PageOrdres({ searchParams }: PageProps<"/productio
   if (!tous) requete = requete.in("statut", ["planifie", "en_cours"]);
   const [{ data: ordres }, { data: conditionnements }, { data: campagnes }, { data: lignes }] = await Promise.all([
     requete,
-    supabase.from("conditionnements").select("id, libelle, produits(libelle, actif)").eq("actif", true),
+    supabase.from("conditionnements").select("id, libelle, produits(libelle, actif, fabrique)").eq("actif", true),
     supabase.from("campagnes").select("id, libelle").eq("actif", true).order("date_debut", { ascending: false }),
     supabase.from("lignes_production").select("id, libelle").eq("actif", true).order("libelle"),
   ]);
@@ -100,7 +100,7 @@ export default async function PageOrdres({ searchParams }: PageProps<"/productio
           prerempli={{ conditionnement_id: lireParam(sp, "conditionnement") ?? "", quantite_colis: lireParam(sp, "colis") ?? "", notes: lireParam(sp, "note") ?? "" }}
           dateDuJour={aujourdhui()}
           conditionnements={(conditionnements ?? [])
-            .filter((c) => c.produits?.actif)
+            .filter((c) => c.produits?.actif && c.produits.fabrique)
             .map((c) => ({ id: c.id, libelle: `${c.produits?.libelle} – ${c.libelle}` }))
             .sort((a, b) => a.libelle.localeCompare(b.libelle))}
           campagnes={campagnes ?? []}

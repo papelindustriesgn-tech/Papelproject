@@ -33,7 +33,7 @@ export interface Approvisionnement {
   ordres: OrdreEnCours[];
 }
 
-export type SourceEstimation = "stock" | "rythme" | "ordre" | "cadence" | "inconnue";
+export type SourceEstimation = "stock" | "rythme" | "ordre" | "cadence" | "inconnue" | "reception";
 
 export interface EstimationLigne<L extends LigneACommander = LigneACommander> {
   ligne: L;

@@ -245,35 +245,8 @@ export async function supprimerBrouillon(pieceId: string): Promise<void> {
 // -----------------------------------------------------------------------------
 // Livraisons
 // -----------------------------------------------------------------------------
-export async function preparerLivraison(commandeId: string): Promise<void> {
-  await exigerEspace("ventes");
-  const supabase = await clientServeur();
-  const { data, error } = await supabase.rpc("preparer_livraison", { p_commande: commandeId });
-  if (error) throw new Error(messageErreurBase(error));
-  rafraichir();
-  redirect(`/ventes/livraisons/${data}`);
-}
 
-export async function modifierLigneLivraison(ligneId: string, livraisonId: string, _e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
-  await exigerEspace("ventes");
-  const n = lireNombre(String(fd.get("paquets") ?? ""));
-  if (n === null || !Number.isInteger(n) || n < 0) return { erreurs: { paquets: "Nombre de paquets invalide." } };
-  const supabase = await clientServeur();
-  const { error } = n === 0 ? await supabase.from("lignes_livraison").delete().eq("id", ligneId) : await supabase.from("lignes_livraison").update({ paquets: n }).eq("id", ligneId);
-  if (error) return { message: messageErreurBase(error) };
-  revalidatePath(`/ventes/livraisons/${livraisonId}`);
-  return { ok: true, message: "Quantité enregistrée." };
-}
 
-export async function validerLivraison(livraisonId: string, _e: EtatFormulaire): Promise<EtatFormulaire> {
-  await exigerEspace("ventes");
-  const supabase = await clientServeur();
-  const { data, error } = await supabase.rpc("valider_livraison", { p_livraison: livraisonId });
-  if (error) return { message: messageErreurBase(error) };
-  rafraichir();
-  revalidatePath("/magasin", "layout");
-  redirect(avecSucces(`/ventes/livraisons/${livraisonId}`, `Bon de livraison ${data} validé : le stock est à jour.`));
-}
 
 // -----------------------------------------------------------------------------
 // Paiements, dotations, relances

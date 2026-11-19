@@ -84,7 +84,7 @@ export default async function PageFiche({ params }: PageProps<"/production/fiche
 
   const [[calcul], { data: conditionnements }, { data: articles }, { data: lots }, { data: causes }, { data: operateurs }, { data: equipes }, { data: ordres }] = await Promise.all([
     chargerFiches({ du: f.date_production, au: f.date_production, inclureBrouillons: true, ids: [id] }),
-    supabase.from("conditionnements").select("id, libelle, paquets_par_colis, produits(libelle, actif)").eq("actif", true),
+    supabase.from("conditionnements").select("id, libelle, paquets_par_colis, produits(libelle, actif, fabrique)").eq("actif", true),
     supabase.from("etat_stock").select("article_id, libelle, unite, suivi_par_lot, famille").eq("actif", true).in("famille", ["matiere_premiere", "emballage"]).order("famille").order("libelle"),
     supabase.from("etat_lots").select("id, article_id, numero_lot, poids_restant_kg").gt("poids_restant_kg", 0).eq("statut", "disponible").order("date_reception"),
     supabase.from("causes_arret").select("id, libelle, type_arret").eq("actif", true).order("libelle"),
@@ -177,7 +177,7 @@ export default async function PageFiche({ params }: PageProps<"/production/fiche
               <FormulaireProduction
                 ficheId={f.id}
                 conditionnements={(conditionnements ?? [])
-                  .filter((c) => c.produits?.actif)
+                  .filter((c) => c.produits?.actif && c.produits.fabrique)
                   .map((c) => ({ id: c.id, libelle: `${c.produits?.libelle} – ${c.libelle}`, paquetsParColis: c.paquets_par_colis }))
                   .sort((a, b) => a.libelle.localeCompare(b.libelle))}
               />

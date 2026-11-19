@@ -34,7 +34,7 @@ export async function modifierProduit(produitId: string, _e: EtatFormulaire, fd:
   const supabase = await clientServeur();
   const { data, error } = await supabase
     .from("produits")
-    .update({ ...reste, taux_perte_ref: Math.round(taux_perte_pct * 100) / 10000 })
+    .update({ ...reste, taux_perte_ref: Math.round(taux_perte_pct * 100) / 10000, fabrique: fd.get("fabrique") === "on" })
     .eq("id", produitId)
     .select("rendement_theorique_paquets_t")
     .maybeSingle();
@@ -128,8 +128,12 @@ export async function creerProduit(_e: EtatFormulaire, fd: FormData): Promise<Et
     p_prix_paquet_gnf: d.prix_paquet_gnf ?? undefined,
   });
   if (error) return { message: error.code === "23505" ? "Ce code produit existe déjà." : messageErreurBase(error), valeurs };
+  if (fd.get("fabrique") !== "on") {
+    const { error: e2 } = await supabase.from("produits").update({ fabrique: false }).eq("code", d.code);
+    if (e2) return { message: messageErreurBase(e2), valeurs };
+  }
   revalidatePath("/admin/produits");
-  return { ok: true, message: `Produit « ${d.libelle} » créé.` };
+  return { ok: true, message: `Produit « ${d.libelle} » créé${fd.get("fabrique") === "on" ? "" : " (acheté prêt à vendre)"}.` };
 }
 
 /** Archive ou réactive un produit (jamais de suppression : l'historique doit rester lisible). */

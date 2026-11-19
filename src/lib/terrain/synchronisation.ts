@@ -86,7 +86,7 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
   const il_y_a_45j = new Date(Date.now() - 45 * 86_400_000).toISOString();
   const il_y_a_90j = new Date(Date.now() - 90 * 86_400_000).toISOString().slice(0, 10);
   const [produits, conditionnements, grille, types, quartiers, marques, params, profil, pva, clients, soldes, visites, pieces, tournee, objectifs] = await Promise.all([
-    supabase.from("produits").select("id, libelle, ordre").eq("actif", true),
+    supabase.from("produits").select("id, libelle, ordre, fabrique").eq("actif", true),
     supabase.from("conditionnements").select("id, produit_id, libelle, paquets_par_colis, par_defaut").eq("actif", true),
     supabase.from("grille_prix").select("produit_id, niveau, prix_paquet_gnf, date_debut, date_fin").or(`date_fin.is.null,date_fin.gte.${jour}`),
     supabase.from("types_clients").select("id, libelle, niveau_prix").eq("actif", true).order("ordre"),
@@ -119,7 +119,8 @@ async function recupererDonnees(base: BaseTerrain, supabase: Client, utilisateur
     idsFactures.length ? supabase.from("factures_etat").select("id, total_ttc_gnf, avoirs_gnf, solde_gnf").in("id", idsFactures) : Promise.resolve({ data: [], error: null }),
   ]);
   // Date de livraison estimée de chaque commande encore à livrer (même calcul que l'écran « Commandes clients »).
-  const commandesServies = coordination.error || !coordination.data ? [] : estimerCoordination(coordination.data as unknown as Brut).commandes;
+  const achetes = new Set((produits.data ?? []).filter((p) => !p.fabrique).map((p) => p.id));
+  const commandesServies = coordination.error || !coordination.data ? [] : estimerCoordination(coordination.data as unknown as Brut, achetes).commandes;
   const estimees = new Map(commandesServies.map((c) => [c.id, c.dateLivraison] as const));
   const enAttenteDeStock = new Set(commandesServies.filter((c) => c.etat !== "en_stock").map((c) => c.id));
   const erreur = [produits, conditionnements, grille, types, pva, clients, visites, pieces].find((r) => r.error);

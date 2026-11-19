@@ -1,9 +1,11 @@
 import { CheckCircle2, Clock, Factory, PackageCheck } from "lucide-react";
 import Link from "next/link";
-import { Badge, Carte, Cellule, classesBouton, Tableau, TitrePage } from "@/components/ui";
+import { ConfirmerDate } from "@/components/commandes/confirmer-date";
+import { Badge, Bouton, Carte, Cellule, classesBouton, Tableau, TitrePage } from "@/components/ui";
 import { Indicateur } from "@/components/ui/indicateur";
 import { chargerCoordination, type CommandeAServir } from "@/lib/coordination/charger";
 import { formaterDate, formaterDateHeure, ilYA } from "@/lib/formulaires/dates";
+import { preparerCommande } from "@/lib/livraisons/actions";
 import type { EtatCommande, SourceEstimation } from "@/lib/metier/coordination";
 import { nombre } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
@@ -20,6 +22,7 @@ const SOURCES: Record<SourceEstimation, string> = {
   ordre: "date de fin de l'ordre de fabrication",
   cadence: "cadence théorique de la ligne (estimation)",
   inconnue: "à planifier par la production",
+  reception: "produit acheté : attend une réception de marchandise",
 };
 
 /** « 12 colis + 30 paquets » (le colis dépend du conditionnement). */
@@ -38,7 +41,7 @@ const LIBELLES_ESPACES: Record<string, string> = {
 };
 
 const PHRASES: Record<string, string> = {
-  magasin: "Commandes des clients pas encore livrées : préparez ce qui est en stock, signalez le reste à la production.",
+  magasin: "Commandes des clients à préparer : préparez les colis de ce qui est en stock, le reste attend la production ou l'arrivée de marchandise.",
   production: "Ce que les clients attendent : lancez les ordres de fabrication pour ce qui manque en stock.",
   ventes: "Où en sont les commandes des clients : stock disponible et date de livraison estimée.",
   logistique: "Commandes à livrer prochainement : préparez les tournées selon les dates estimées.",
@@ -61,6 +64,14 @@ export async function PageCommandes({ espace }: { espace: string }) {
         </Carte>
       </>
     );
+  const supabase = await clientServeur();
+  const ids = c.commandes.map((x) => x.id);
+  const [{ data: suivis }, { data: preparations }] = await Promise.all([
+    ids.length ? supabase.from("suivi_commandes").select("commande_id, date_souhaitee, date_confirmee").in("commande_id", ids) : Promise.resolve({ data: [] }),
+    ids.length && ["magasin", "ventes"].includes(espace) ? supabase.from("livraisons").select("id, commande_id").eq("statut", "brouillon").in("commande_id", ids) : Promise.resolve({ data: [] }),
+  ]);
+  const suiviDe = new Map((suivis ?? []).map((x) => [x.commande_id, x]));
+  const enPreparation = new Set((preparations ?? []).map((x) => x.commande_id));
   const prets = c.commandes.filter((x) => x.etat === "en_stock").length;
   const colisAProduire = c.besoins.reduce((s, b) => s + Math.ceil(b.paquetsAProduire / b.paquetsParColis), 0);
   const lienPiece = espace === "ventes";
@@ -71,9 +82,29 @@ export async function PageCommandes({ espace }: { espace: string }) {
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Indicateur libelle="Commandes à servir" valeur={nombre(c.commandes.length)} detail="Validées, pas encore entièrement livrées" />
         <Indicateur libelle="Prêtes en stock" valeur={nombre(prets)} detail="Tout est disponible à l'usine" />
-        <Indicateur libelle="À produire" valeur={nombre(c.commandes.length - prets)} ton={c.commandes.length - prets > 0 ? "alerte" : "normal"} detail="Stock insuffisant pour au moins un produit" />
+        <Indicateur libelle="Stock insuffisant" valeur={nombre(c.commandes.length - prets)} ton={c.commandes.length - prets > 0 ? "alerte" : "normal"} detail="À produire ou à recevoir pour au moins un produit" />
         <Indicateur libelle="Colis à produire" valeur={nombre(colisAProduire)} ton={colisAProduire > 0 ? "alerte" : "normal"} detail="Pour couvrir toutes les commandes" />
       </div>
+
+      {["magasin", "ventes", "production"].includes(espace) && c.stocks.length > 0 && (
+        <Carte titre="Stock des produits finis" className="mb-4">
+          <Tableau entetes={["Produit", "À l'usine (physique)", "Réservé pour les commandes", "Disponible"]}>
+            {c.stocks.map((x) => (
+              <tr key={x.conditionnementId}>
+                <Cellule className="font-semibold">
+                  {x.produit} – {x.conditionnement}
+                </Cellule>
+                <Cellule>{enColis(x.physique, x.paquetsParColis)}</Cellule>
+                <Cellule>{x.reserve ? enColis(x.reserve, x.paquetsParColis) : "—"}</Cellule>
+                <Cellule className={x.disponible < 0 ? "font-bold text-red-700" : "font-bold text-green-800"}>
+                  {x.disponible < 0 ? `Il manque ${enColis(-x.disponible, x.paquetsParColis)}` : enColis(x.disponible, x.paquetsParColis)}
+                </Cellule>
+              </tr>
+            ))}
+          </Tableau>
+          <p className="mt-2 text-sm text-gray-600">Réservé = ce qui reste à livrer sur les commandes validées. Disponible = ce qu&apos;on peut encore promettre à un nouveau client.</p>
+        </Carte>
+      )}
 
       {c.besoins.length > 0 && (
         <Carte
@@ -118,7 +149,15 @@ export async function PageCommandes({ espace }: { espace: string }) {
         {c.commandes.length ? (
           <ul className="divide-y divide-gray-100">
             {c.commandes.map((x) => (
-              <LigneCommande key={x.id} commande={x} lien={lienPiece ? `/ventes/pieces/${x.id}` : undefined} />
+              <LigneCommande
+                key={x.id}
+                commande={x}
+                lien={lienPiece ? `/ventes/pieces/${x.id}` : undefined}
+                espace={espace}
+                suivi={suiviDe.get(x.id) ?? null}
+                enPreparation={enPreparation.has(x.id)}
+                jour={c.jour}
+              />
             ))}
           </ul>
         ) : (
@@ -133,8 +172,31 @@ export async function PageCommandes({ espace }: { espace: string }) {
   );
 }
 
-function LigneCommande({ commande: x, lien }: { commande: CommandeAServir; lien?: string }) {
-  const e = ETATS[x.etat];
+/** Une commande qui ne manque que de produits achetés attend une réception, pas la production. */
+function libelleEtat(x: CommandeAServir) {
+  const manques = x.lignes.filter((l) => l.paquetsAProduire > 0);
+  if (manques.length && manques.every((l) => l.source === "reception")) return { libelle: x.etat === "partielle" ? "En partie en stock, reste à recevoir" : "Attend une réception", ton: "alerte" as const };
+  return ETATS[x.etat];
+}
+
+function LigneCommande({
+  commande: x,
+  lien,
+  espace,
+  suivi,
+  enPreparation,
+  jour,
+}: {
+  commande: CommandeAServir;
+  lien?: string;
+  espace: string;
+  suivi: { date_souhaitee: string | null; date_confirmee: string | null } | null;
+  enPreparation: boolean;
+  jour: string;
+}) {
+  const peutPreparer = ["magasin", "ventes"].includes(espace) && x.lignes.some((l) => l.paquetsEnStock > 0);
+  const peutConfirmer = ["magasin", "ventes", "logistique"].includes(espace);
+  const e = libelleEtat(x);
   const titre = (
     <span className="font-bold text-gray-900">
       {x.numero} · {x.clientNom}
@@ -158,9 +220,16 @@ function LigneCommande({ commande: x, lien }: { commande: CommandeAServir; lien?
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge ton={e.ton}>{e.libelle}</Badge>
-          <span className="flex items-center gap-1 rounded-lg bg-papel-50 px-2 py-1 text-sm font-semibold text-papel-800">
-            <Clock size={14} aria-hidden /> Livraison estimée : {x.dateLivraison ? formaterDate(x.dateLivraison) : "à planifier"}
-          </span>
+          {suivi?.date_confirmee ? (
+            <span className={`flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-semibold ${suivi.date_confirmee < jour ? "bg-red-50 text-red-800" : "bg-green-50 text-green-800"}`}>
+              <Clock size={14} aria-hidden /> Promise le {formaterDate(suivi.date_confirmee)}
+              {suivi.date_confirmee < jour ? " (en retard)" : ""}
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-900">
+              <Clock size={14} aria-hidden /> Date à confirmer{suivi?.date_souhaitee ? ` (souhaitée le ${formaterDate(suivi.date_souhaitee)})` : ""} · estimée {x.dateLivraison ? formaterDate(x.dateLivraison) : "—"}
+            </span>
+          )}
         </div>
       </div>
       <ul className="mt-2 grid gap-1 text-sm sm:grid-cols-2">
@@ -173,12 +242,29 @@ function LigneCommande({ commande: x, lien }: { commande: CommandeAServir; lien?
             <span className="block text-gray-600">
               {l.paquetsAProduire === 0
                 ? "Disponible en stock"
-                : `${l.paquetsEnStock ? `${enColis(l.paquetsEnStock, l.ligne.paquetsParColis)} en stock, ` : ""}${enColis(l.paquetsAProduire, l.ligne.paquetsParColis)} à produire`}
+                : `${l.paquetsEnStock ? `${enColis(l.paquetsEnStock, l.ligne.paquetsParColis)} en stock, ` : ""}${enColis(l.paquetsAProduire, l.ligne.paquetsParColis)} ${l.source === "reception" ? "à recevoir" : "à produire"}`}
               {l.paquetsAProduire > 0 && ` · ${l.datePrete ? `prêt le ${formaterDate(l.datePrete)}` : "date à fixer"} (${SOURCES[l.source]}${l.ordre ? ` ${l.ordre}` : ""})`}
             </span>
           </li>
         ))}
       </ul>
+      {(peutPreparer || peutConfirmer) && (
+        <div className="mt-2 flex flex-wrap items-start gap-2">
+          {peutPreparer && (
+            <form action={preparerCommande.bind(null, x.id, espace)}>
+              <Bouton type="submit">{enPreparation ? "Reprendre la préparation" : x.etat === "en_stock" ? "Préparer les colis" : "Préparer ce qui est en stock"}</Bouton>
+            </form>
+          )}
+          {peutConfirmer && (
+            <details className="min-w-0 flex-1 rounded-xl border border-gray-200 px-3">
+              <summary className="min-h-11 cursor-pointer py-2.5 font-semibold text-papel-700">{suivi?.date_confirmee ? "Changer la date promise" : "Confirmer la date au client"}</summary>
+              <div className="pb-3">
+                <ConfirmerDate commandeId={x.id} proposee={suivi?.date_confirmee ?? suivi?.date_souhaitee ?? x.dateLivraison ?? jour} min={x.datePiece} />
+              </div>
+            </details>
+          )}
+        </div>
+      )}
     </li>
   );
 }

@@ -19,6 +19,20 @@ export interface ProduitEditable {
   largeur_mm: number;
   grammage_g_m2_pli: number;
   taux_perte_ref: number;
+  fabrique: boolean;
+}
+
+/** Fabriqué à l'usine ou acheté prêt à vendre : un produit acheté se vend sans production. */
+function CaseFabrique({ defaut }: { defaut: boolean }) {
+  return (
+    <label className="flex min-h-11 items-start gap-2 sm:col-span-3">
+      <input type="checkbox" name="fabrique" defaultChecked={defaut} className="mt-1 size-5 accent-papel-700" />
+      <span>
+        <span className="font-semibold">Fabriqué à notre usine</span>
+        <span className="block text-sm text-gray-600">Décochez pour un produit acheté prêt à vendre (importé) : il entre en stock par une réception et se vend sans saisie de production.</span>
+      </span>
+    </label>
+  );
 }
 
 export function FormulaireProduit({ p }: { p: ProduitEditable }) {
@@ -43,6 +57,7 @@ export function FormulaireProduit({ p }: { p: ProduitEditable }) {
           defaultValue={v.taux_perte_pct ?? String(Math.round(p.taux_perte_ref * 10000) / 100).replace(".", ",")}
           erreur={e.taux_perte_pct}
         />
+        <CaseFabrique defaut={p.fabrique} />
       </div>
       <Bouton type="submit" variante="secondaire" disabled={enCours} className="self-start">
         Enregistrer les caractéristiques
@@ -111,6 +126,7 @@ export function FormulaireNouveauProduit() {
         <Champ libelle="Pertes de référence (%)" name="taux_perte_pct" inputMode="decimal" required defaultValue={v.taux_perte_pct ?? "5"} erreur={e.taux_perte_pct} />
         <Champ libelle="Paquets par colis (colis par défaut)" name="paquets_par_colis" inputMode="numeric" required defaultValue={v.paquets_par_colis} erreur={e.paquets_par_colis} />
         <Champ libelle="Prix Papel du paquet HT (GNF)" name="prix_paquet_gnf" inputMode="numeric" defaultValue={v.prix_paquet_gnf} erreur={e.prix_paquet_gnf} aide="Facultatif" />
+        <CaseFabrique defaut={v.fabrique === undefined ? true : v.fabrique === "on"} />
       </div>
       <Bouton type="submit" disabled={enCours} className="self-start">
         Créer le produit
