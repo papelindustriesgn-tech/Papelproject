@@ -167,3 +167,40 @@ export async function enregistrerVirement(_e: EtatFormulaire, fd: FormData): Pro
   rafraichir();
   redirect(avecSucces("/finance/tresorerie", "Virement enregistré."));
 }
+
+// -----------------------------------------------------------------------------
+// Vérifier la caisse et la banque (rapprochement)
+// -----------------------------------------------------------------------------
+const schemaRapprochement = z.object({
+  compte_id: uuid("Choisissez le compte."),
+  date_releve: date,
+  solde_releve: z
+    .string()
+    .transform((t) => lireNombre(t))
+    .refine((n): n is number => n !== null, "Indiquez le montant compté ou lu sur le relevé (0 si vide)."),
+  note: z.string().trim().max(300),
+});
+
+/** Enregistre le solde réel d'un compte à une date ; l'ERP calcule l'écart avec son propre solde. */
+export async function enregistrerRapprochement(_e: EtatFormulaire, fd: FormData): Promise<EtatFormulaire> {
+  await exigerEspace("finance");
+  const valeurs = valeursFormulaire(fd);
+  const lecture = schemaRapprochement.safeParse(valeurs);
+  if (!lecture.success) return { erreurs: erreursZod(lecture.error), valeurs };
+  const d = lecture.data;
+  const supabase = await clientServeur();
+  const { data: compte, error: e1 } = await supabase.from("comptes_tresorerie").select("devise, libelle").eq("id", d.compte_id).single();
+  if (e1 || !compte) return { message: "Compte introuvable.", valeurs };
+  // Même unité que le journal : GNF en unités, USD en centimes.
+  const solde = compte.devise === "USD" ? Math.round(d.solde_releve * 100) : Math.round(d.solde_releve);
+  const { data: id, error } = await supabase.rpc("enregistrer_rapprochement", { p_compte: d.compte_id, p_date: d.date_releve, p_solde_releve: solde, p_note: d.note });
+  if (error) return { message: messageErreurBase(error), valeurs };
+  const { data: r } = await supabase.from("rapprochements_tresorerie").select("ecart").eq("id", id).single();
+  rafraichir();
+  const ecart = Number(r?.ecart ?? 0);
+  const fmt = (n: number) => (compte.devise === "USD" ? `${(n / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} USD` : `${n.toLocaleString("fr-FR")} GNF`);
+  return {
+    ok: true,
+    message: ecart === 0 ? `${compte.libelle} vérifié : le solde réel est égal à celui de l'ERP.` : `${compte.libelle} vérifié. Écart de ${fmt(ecart)} : il manque une opération dans l'ERP ${ecart > 0 ? "(une entrée)" : "(une sortie)"}. Cherchez-la, puis enregistrez-la.`,
+  };
+}

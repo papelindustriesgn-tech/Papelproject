@@ -23,7 +23,7 @@ export interface Recents {
 type Client = Awaited<ReturnType<typeof clientServeur>>;
 type Source = (s: Client) => Promise<Evenement[]>;
 
-const NOMS_PIECES: Record<string, string> = { devis: "Devis", commande: "Commande", facture: "Facture", avoir: "Avoir" };
+const NOMS_PIECES: Record<string, string> = { devis: "Devis enregistré", commande: "Commande enregistrée", facture: "Facture enregistrée", avoir: "Avoir (annulation) enregistré" };
 
 /** Lecture qui lève en cas d'échec (comptée comme « incomplet »). */
 function ou<T>(r: { data: T | null; error: unknown }): T {
@@ -78,7 +78,7 @@ const pieces: Source = async (s) => {
   );
   return lignes.map((p) => ({
     quand: p.valide_le!,
-    texte: `${NOMS_PIECES[p.type_piece] ?? "Document"} ${p.numero} enregistrée : ${p.clients?.nom ?? ""} · ${gnf(p.total_ttc_gnf)}`,
+    texte: `${NOMS_PIECES[p.type_piece] ?? "Document enregistré"} : ${p.numero} · ${p.clients?.nom ?? ""} · ${gnf(p.total_ttc_gnf)}`,
     lien: `/ventes/pieces/${p.id}`,
   }));
 };

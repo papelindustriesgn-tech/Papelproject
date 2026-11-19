@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Bouton, Champ, Message, Selection } from "@/components/ui";
 import { ETAT_INITIAL } from "@/lib/formulaires/etat";
-import { enregistrerMouvement, enregistrerVirement } from "../actions";
+import { enregistrerMouvement, enregistrerRapprochement, enregistrerVirement } from "../actions";
 
 type Option = { id: string; libelle: string };
 
@@ -66,6 +66,30 @@ export function FormulaireVirement({ comptes, dateDuJour }: { comptes: Option[];
         <Champ libelle="Libellé" name="libelle" defaultValue={v.libelle ?? "Dépôt des espèces à la banque"} className="sm:col-span-2" />
       </div>
       <Bouton type="submit" disabled={enCours} variante="secondaire" className="self-start">Enregistrer le virement</Bouton>
+    </form>
+  );
+}
+
+/** « J'ai vérifié ce compte » : solde réel compté (caisse) ou lu sur le relevé (banque, mobile money). */
+export function FormulaireRapprochement({ comptes, dateDuJour }: { comptes: Option[]; dateDuJour: string }) {
+  const [etat, action, enCours] = useActionState(enregistrerRapprochement, ETAT_INITIAL);
+  const v = etat.ok ? {} : (etat.valeurs ?? {});
+  const e = etat.erreurs ?? {};
+  return (
+    <form action={action} className="flex flex-col gap-3">
+      {etat.message && <Message ton={etat.ok ? "succes" : "erreur"}>{etat.message}</Message>}
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Selection libelle="1. Quel compte avez-vous vérifié ?" name="compte_id" defaultValue={v.compte_id ?? ""} erreur={e.compte_id}>
+          <option value="">— Choisir —</option>
+          {comptes.map((c) => (
+            <option key={c.id} value={c.id}>{c.libelle}</option>
+          ))}
+        </Selection>
+        <Champ libelle="2. Montant réel (devise du compte)" name="solde_releve" inputMode="decimal" defaultValue={v.solde_releve} erreur={e.solde_releve} aide="Caisse : l'argent compté. Banque : le solde du relevé." />
+        <Champ libelle="3. À quelle date ?" name="date_releve" type="date" defaultValue={v.date_releve ?? dateDuJour} max={dateDuJour} erreur={e.date_releve} />
+        <Champ libelle="Remarque (facultatif)" name="note" defaultValue={v.note} className="sm:col-span-3" placeholder="Relevé n°…, compté avec…" />
+      </div>
+      <Bouton type="submit" disabled={enCours} className="self-start">{enCours ? "Enregistrement…" : "Enregistrer la vérification"}</Bouton>
     </form>
   );
 }

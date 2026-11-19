@@ -6,7 +6,7 @@ import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
 import { formaterMontant } from "@/lib/metier/devises";
 import { gnf } from "@/lib/stocks/libelles";
 import { clientServeur } from "@/lib/supabase/serveur";
-import { FormulaireMouvement, FormulaireVirement } from "./formulaires";
+import { FormulaireMouvement, FormulaireRapprochement, FormulaireVirement } from "./formulaires";
 
 export const metadata: Metadata = { title: "Trésorerie" };
 
@@ -24,17 +24,41 @@ export default async function PageTresorerie({ searchParams }: PageProps<"/finan
   if (origine) requete = requete.eq("origine", origine);
   if (du) requete = requete.gte("date_operation", du);
   if (au) requete = requete.lte("date_operation", au);
-  const [{ data }, { data: comptes }, { data: categories }] = await Promise.all([
+  const [{ data }, { data: comptes }, { data: categories }, { data: verifs }] = await Promise.all([
     requete,
     supabase.from("soldes_tresorerie").select("id, libelle, devise, solde").eq("actif", true).order("ordre"),
     supabase.from("categories_charges").select("id, libelle").eq("actif", true).neq("nature", "stock").order("ordre"),
+    supabase.from("derniers_rapprochements").select("compte_id, date_releve, ecart"),
   ]);
+  const verifParCompte = new Map((verifs ?? []).map((r) => [r.compte_id, r]));
   const lignes = data ?? [];
   const optionsComptes = (comptes ?? []).map((c) => ({ id: c.id!, libelle: `${c.libelle} (${formaterMontant(Number(c.solde), c.devise as "GNF" | "USD")})` }));
   const jour = aujourdhui();
   return (
     <>
       <TitrePage titre="Trésorerie" sousTitre="Journal inaltérable : une erreur se corrige par un mouvement inverse." />
+      <Carte titre="Vérifier la caisse et la banque" className="mb-4">
+        <p className="mb-3 text-sm text-gray-700">
+          Comptez la caisse ou lisez le relevé, puis notez le montant réel : l&apos;ERP compare avec son propre solde. Un écart veut dire qu&apos;une opération manque dans l&apos;ERP.
+        </p>
+        <Tableau entetes={["Compte", "Solde dans l'ERP", "Dernière vérification", "Écart constaté"]}>
+          {(comptes ?? []).map((c) => {
+            const r = verifParCompte.get(c.id);
+            const devise = c.devise as "GNF" | "USD";
+            return (
+              <tr key={c.id}>
+                <Cellule>{c.libelle}</Cellule>
+                <Cellule className="font-semibold">{formaterMontant(Number(c.solde), devise)}</Cellule>
+                <Cellule>{r?.date_releve ? formaterDate(r.date_releve) : <span className="font-semibold text-amber-800">Jamais vérifié</span>}</Cellule>
+                <Cellule className={r?.ecart ? "font-semibold text-red-700" : ""}>{r?.date_releve ? (Number(r.ecart) === 0 ? "Aucun ✓" : formaterMontant(Number(r.ecart), devise)) : "—"}</Cellule>
+              </tr>
+            );
+          })}
+        </Tableau>
+        <div className="mt-4">
+          <FormulaireRapprochement comptes={(comptes ?? []).map((c) => ({ id: c.id!, libelle: c.libelle! }))} dateDuJour={jour} />
+        </div>
+      </Carte>
       <Carte titre="Journal" className="mb-4">
         <BarreFiltres
           valeurs={{ compte, origine, du, au }}

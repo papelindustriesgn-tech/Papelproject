@@ -1792,6 +1792,12 @@ isOneToOne: false
       foreignKeyName: "modes_paiement_compte_id_fkey"
       columns: ["compte_id"]
 isOneToOne: false
+      referencedRelation: "derniers_rapprochements"
+      referencedColumns: ["compte_id"]
+    },{
+      foreignKeyName: "modes_paiement_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
       referencedRelation: "soldes_tresorerie"
       referencedColumns: ["id"]
     }
@@ -1874,6 +1880,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "comptes_tresorerie"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "mouvements_tresorerie_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
+      referencedRelation: "derniers_rapprochements"
+      referencedColumns: ["compte_id"]
     },{
       foreignKeyName: "mouvements_tresorerie_compte_id_fkey"
       columns: ["compte_id"]
@@ -2459,6 +2471,43 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"rapprochements_tresorerie": {
+                  Row: {
+                    "compte_id": string,"created_at": string,"date_releve": string,"ecart": number | null,"fait_par": string | null,"id": string,"note": string,"solde_erp": number,"solde_releve": number
+                  }
+                  Insert: {
+                    "compte_id": string,"created_at"?: string,"date_releve": string,"ecart"?: never,"fait_par"?: string | null,"id"?: string,"note"?: string,"solde_erp": number,"solde_releve": number
+                  }
+                  Update: {
+                    "compte_id"?: string,"created_at"?: string,"date_releve"?: string,"ecart"?: never,"fait_par"?: string | null,"id"?: string,"note"?: string,"solde_erp"?: number,"solde_releve"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "rapprochements_tresorerie_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
+      referencedRelation: "comptes_tresorerie"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "rapprochements_tresorerie_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
+      referencedRelation: "derniers_rapprochements"
+      referencedColumns: ["compte_id"]
+    },{
+      foreignKeyName: "rapprochements_tresorerie_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
+      referencedRelation: "soldes_tresorerie"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "rapprochements_tresorerie_fait_par_fkey"
+      columns: ["fait_par"]
+isOneToOne: false
+      referencedRelation: "profils"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"reglements_fournisseurs": {
                   Row: {
                     "compte_id": string,"created_at": string,"date_reglement": string,"facture_id": string,"id": string,"montant_gnf": number,"reference": string,"saisi_par": string | null
@@ -2476,6 +2525,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "comptes_tresorerie"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reglements_fournisseurs_compte_id_fkey"
+      columns: ["compte_id"]
+isOneToOne: false
+      referencedRelation: "derniers_rapprochements"
+      referencedColumns: ["compte_id"]
     },{
       foreignKeyName: "reglements_fournisseurs_compte_id_fkey"
       columns: ["compte_id"]
@@ -3236,6 +3291,13 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"derniers_rapprochements": {
+                  Row: {
+                    "compte_id": string | null,"created_at": string | null,"date_releve": string | null,"devise": string | null,"ecart": number | null,"libelle": string | null,"solde_erp": number | null,"solde_releve": number | null,"type_compte": string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"echeances_preventif": {
                   Row: {
                     "actif": boolean | null,"consignes": string | null,"created_at": string | null,"criticite": string | null,"derniere_realisation": string | null,"duree_estimee_min": number | null,"equipement_code": string | null,"equipement_id": string | null,"equipement_libelle": string | null,"frequence_jours": number | null,"id": string | null,"jours_restants": number | null,"libelle": string | null,"prochaine_echeance": string | null
@@ -3878,6 +3940,9 @@ isOneToOne: false
 "enregistrer_paiement":
 { Args: { "p_cle"?: string,"p_date"?: string,"p_facture": string,"p_mode": string,"p_montant": number,"p_notes"?: string,"p_reference"?: string }; Returns: string
                            },
+"enregistrer_rapprochement":
+{ Args: { "p_compte": string,"p_date": string,"p_note"?: string,"p_solde_releve": number }; Returns: string
+                           },
 "enregistrer_remboursement":
 { Args: { "p_cle"?: string,"p_date"?: string,"p_facture": string,"p_mode": string,"p_montant": number,"p_notes"?: string,"p_reference"?: string }; Returns: string
                            },
@@ -3993,6 +4058,9 @@ isOneToOne: false
                            },
 "retirer_livraison":
 { Args: { "p_livraison": string }; Returns: undefined
+                           },
+"solde_compte_au":
+{ Args: { "p_compte": string,"p_date": string }; Returns: number
                            },
 "statut_piece_verrouille":
 { Args: { "p_piece": string }; Returns: {
