@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AccueilTravail } from "@/components/accueil/accueil-travail";
+import { AccueilTravail, SuiviTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
@@ -83,6 +83,7 @@ export default async function TableauDeBordVentes({ searchParams }: PageProps<"/
           </Tableau>
         </Carte>
       </div>
+      <SuiviTravail espace="ventes" />
     </>
   );
 }

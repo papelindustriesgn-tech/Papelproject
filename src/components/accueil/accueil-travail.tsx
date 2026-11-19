@@ -7,11 +7,23 @@ import { formaterDateHeure } from "@/lib/formulaires/dates";
 import { clientServeur } from "@/lib/supabase/serveur";
 
 /**
- * Haut de la vue d'ensemble d'un service : répond à « Que dois-je faire aujourd'hui ? » (les gestes du jour),
- * « Qu'est-ce qui attend mon intervention ? » (alertes, demandes des autres services) et « Que vient-il de se passer ? »
- * (derniers faits enregistrés). Les chiffres viennent après, dans la page.
+ * Haut de la vue d'ensemble d'un service : « À faire aujourd'hui » (les gestes du jour, en tuiles).
+ * Les indicateurs viennent juste après ; « En attente de vous » et « Ce qui vient de se passer » (`SuiviTravail`)
+ * en bas de page, pour que les indicateurs restent visibles sans défiler.
  */
-export async function AccueilTravail({ espace }: { espace: string }) {
+export function AccueilTravail({ espace }: { espace: string }) {
+  return (
+    <section aria-labelledby="titre-a-faire" className="mb-4">
+      <h2 id="titre-a-faire" className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
+        <ListTodo size={16} aria-hidden /> À faire aujourd&apos;hui
+      </h2>
+      <ActionsDuJour espace={espace} />
+    </section>
+  );
+}
+
+/** Bas de la vue d'ensemble : ce qui attend le service (alertes, demandes) et les derniers faits enregistrés. */
+export async function SuiviTravail({ espace }: { espace: string }) {
   const s = await clientServeur();
   const [alertes, recents, taches] = await Promise.all([
     chargerAlertesEspace(espace),
@@ -45,14 +57,7 @@ export async function AccueilTravail({ espace }: { espace: string }) {
   const visibles = enAttente.slice(0, 6);
 
   return (
-    <div className="mb-5 grid gap-4">
-      <section aria-labelledby="titre-a-faire">
-        <h2 id="titre-a-faire" className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
-          <ListTodo size={16} aria-hidden /> À faire aujourd&apos;hui
-        </h2>
-        <ActionsDuJour espace={espace} />
-      </section>
-
+    <div className="mt-4 mb-5 grid gap-4">
       <div className={`grid gap-4 ${recents ? "lg:grid-cols-2" : ""}`}>
         <section aria-labelledby="titre-attente" className="ombre-carte rounded-2xl bg-white p-4">
           <h2 id="titre-attente" className="mb-2 flex items-center gap-2 font-semibold text-gray-900">

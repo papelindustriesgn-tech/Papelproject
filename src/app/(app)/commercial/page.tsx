@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { lireSeuils } from "@/lib/parametres";
-import { AccueilTravail } from "@/components/accueil/accueil-travail";
+import { AccueilTravail, SuiviTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
 import { CarteDynamique } from "@/components/carte/carte-dynamique";
@@ -111,6 +111,7 @@ export default async function TableauDeBordCommercial({ searchParams }: PageProp
         {filtres.produit && <p className="mt-2 text-sm text-gray-600">Ventes : lignes de la gamme choisie seulement ; les objectifs restent toutes gammes.</p>}
         <p className="mt-2 text-sm text-gray-600">Les objectifs du mois se comparent sur la période choisie ; choisissez « Ce mois » pour un suivi exact.</p>
       </CarteUi>
+      <SuiviTravail espace="commercial" />
     </>
   );
 }

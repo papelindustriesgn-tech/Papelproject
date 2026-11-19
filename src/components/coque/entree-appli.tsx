@@ -135,7 +135,7 @@ export async function ActionsDuJour({ espace }: { espace: string }) {
           <li key={a.id} className={principal ? "col-span-2 lg:col-span-1" : ""}>
             <Link
               href={a.ecran}
-              className={`flex h-full min-h-14 items-center gap-3 rounded-2xl px-4 py-3 font-semibold leading-tight transition hover:-translate-y-0.5 ${
+              className={`flex h-full min-h-12 items-center gap-3 rounded-2xl px-3 py-2 sm:min-h-14 sm:px-4 sm:py-3 font-semibold leading-tight transition hover:-translate-y-0.5 ${
                 principal ? "bg-papel-700 text-base text-white shadow-md hover:bg-papel-800" : "ombre-carte bg-white text-sm text-gray-900 hover:bg-papel-50"
               }`}
             >
@@ -144,7 +144,7 @@ export async function ActionsDuJour({ espace }: { espace: string }) {
               </span>
               <span className="min-w-0">
                 <span className="block">{a.libelle}</span>
-                {a.description && <span className={`mt-0.5 block text-xs font-normal ${principal ? "text-white/85" : "text-gray-600"}`}>{a.description}</span>}
+                {a.description && <span className={`mt-0.5 text-xs font-normal ${principal ? "block text-white/85" : "hidden text-gray-600 sm:block"}`}>{a.description}</span>}
               </span>
             </Link>
           </li>

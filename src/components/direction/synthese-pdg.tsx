@@ -69,7 +69,7 @@ export function SynthesePdg({ s, c, du, au, objectifs }: { s: SyntheseDirection;
   return (
     <section aria-labelledby="titre-synthese" className="mb-5">
       <h2 id="titre-synthese" className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500">
-        L&apos;essentiel {periode}
+        Opérations en cours et fiabilité des chiffres, {periode}
       </h2>
       <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Chiffre

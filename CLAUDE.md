@@ -413,14 +413,14 @@ Source : **business plan** (`Projet_Papel_Business_Plan.xlsx`, oct. 2026) — pr
 - **Facturer ce qui est livré** : `facturer_livre(commande)` (reprend la facture en préparation, sinon la crée au prix de la commande),
   vues `reste_a_facturer` / `commandes_a_facturer` (Ventes → À facturer) ; `valider_piece` refuse une facture qui dépasse la commande.
 - Action qui peut échouer sans changer de page : `BoutonAction` (message renvoyé, jamais d'exception vers `error.tsx`).
-- **Accueil de chaque service** : `AccueilTravail` en haut de la vue d'ensemble = « À faire aujourd'hui » (`ActionsDuJour`, boutons
-  `accueil_elements`), « En attente de vous » (alertes + tâches reçues), « Ce qui vient de se passer » (`chargerRecents` : liens vers
-  l'écran du service qui regarde ; pas de lien si le service n'y a pas accès). Puis le filtre de date et les chiffres.
+- **Accueil de chaque service** (indicateurs toujours visibles sans défiler, demande du 19/11 « les KPI ont disparu ») : `AccueilTravail` en haut = « À faire aujourd'hui » (`ActionsDuJour`, boutons
+  `accueil_elements`), puis filtre de date et indicateurs, puis en bas `SuiviTravail` : « En attente de vous » (alertes + tâches reçues), « Ce qui vient de se passer » (`chargerRecents` : liens vers
+  l'écran du service qui regarde ; pas de lien si le service n'y a pas accès).
 - **Synthèse du PDG** (`SynthesePdg`, `chargerComplementsPdg`) : 8 chiffres, chacun avec son état (`EtatDonnee` : validé, estimé,
   données à compléter, indisponible, aucune activité — `src/lib/metier/chiffres.ts`, testé) et sa fiche « D'où vient ce chiffre ? »
   (mesure, période, données, mise à jour, objectif). Production masquée tant qu'aucune saisie n'a été validée ; marge masquée si plus de
   5 % des paquets vendus n'ont pas de coût. Zone « Données à compléter » avec un bouton vers l'écran où saisir. Analyse détaillée
-  (`TableauPdg`) sous « Plus de détails ».
+  : le chiffre d'affaires et les 8 chiffres clés (`TableauPdg`) restent en haut, la synthèse « Opérations en cours et fiabilité » dessous.
 - **Vérifier la caisse et la banque** (Finance › Trésorerie) : `enregistrer_rapprochement` (solde réel ; la base calcule `solde_erp` à la
   date et l'écart), table `rapprochements_tresorerie` en ajout seul, vue `derniers_rapprochements`. Trésorerie « validée » si chaque compte
   est vérifié depuis moins de 7 jours.

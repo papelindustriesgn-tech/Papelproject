@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import { lireSeuils } from "@/lib/parametres";
-import { AccueilTravail } from "@/components/accueil/accueil-travail";
+import { AccueilTravail, SuiviTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import Link from "next/link";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -62,6 +62,7 @@ export default async function TableauDeBordMaintenance({ searchParams }: PagePro
           </Tableau>
         </Carte>
       </div>
+      <SuiviTravail espace="maintenance" />
     </>
   );
 }

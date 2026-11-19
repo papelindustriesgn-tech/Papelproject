@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { lirePeriode } from "@/lib/formulaires/filtres-analyse";
 import Link from "next/link";
-import { AccueilTravail } from "@/components/accueil/accueil-travail";
+import { AccueilTravail, SuiviTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { Badge, Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { ecartPoints, ecartRelatif, Indicateur, jourCourt } from "@/components/ui/indicateur";
@@ -137,6 +137,7 @@ export default async function VueRh({ searchParams }: PageProps<"/rh">) {
           )}
         </Carte>
       </div>
+      <SuiviTravail espace="rh" />
     </>
   );
 }

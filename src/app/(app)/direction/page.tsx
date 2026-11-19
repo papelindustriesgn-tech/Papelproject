@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AccueilTravail } from "@/components/accueil/accueil-travail";
+import { AccueilTravail, SuiviTravail } from "@/components/accueil/accueil-travail";
 import { SynthesePdg } from "@/components/direction/synthese-pdg";
 import { TableauPdg } from "@/components/direction/tableau-pdg";
 import { SelecteurPeriode } from "@/components/donnees/selecteur-periode";
@@ -50,26 +50,6 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
       />
       <AccueilTravail espace="direction" />
       <SelecteurPeriode periode={periode} params={sp} filtres={filtres} gammes={options.produits} commerciaux={options.commerciaux} />
-      <SynthesePdg s={s} c={complements} du={periode.du} au={periode.au} objectifs={objectifs} />
-      <CarteObjectifs
-        espace="direction"
-        du={periode.du}
-        au={periode.au}
-        filtre={filtre}
-        reels={{
-          ca_ttc: s.ventes.caTtcGnf,
-          paquets_produits: s.production.paquetsBons,
-          papier_kg: s.production.tonnesConsommees * 1000,
-          marge_brute: complements.marge && complements.marge.etat !== "non_renseigne" ? s.marge.margeGnf : null,
-          encaissements: s.ventes.encaisseGnf,
-          resultat: filtre || complements.marge?.etat === "non_renseigne" ? null : s.marge.margeGnf - couts.chargesGnf,
-          cout_complet_paquet: couts.parPaquet?.totalGnf ?? null,
-          otif: livraison.otif,
-        }}
-      />
-      <details className="mb-4 rounded-2xl">
-        <summary className="ombre-carte flex min-h-11 cursor-pointer items-center rounded-2xl bg-white px-4 font-semibold text-papel-700">Plus de détails : courbe des ventes, coût du paquet, usine, clients</summary>
-        <div className="pt-4">
       <div className="mb-4 grid gap-4 xl:grid-cols-3">
         <CarteHero
           className="xl:col-span-2"
@@ -94,8 +74,24 @@ export default async function TableauDeBordDirection({ searchParams }: PageProps
         </Carte>
       </div>
       <TableauPdg s={s} couts={couts} coutsPrec={coutsPrec} livraison={livraison} livraisonPrec={livraisonPrec} filtre={filtre} jours={joursDeLaPeriode(periode)} />
-        </div>
-      </details>
+      <SynthesePdg s={s} c={complements} du={periode.du} au={periode.au} objectifs={objectifs} />
+      <CarteObjectifs
+        espace="direction"
+        du={periode.du}
+        au={periode.au}
+        filtre={filtre}
+        reels={{
+          ca_ttc: s.ventes.caTtcGnf,
+          paquets_produits: s.production.paquetsBons,
+          papier_kg: s.production.tonnesConsommees * 1000,
+          marge_brute: complements.marge && complements.marge.etat !== "non_renseigne" ? s.marge.margeGnf : null,
+          encaissements: s.ventes.encaisseGnf,
+          resultat: filtre || complements.marge?.etat === "non_renseigne" ? null : s.marge.margeGnf - couts.chargesGnf,
+          cout_complet_paquet: couts.parPaquet?.totalGnf ?? null,
+          otif: livraison.otif,
+        }}
+      />
+      <SuiviTravail espace="direction" />
     </>
   );
 }

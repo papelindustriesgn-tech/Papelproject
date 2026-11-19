@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { lireSeuils } from "@/lib/parametres";
-import { AccueilTravail } from "@/components/accueil/accueil-travail";
+import { AccueilTravail, SuiviTravail } from "@/components/accueil/accueil-travail";
 import { CarteObjectifs } from "@/components/objectifs/carte-objectifs";
 import { Carte, Cellule, Tableau, TitrePage } from "@/components/ui";
 import { ecartRelatif, Indicateur } from "@/components/ui/indicateur";
@@ -117,6 +117,7 @@ export default async function TableauDeBordMagasin({ searchParams }: PageProps<"
             <p className="text-gray-700">Aucun produit fini en stock.</p>
           )}
         </Carte>
+      <SuiviTravail espace="magasin" />
     </>
   );
 }
