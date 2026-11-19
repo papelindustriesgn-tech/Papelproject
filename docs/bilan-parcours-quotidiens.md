@@ -1,7 +1,7 @@
 # Bilan — parcours quotidiens simplifiés (19/11/2026)
 
 Branche `claude/erp-parcours-quotidiens`, partie du code en production (`0dfdcc0`) plus les travaux non déployés (mots simples, inventaire partiel, coller depuis Excel).
-**Rien n'est déployé ; aucune donnée réelle n'a été modifiée.**
+**Mis en production le 19/11/2026** (déploiement `dpl_BWYot18pxHz7qaSJDwtC6LsPCX1d`, 5 migrations appliquées à la base réelle, aucune donnée supprimée ni fictive).
 
 ## Ce qui change
 1. **Commande sur téléphone** :
@@ -29,7 +29,7 @@ Branche `claude/erp-parcours-quotidiens`, partie du code en production (`0dfdcc0
    - une lecture en échec n'est plus montrée comme un zéro.
 8. Magasin : réceptions attendues sur l'accueil ; guides d'une page par rôle (`docs/guides/`).
 
-## Migrations à appliquer en production (avec accord)
+## Migrations appliquées en production (19/11/2026)
 | Migration | Effet |
 |-----------|-------|
 | `20261119002700_suivi_commandes` | Nouvelle table de dates + fonctions ; `synchroniser_terrain` remplacée. |
@@ -53,8 +53,6 @@ Aucune ne supprime de données.
 - Contrôle des liens : 96 liens des accueils de 7 rôles ouverts avec le compte du rôle, aucun refusé.
 
 ## Limites restantes
-- **Pas de préversion en ligne** : les variables de préversion Vercel pointent vers la base réelle. Une base de test séparée est nécessaire (à décider).
 - Temps d'une commande par une vraie personne : pas encore mesuré (feuille `docs/guides/essais-chronometres.md`).
 - Le tableau du journal de trésorerie déborde un peu sur ordinateur étroit (défaut antérieur).
-- Lignes d'accueil de la base réelle : renommées seulement par la migration 3000, une fois appliquée.
 - Retours, annulations et avoirs : couverts par les tests existants (`16_securisation_ventes`, `ventes-securite`), sans nouvel écran.

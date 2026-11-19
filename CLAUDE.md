@@ -4,7 +4,7 @@ ERP de **Papel Industries**, fabricant guinéen de mouchoirs en papier (usine de
 Chaîne couverte : achat MP → stock → production → stock produits finis → distribution → vente → encaissement → pilotage.
 
 > Ce fichier est la référence des règles métier et des conventions de code. Le tenir à jour à chaque phase.
-> État : **Phases 1, 2 et 3 livrées** ; parcours quotidiens simplifiés (19/11/2026, branche `claude/erp-parcours-quotidiens`, pas encore en production) (bilans : `docs/bilan-phase-1.md`, `docs/bilan-phase-2.md`, `docs/bilan-phase-3.md`). Plan : `docs/architecture.md`.
+> État : **Phases 1, 2 et 3 livrées** ; parcours quotidiens simplifiés (19/11/2026, en production depuis le 19/11/2026, branche `claude/erp-parcours-quotidiens`) (bilans : `docs/bilan-phase-1.md`, `docs/bilan-phase-2.md`, `docs/bilan-phase-3.md`). Plan : `docs/architecture.md`.
 
 @AGENTS.md
 
