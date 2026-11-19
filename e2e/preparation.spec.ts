@@ -50,6 +50,20 @@ test("magasin : stock physique / réservé / disponible, préparation partielle 
   // La commande reste à préparer pour le reste (livraison partielle).
   await page.goto("/magasin/commandes");
   await expect(page.getByText(numero).first()).toBeVisible();
+
+  // La comptabilité voit la commande dans « À facturer » : la facture reprend seulement le livré (1 colis = 100 paquets).
+  const compta = await (await browser.newContext()).newPage();
+  await connecter(compta, "finance");
+  await compta.goto("/ventes/a-facturer");
+  const ligne = compta.getByRole("row", { name: new RegExp(numero) });
+  await expect(ligne).toContainText("100 paquets");
+  await ligne.getByRole("button", { name: "Facturer" }).click();
+  await expect(compta.getByText("Facture en préparation")).toBeVisible();
+  await compta.getByRole("button", { name: "Valider la facture" }).click();
+  await expect(compta.getByRole("heading", { name: /^FA-\d{4}-\d{5}$/ })).toBeVisible();
+  await expect(compta.getByText("À payer").first()).toBeVisible();
+  await compta.goto("/ventes/a-facturer");
+  await expect(compta.getByRole("row", { name: new RegExp(numero) })).toHaveCount(0);
 });
 
 test("ventes : la commande montre la prochaine étape et permet de confirmer la date promise", async ({ page, browser }) => {

@@ -2,10 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge, BarreEtapes, Bouton, Carte, Cellule, classesBouton, Message, Tableau, TitrePage } from "@/components/ui";
 import { ConfirmerDate } from "@/components/commandes/confirmer-date";
+import { HistoriqueDocument, type EvenementDocument } from "@/components/commandes/historique";
 import { ProchaineEtape } from "@/components/commandes/prochaine-etape";
 import { estimerCoordination, type Brut } from "@/lib/coordination/estimer";
 import { aujourdhui, formaterDate } from "@/lib/formulaires/dates";
-import { etatCommande } from "@/lib/metier/commandes";
+import { etatCommande, etatFacture } from "@/lib/metier/commandes";
 import { exigerDonnees } from "@/lib/donnees/resultat";
 import { nouvelleCle } from "@/lib/formulaires/cle";
 import { calculerTotaux } from "@/lib/metier/tva";
@@ -17,7 +18,8 @@ import { CANAUX_RELANCE, TYPES_PIECE } from "@/lib/ventes/libelles";
 import { parametresVente } from "@/lib/ventes/parametres";
 import { clientServeur } from "@/lib/supabase/serveur";
 import { preparerCommande } from "@/lib/livraisons/actions";
-import { annulerPiece, supprimerBrouillon, supprimerLigne, transformerPiece } from "../../actions";
+import { BoutonAction } from "@/components/ui/bouton-action";
+import { annulerPiece, facturerLivre, supprimerBrouillon, supprimerLigne, transformerPiece } from "../../actions";
 import { BoutonValiderPiece, FormulaireDotation, FormulaireLigne, FormulairePaiement, FormulaireQuantite, FormulaireRelance, FormulaireRemboursement, FormulaireRetourStock } from "./formulaires";
 
 export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[id]">) {
@@ -43,7 +45,7 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
   const estAvoir = p.type_piece === "avoir";
   const [{ data: origine }, { data: derivees }, { data: conditionnements }, parametres, resAnalyse] = await Promise.all([
     p.origine_id ? supabase.from("pieces_vente").select("id, type_piece, numero").eq("id", p.origine_id).maybeSingle() : Promise.resolve({ data: null }),
-    supabase.from("pieces_vente").select("id, type_piece, numero, statut").eq("origine_id", p.id),
+    supabase.from("pieces_vente").select("id, type_piece, numero, statut, valide_le, valide_par").eq("origine_id", p.id),
     supabase.from("conditionnements").select("id, libelle, paquets_par_colis, par_defaut, produit_id, produits(libelle, actif)").eq("actif", true),
     parametresVente(),
     // Avoir en brouillon : aperçu calculé par la base (même calcul que la validation).
@@ -66,10 +68,10 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
   const estCommande = p.type_piece === "commande" && p.statut === "valide";
   const estFacture = p.type_piece === "facture" && p.statut === "valide";
   const [{ data: livraisons }, { data: reste }, resEtat, resPaiements, { data: modes }, { data: dotations }, { data: relances }, resRemboursements] = await Promise.all([
-    estCommande ? supabase.from("livraisons").select("id, numero, date_livraison, statut, statut_remise").eq("commande_id", p.id).order("created_at") : Promise.resolve({ data: [] }),
+    estCommande ? supabase.from("livraisons").select("id, numero, date_livraison, statut, statut_remise, valide_le, valide_par, remise_le, receptionnaire").eq("commande_id", p.id).order("created_at") : Promise.resolve({ data: [] }),
     estCommande ? supabase.from("reste_a_livrer").select("conditionnement_id, paquets_restants").eq("commande_id", p.id) : Promise.resolve({ data: [] }),
     estFacture ? supabase.from("factures_etat").select("*").eq("id", p.id).maybeSingle() : Promise.resolve({ data: null }),
-    estFacture ? supabase.from("paiements").select("id, date_paiement, montant_gnf, reference, modes_paiement(libelle)").eq("facture_id", p.id).order("date_paiement") : Promise.resolve({ data: [] }),
+    estFacture ? supabase.from("paiements").select("id, date_paiement, montant_gnf, reference, created_at, saisi_par, modes_paiement(libelle)").eq("facture_id", p.id).order("date_paiement") : Promise.resolve({ data: [] }),
     estFacture ? supabase.from("modes_paiement").select("id, libelle").eq("actif", true).order("ordre") : Promise.resolve({ data: [] }),
     estFacture ? supabase.from("dotations").select("id, produit_id, paquets_dus, paquets_remis, produits(libelle)").eq("facture_id", p.id) : Promise.resolve({ data: [] }),
     estFacture ? supabase.from("relances").select("id, date_relance, canal, note, promesse_date").eq("facture_id", p.id).order("date_relance", { ascending: false }) : Promise.resolve({ data: [] }),
@@ -79,20 +81,56 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
   ]);
   // Suivi d'une commande : dates, factures liées et stock (même règle que le téléphone du commercial).
   const facturesLiees = (derivees ?? []).filter((d) => d.type_piece === "facture" && d.statut === "valide");
-  const [resSuivi, resEtatsFactures, resCoordination] = estCommande
+  const [resSuivi, resEtatsFactures, resCoordination, resAFacturer] = estCommande
     ? await Promise.all([
         supabase.from("suivi_commandes").select("date_souhaitee, date_confirmee, confirmee_le, note, profils:confirmee_par(nom, prenom)").eq("commande_id", p.id).maybeSingle(),
         facturesLiees.length ? supabase.from("factures_etat").select("id, total_ttc_gnf, avoirs_gnf, solde_gnf").in("id", facturesLiees.map((f) => f.id)) : Promise.resolve({ data: [], error: null }),
         supabase.rpc("coordination_commandes"),
+        supabase.from("reste_a_facturer").select("paquets_a_facturer").eq("commande_id", p.id),
       ])
-    : [{ data: null, error: null }, { data: [], error: null }, { data: null, error: null }];
+    : [{ data: null, error: null }, { data: [], error: null }, { data: null, error: null }, { data: [], error: null }];
   const suivi = exigerDonnees(resSuivi, "le suivi de la commande");
+  const aFacturer = (exigerDonnees(resAFacturer, "ce qui reste à facturer") ?? []).reduce((t, x) => t + Math.max(0, Number(x.paquets_a_facturer ?? 0)), 0);
   const etatsFactures = exigerDonnees(resEtatsFactures, "les factures de la commande") ?? [];
   const attenteStock = !resCoordination.error && resCoordination.data ? estimerCoordination(resCoordination.data as unknown as Brut).commandes.some((c) => c.id === p.id && c.etat !== "en_stock") : false;
   // Montants d'argent : une lecture en échec ne doit pas faire croire à une facture soldée ou impayée.
   const etat = exigerDonnees(resEtat, "l'état de la facture");
   const paiements = exigerDonnees(resPaiements, "les paiements");
   const remboursements = exigerDonnees(resRemboursements, "les remboursements");
+  // Historique reconstitué à partir des documents (dates et auteurs), sans rien effacer.
+  const auteurs = [p.created_by, p.valide_par, ...(livraisons ?? []).map((l) => l.valide_par), ...(derivees ?? []).map((d) => d.valide_par), ...(paiements ?? []).map((x) => x.saisi_par)].filter(
+    (x): x is string => !!x,
+  );
+  const { data: personnes } = auteurs.length ? await supabase.from("profils").select("id, nom, prenom").in("id", [...new Set(auteurs)]) : { data: [] };
+  const nomDe = (id: string | null | undefined) => {
+    const x = (personnes ?? []).find((q) => q.id === id);
+    return x ? `${x.prenom} ${x.nom}`.trim() : null;
+  };
+  const evenements: EvenementDocument[] = [
+    { quand: p.created_at, quoi: `${def.singulier} créé${p.type_piece === "facture" || p.type_piece === "commande" ? "e" : ""}`, qui: nomDe(p.created_by) },
+    ...(p.valide_le ? [{ quand: p.valide_le, quoi: `Validé${p.type_piece === "facture" || p.type_piece === "commande" ? "e" : ""} sous le numéro ${p.numero}`, qui: nomDe(p.valide_par) }] : []),
+    ...(suivi?.confirmee_le && suivi.date_confirmee ? [{ quand: suivi.confirmee_le, quoi: `Date de livraison promise : ${formaterDate(suivi.date_confirmee)}`, qui: suivi.profils ? `${suivi.profils.prenom} ${suivi.profils.nom}` : null }] : []),
+    ...(livraisons ?? []).flatMap((l) => [
+      ...(l.valide_le ? [{ quand: l.valide_le, quoi: `Colis sortis du stock (bon ${l.numero})`, qui: nomDe(l.valide_par) }] : []),
+      ...(l.remise_le ? [{ quand: l.remise_le, quoi: `Remis au client (bon ${l.numero})${l.receptionnaire ? `, reçu par ${l.receptionnaire}` : ""}` }] : []),
+    ]),
+    ...(derivees ?? []).filter((d) => d.valide_le).map((d) => ({ quand: d.valide_le!, quoi: `${TYPES_PIECE[d.type_piece].singulier} ${d.numero} validé${d.type_piece === "facture" || d.type_piece === "commande" ? "e" : ""}`, qui: nomDe(d.valide_par) })),
+    ...(paiements ?? []).map((x) => ({ quand: x.created_at, quoi: `Paiement reçu : ${gnf(x.montant_gnf)} (${x.modes_paiement?.libelle ?? ""})`, qui: nomDe(x.saisi_par) })),
+    ...(remboursements ?? []).map((x) => ({ quand: x.date_remboursement, quoi: `Remboursement : ${gnf(x.montant_gnf)}` })),
+    ...((relances ?? []) as { date_relance: string; canal: string }[]).map((x) => ({ quand: x.date_relance, quoi: `Relance du client (${x.canal})` })),
+  ];
+  const etatDeLaFacture =
+    p.type_piece === "facture" && p.statut !== "annule"
+      ? etatFacture({
+          brouillon,
+          resteAPayerGnf: brouillon ? 0 : Number(etat?.solde_gnf ?? 0),
+          creditClientGnf: Number(etat?.credit_client_gnf ?? 0),
+          echeance: p.date_echeance,
+          aujourdhui: aujourdhui(),
+          payeGnf: (paiements ?? []).reduce((t, x) => t + Number(x.montant_gnf), 0),
+        })
+      : null;
+
   // Barre d'étapes du document (à la Odoo).
   const etapes = [
     { code: "brouillon", libelle: "En cours de saisie" },
@@ -189,6 +227,7 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
         </p>
       )}
 
+      {etatDeLaFacture && <ProchaineEtape etat={etatDeLaFacture} details={p.date_echeance ? <>Échéance : <strong>{formaterDate(p.date_echeance)}</strong></> : undefined} />}
       {etatSuivi && p.statut !== "brouillon" && (
         <ProchaineEtape
           etat={etatSuivi}
@@ -374,12 +413,19 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
                   <Bouton type="submit">{(livraisons ?? []).some((l) => l.statut === "brouillon") ? "Reprendre la préparation" : "Préparer les colis"}</Bouton>
                 </form>
               )}
-              {!factureExiste && (
-                <form action={transformerPiece.bind(null, p.id, "facture")}>
-                  <Bouton type="submit" variante="secondaire">
-                    Créer la facture
-                  </Bouton>
-                </form>
+              {aFacturer > 0 && <BoutonAction action={facturerLivre.bind(null, p.id)} libelle={`Facturer ce qui est livré (${nombre(aFacturer)} paquets)`} enCoursLibelle="Préparation…" />}
+              {!factureExiste && !(livraisons ?? []).some((l) => l.statut === "validee") && (
+                <details className="w-full rounded-xl border border-gray-200 px-3">
+                  <summary className="min-h-11 cursor-pointer py-2.5 font-semibold text-gray-700">Plus d&apos;options</summary>
+                  <div className="flex flex-col gap-2 pb-3">
+                    <p className="text-sm text-gray-600">Facturer toute la commande avant la livraison (paiement d&apos;avance par exemple).</p>
+                    <form action={transformerPiece.bind(null, p.id, "facture")}>
+                      <Bouton type="submit" variante="secondaire">
+                        Facturer toute la commande maintenant
+                      </Bouton>
+                    </form>
+                  </div>
+                </details>
               )}
               {!(livraisons ?? []).some((l) => l.statut === "validee") && (
                 <form action={annulerPiece.bind(null, p.id)}>
@@ -511,6 +557,7 @@ export default async function PagePiece({ params }: PageProps<"/ventes/pieces/[i
             </Carte>
           </>
         )}
+        <HistoriqueDocument evenements={evenements} />
       </div>
     </>
   );

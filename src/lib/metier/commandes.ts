@@ -91,3 +91,19 @@ export function etatCommande(f: FaitsCommande): EtatCommande {
     ton: "attente",
   };
 }
+
+/** État d'une facture validée : payée, à payer, en retard (relancer), crédit client après avoir. */
+export function etatFacture(f: { brouillon: boolean; annulee?: boolean; resteAPayerGnf: number; creditClientGnf: number; echeance: string | null; aujourdhui: string; payeGnf: number }): EtatCommande {
+  if (f.brouillon) return { code: "recue", libelle: "Facture en préparation", prochaine: "Vérifier les lignes puis valider la facture.", qui: "comptabilite", ton: "attente" };
+  if (f.creditClientGnf > 0) return { code: "payee", libelle: "Soldée, avec un crédit au client", prochaine: "Rembourser le client ou déduire ce crédit d'une prochaine facture.", qui: "comptabilite", ton: "info" };
+  if (f.resteAPayerGnf <= 0) return { code: "payee", libelle: "Payée", prochaine: null, qui: null, ton: "succes" };
+  const enRetard = !!f.echeance && f.echeance < f.aujourdhui;
+  if (enRetard) return { code: "facturee", libelle: f.payeGnf > 0 ? "Payée en partie, en retard" : "En retard de paiement", prochaine: "Relancer le client, puis enregistrer son paiement.", qui: "comptabilite", ton: "erreur" };
+  return {
+    code: "facturee",
+    libelle: f.payeGnf > 0 ? "Payée en partie" : "À payer",
+    prochaine: `Enregistrer le paiement quand le client paie${f.echeance ? ` (avant le ${f.echeance.split("-").reverse().join("/")})` : ""}.`,
+    qui: "comptabilite",
+    ton: "attente",
+  };
+}

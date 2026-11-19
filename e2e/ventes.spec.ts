@@ -42,15 +42,19 @@ test.describe("ventes", () => {
     await page.getByRole("button", { name: "Valider la commande" }).click();
     await expect(page.getByRole("heading", { name: /^CMD-\d{4}-\d{5}$/ })).toBeVisible();
 
-    // Livraison : sortie de stock
-    await page.getByRole("button", { name: "Préparer le bon de livraison" }).click();
-    await expect(page.getByRole("heading", { name: "Bon de livraison (brouillon)" })).toBeVisible();
-    await page.getByRole("button", { name: /Valider la livraison/ }).click();
-    await expect(page.getByText(/Bon de livraison BL-\d{4}-\d{5} validé/)).toBeVisible();
+    // Livraison : préparation des colis, récapitulatif, sortie de stock
+    await expect(page.getByText(/Prochaine étape : Confirmer la date de livraison/)).toBeVisible();
+    await page.getByRole("button", { name: "Préparer les colis" }).click();
+    await expect(page.getByRole("heading", { name: /^Préparer la commande CMD-/ })).toBeVisible();
+    await page.getByRole("button", { name: "Les colis sont prêts : valider la sortie du stock" }).click();
+    await page.getByRole("button", { name: "Oui, valider" }).click();
+    await expect(page.getByText(/Bon de livraison BL-\d{4}-\d{5} validé : les colis sont sortis du stock/)).toBeVisible();
 
-    // Facture
+    // Facture de ce qui a été livré (quantités et prix repris, sans ressaisie)
     await page.getByRole("link", { name: /^← Commande/ }).click();
-    await page.getByRole("button", { name: "Créer la facture" }).click();
+    await expect(page.getByText("Prochaine étape :").first()).toBeVisible();
+    await page.getByRole("button", { name: "Facturer ce qui est livré (5 000 paquets)" }).click();
+    await expect(page.getByText("Facture en préparation")).toBeVisible();
     await page.getByRole("button", { name: "Valider la facture" }).click();
     await expect(page.getByRole("heading", { name: /^FA-\d{4}-\d{5}$/ })).toBeVisible();
     await expect(page.getByText(/Paiements — reste à payer : 16 750 100 GNF/)).toBeVisible();
@@ -61,6 +65,9 @@ test.describe("ventes", () => {
     await page.getByLabel(/Référence/).fill("OM-123456");
     await page.getByRole("button", { name: "Enregistrer le paiement" }).click();
     await expect(page.getByText(/reste à payer : 8 375 050 GNF/)).toBeVisible();
+    await expect(page.getByText("Payée en partie")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Historique" })).toBeVisible();
+    await expect(page.getByText(/Paiement reçu : 8 375 050 GNF/)).toBeVisible();
     await expect(page.getByText("Petit 100 : 100 paquets dus, 0 remis")).toBeVisible();
 
     // Remise de la dotation : 1 colis de 100

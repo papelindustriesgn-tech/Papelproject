@@ -26,11 +26,12 @@ async function factureLivree(page: Page, nom: string) {
   await expect(page.getByText("Ligne ajoutée.")).toBeVisible();
   await page.getByRole("button", { name: "Valider la commande" }).click();
   await expect(page.getByRole("heading", { name: /^CMD-\d{4}-\d{5}$/ })).toBeVisible();
-  await page.getByRole("button", { name: "Préparer le bon de livraison" }).click();
-  await page.getByRole("button", { name: /Valider la livraison/ }).click();
+  await page.getByRole("button", { name: "Préparer les colis" }).click();
+  await page.getByRole("button", { name: "Les colis sont prêts : valider la sortie du stock" }).click();
+  await page.getByRole("button", { name: "Oui, valider" }).click();
   await expect(page.getByText(/Bon de livraison BL-\d{4}-\d{5} validé/)).toBeVisible();
   await page.getByRole("link", { name: /^← Commande/ }).click();
-  await page.getByRole("button", { name: "Créer la facture" }).click();
+  await page.getByRole("button", { name: /^Facturer ce qui est livré/ }).click();
   await page.getByRole("button", { name: "Valider la facture" }).click();
   await expect(page.getByRole("heading", { name: /^FA-\d{4}-\d{5}$/ })).toBeVisible();
   // 100 × 2 839 = 283 900 HT + 51 102 TVA

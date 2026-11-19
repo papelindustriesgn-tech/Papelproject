@@ -707,6 +707,12 @@ isOneToOne: false
       foreignKeyName: "dotations_facture_id_fkey"
       columns: ["facture_id"]
 isOneToOne: false
+      referencedRelation: "commandes_a_facturer"
+      referencedColumns: ["commande_id"]
+    },{
+      foreignKeyName: "dotations_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
       referencedRelation: "factures_etat"
       referencedColumns: ["id"]
     },{
@@ -715,6 +721,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "pieces_vente"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "dotations_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "reste_a_facturer"
+      referencedColumns: ["commande_id"]
     },{
       foreignKeyName: "dotations_produit_id_fkey"
       columns: ["produit_id"]
@@ -1552,6 +1564,12 @@ isOneToOne: false
       foreignKeyName: "lignes_piece_piece_id_fkey"
       columns: ["piece_id"]
 isOneToOne: false
+      referencedRelation: "commandes_a_facturer"
+      referencedColumns: ["commande_id"]
+    },{
+      foreignKeyName: "lignes_piece_piece_id_fkey"
+      columns: ["piece_id"]
+isOneToOne: false
       referencedRelation: "factures_etat"
       referencedColumns: ["id"]
     },{
@@ -1560,6 +1578,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "pieces_vente"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lignes_piece_piece_id_fkey"
+      columns: ["piece_id"]
+isOneToOne: false
+      referencedRelation: "reste_a_facturer"
+      referencedColumns: ["commande_id"]
     }
                   ]
                 },"lignes_production": {
@@ -1590,6 +1614,12 @@ isOneToOne: false
       foreignKeyName: "livraisons_commande_id_fkey"
       columns: ["commande_id"]
 isOneToOne: false
+      referencedRelation: "commandes_a_facturer"
+      referencedColumns: ["commande_id"]
+    },{
+      foreignKeyName: "livraisons_commande_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: false
       referencedRelation: "factures_etat"
       referencedColumns: ["id"]
     },{
@@ -1598,6 +1628,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "pieces_vente"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "livraisons_commande_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: false
+      referencedRelation: "reste_a_facturer"
+      referencedColumns: ["commande_id"]
     },{
       foreignKeyName: "livraisons_confirmee_par_fkey"
       columns: ["confirmee_par"]
@@ -2102,6 +2138,12 @@ isOneToOne: false
       foreignKeyName: "paiements_facture_id_fkey"
       columns: ["facture_id"]
 isOneToOne: false
+      referencedRelation: "commandes_a_facturer"
+      referencedColumns: ["commande_id"]
+    },{
+      foreignKeyName: "paiements_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
       referencedRelation: "factures_etat"
       referencedColumns: ["id"]
     },{
@@ -2110,6 +2152,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "pieces_vente"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "paiements_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "reste_a_facturer"
+      referencedColumns: ["commande_id"]
     },{
       foreignKeyName: "paiements_mode_id_fkey"
       columns: ["mode_id"]
@@ -2201,6 +2249,12 @@ isOneToOne: false
       foreignKeyName: "pieces_vente_origine_id_fkey"
       columns: ["origine_id"]
 isOneToOne: false
+      referencedRelation: "commandes_a_facturer"
+      referencedColumns: ["commande_id"]
+    },{
+      foreignKeyName: "pieces_vente_origine_id_fkey"
+      columns: ["origine_id"]
+isOneToOne: false
       referencedRelation: "factures_etat"
       referencedColumns: ["id"]
     },{
@@ -2209,6 +2263,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "pieces_vente"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pieces_vente_origine_id_fkey"
+      columns: ["origine_id"]
+isOneToOne: false
+      referencedRelation: "reste_a_facturer"
+      referencedColumns: ["commande_id"]
     },{
       foreignKeyName: "pieces_vente_valide_par_fkey"
       columns: ["valide_par"]
@@ -2463,6 +2523,12 @@ isOneToOne: false
       foreignKeyName: "relances_facture_id_fkey"
       columns: ["facture_id"]
 isOneToOne: false
+      referencedRelation: "commandes_a_facturer"
+      referencedColumns: ["commande_id"]
+    },{
+      foreignKeyName: "relances_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
       referencedRelation: "factures_etat"
       referencedColumns: ["id"]
     },{
@@ -2471,6 +2537,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "pieces_vente"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "relances_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "reste_a_facturer"
+      referencedColumns: ["commande_id"]
     }
                   ]
                 },"remboursements_clients": {
@@ -2488,6 +2560,12 @@ isOneToOne: false
       foreignKeyName: "remboursements_clients_facture_id_fkey"
       columns: ["facture_id"]
 isOneToOne: false
+      referencedRelation: "commandes_a_facturer"
+      referencedColumns: ["commande_id"]
+    },{
+      foreignKeyName: "remboursements_clients_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
       referencedRelation: "factures_etat"
       referencedColumns: ["id"]
     },{
@@ -2496,6 +2574,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "pieces_vente"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "remboursements_clients_facture_id_fkey"
+      columns: ["facture_id"]
+isOneToOne: false
+      referencedRelation: "reste_a_facturer"
+      referencedColumns: ["commande_id"]
     },{
       foreignKeyName: "remboursements_clients_mode_id_fkey"
       columns: ["mode_id"]
@@ -2600,6 +2684,12 @@ isOneToOne: true
       foreignKeyName: "suivi_commandes_commande_id_fkey"
       columns: ["commande_id"]
 isOneToOne: true
+      referencedRelation: "commandes_a_facturer"
+      referencedColumns: ["commande_id"]
+    },{
+      foreignKeyName: "suivi_commandes_commande_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: true
       referencedRelation: "factures_etat"
       referencedColumns: ["id"]
     },{
@@ -2608,6 +2698,12 @@ isOneToOne: true
 isOneToOne: true
       referencedRelation: "pieces_vente"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "suivi_commandes_commande_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: true
+      referencedRelation: "reste_a_facturer"
+      referencedColumns: ["commande_id"]
     },{
       foreignKeyName: "suivi_commandes_confirmee_par_fkey"
       columns: ["confirmee_par"]
@@ -3059,6 +3155,25 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"commandes_a_facturer": {
+                  Row: {
+                    "client_id": string | null,"client_nom": string | null,"commande_id": string | null,"derniere_livraison": string | null,"facture_en_cours": boolean | null,"montant_ht_gnf": number | null,"numero": string | null,"paquets_a_facturer": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pieces_vente_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pieces_vente_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "soldes_clients"
+      referencedColumns: ["client_id"]
+    }
+                  ]
                 },"controles_etat": {
                   Row: {
                     "code_lot": string | null,"controleur_id": string | null,"created_at": string | null,"date_controle": string | null,"etape": string | null,"fiche_id": string | null,"id": string | null,"lot_id": string | null,"nb_mesures": number | null,"nb_non_conformes": number | null,"notes": string | null,"numero_lot": string | null,"resultat": string | null,"statut": string | null,"valide_le": string | null
@@ -3456,6 +3571,37 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"reste_a_facturer": {
+                  Row: {
+                    "client_id": string | null,"commande_id": string | null,"conditionnement_id": string | null,"numero": string | null,"paquets_a_facturer": number | null,"prix_paquet_gnf": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lignes_piece_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: false
+      referencedRelation: "conditionnements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lignes_piece_conditionnement_id_fkey"
+      columns: ["conditionnement_id"]
+isOneToOne: false
+      referencedRelation: "prix_actuels"
+      referencedColumns: ["conditionnement_id"]
+    },{
+      foreignKeyName: "pieces_vente_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pieces_vente_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "soldes_clients"
+      referencedColumns: ["client_id"]
+    }
+                  ]
                 },"reste_a_livrer": {
                   Row: {
                     "commande_id": string | null,"conditionnement_id": string | null,"paquets_commandes": number | null,"paquets_restants": number | null
@@ -3477,6 +3623,12 @@ isOneToOne: false
       foreignKeyName: "lignes_piece_piece_id_fkey"
       columns: ["commande_id"]
 isOneToOne: false
+      referencedRelation: "commandes_a_facturer"
+      referencedColumns: ["commande_id"]
+    },{
+      foreignKeyName: "lignes_piece_piece_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: false
       referencedRelation: "factures_etat"
       referencedColumns: ["id"]
     },{
@@ -3485,6 +3637,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "pieces_vente"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lignes_piece_piece_id_fkey"
+      columns: ["commande_id"]
+isOneToOne: false
+      referencedRelation: "reste_a_facturer"
+      referencedColumns: ["commande_id"]
     }
                   ]
                 },"soldes_clients": {
@@ -3746,6 +3904,9 @@ isOneToOne: false
                            },
 "exporter_donnees":
 { Args: { "p_au": string,"p_cle": string,"p_du": string,"p_jeu": string }; Returns: Json
+                           },
+"facturer_livre":
+{ Args: { "p_commande": string }; Returns: string
                            },
 "generer_charges_mois":
 { Args: { "p_mois": string }; Returns: number

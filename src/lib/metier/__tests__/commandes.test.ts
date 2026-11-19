@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { etatCommande, libelleQui } from "../commandes";
+import { etatCommande, etatFacture, libelleQui } from "../commandes";
 
 const base = { envoi: "recue" as const, paquetsCommandes: 500, paquetsLivres: 0 };
 
@@ -38,5 +38,17 @@ describe("etatCommande", () => {
     expect(etatCommande({ ...base, annulee: true })).toMatchObject({ code: "annulee", prochaine: null });
     expect(libelleQui("magasin")).toBe("Le magasin");
     expect(libelleQui(null)).toBe("");
+  });
+});
+
+describe("etatFacture", () => {
+  const f = { brouillon: false, resteAPayerGnf: 1000, creditClientGnf: 0, echeance: "2026-11-30", aujourdhui: "2026-11-19", payeGnf: 0 };
+  it("à payer, payée en partie, en retard, payée, crédit client", () => {
+    expect(etatFacture(f)).toMatchObject({ libelle: "À payer", prochaine: "Enregistrer le paiement quand le client paie (avant le 30/11/2026).", qui: "comptabilite" });
+    expect(etatFacture({ ...f, payeGnf: 500 })).toMatchObject({ libelle: "Payée en partie" });
+    expect(etatFacture({ ...f, aujourdhui: "2026-12-05" })).toMatchObject({ libelle: "En retard de paiement", ton: "erreur" });
+    expect(etatFacture({ ...f, resteAPayerGnf: 0, payeGnf: 1000 })).toMatchObject({ libelle: "Payée", prochaine: null });
+    expect(etatFacture({ ...f, resteAPayerGnf: 0, creditClientGnf: 200 })).toMatchObject({ libelle: "Soldée, avec un crédit au client" });
+    expect(etatFacture({ ...f, brouillon: true })).toMatchObject({ libelle: "Facture en préparation" });
   });
 });

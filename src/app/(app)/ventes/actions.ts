@@ -225,6 +225,16 @@ export async function transformerPiece(pieceId: string, versType: TypePiece): Pr
   redirect(`/ventes/pieces/${data}`);
 }
 
+/** Facturer ce qui a été livré et pas encore facturé (reprend une facture en préparation s'il y en a une). */
+export async function facturerLivre(commandeId: string, _e: EtatFormulaire): Promise<EtatFormulaire> {
+  await exigerEspace("ventes");
+  const supabase = await clientServeur();
+  const { data, error } = await supabase.rpc("facturer_livre", { p_commande: commandeId });
+  if (error) return { message: messageErreurBase(error) };
+  rafraichir();
+  redirect(`/ventes/pieces/${data}`);
+}
+
 export async function annulerPiece(pieceId: string): Promise<void> {
   await exigerEspace("ventes");
   const supabase = await clientServeur();
